@@ -1,0 +1,58 @@
+---
+on:
+  pull_request:
+    branches:
+      - main
+
+name: Version check
+
+jobs:
+  version-check:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ github.token }}
+    permissions:
+      pull-requests: read
+
+    steps:
+
+      - name: checkout working HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          sparse-checkout: |
+            DESCRIPTION
+          path: working
+
+      - name: checkout base HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          sparse-checkout: |
+            DESCRIPTION
+          path: compare
+
+      - name: show files
+        run: |
+          ls -lR working compare
+          echo "\nWORKING:\n"
+          cat working/DESCRIPTION
+          echo "\nCOMPARE:\n"
+          cat compare/DESCRIPTION
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: compare versions
+        run: |
+          Rscript -e " \
+            install.packages('desc'); \
+            working_version <- desc::desc_get_version('working/DESCRIPTION'); \
+            message('working version: ', working_version); \
+            compare_version <- desc::desc_get_version('compare/DESCRIPTION'); \
+            message('compare version: ', compare_version); \
+            stopifnot(working_version > compare_version); \
+          "
