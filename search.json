@@ -50,8 +50,8 @@
     ]
   },
   {
-    "objectID": "intro-to-GLMs.html",
-    "href": "intro-to-GLMs.html",
+    "objectID": "Intro-to-GLMs.html",
+    "href": "Intro-to-GLMs.html",
     "title": "\n1  Introduction\n",
     "section": "",
     "text": "Configuring R\nFunctions from these packages will be used throughout this document:\nShow R codelibrary(conflicted) # check for conflicting function definitions\n# library(printr) # inserts help-file output into markdown output\nlibrary(rmarkdown) # Convert R Markdown documents into a variety of formats.\nlibrary(pander) # format tables for markdown\nlibrary(ggplot2) # graphics\nlibrary(ggeasy) # help with graphics\nlibrary(ggfortify) # help with graphics\nlibrary(dplyr) # manipulate data\nlibrary(tibble) # `tibble`s extend `data.frame`s\nlibrary(magrittr) # `%&gt;%` and other additional piping tools\nlibrary(haven) # import Stata files\nlibrary(knitr) # format R output for markdown\nlibrary(tidyr) # Tools to help to create tidy data\nlibrary(plotly) # interactive graphics\nlibrary(dobson) # datasets from Dobson and Barnett 2018\nlibrary(parameters) # format model output tables for markdown\nlibrary(haven) # import Stata files\nlibrary(latex2exp) # use LaTeX in R code (for figures and tables)\nlibrary(fs) # filesystem path manipulations\nlibrary(survival) # survival analysis\nlibrary(survminer) # survival analysis graphics\nlibrary(KMsurv) # datasets from Klein and Moeschberger\nlibrary(parameters) # format model output tables for\nlibrary(webshot2) # convert interactive content to static for pdf\nlibrary(forcats) # functions for categorical variables (\"factors\")\nlibrary(stringr) # functions for dealing with strings\nlibrary(lubridate) # functions for dealing with dates and times\nHere are some R settings I use in this document:\nShow R coderm(list = ls()) # delete any data that's already loaded into R\n\nconflicts_prefer(dplyr::filter)\nggplot2::theme_set(\n  ggplot2::theme_bw() + \n        # ggplot2::labs(col = \"\") +\n    ggplot2::theme(\n      legend.position = \"bottom\",\n      text = ggplot2::element_text(size = 12, family = \"serif\")))\n\nknitr::opts_chunk$set(message = FALSE)\noptions('digits' = 4)\n\npanderOptions(\"big.mark\", \",\")\npander::panderOptions(\"table.emphasize.rownames\", FALSE)\npander::panderOptions(\"table.split.table\", Inf)\nconflicts_prefer(dplyr::filter) # use the `filter()` function from dplyr() by default\nlegend_text_size = 9",
@@ -60,8 +60,8 @@
     ]
   },
   {
-    "objectID": "intro-to-GLMs.html#introduction-to-epi-204",
-    "href": "intro-to-GLMs.html#introduction-to-epi-204",
+    "objectID": "Intro-to-GLMs.html#introduction-to-epi-204",
+    "href": "Intro-to-GLMs.html#introduction-to-epi-204",
     "title": "\n1  Introduction\n",
     "section": "\n1.1 Introduction to Epi 204",
     "text": "1.1 Introduction to Epi 204\nWelcome to Epidemiology 204: Quantitative Epidemiology III (Statistical Models).\nIn this course, we will start where Epi 203 left off: with linear regression models.\n\n\n\n\n\n\nNote\n\n\n\nEpi 203/STA 130B/STA 131B is a prerequisite for this course. If you haven’t passed one of these courses, please talk to me ASAP.\n\n\n\n1.1.1 What you should already know\nEpi 202: probability models for different data types\n\nProbability distributions\n\nbinomial\nPoisson\nGaussian\nexponential\n\n\nCharacteristics of probability distributions\n\nMean, median, mode, quantiles\nVariance, standard deviation, overdispersion\n\n\nCharacteristics of samples\n\nindependence, dependence, covariance, correlation\nranks, order statistics\nidentical vs nonidentical distribution (homogeneity vs heterogeneity)\nLaws of Large Numbers\nCentral Limit Theorem for the mean of an iid sample\n\n\n\nEpi 203: inference for one or several homogenous populations\n\nthe maximum likelihood inference framework:\n\nlikelihood functions\nlog-likelihood functions\nscore functions\nestimating equations\ninformation matrices\npoint estimates\nstandard errors\nconfidence intervals\nhypothesis tests\np-values\n\n\nHypothesis tests for one, two, and &gt;2 groups:\n\nt-tests/ANOVA for Gaussian models\nchi-square tests for binomial and Poisson models\nnonparametric tests:\n\nWilcoxon signed-rank test for matched pairs\nMann–Whitney/Kruskal-Wallis rank sum test for ≥2 independent samples\nFisher’s exact test for contingency tables\nCochran–Mantel–Haenszel-Cox log-rank test\n\n\n\n\nSome linear regression\n\nFor all of the quantities above, and especially for confidence intervals and p-values, you should know how both: - how to compute them - how to interpret them\nStat 108: linear regression models\n\nbuilding models for Gaussian outcomes\n\nmultiple predictors\ninteractions\n\n\nregression diagnostics\nfundamentals of R programming; e.g.:\n\nWickham, Çetinkaya-Rundel, and Grolemund (2023)\nDalgaard (2008)\n\n\n\nRMarkdown or Quarto for formatting homework\n\nLaTeX for writing math in RMarkdown/Quarto\n\n\n\n1.1.2 What we will cover in this course\n\nLinear (Gaussian) regression models (review and more details)\n\nRegression models for non-Gaussian outcomes\n\nbinary\ncount\ntime to event\n\n\nStatistical analysis using R",
@@ -70,8 +70,8 @@
     ]
   },
   {
-    "objectID": "intro-to-GLMs.html#regression-models",
-    "href": "intro-to-GLMs.html#regression-models",
+    "objectID": "Intro-to-GLMs.html#regression-models",
+    "href": "Intro-to-GLMs.html#regression-models",
     "title": "\n1  Introduction\n",
     "section": "\n1.2 Regression models",
     "text": "1.2 Regression models\nWhy do we need them?\n\ncontinuous predictors\nnot enough data to analyze some subgroups individually\n\n\n1.2.1 Example: Adelie penguins\n\n\n\n\nFigure 1.1: Palmer penguins\n\n\n\n\n\n\n\n\n1.2.2 Linear regression\n\nShow R codeggpenguins2 = \n  ggpenguins +\n  stat_smooth(method = \"lm\",\n              formula = y ~ x,\n              geom = \"smooth\")\n\nggpenguins2 |&gt; print()\n\n\n\nFigure 1.2: Palmer penguins with linear regression fit\n\n\n\n\n\n\n\n\n1.2.3 Curved regression lines\n\nShow R codeggpenguins2 = ggpenguins +\n  stat_smooth(\n    method = \"lm\",\n    formula = y ~ log(x),\n    geom = \"smooth\") +\n  xlab(\"Bill length (mm)\") + \n  ylab(\"Body mass (g)\")\nggpenguins2\n\n\n\nFigure 1.3: Palmer penguins - curved regression lines\n\n\n\n\n\n\n\n\n1.2.4 Multiple regression\n\nShow R codeggpenguins =\n  palmerpenguins::penguins |&gt; \n  ggplot(\n    aes(x = bill_length_mm , \n        y = body_mass_g,\n        color = species\n    )\n  ) +\n  geom_point() +\n  stat_smooth(\n    method = \"lm\",\n    formula = y ~ x,\n    geom = \"smooth\") +\n  xlab(\"Bill length (mm)\") + \n  ylab(\"Body mass (g)\")\nggpenguins |&gt; print()\n\n\n\nFigure 1.4: Palmer penguins - multiple groups\n\n\n\n\n\n\n\n\n1.2.5 Modeling non-Gaussian outcomes\n\nShow R codelibrary(glmx)\ndata(BeetleMortality)\nbeetles = BeetleMortality |&gt;\n  mutate(\n    pct = died/n,\n    survived = n - died\n  )\n\nplot1 = \n  beetles |&gt; \n  ggplot(aes(x = dose, y = pct)) +\n  geom_point(aes(size = n)) +\n  xlab(\"Dose (log mg/L)\") +\n  ylab(\"Mortality rate (%)\") +\n  scale_y_continuous(labels = scales::percent) +\n  # xlab(bquote(log[10]), bquote(CS[2])) +\n  scale_size(range = c(1,2))\n\nprint(plot1)\n\n\n\nFigure 1.5: Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide (Bliss 1935)\n\n\n\n\n\n\n\n\n1.2.6 Why don’t we use linear regression?\n\nShow R codebeetles_long = \n  beetles  |&gt; \n  reframe(.by = everything(),\n          outcome = c(\n            rep(1, times = died), \n            rep(0, times = survived))\n  )\n\nlm1 = \n  beetles_long |&gt; \n  lm(\n    formula = outcome ~ dose, \n    data = _)\n\n\nrange1 = range(beetles$dose) + c(-.2, .2)\n\nf.linear = function(x) predict(lm1, newdata = data.frame(dose = x))\n\nplot2 = \n  plot1 + \n  geom_function(fun = f.linear, aes(col = \"Straight line\")) +\n  labs(colour=\"Model\", size = \"\")\nprint(plot2)\n\n\n\nFigure 1.6: Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide (Bliss 1935)\n\n\n\n\n\n\n\n\n1.2.7 Zoom out\n\n\n\n\nFigure 1.7: Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide (Bliss 1935)\n\n\n\n\n\n\n\n\n1.2.8 log transformation of dose?\n\nShow R code\nlm2 = \n  beetles_long |&gt; \n  lm(formula = outcome ~ log(dose), data = _)\n\nf.linearlog = function(x) predict(lm2, newdata = data.frame(dose = x))\n\nplot3 = plot2 + \n  expand_limits(x = c(1.6, 2)) +\n  geom_function(fun = f.linearlog, aes(col = \"Log-transform dose\"))\n\nprint(plot3  + expand_limits(x = c(1.6, 2)))\n\n\n\nFigure 1.8: Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide (Bliss 1935)\n\n\n\n\n\n\n\n\n1.2.9 Logistic regression\n\nShow R codeglm1 = beetles |&gt; \n  glm(formula = cbind(died, survived) ~ dose, family = \"binomial\")\n\nf = function(x) predict(glm1, newdata = data.frame(dose = x), type = \"response\")\n\nplot4 = plot3 + geom_function(fun = f, aes(col = \"Logistic regression\"))\nprint(plot4)\n\n\n\nFigure 1.9: Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide (Bliss 1935)\n\n\n\n\n\n\n\n\n1.2.10 Three parts to regression models\n\nWhat distribution does the outcome have for a specific sub-population defined by covariates? (outcome model)\nHow does the combination of covariates relate to the mean? (link function)\nHow do the covariates combine? (linear predictor/linear component) \\[\\eta \\stackrel{\\text{def}}{=}\\tilde{x}^{\\top} \\tilde{\\beta}= \\beta_0 + \\beta_1 x_1 + \\beta_2 x_2 + ...\\]\n\n\n\n\n\n\n\nDalgaard, Peter. 2008. Introductory Statistics with r. New York, NY: Springer New York. https://link.springer.com/book/10.1007/978-0-387-79054-1.\n\n\nWickham, Hadley, Mine Çetinkaya-Rundel, and Garrett Grolemund. 2023. R for Data Science. \" O’Reilly Media, Inc.\". https://r4ds.hadley.nz/.",
@@ -1462,8 +1462,8 @@
     ]
   },
   {
-    "objectID": "Contributing.html",
-    "href": "Contributing.html",
+    "objectID": "CONTRIBUTING.html",
+    "href": "CONTRIBUTING.html",
     "title": "Appendix K — Contributing to rme",
     "section": "",
     "text": "K.1 Style guide\nContributions to these notes are very much appreciated; anything from one-character typo corrections to new chapters or rewrites. The GitHub repository for this project provides a Pull Request system for submitting contributions. See https://happygitwithr.com/pr-extend for an explanation of the pull request system and the available R utility functions for working with pull requests.",
@@ -1473,8 +1473,8 @@
     ]
   },
   {
-    "objectID": "Contributing.html#style-guide",
-    "href": "Contributing.html#style-guide",
+    "objectID": "CONTRIBUTING.html#style-guide",
+    "href": "CONTRIBUTING.html#style-guide",
     "title": "Appendix K — Contributing to rme",
     "section": "",
     "text": "Every abstract concept (definition or theorem) should have at least one concrete example immediately following it.\nMore structure (headers, labels) is better.\nMake each conceptual chunk as compact as possible:\n\nDecompose large, complicated, difficult concepts into smaller, simpler, and easier pieces.\nDecompose long derivations into smaller lemmas.\nWhen manipulating part of a larger expression, isolate that part in a lemma.",
@@ -1484,8 +1484,8 @@
     ]
   },
   {
-    "objectID": "Contributing.html#fixing-typos",
-    "href": "Contributing.html#fixing-typos",
+    "objectID": "CONTRIBUTING.html#fixing-typos",
+    "href": "CONTRIBUTING.html#fixing-typos",
     "title": "Appendix K — Contributing to rme",
     "section": "K.2 Fixing typos",
     "text": "K.2 Fixing typos\nThis book is written using Quarto. You can fix typos, spelling mistakes, or grammatical errors directly using the GitHub web interface by making changes in the corresponding source file. This generally means you’ll need to edit a .qmd file.",
@@ -1495,8 +1495,8 @@
     ]
   },
   {
-    "objectID": "Contributing.html#bigger-changes",
-    "href": "Contributing.html#bigger-changes",
+    "objectID": "CONTRIBUTING.html#bigger-changes",
+    "href": "CONTRIBUTING.html#bigger-changes",
     "title": "Appendix K — Contributing to rme",
     "section": "K.3 Bigger changes",
     "text": "K.3 Bigger changes\nIf you want to make a bigger change, it’s a good idea to first file an issue and make sure someone from the development team agrees that it’s needed.\n\nK.3.1 Pull request process\n\nFork the package and clone onto your computer. If you haven’t done this before, we recommend using usethis::create_from_github(\"d-morrison/rme\", fork = TRUE).\nInstall all development dependencies with devtools::install_dev_deps(). Make sure you can build the book by running quarto render in a Terminal.\nCreate a Git branch for your pull request (PR). We recommend using usethis::pr_init(\"brief-description-of-change\"). Details at https://usethis.r-lib.org/articles/pr-functions.html\nMake your changes, commit to git, and then create a PR by running usethis::pr_push(), and following the prompts in your browser. The title of your PR should briefly describe the change. The body of your PR should contain Fixes #issue-number.\nAdd a bullet to the top of NEWS.md (i.e. just below the first header). Follow the style described in https://style.tidyverse.org/news.html.\n\n\n\nK.3.2 Code style\n\nNew code should follow the tidyverse style guide. You can use the styler package to apply these styles, but please don’t restyle code that has nothing to do with your PR.",
@@ -1506,8 +1506,8 @@
     ]
   },
   {
-    "objectID": "Contributing.html#code-of-conduct",
-    "href": "Contributing.html#code-of-conduct",
+    "objectID": "CONTRIBUTING.html#code-of-conduct",
+    "href": "CONTRIBUTING.html#code-of-conduct",
     "title": "Appendix K — Contributing to rme",
     "section": "K.4 Code of Conduct",
     "text": "K.4 Code of Conduct\nPlease note that the rme project is released with a Contributor Code of Conduct. By contributing to this project you agree to abide by its terms.",
@@ -1517,8 +1517,8 @@
     ]
   },
   {
-    "objectID": "Contributing.html#additional-references",
-    "href": "Contributing.html#additional-references",
+    "objectID": "CONTRIBUTING.html#additional-references",
+    "href": "CONTRIBUTING.html#additional-references",
     "title": "Appendix K — Contributing to rme",
     "section": "K.5 Additional references",
     "text": "K.5 Additional references\nFor a detailed discussion on contributing to this and other projects, please see the Tidyverse development contributing guide and the Tidyverse code review principles. This project is not part of the tidyverse, but we have borrowed their development processes.",
