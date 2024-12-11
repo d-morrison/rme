@@ -21,6 +21,19 @@ jobs:
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@HEAD
 
+      - uses: r-lib/actions/setup-r@HEAD
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@HEAD
+        with:
+          needs: |
+            connect
+            website
+          extra-packages: |
+            local::.
+            any::pkgdown
+
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@HEAD
         with:
