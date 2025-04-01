@@ -1,0 +1,707 @@
+
+### Odds and probabilities
+
+::: notes
+In logistic regression, we will make use of a mathematically-convenient transformation of probability, called *odds*.
+:::
+
+:::{#def-odds}
+#### Odds
+The **odds** of an outcome $A$, which we will represent using $\odds$ ("omega"), is the probability that the outcome occurs, divided by the probability that it doesn't occur:
+
+$$\odds(A) \eqdef \frac{\Pr(A)}{\Pr(\neg A)}$$
+:::
+
+---
+
+:::{#thm-prob-to-odds}
+If the probability of an outcome $A$ is $\Pr(A)=\pi$,
+then the corresponding odds of $A$ is:
+
+$$\oddsf{\pi} = \frac{\pi}{1-\pi}$$ {#eq-odds-probs}
+
+:::
+
+---
+
+:::{.proof}
+$$
+\ba
+\Pr(\neg A) &= 1 - \Pr(A)
+\\ &= 1 - \pi
+\ea
+$$
+
+$$
+\ba
+\tf \odds(A) &\eqdef \frac{\Pr(A)}{\Pr(\neg A)}
+\\ &= \frac{\pi}{1-\pi}
+\ea
+$$
+
+:::
+
+---
+
+::: notes
+[Function @eq-odds-probs], which transforms probabilities into odds, can be called the **odds function**. @fig-odds-probs graphs the shape of this function.
+:::
+
+```{r}
+#| code-fold: true
+#| label: fig-odds-probs
+#| fig-cap: "Odds versus probability"
+
+odds = function(pi) pi / (1 - pi)
+library(ggplot2)
+ggplot() +
+  geom_function(
+    fun = odds,
+    arrow = arrow(ends = "last"),
+    mapping = aes(col = "odds function")
+  ) +
+  xlim(0, .99) +
+  xlab("Probability") +
+  ylab("Odds") +
+  geom_abline(aes(
+    intercept = 0,
+    slope = 1,
+    col = "y=x"
+  )) +
+  theme_bw() +
+  labs(colour = "") +
+  theme(legend.position = "bottom")
+
+```
+
+---
+
+:::{#exm-odds}
+
+#### Computing odds from probabilities
+
+In @exr-probs, we estimated that the probability of MI, given OC use, is $\pi(OC) \eqdef \Pr(MI|OC) = `r 13/5000`$. If this estimate is correct, then the odds of MI, given OC use, is:
+
+```{r}
+#| include: false
+#| label: compute-odds-from-prob
+pi_OC = 13/5000
+odds_OC = odds(pi_OC)
+```
+
+
+$$
+\begin{aligned}
+\odds(OC)
+&\eqdef \frac{\Pr(MI|OC)}{\Pr(\neg MI|OC)}\\
+&=\frac{\Pr(MI|OC)}{1-\Pr(MI|OC)}\\
+&=\frac{\pi(OC)}{1-\pi(OC)}\\
+&=\frac{`r 13/5000`}{1-`r 13/5000`}\\
+&\approx `r odds_OC |> round(digits = 6) |> as.character()`
+\end{aligned}
+$$
+
+:::
+
+---
+
+:::{#exr-odds}
+
+#### Computing odds from probabilities
+
+Estimate the odds of MI, for non-OC users.
+
+::::{.solution}
+```{r, include = FALSE}
+pi_nOC = 7 / 10000
+odds_nOC = pi_nOC / (1 - pi_nOC)
+```
+
+$$
+\odds(\neg OC) = `r odds_nOC`
+$$
+
+::::
+
+:::
+
+---
+
+:::{#thm-est-odds}
+#### One-sample MLE for odds
+
+Let $X_1,...X_n$ be a set of $n$ $\iid$ Bernoulli trials, and let $X = \sumin X_i$ be their sum.
+
+Then the maximum likelihood estimate of the odds of $X=1$, $\odds$, is:
+
+$$
+\hat{\odds}= \frac{x}{n-x}
+$$
+
+:::
+
+---
+
+::: proof
+
+$$
+\begin{aligned}
+1-\hat\pi
+&= 1-\frac{x}{n}\\
+&= \frac{n}{n} - \frac{x}{n}\\
+&= \frac{n - x}{n}
+\end{aligned}
+$$
+
+Thus, the estimated odds is:
+
+$$
+\begin{aligned}
+\frac{\hat\pi}{1-\hat\pi}
+&= \frac{\left(\frac{x}{n}\right)}{\left(\frac{n-x}{n}\right)}\\
+&= \frac{x}{n-x}
+\end{aligned}
+$$
+
+:::: notes
+That is, odds can be calculated directly as "# events" divided by "# nonevents" (without needing to calculate $\hat\pi$ and $1-\hat\pi$ first).
+::::
+
+:::
+
+---
+
+::::{#exm-odds-shortcut}
+
+#### calculating odds using the shortcut
+In @exm-odds, we calculated
+$$
+\begin{aligned}
+\odds(OC)
+&=`r (13/5000)/(1- (13/5000))`
+\end{aligned}
+$$
+
+Let's recalculate this result using our shortcut.
+
+::::
+
+---
+
+::::{#sol-odds-shortcut}
+$$
+\begin{aligned}
+\odds(OC)
+&=\frac{13}{5000-13}\\
+&=`r (13)/(5000- 13)`
+\end{aligned}
+$$
+
+Same answer as in @exm-odds!
+
+::::
+
+---
+
+:::{#thm-odds-simplified}
+
+#### Simplified expression for odds function
+
+::: notes
+An equivalent expression for the odds function is
+:::
+
+$$
+\oddsf{\pi} = \invf{\invf{\pi}-1)}
+$$ {#eq-odds-reduced}
+
+:::
+
+---
+
+:::{#exr-odds2}
+Prove that @eq-odds-reduced is equivalent to @def-odds.
+:::
+
+---
+
+:::{#thm-deriv-odds}
+#### Derivative of odds function
+
+$$\doddsf{\pi} = \frac{1}{\sqf{1-\pi}}$$
+:::
+
+---
+
+::: proof
+$$
+\ba
+\doddsf{\pi}
+   &= \deriv{\pi}\paren{\frac{\pi}{1-\pi}}
+\\ &=  \frac {\deriv{\pi}\pi} {1-\pi} -
+       \paren{\frac{\pi}{\sqf{1-\pi}} \cd \deriv{\pi}\paren{1-\pi}}
+\\ &=  \frac{1}{1-\pi} - \frac{\pi}{\sqf{1-\pi}} \cd (-1)
+\\ &=  \frac{1}{1-\pi} + \frac{\pi}{\sqf{1-\pi}}
+\\ &=  \frac{1-\pi}{\sqf{1-\pi}} + \frac{\pi}{\sqf{1-\pi}}
+\\ &=  \frac{1-\pi + \pi}{\sqf{1-\pi}}
+\\ &=  \frac{1}{\sqf{1-\pi}}
+\ea
+$$
+
+:::
+
+---
+
+#### Odds of rare events
+
+For rare events (small $\pi$), odds and probabilities are nearly equal, because $1-\pi \approx 1$ (see @fig-odds-probs).
+
+For example, in @exm-odds, the probability and odds differ by $`r abs(pi_OC - odds_OC)`$.
+
+---
+
+:::{#exr-odds-probs}
+
+What odds value corresponds to the probability $\pi = 0.2$, and what is the numerical difference between these two values?
+
+:::
+
+---
+
+::::{.solution}
+$$
+\odds = \frac{\pi}{1-\pi}
+=\frac{.2}{.8}
+= .25
+$$
+::::
+
+---
+
+:::{#thm-odds-minus-probs}
+
+Let $\odds = \frac{\pi}{1-\pi}$. Then:
+
+$$\odds - \pi =  \odds \cd \pi$$
+
+:::
+
+---
+
+:::{#exr-odds-minus-probs}
+
+Prove @thm-odds-minus-probs.
+
+:::
+
+---
+
+::: solution
+
+$$
+\ba
+\odds - \pi
+&= \frac{\pi}{1-\pi} - \pi
+\\ &= \frac{\pi}{1-\pi} - \frac{\pi(1-\pi)}{1-\pi}
+\\ &= \frac{\pi}{1-\pi} - \frac{\pi - \pi^2}{1-\pi}
+\\ &= \frac{\pi - (\pi - \pi^2)}{1-\pi}
+\\ &= \frac{\pi - \pi + \pi^2}{1-\pi}
+\\ &= \frac{\pi^2}{1-\pi}
+\\ &= \frac{\pi}{1-\pi} \pi
+\\ &= \odds \pi
+\ea
+$$
+
+:::
+
+---
+
+:::{#lem-odds-neg}
+#### Odds of a non-event
+
+If $\pi$ is the odds of event $A$
+and $\odds$ is the corresponding odds of $A$,
+then the odds of $\neg A$ are:
+
+$$
+\odds(\neg A) = \frac{1-\pi}{\pi}
+$$
+
+:::
+
+::: proof
+Left to the reader.
+:::
+
+---
+
+### The inverse odds function
+
+:::{#def-inv-odds}
+
+##### inverse odds function
+The **inverse odds function**,
+
+$$\invoddsf{\odds} \eqdef \frac{\odds}{1 + \odds}$$
+converts odds into their corresponding probabilities (@fig-inv-odds).
+:::
+
+::: notes
+The inverse-odds function takes an odds as input and produces a probability as output. Its domain of inputs is $[0,\infty)$ and its range of outputs is $[0,1]$.
+
+I haven't seen anyone give the inverse-odds function a concise name; maybe $\text{prob}()$?
+:::
+
+---
+
+```{r}
+#| label: fig-inv-odds
+#| fig-cap: The inverse odds function, $\invoddsf{\odds}$
+odds_inv = function(omega) (1 + omega^-1)^-1
+ggplot() +
+  geom_function(fun = odds_inv, aes(col = "inverse-odds")) +
+  xlab("Odds") +
+  ylab("Probability") +
+  xlim(0,5) +
+  ylim(0,1) +
+  geom_abline(aes(intercept = 0, slope = 1, col = "x=y"))
+```
+
+---
+
+:::{#exr-odds-probs}
+
+What probability corresponds to an odds of $\odds = 1$, and what is the numerical difference between these two values?
+
+:::
+
+---
+
+::::{.solution}
+$$
+\pi(1) = \frac{1}{1+1}
+=\frac{1}{2}
+= .5
+$$
+$$
+1 - \pi(1) = 1 - .5 = .5
+$$
+
+::::
+
+---
+
+:::{#lem-invodds-simplified}
+
+##### Simplified expression for inverse odds function
+
+::: notes
+An equivalent expression for the inverse odds function is
+:::
+
+$$
+\pi(\odds) = (1+\odds^{-1})^{-1}
+$$ {#eq-inv-odds-reduced}
+
+:::
+
+---
+
+:::{#exr-inv-odds2}
+Prove that @eq-inv-odds-reduced is equivalent to @def-inv-odds.
+:::
+
+---
+
+
+:::{#lem-one-minus-odds-inv}
+#### One minus inverse-odds
+
+
+$$1 - \oddsinvf{\odds} = \frac{1}{1+\odds}$$
+:::
+
+---
+
+::: {.proof}
+
+$$
+\ba
+1 - \oddsinvf{\odds} &= 1 - \frac{\odds}{1 + \odds}
+\\ &= \frac{\red{1+\odds}}{1 + \odds} - \frac{\blue{\odds}}{1 + \odds}
+\\ &= \frac{\red{(1+\odds)} - \blue{\odds}}{1 + \odds}
+\\ &= \frac{1 + \odds - \odds}{1 + \odds}
+\\ &= \frac{1}{1 + \odds}
+\ea
+$$
+:::
+
+---
+
+:::{#thm-inverse-odds-nonevent}
+
+If $\odds$ is the odds of event $A$,
+then the probability that $A$ does not occur is:
+
+$$\Pr(\neg A) = \frac{1}{1+\odds}$$
+:::
+
+---
+
+::: proof
+
+:::: notes
+Use @lem-one-minus-odds-inv:
+::::
+
+$$
+\ba
+\Pr(\neg A)
+&= 1 - \Pr(A)
+\\ &= 1 - \oddsinvf{\odds}
+\\ &= \frac{1}{1 + \odds}
+\ea
+$$
+:::
+
+---
+
+:::{#thm-deriv-invodds}
+
+##### Derivative of inverse odds function
+$$\doddsinvf{\odds} = \frac{1}{\sqf{1+\odds}}$$
+:::
+
+---
+
+::: proof
+
+:::: notes
+Use the quotient rule:
+::::
+
+$$
+\ba
+{\oddsinv}'(\odds)
+&= \deriv{\odds} \oddsinvf{\odds}
+\\ &= \deriv{\odds} \frac{\odds}{1+\odds}
+\\ &= \frac{\deriv{\odds}\odds}{1+\odds} - \frac{\odds}{\sqf{1+\odds}} \cd \deriv{\odds}(1+\odds)
+\\ &= \frac{1}{1+\odds} - \frac{\odds}{\sqf{1+\odds}} \cd 1
+\\ &= \frac{1}{1+\odds} - \frac{\odds}{\sqf{1+\odds}}
+\\ &= \frac{1+\odds}{\sqf{1+\odds}} - \frac{\odds}{\sqf{1+\odds}}
+\\ &= \frac{1+\odds - \odds}{\sqf{1+\odds}}
+\\ &= \frac{1}{\sqf{1+\odds}}
+\ea
+$$
+
+:::
+
+---
+
+
+:::{#cor-deriv-invodds}
+
+$$\doddsinvf{\odds} = \sqf{1 - \oddsinvf{\odds}}$$
+:::
+
+---
+
+### Odds ratios
+
+::: notes
+
+Now that we have defined odds, we can introduce another way of comparing event probabilities: odds ratios.
+
+:::
+
+:::{#def-OR}
+##### Odds ratio
+The **odds ratio** for two odds $\odds_1$, $\odds_2$ is their ratio:
+
+$$\theta(\odds_1, \odds_2) = \frac{\odds_1}{\odds_2}$$
+
+:::
+
+---
+
+:::{#exm-OR}
+#### Calculating odds ratios
+In @exm-oc-mi, the odds ratio for OC users versus OC-non-users is:
+
+$$
+\begin{aligned}
+\theta(\odds(OC), \odds(\neg OC))
+&= \frac{\odds(OC)}{\odds(\neg OC)}\\
+&= \frac{`r pi_OC`}{`r pi_nOC`}\\
+&= `r pi_OC / pi_nOC`\\
+\end{aligned}
+$$
+:::
+
+---
+
+#### A shortcut for calculating odds ratio estimates {.smaller}
+
+::: notes
+The general form of a two-by-two table is shown in @tbl-2x2-generic.
+
+
+|               | Event | Non-Event | Total
+|-------------- | ------ | ---------- | -----
+|Exposed        | a      | b | a+b
+|Non-exposed    | c      | d | c+d
+|Total         | a+c   | b+d | a+b+c+d
+
+: A generic 2x2 table {#tbl-2x2-generic}
+
+:::
+
+::: notes
+From this table, we have:
+:::
+
+* $\hat\pi(Event|Exposed) = a/(a+b)$
+
+* $\hat\pi(\neg Event|Exposed) = b/(a+b)$
+
+* $\hat\odds(Event|Exposed) = \frac{\left(\frac{a}{a+b}\right)}{\left(\frac{b}{a+b}\right)}=\frac{a}{b}$
+
+* $\hat\odds(Event|\neg Exposed) = \frac{c}{d}$
+(see @exr-odds-generic)
+
+* $\theta(Exposed,\neg Exposed) = \frac{\frac{a}{b}}{\frac{c}{d}} = \frac{ad}{bc}$
+
+---
+
+:::{#exr-odds-generic}
+Given @tbl-2x2-generic, show that $\hat\odds(Event|\neg Exposed) = \frac{c}{d}$.
+:::
+
+---
+
+#### Properties of odds ratios {#sec-OR-props}
+
+{{< include _sec_ORs_reversible.qmd >}}
+
+#### Odds Ratios vs Probability (Risk) Ratios {#sec-OR-RR}
+
+::: notes
+When the outcome is rare (i.e., its probability is small) for both groups being compared in an odds ratio, the odds of the outcome will be similar to the probability of the outcome, and thus the risk ratio will be similar to the odds ratio.
+:::
+
+##### Case 1: rare events
+
+For rare events, odds ratios and probability (a.k.a. risk, a.k.a.
+prevalence) ratios will be close:
+
+$\pi_1 = .01$ $\pi_2 = .02$
+
+```{r "rare events or-rr"}
+pi1 = .01
+pi2 = .02
+pi2/pi1
+odds(pi2)/odds(pi1)
+
+```
+
+---
+
+:::{#exm-or-rr-OC-MI}
+In @exm-oc-mi, the outcome is rare for both OC and non-OC participants, so the odds for both groups are similar to the corresponding probabilities, and the odds ratio is similar the risk ratio.
+:::
+
+---
+
+##### Case 2: frequent events
+
+$\pi_1 = .4$ $\pi_2 = .5$
+
+For more frequently-occurring outcomes, this won't be the case:
+
+```{r}
+pi1 = .4
+pi2 = .5
+pi2/pi1
+odds(pi2)/odds(pi1)
+
+```
+
+---
+
+
+#### Odds Ratios in Case-Control Studies
+
+::: notes
+@tbl-oc-mi simulates a follow-up study in which two populations were followed and the number of MI’s was observed.
+The risks are $P(MI|OC)$ and $P(MI|\neg OC)$ and we can estimate these risks from the data.
+
+But suppose we had a case-control study in which we had 100 women with MI and selected a comparison group of 100 women without MI (matched as groups on age, etc.).
+Then MI is not random, and we cannot compute P(MI|OC) and we cannot compute the risk ratio.
+However, the odds ratio however can be computed.
+
+The disease odds ratio is the odds for the disease in the exposed group divided by the odds for the disease in the unexposed group, and we cannot validly compute and use these separate parts.
+
+We can still validly compute and use the exposure odds ratio,
+which is the odds for exposure in the disease group divided by the odds for exposure in the non-diseased group
+(because exposure can be treated as random):
+
+:::
+
+$$
+\hth(OC|MI) =
+\frac{\hat{\odds}(OC|MI)}{\hat{\odds}(OC|\neg MI)}
+$$
+
+::: notes
+And these two odds ratios, $\hth(MI|OC)$ and $\hth(OC|MI)$,
+are mathematically equivalent, as we saw in @sec-OR-props:
+:::
+
+$$\hth(MI|OC) = \hth(OC|MI)$$
+
+---
+
+:::{#exr-or-rev}
+Calculate the odds ratio of MI with respect to OC use,
+assuming that @tbl-oc-mi comes from a case-control study.
+Confirm that the result is the same as in @exm-OR.
+
+---
+
+::::{.solution}
+
+::: {.content-visible when-format="revealjs"}
+
+```{r}
+#| label: tbl-oc-mi2
+#| tbl-cap: "Simulated data from study of oral contraceptive use and heart attack risk"
+tbl_oc_mi
+```
+:::
+
+* $\odds(OC|MI) = P(OC|MI)/(1 – P(OC|MI) = \frac{13}{7} = `r 13/7`$
+
+* $\odds(OC|\neg MI) = P(OC|\neg MI)/(1 – P(OC|\neg MI) = \frac{4987}{9993} = `r 4987/9993`$
+
+* $\theta(OC,MI) = \frac{\odds(OC|MI)}{\odds(OC|\neg MI)} = \frac{13/7}{4987/9993} = `r (13/7)/(4987/9993)`$
+
+::: notes
+This is the same estimate we calculated in @exm-OR.
+:::
+
+::::
+
+:::
+
+---
+
+#### Odds Ratios in Cross-Sectional Studies
+
+* If a cross-sectional study is a probability sample of a population (which it rarely is) then we can estimate risks.
+
+* If it is a sample, but not an unbiased probability sample, then we need to treat it in the same way as a case-control study.
+
+* We can validly estimate odds ratios in either case.
+
+* But we can usually not validly estimate risks and risk ratios.
+
