@@ -1,0 +1,183 @@
+```{r}
+#| tbl-cap: "Needle-sharing data"
+#| label: tbl-needle-data
+library(tidyverse)
+library(haven)
+needles = 
+  "inst/extdata/needle_sharing.dta" |> 
+  read_dta() |>
+  as_tibble() |>
+  mutate(
+    hivstat =
+      hivstat |>
+      case_match(
+        1 ~ "HIV+",
+        0 ~ "HIV-") |> 
+      factor() |> 
+      relevel(ref = "HIV-"),
+    polydrug =
+      polydrug |>
+      case_match(
+        1 ~ "multiple drugs used",
+        0 ~ "one drug used") |>
+      factor() |>
+      relevel(ref = "one drug used"),
+    homeless = 
+      homeless |> 
+      case_match(
+        1 ~ "homeless", 
+        0 ~ "not homeless") |>
+      factor() |>
+      relevel(ref = "not homeless"),
+    sex = sex |> factor() |> relevel(ref = "M"))
+needles
+```
+
+---
+
+```{r}
+#| fig-cap: "Rates of needle sharing"
+#| label: fig-needles
+library(ggplot2)
+
+needles |> 
+  ggplot(
+    aes(
+      x = age,
+      y = shared_syr,
+      shape = sex,
+      col = ethn
+    )
+  ) + 
+  geom_point(
+    size = 3, 
+    alpha = .5) +
+  facet_grid(
+    cols = vars(sex, polydrug), 
+    rows = vars(homeless)) +
+  theme(legend.position = "bottom")
+```
+
+#### Covariate counts
+
+```{r}
+#| tbl-cap: "Counts of observations in `needles` dataset by sex, unhoused status, and multiple drug use"
+#| label: tbl-count-needles
+#| code-fold: show
+needles |> 
+  dplyr::select(sex, homeless, polydrug) |> 
+  summary()
+```
+
+---
+
+There's only one individual with `sex = Trans`, 
+which unfortunately isn't enough data to analyze.
+We will remove that individual:
+
+```{r}
+#| label: remove-trans-obs
+#| code-summary: 'remove singleton observation with sex == Trans'
+needles = needles |> filter(sex != "Trans")
+
+```
+
+---
+
+### models {.smaller}
+
+```{r}
+#| include: false
+#| label: needles-pois-model-vittinghoff
+glm0 = glm(
+  data = needles,
+  family = stats::poisson,
+  formula = shared_syr ~ homeless
+)
+```
+
+```{r}
+#| tbl-cap: "Poisson model for needle-sharing data"
+#| label: tbl-needles-pois
+glm1 = glm(
+  data = needles,
+  family = stats::poisson,
+  shared_syr ~ age + sex + homeless*polydrug
+)
+
+library(parameters)
+glm1 |> parameters(exponentiate = TRUE) |> 
+  print_md()
+```
+
+
+```{r}
+#| tbl-cap: "Diagnostics for Poisson model"
+#| label: tbl-pois-model-diagnostics
+library(ggfortify)
+autoplot(glm1)
+```
+
+--
+
+```{r}
+#| tbl-cap: "Negative binomial model for needle-sharing data"
+#| label: tbl-needles-nb
+library(MASS) #need this for glm.nb()
+glm1.nb = glm.nb(
+  data = needles,
+  shared_syr ~ age + sex + homeless*polydrug
+)
+summary(glm1.nb)
+```
+
+```{r}
+#| tbl-cap: "Poisson versus Negative Binomial Regression coefficient estimates"
+#| label: tbl-compare-poisson-nb
+tibble(name = names(coef(glm1)), poisson = coef(glm1), nb = coef(glm1.nb))
+```
+
+#### zero-inflation
+
+```{r}
+#| tbl-cap: "Zero-inflated poisson model"
+#| label: tbl-zeroinf-poisson
+library(glmmTMB)
+zinf_fit1 = glmmTMB(
+  family = "poisson",
+  data  = needles,
+  formula = shared_syr ~ age + sex + homeless*polydrug,
+  ziformula = ~ age + sex + homeless + polydrug # fit won't converge with interaction
+)
+
+zinf_fit1 |> 
+  parameters(exponentiate = TRUE) |> 
+  print_md()
+
+```
+
+::: notes
+
+Another R package for zero-inflated models is [`pscl`](https://cran.r-project.org/web/packages/pscl/index.html) (@pscl08).
+
+:::
+
+#### zero-inflated negative binomial model
+
+```{r}
+#| tbl-cap: "Zero-inflated negative binomial model"
+#| label: tbl-zeroinf-nb
+library(glmmTMB)
+zinf_fit1 = glmmTMB(
+  family = nbinom2,
+  data  = needles,
+  formula = shared_syr ~ age + sex + homeless*polydrug,
+  ziformula = ~ age + sex + homeless + polydrug # fit won't converge with interaction
+)
+
+zinf_fit1 |> 
+  parameters(exponentiate = TRUE) |> 
+  print_md()
+
+```
+

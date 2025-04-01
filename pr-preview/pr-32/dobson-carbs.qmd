@@ -1,0 +1,34 @@
+
+
+::::: {.panel-tabset}
+
+#### `carbohydrate` data
+```{r}
+carbohydrate
+```
+
+#### categorize age and weight
+```{r}
+cb = carbohydrate |> 
+  mutate(
+    ageCat = cut(age, breaks = quantile(age), include.lowest = TRUE),
+    wgtCat = cut(weight, breaks = quantile(weight), include.lowest = TRUE)
+    )
+
+model_cb = lm(carbohydrate ~ (ageCat:wgtCat) * protein, data = cb)
+
+cb = cb |> mutate(predlm = predict(model_cb)) 
+```
+
+#### graph data
+
+```{r}
+cb |> 
+  ggplot(aes(x = protein, y = carbohydrate)) +
+  facet_grid(rows = vars(ageCat), cols = vars(wgtCat)) +
+  geom_point()
+  
+```
+
+
+:::::

@@ -1,0 +1,38 @@
+---
+title: "stroke-bayes"
+---
+
+```{r}
+#| tbl-cap: "Stroke data (@dobson4e Table 11.1)"
+data(stroke.wide, package = "dobson")
+stroke.wide
+```
+
+```{r}
+library(runjags)
+library(dplyr)
+
+library(reshape2)
+stroke = melt(data=stroke.wide, id.vars=c('Subject','Group'), 
+              value.name='ability', variable.name='week') |> 
+  mutate(
+    time = as.numeric(gsub('week', '', week)),
+    Group = as.numeric(as.factor(Group)),
+  ) |> 
+  rename(group = Group) |> 
+  as_tibble() |> 
+  select(-c(Subject, week))
+```
+
+```{r}
+jags.post <- run.jags(
+  model = "inst/extdata/stroke.bugs.R",
+  data = c(
+    stroke, 
+    times = max(stroke$time),
+    N = stroke |> nrow()),
+  monitor = "p")
+
+jags.post0$mcmc |> as.array() |> head()
+```
+

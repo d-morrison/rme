@@ -1,0 +1,109 @@
+# Introduction to Bayesian inference
+
+---
+
+{{< include shared-config.qmd >}}
+
+---
+
+Suppose $X_1,...,X_n \siid N(M,1)$
+
+Suppose $M \sim N(0, 1)$.
+
+Then:
+$$
+\ba
+p(M=\mu|X=x) 
+&\propto p(M=\mu, X=x)\\
+&= p(X=x|M=\mu) p(M=\mu)\\
+&\propto \exp{-\frac{1}{2}n\mu^2 - 2\mu n\bar{x}}
+\exp{-\frac{1}{2} \mu^2}\\
+&= \exp{-\frac{1}{2}(n+1)\mu^2 - 2\mu n\bar{x}}\\
+&\propto \exp{-\frac{1}{2}(n+1)(\mu -  \frac{n}{n+1}\bar{x})^2}
+\ea
+$$
+So: 
+$$p(M=\mu|X=x) \sim N(\frac{n}{n+1}\bar{x}, (n+1)^{-1})$$
+
+Let's put this in perspective.
+
+Here's a frequentist CI:
+
+```{r}
+set.seed(1)
+mu = 2
+sigma = 1
+n = 20
+x = rnorm(n = n, mean = mu, sd = sigma)
+xbar = mean(x)
+se = sigma/sqrt(n)
+CI_freq = xbar + se * qnorm(c(.025, .975))
+print(CI_freq)
+```
+
+```{r}
+lik0 = function(mu) prod(dnorm(x = x , mean = mu, sd = 1))
+lik = function(mu) 
+  (2*pi*sigma^2)^(-n/2) * 
+  exp(
+    -1/(2*sigma^2) * 
+      (sum(x^2) -2*mu *sum(x) + n *(mu^2)))
+# llik2 = function(mu) dnorm(xbar, mean = mu, sd = se)
+library(ggplot2)
+ngraph = 1001
+plot1 = ggplot() +
+  geom_function(fun = lik, aes(col = "likelihood"), n = ngraph) +
+  xlim(c(-5,10)) +
+  theme_bw() +
+  labs(col = "") +
+  theme(legend.position = "bottom")
+print(plot1)
+```
+
+
+Here's a Bayesian CI:
+
+```{r}
+mu_prior_mean = 0
+mu_prior_sd = 1
+mu_post_mean = n/(n+1) * xbar
+mu_post_var = 1/(n+1)
+mu_post_sd = sqrt(mu_post_var)
+CI_bayes = qnorm(
+  p = c(.025, .975),
+  mean = mu_post_mean,
+  sd = mu_post_sd
+)
+print(CI_bayes)
+prior = function(mu) dnorm(mu, mean = mu_prior_mean, sd = mu_prior_sd)
+posterior = function(mu) dnorm(mu, mean = mu_post_mean, sd = mu_post_sd)
+plot2 = plot1 +
+  geom_function(fun = prior, aes(col = "prior"), n = ngraph) +
+  geom_function(fun = posterior, aes(col = "posterior"), n = ngraph) 
+print(plot2 + scale_y_log10())
+
+```
+
+Here's $p(M \in (l(x),r(x))|X=x)$:
+
+```{r}
+pr_in_CI = pnorm(
+  CI_freq,
+  mean = mu_post_mean,
+  sd = mu_post_sd
+) |> diff()
+print(pr_in_CI)
+```
+
+## Other resources
+
+UC Davis courses
+
+- STA 145: Bayesian Statistical Inference
+- ECL 298: Bayesian Models - A Statistical Primer
+
+Books
+
+- [@rossbayes] is a free online textbook
+- "Population health thinking with Bayesian networks" [@aragon2018population] is on my to-read list
+
