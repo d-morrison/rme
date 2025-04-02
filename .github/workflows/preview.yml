@@ -8,6 +8,8 @@ on:
       - synchronize
       - closed
 
+concurrency: preview-${{ github.ref }}
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -37,6 +39,7 @@ jobs:
             any::pkgdown
 
       - name: Render
+        if: github.event.action != 'closed' # skip the build if the PR has been closed
         uses: quarto-dev/quarto-actions/render@v2
 
       - name: list files
