@@ -61,13 +61,14 @@ individually
 library(ggplot2)
 library(plotly)
 library(dplyr)
-ggpenguins <- 
-  palmerpenguins::penguins |> 
-  dplyr::filter(species == "Adelie") |> 
+ggpenguins <-
+  palmerpenguins::penguins |>
+  dplyr::filter(species == "Adelie") |>
   ggplot(
-    aes(x = bill_length_mm , y = body_mass_g)) +
-  geom_point() + 
-  xlab("Bill length (mm)") + 
+  ) +
+  aes(x = bill_length_mm, y = body_mass_g) +
+  geom_point() +
+  xlab("Bill length (mm)") +
   ylab("Body mass (g)")
 
 print(ggpenguins)
@@ -78,14 +79,15 @@ print(ggpenguins)
 ```{r}
 #| label: fig-palmer-2
 #| fig-cap: Palmer penguins with linear regression fit
-ggpenguins2 = 
+ggpenguins2 <-
   ggpenguins +
-  stat_smooth(method = "lm",
-              formula = y ~ x,
-              geom = "smooth")
+  stat_smooth(
+    method = "lm",
+    formula = y ~ x,
+    geom = "smooth"
+  )
 
 ggpenguins2 |> print()
-
 ```
 
 ### Curved regression lines
@@ -93,12 +95,13 @@ ggpenguins2 |> print()
 ```{r}
 #| label: fig-palmer-3
 #| fig-cap: Palmer penguins - curved regression lines
-ggpenguins2 = ggpenguins +
+ggpenguins2 <- ggpenguins +
   stat_smooth(
     method = "lm",
     formula = y ~ log(x),
-    geom = "smooth") +
-  xlab("Bill length (mm)") + 
+    geom = "smooth"
+  ) +
+  xlab("Bill length (mm)") +
   ylab("Body mass (g)")
 ggpenguins2
 ```
@@ -109,128 +112,152 @@ ggpenguins2
 #| label: fig-palmer-4
 #| fig-cap: "Palmer penguins - multiple groups"
 
-ggpenguins =
-  palmerpenguins::penguins |> 
+ggpenguins <-
+  palmerpenguins::penguins |>
   ggplot(
-    aes(x = bill_length_mm , 
-        y = body_mass_g,
-        color = species
+    aes(
+      x = bill_length_mm,
+      y = body_mass_g,
+      color = species
     )
   ) +
   geom_point() +
   stat_smooth(
     method = "lm",
     formula = y ~ x,
-    geom = "smooth") +
-  xlab("Bill length (mm)") + 
+    geom = "smooth"
+  ) +
+  xlab("Bill length (mm)") +
   ylab("Body mass (g)")
 ggpenguins |> print()
-
 ```
 
 ### Modeling non-Gaussian outcomes
 
+::: {#fig-beetles_1a}
+
 ```{r}
-#| label: fig-beetles_1a
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
 
 library(glmx)
 data(BeetleMortality)
-beetles = BeetleMortality |>
+beetles <- BeetleMortality |>
   mutate(
-    pct = died/n,
+    pct = died / n,
     survived = n - died
   )
 
-plot1 = 
-  beetles |> 
+plot1 <-
+  beetles |>
   ggplot(aes(x = dose, y = pct)) +
   geom_point(aes(size = n)) +
   xlab("Dose (log mg/L)") +
   ylab("Mortality rate (%)") +
   scale_y_continuous(labels = scales::percent) +
   # xlab(bquote(log[10]), bquote(CS[2])) +
-  scale_size(range = c(1,2))
+  scale_size(range = c(1, 2))
 
 print(plot1)
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
+
 ### Why don't we use linear regression?
 
+:::{#fig-beetles-plot1}
+
 ```{r}
-#| label: fig-beetles-plot1
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
-beetles_long = 
-  beetles  |> 
-  reframe(.by = everything(),
-          outcome = c(
-            rep(1, times = died), 
-            rep(0, times = survived))
+beetles_long <-
+  beetles |>
+  reframe(
+    .by = everything(),
+    outcome = c(
+      rep(1, times = died),
+      rep(0, times = survived)
+    )
   )
 
-lm1 = 
-  beetles_long |> 
+lm1 <-
+  beetles_long |>
   lm(
-    formula = outcome ~ dose, 
-    data = _)
+    formula = outcome ~ dose,
+    data = _
+  )
 
 
-range1 = range(beetles$dose) + c(-.2, .2)
+range1 <- range(beetles$dose) + c(-.2, .2)
 
-f.linear = function(x) predict(lm1, newdata = data.frame(dose = x))
+f_linear <- function(x) predict(lm1, newdata = data.frame(dose = x))
 
-plot2 = 
-  plot1 + 
-  geom_function(fun = f.linear, aes(col = "Straight line")) +
-  labs(colour="Model", size = "")
+plot2 <-
+  plot1 +
+  geom_function(fun = f_linear, aes(col = "Straight line")) +
+  labs(colour = "Model", size = "")
 print(plot2)
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to 
+gaseous carbon disulphide (Bliss 1935)
+
+:::
+
 ### Zoom out
 
+:::{#fig-beetles2}
 ```{r}
-#| label: fig-beetles2
-#| fig-cap: Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
 #| echo: false
 print(plot2 + expand_limits(x = c(1.6, 2)))
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to 
+gaseous carbon disulphide (Bliss 1935)
+
+::::
+
 ### log transformation of dose?
 
+:::{#fig-beetles3}
 ```{r}
-#| label: fig-beetles3
-#| fig-cap: Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
 
-
-lm2 = 
-  beetles_long |> 
+lm2 <-
+  beetles_long |>
   lm(formula = outcome ~ log(dose), data = _)
 
-f.linearlog = function(x) predict(lm2, newdata = data.frame(dose = x))
+f_linearlog <- function(x) predict(lm2, newdata = data.frame(dose = x))
 
-plot3 = plot2 + 
+plot3 <- plot2 +
   expand_limits(x = c(1.6, 2)) +
-  geom_function(fun = f.linearlog, aes(col = "Log-transform dose"))
+  geom_function(fun = f_linearlog, aes(col = "Log-transform dose"))
 
-print(plot3  + expand_limits(x = c(1.6, 2)))
+print(plot3 + expand_limits(x = c(1.6, 2)))
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
 
 ### Logistic regression
 
-```{r}
-#| label: fig-beetles4b
-#| fig-cap: Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+:::{#fig-beetles4b}
 
-glm1 = beetles |> 
+```{r}
+
+glm1 <- beetles |>
   glm(formula = cbind(died, survived) ~ dose, family = "binomial")
 
-f = function(x) predict(glm1, newdata = data.frame(dose = x), type = "response")
+f <- function(x) {
+  glm1 |> 
+    predict(newdata = data.frame(dose = x), type = "response")
+}
 
-plot4 = plot3 + geom_function(fun = f, aes(col = "Logistic regression"))
+plot4 <- plot3 + geom_function(fun = f, aes(col = "Logistic regression"))
 print(plot4)
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
 
 ### Three parts to regression models
 
@@ -240,4 +267,3 @@ print(plot4)
 
 -   How do the covariates combine? (**linear predictor/linear component**)
 $$\eta \eqdef \vx \' \vb = \b_0 + \b_1 x_1 + \b_2 x_2 + ...$$
-
