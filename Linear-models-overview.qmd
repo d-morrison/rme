@@ -80,6 +80,7 @@ birthweight |> knitr::kable()
 ```{r}
 #| label: tbl-birthweight-data2
 #| tbl-cap: "`birthweight` data reshaped"
+library(tidyverse)
 bw = 
   birthweight |> 
   pivot_longer(
@@ -179,13 +180,14 @@ $$ {#eq-lm-parallel}
 #| label: tbl-lm-parallel
 #| tbl-cap: "Estimate of [Model @eq-lm-parallel] for `birthweight` data"
 
+library(parameters)
 bw_lm1 = lm(
   formula = weight ~ sex + age, 
   data = bw)
 
 bw_lm1 |> 
-  parameters() |>
-  print_md(
+  parameters::parameters() |>
+  parameters::print_md(
     include_reference = TRUE,
     # show_sigma = TRUE,
     select = "{estimate}")
@@ -1294,14 +1296,16 @@ bw_lm1 |>
     se.fit = TRUE)
 ```
 
-This is a `list()`; you can extract the elements with `$` or `magrittr::use_series()`:
+The output of `predict.lm(se.fit = TRUE)` is a `list()`; 
+you can extract the elements with `$` or `magrittr::use_series()`:
 
 ```{r}
+library(magrittr)
 bw_lm1 |> 
   predict(
     newdata = x,
     se.fit = TRUE) |> 
-  use_series(se.fit)
+  magrittr::use_series(se.fit)
 ```
 
 You can get **confidence intervals** for $\E{Y|X=x}$:
@@ -2200,7 +2204,18 @@ model.matrix(iris_lm2) |> as_tibble() |> unique()
 
 ```
 
-This is called a "corner point parametrization".
+This format is called a "corner point parametrization" 
+(e.g., in @dobson4e) or "treatment coding" (e.g., in @dunn2018generalized).
+
+The default contrasts are controlled by `options("contrasts")`:
+
+```{r}
+options("contrasts")
+```
+
+See `?options` for more details.
+
+---
 
 ```{r}
 #| label: tbl-iris-group-point-parameterization
@@ -2209,7 +2224,7 @@ model.matrix(iris.lm2b) |> as_tibble() |> unique()
 
 ```
 
-This can be called a "group point parametrization".
+This format is called a "group point parametrization" (e.g., in @dobson4e).
 
 There are more options; see @dobson4e §6.4.1 and the 
 [`codingMatrices` package](https://CRAN.R-project.org/package=codingMatrices) 
