@@ -183,14 +183,17 @@ ggplot() +
 
 ### Standard errors by sample size:
 
-Recall from previous sections that the asymptotic standard error of ${\widehat{\mu}}_{ML}$ is $\widehat{\text{SE}}\left({\widehat{\mu}}\right) = \sqrt{\left[\left(\hat{\mathcal{I}}\left(\widehat{\mu}_{ML}\right)\right)^{-1}\right]} = \frac{\hat{\sigma}}{\sqrt{n}}$
+Recall from @sec-covariance-matrix that 
+the asymptotic standard error of ${\widehat{\mu}}_{ML}$ is
+$\widehat{\text{SE}}\paren{{\widehat{\mu}}} = \sqrt{\left[\left(\hat{\mathcal{I}}\left(\widehat{\mu}_{ML}\right)\right)^{-1}\right]} = \frac{\hat{\sigma}}{\sqrt{n}}$
 
 
 ```{r}
 se.mu.hat <- function(n, sigma = sd(glucose_data)) sigma / sqrt(n)
 ggplot() +
   geom_function(fun = se.mu.hat) +
-  scale_x_continuous(trans = "log10", limits = c(10, 10^5), name = "Sample size") +
+  scale_x_log10(limits = c(10, 10^5), name = "Sample size",
+                labels = scales::label_comma()) +
   ylab("Standard error of mu (mg/dl)") +
   theme_classic()
 ```
@@ -199,7 +202,7 @@ ggplot() +
 
 #### Rejection region
 
-For example, suppose we wish to detect a difference from the hypothesized value $\mu_0 = 95$. We reject the null hypothesis for any mean value outside the interval 
+For example, suppose we wish to detect a difference from the hypothesized value $\mu_0 = 95$. We reject the null hypothesis for any mean value outside the "non-rejection interval" 
 $$ \mu_0 \pm  F^{-1}_{t(n-1)}(1-\alpha/2) \sqrt{\frac{\sigma^2}{n}} $$ 
 
 
@@ -213,11 +216,13 @@ upperbound <- mu_0 + margin
 lowerbound <- mu_0 - margin
 ```
 
-In this case, the interval is $[`r lowerbound`, `r upperbound`]$.
+In this case, the non-rejection interval is $[`r lowerbound`, `r upperbound`]$.
 
 #### Calculate power under a simple alternative
 
-Against the simple alternative that the true value is actually the estimated mean calculated from the data (i.e.$`r mu_hat`$). Let's also assume that the known standard deviation is what we estimated from the data.
+Consider the simple alternative that the true value is actually 
+the estimated mean calculated from the data (i.e. $`r mu_hat`$). 
+Let's also assume that the known standard deviation is what we estimated from the data.
 
 ```{r}
 prob_low <- pt(
@@ -237,6 +242,7 @@ print(power)
 ```
 
 #### Power as a function of sample size
+
 ```{r}
 power <- function(n = 100, null = 95, alt = 98.66) {
   # there's no such thing as fractional sample size:
