@@ -42,8 +42,8 @@ There are numerous textbooks specifically for linear regression, including:
 
 :::{.fragment .fade-in}
 * We will review linear regression to:
-    - make sure everyone is caught up
-    - to provide an epidemiological perspective on model interpretation.
+- make sure everyone is caught up
+- to provide an epidemiological perspective on model interpretation.
 :::
 
 ### Chapter overview
@@ -672,7 +672,7 @@ We will use some results from [vector calculus](math-prereqs.qmd#sec-vector-calc
 $$
 \begin{aligned}
 \deriv{\beta}\paren{\sum_{i=1}^n (y_i - x_i' \beta)^2} 
-   &= \deriv{\beta}(\vy - X\beta)'(\vy - X\beta)
+&= \deriv{\beta}(\vy - X\beta)'(\vy - X\beta)
 \\ &= \deriv{\beta} (y'y - 2y'X\beta +\beta'X'X\beta)
 \\ &= (- 2X'y +2X'X\beta)
 \\ &= - 2X'(y - X\beta)
@@ -956,7 +956,7 @@ print(confint_z)
 logLik(bw_lm2)
 logLik(bw_lm1)
 
-log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
+log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric() # nolint: object_name_linter
 delta_df <- (bw_lm1$df.residual - df.residual(bw_lm2))
 
 
@@ -969,13 +969,22 @@ x_max <- 1
 #| label: fig-chisq-plot
 #| fig-cap: "Chi-square distribution"
 
-d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)  # nolint: object_name_linter
 
 chisq_plot <-
   ggplot() +
   geom_function(fun = d_log_LR) +
-  stat_function(fun = d_log_LR, xlim = c(log_LR, x_max), geom = "area", fill = "gray") +
-  geom_segment(aes(x = log_LR, xend = log_LR, y = 0, yend = d_log_LR(log_LR)), col = "red") +
+  stat_function(fun = d_log_LR, 
+                xlim = c(log_LR, x_max), 
+                geom = "area", 
+                fill = "gray") +
+  geom_segment(
+    aes(
+      x = log_LR, xend = log_LR, y = 0, 
+      yend = d_log_LR(log_LR)
+    ), 
+    col = "red"
+  ) +
   xlim(0.0001, x_max) +
   ylim(0, 4) +
   ylab("p(X=x)") +
@@ -1054,26 +1063,31 @@ Large values of AIC and BIC are worse than small values. There are no hypothesis
 Let $q$ be the number of distinct covariate combinations in a data set.
 
 ```{r}
-bw.X.unique <-
+bw_X_unique <-  # nolint: object_name_linter
   bw |>
   count(sex, age)
 
-n_unique.bw <- nrow(bw.X.unique)
+n_unique_bw <- nrow(bw_X_unique)
 ```
 
-For example, in the `birthweight` data, there are $q = `r n_unique.bw`$ unique patterns (@tbl-bw-x-combos).
+For example, in the `birthweight` data, there are $q = `r n_unique_bw`$ unique patterns (@tbl-bw-x-combos).
+
+::: {#tbl-bw-x-combos}
 
 ```{r}
-#| tbl-cap: "Unique covariate combinations in the `birthweight` data, with replicate counts"
-#| label: tbl-bw-x-combos
-bw.X.unique
+bw_X_unique
 ```
+
+Unique covariate combinations in the `birthweight` data, with replicate counts
+
+:::
 
 ---
 
 ::: {#def-replicates}
 #### Replicates
-If a given covariate pattern has more than one observation in a dataset, those observations are called **replicates**.
+If a given covariate pattern has more than one observation in a dataset, 
+those observations are called **replicates**.
 :::
 
 ---
@@ -1107,7 +1121,7 @@ and females at age 40 weeks.
 40 weeks is the usual length for human pregnancy (@polin2011fetal), so this result makes sense.
 
 ```{r}
-bw.X.unique |> dplyr::filter(n == max(n))
+bw_X_unique |> dplyr::filter(n == max(n))
 ```
 
 :::
@@ -1250,8 +1264,8 @@ $$
 ### Example: prediction for the `birthweight` data
 
 ```{r}
-X <- c(1, 1, 40)
-sum(X * coef(bw_lm1))
+x <- c(1, 1, 40)
+sum(x * coef(bw_lm1))
 ```
 
 R has built-in functions for prediction:
@@ -1605,7 +1619,7 @@ bw <-
     fitted_lm2 = fitted(bw_lm2),
     resid_lm2 = resid(bw_lm2),
     resid_lm2_alt = weight - fitted_lm2,
-
+    
     std_resid_lm2 = rstandard(bw_lm2),
     std_resid_lm2_alt = resid_lm2 / sigma(bw_lm2)
   )
@@ -1775,11 +1789,15 @@ Regardless of whether we guessed the mean function correctly, ther the variance 
 ::: notes
 To look for these issues, we can plot the residuals $e_i$ against the fitted values $\hat y_i$ (@fig-bw_lm2-resid-vs-fitted).
 :::
+
+:::{#fig-bw_lm2-resid-vs-fitted}
+
 ```{r}
-#| label: fig-bw_lm2-resid-vs-fitted
-#| fig-cap: "`birthweight` model  (@eq-BW-lm-interact): residuals versus fitted values"
 autoplot(bw_lm2, which = 1, ncol = 1) |> print()
 ```
+
+`birthweight` model  (@eq-BW-lm-interact): residuals versus fitted values
+:::
 
 ::: notes
 If the model is correct, the blue line should stay flat and close to 0, and the cloud of dots should have the same vertical spread regardless of the fitted value.
@@ -1823,11 +1841,14 @@ We can also plot our standardized residuals against "leverage", which roughly sp
 
 :::
 
+::: {#fig-bw_lm2_resid-vs-leverage}
+
 ```{r}
-#| labels: fig-bw_lm2_resid-vs-leverage
-#| fig-cap: "`birthweight` model with interactions (@eq-BW-lm-interact): residuals versus leverage"
 autoplot(bw_lm2, which = 5, ncol = 1) |> print()
 ```
+
+`birthweight` model with interactions (@eq-BW-lm-interact): residuals versus leverage
+:::
 
 ::: notes
 The blue line should be relatively flat and close to 0 here.
@@ -1941,9 +1962,7 @@ cv_full <-
     y = carbohydrate$carbohydrate
   )
 
-reduced_model <- update(full_model,
-  formula = ~ . - age
-)
+reduced_model <- full_model |> update(formula = ~ . - age)
 
 cv_reduced <-
   reduced_model |> cvFit(
@@ -1981,8 +2000,19 @@ cv_results |>
 ```{r}
 compare_results <- tribble(
   ~model, ~cvRMSE, ~r.squared, ~adj.r.squared, ~trainRMSE, ~loglik,
-  "full", cv_full$cv, summary(full_model)$r.squared, summary(full_model)$adj.r.squared, sigma(full_model), logLik(full_model) |> as.numeric(),
-  "reduced", cv_reduced$cv, summary(reduced_model)$r.squared, summary(reduced_model)$adj.r.squared, sigma(reduced_model), logLik(reduced_model) |> as.numeric()
+  "full", 
+  cv_full$cv, 
+  summary(full_model)$r.squared, 
+  summary(full_model)$adj.r.squared, 
+  sigma(full_model), 
+  logLik(full_model) |> as.numeric(),
+  
+  "reduced", 
+  cv_reduced$cv, 
+  summary(reduced_model)$r.squared, 
+  summary(reduced_model)$adj.r.squared, 
+  sigma(reduced_model), 
+  logLik(reduced_model) |> as.numeric()
 )
 
 compare_results
@@ -2156,8 +2186,8 @@ If you don't want the default and offset option, you can use "-1" like we've see
 
 ```{r}
 #| label: tbl-iris-no-intcpt
-iris.lm2b <- lm(Sepal.Length ~ Species - 1, data = iris)
-iris.lm2b |>
+iris_lm2b <- lm(Sepal.Length ~ Species - 1, data = iris)
+iris_lm2b |>
   parameters() |>
   print_md()
 ```
@@ -2198,8 +2228,8 @@ This is called a "corner point parametrization".
 
 ```{r}
 #| label: tbl-iris-group-point-parameterization
-formula(iris.lm2b)
-model.matrix(iris.lm2b) |>
+formula(iris_lm2b)
+model.matrix(iris_lm2b) |>
   as_tibble() |>
   unique()
 ```
@@ -2249,6 +2279,4 @@ hers |> head()
 
 ---
 
-```{r}
-# C(contr = codingMatrices::contr.diff)
-```
+Check out `?codingMatrices::contr.diff`
