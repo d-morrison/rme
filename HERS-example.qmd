@@ -39,7 +39,7 @@ hers |> head()
 ---
 
 ```{r}
-n.obs <- 100 # we're going to take a small subset of the data to look at;
+n_obs <- 100 # we're going to take a small subset of the data to look at;
 # if we took the whole data set, the likelihood function would be hard to
 # graph nicely
 
@@ -50,7 +50,7 @@ data1 <-
     diabetes == 0,
     exercise == 0
   ) |>
-  head(n.obs)
+  head(n_obs)
 
 glucose_data <-
   data1 |>
@@ -105,7 +105,8 @@ it's often computationally more effective to construct the log-likelihood first 
 loglik <- function(
     mu, # I'm assigning default values, which the function will use
     # unless we tell it otherwise
-    sigma = sd(x), # note that you can define some defaults based on other arguments
+    sigma = sd(x), # note that you can define some default inputs
+                   #based on other arguments
     x = glucose_data,
     n = length(x)) {
   normalizing_constants <- -n / 2 * log((sigma^2) * 2 * pi)
@@ -161,7 +162,7 @@ ggplot() +
   geom_function(fun = function(x) lik(sigma = x, mu = mean(glucose_data))) +
   xlim(sd(glucose_data) * c(.9, 1.1)) +
   geom_vline(
-    xintercept = sd(glucose_data) * sqrt(n.obs - 1) / sqrt(n.obs),
+    xintercept = sd(glucose_data) * sqrt(n_obs - 1) / sqrt(n_obs),
     col = "red"
   ) +
   xlab("possible values for sigma") +
@@ -174,7 +175,7 @@ ggplot() +
   xlim(sd(glucose_data) * c(0.9, 1.1)) +
   geom_vline(
     xintercept =
-      sd(glucose_data) * sqrt(n.obs - 1) / sqrt(n.obs),
+      sd(glucose_data) * sqrt(n_obs - 1) / sqrt(n_obs),
     col = "red"
   ) +
   xlab("possible values for sigma") +
