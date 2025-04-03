@@ -430,7 +430,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-04-03: 2:30:30 (AM)</p>
+      <p class="date">Last modified: 2025-04-03: 3:12:09 (AM)</p>
     </div>
   </div>
   
@@ -2031,33 +2031,36 @@ Table&nbsp;F.4: HERS dataset
 </section><section id="power" class="level3" data-number="F.4.7"><h3 data-number="F.4.7" class="anchored" data-anchor-id="power">
 <span class="header-section-number">F.4.7</span> Power</h3>
 <section id="rejection-region" class="level4"><h4 class="anchored" data-anchor-id="rejection-region">Rejection region</h4>
-<p>For example, suppose we wish to detect a difference from the hypothesized value <span class="math inline">\(\mu_0 = 95\)</span>.We reject the null hypothesis for any value outside the interval <span class="math display">\[ \mu_0 \pm \Phi^{-1}(0.975) \sqrt{\frac{\sigma^2}{n}} \]</span> NOTE: this is for the simplest case when <span class="math inline">\(\sigma\)</span> is known.</p>
+<p>For example, suppose we wish to detect a difference from the hypothesized value <span class="math inline">\(\mu_0 = 95\)</span>. We reject the null hypothesis for any mean value outside the interval <span class="math display">\[ \mu_0 \pm  F^{-1}_{t(n-1)}(1-\alpha/2) \sqrt{\frac{\sigma^2}{n}} \]</span></p>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mu_0</span> <span class="op">=</span> <span class="fl">95</span></span>
-<span><span class="va">se</span> <span class="op">=</span> <span class="fu">se.mu.hat</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
-<span><span class="va">margin</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">0.975</span><span class="op">)</span> <span class="op">*</span> <span class="va">se</span></span>
+<span><span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">glucose_data</span><span class="op">)</span></span>
+<span><span class="va">se</span> <span class="op">=</span> <span class="fu">se.mu.hat</span><span class="op">(</span>n <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span><span class="va">margin</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html">qt</a></span><span class="op">(</span><span class="fl">0.975</span>, df <span class="op">=</span> <span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">se</span></span>
 <span><span class="co">#qt(0.975,nrow(hers)-1)</span></span>
 <span><span class="va">upperbound</span> <span class="op">=</span> <span class="va">mu_0</span> <span class="op">+</span> <span class="va">margin</span></span>
 <span><span class="va">lowerbound</span> <span class="op">=</span> <span class="va">mu_0</span> <span class="op">-</span> <span class="va">margin</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>In this case, the interval is <span class="math inline">\([92.984, 97.016]\)</span>.</p>
+<p>In this case, the interval is <span class="math inline">\([92.959, 97.041]\)</span>.</p>
 </section><section id="calculate-power-under-a-simple-alternative" class="level4"><h4 class="anchored" data-anchor-id="calculate-power-under-a-simple-alternative">Calculate power under a simple alternative</h4>
 <p>Against the simple alternative that the true value is actually the estimated mean calculated from the data (i.e.<span class="math inline">\(98.66\)</span>). Let’s also assume that the known standard deviation is what we estimated from the data.</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">prob_low</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">prob_low</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html">pt</a></span><span class="op">(</span></span>
 <span>  q <span class="op">=</span> <span class="op">(</span><span class="va">lowerbound</span> <span class="op">-</span> <span class="va">mu_hat</span><span class="op">)</span> <span class="op">/</span> <span class="va">se</span>,</span>
+<span>  df <span class="op">=</span> <span class="va">n</span> <span class="op">-</span> <span class="fl">1</span>,</span>
 <span>  lower.tail <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">prob_high</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span></span>
+<span><span class="va">prob_high</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html">pt</a></span><span class="op">(</span></span>
 <span>  q <span class="op">=</span> <span class="op">(</span><span class="va">upperbound</span> <span class="op">-</span> <span class="va">mu_hat</span><span class="op">)</span> <span class="op">/</span> <span class="va">se</span>,</span>
+<span>  df <span class="op">=</span> <span class="va">n</span> <span class="op">-</span> <span class="fl">1</span>,</span>
 <span>  lower.tail <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">power</span> <span class="op">=</span> <span class="va">prob_low</span> <span class="op">+</span> <span class="va">prob_high</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">power</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.945</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1] 0.9407</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section><section id="power-as-a-function-of-sample-size" class="level4"><h4 class="anchored" data-anchor-id="power-as-a-function-of-sample-size">Power as a function of sample size</h4>
@@ -2066,20 +2069,18 @@ Table&nbsp;F.4: HERS dataset
 <span>  <span class="co"># there's no such thing as fractional sample size:</span></span>
 <span>  <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
 <span>  <span class="co"># using the function we wrote earlier:</span></span>
-<span>  <span class="va">se_null</span> <span class="op">=</span> <span class="fu">se.mu.hat</span><span class="op">(</span>n <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
-<span>  <span class="va">reject_upper</span> <span class="op">=</span> <span class="op">(</span><span class="va">null</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">0.975</span><span class="op">)</span> <span class="op">*</span> <span class="va">se_null</span><span class="op">)</span></span>
-<span>  <span class="va">reject_lower</span> <span class="op">=</span> <span class="op">(</span><span class="va">null</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">0.975</span><span class="op">)</span> <span class="op">*</span> <span class="va">se_null</span><span class="op">)</span></span>
+<span>  <span class="va">se</span> <span class="op">=</span> <span class="fu">se.mu.hat</span><span class="op">(</span>n <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">reject_upper</span> <span class="op">=</span> <span class="op">(</span> <span class="op">(</span><span class="va">null</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html">qt</a></span><span class="op">(</span><span class="fl">0.975</span>, df <span class="op">=</span> <span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">se</span><span class="op">)</span> <span class="op">-</span> <span class="va">alt</span> <span class="op">)</span> <span class="op">/</span> <span class="va">se</span></span>
+<span>  <span class="va">reject_lower</span> <span class="op">=</span> <span class="op">(</span> <span class="op">(</span><span class="va">null</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html">qt</a></span><span class="op">(</span><span class="fl">0.975</span>, df <span class="op">=</span> <span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">se</span><span class="op">)</span> <span class="op">-</span> <span class="va">alt</span> <span class="op">)</span> <span class="op">/</span> <span class="va">se</span></span>
 <span>  <span class="va">p_reject_high</span> <span class="op">=</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html">pt</a></span><span class="op">(</span></span>
 <span>      q <span class="op">=</span> <span class="va">reject_lower</span>,</span>
-<span>      mean <span class="op">=</span> <span class="va">alt</span>,</span>
-<span>      sd <span class="op">=</span> <span class="va">se_null</span></span>
+<span>      df <span class="op">=</span> <span class="va">n</span> <span class="op">-</span> <span class="fl">1</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="va">p_reject_low</span> <span class="op">=</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/TDist.html">pt</a></span><span class="op">(</span></span>
 <span>      q <span class="op">=</span> <span class="va">reject_upper</span>,</span>
-<span>      mean <span class="op">=</span> <span class="va">alt</span>,</span>
-<span>      sd <span class="op">=</span> <span class="va">se_null</span>,</span>
+<span>      df <span class="op">=</span> <span class="va">n</span> <span class="op">-</span> <span class="fl">1</span>,</span>
 <span>      lower <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="va">p_reject</span> <span class="op">=</span> <span class="va">p_reject_high</span> <span class="op">+</span> <span class="va">p_reject_low</span></span>
@@ -2087,8 +2088,8 @@ Table&nbsp;F.4: HERS dataset
 <span><span class="op">}</span></span>
 <span><span class="va">power_plot</span> <span class="op">=</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">power</span>, n <span class="op">=</span> <span class="fl">200</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">200</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">power</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">200</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="co"># n = 1 is not allowed for t-distribution</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">ylim</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Power"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"n"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -2164,7 +2165,7 @@ Table&nbsp;F.4: HERS dataset
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["mu-hat"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["sigma-hat"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se_hat"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["confint_left"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["confint_right"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["tstat"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pval"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["confint covers true mu"],"name":[8],"type":["lgl"],"align":["right"]},{"label":["test rejects null hypothesis"],"name":[9],"type":["lgl"],"align":["right"]}],"data":[{"1":"96.94","2":"10.37","3":"1.037","4":"94.88","5":"98.99","6":"7.857","7":"4.864e-12","8":"TRUE","9":"TRUE"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["mu-hat"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["sigma-hat"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se_hat"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["confint_left"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["confint_right"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["tstat"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pval"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["confint covers true mu"],"name":[8],"type":["lgl"],"align":["right"]},{"label":["test rejects null hypothesis"],"name":[9],"type":["lgl"],"align":["right"]}],"data":[{"1":"97.67","2":"10.78","3":"1.078","4":"95.53","5":"99.81","6":"8.234","7":"7.541e-13","8":"TRUE","9":"TRUE"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
