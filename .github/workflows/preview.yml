@@ -1,0 +1,64 @@
+name: Quarto Preview
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+    paths:
+      - 'man/**'
+      - 'pkgdown/**'
+      - 'vignettes/**'
+      - '_quarto.yml'
+      - '.github/workflows/preview.yml'
+      - '.github/workflows/publish.yml'
+      - '*.qmd'
+
+concurrency: preview-${{ github.ref }}
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          tinytex: true
+
+      - uses: r-lib/actions/setup-r@HEAD
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@HEAD
+        with:
+          needs: |
+            connect
+            website
+          extra-packages: |
+            local::.
+            any::pkgdown
+
+      - name: Render
+        if: github.event.action != 'closed' # skip the build if the PR has been closed
+        uses: quarto-dev/quarto-actions/render@v2
+
+      - name: list files
+        shell: bash
+        run: |
+          echo "contents of _book:\n"
+          ls _book/
+          echo "contents of .:\n"
+          ls .
+      - name: Deploy PR Preview
+        uses: rossjrw/pr-preview-action@main
+        with:
+          source-dir: _book/
+
