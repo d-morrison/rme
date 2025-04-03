@@ -41,26 +41,26 @@ hers |> head()
 
 ```{r}
 
-n.obs = 100 # we're going to take a small subset of the data to look at; 
-# if we took the whole data set, the likelihood function would be hard to 
+n.obs = 100 # we're going to take a small subset of the data to look at;
+# if we took the whole data set, the likelihood function would be hard to
 # graph nicely
 
 library(dplyr)
-data1 = 
-  hers |> 
+data1 =
+  hers |>
   filter(
     diabetes == 0,
-    exercise == 0) |> 
+    exercise == 0) |>
   head(n.obs)
 
-glucose_data = 
-  data1 |> 
+glucose_data =
+  data1 |>
   pull(glucose)
 
 library(ggplot2)
 library(ggeasy)
-plot1 = 
-  data1 |> 
+plot1 =
+  data1 |>
   ggplot(aes(x = glucose)) +
   geom_histogram(aes(x = glucose, after_stat(density))) +
   theme_classic() +
@@ -111,17 +111,17 @@ it's often computationally more effective to construct the log-likelihood first 
 ```{r}
 
 loglik = function(
-    mu, # I'm assigning default values, which the function will use 
+    mu, # I'm assigning default values, which the function will use
     # unless we tell it otherwise
     sigma = sd(x), # note that you can define some defaults based on other arguments
-    x = glucose_data, 
+    x = glucose_data,
     n = length(x)
 )
 {
-  
-  normalizing_constants = -n/2 * log((sigma^2) * 2 * pi) 
-  
-  likelihood_kernel = - 1/(2 * sigma^2) * 
+
+  normalizing_constants = -n/2 * log((sigma^2) * 2 * pi)
+
+  likelihood_kernel = - 1/(2 * sigma^2) *
     {
       # I have to do this part in a somewhat complicated way
       # so that we can pass in vectors of possible values of mu
@@ -129,11 +129,11 @@ loglik = function(
       # for the binomial case it's easier
       sum(x^2) - 2 * sum(x) * mu + n * mu^2
     }
-  
+
   answer = normalizing_constants + likelihood_kernel
-  
+
   return(answer)
-  
+
 }
 
 # `...` means pass any inputs to lik() along to loglik()
@@ -148,11 +148,11 @@ lik = function(...) exp(loglik(...))
 
 ```{r}
 
-ggplot() + 
-  geom_function(fun = function(x) lik(mu = x, sigma = sigma_sq_hat)) + 
+ggplot() +
+  geom_function(fun = function(x) lik(mu = x, sigma = sigma_sq_hat)) +
   xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
   xlab("possible values of mu") +
-  ylab("likelihood") + 
+  ylab("likelihood") +
   geom_vline(xintercept = mean(glucose_data), col = "red")
 
 
@@ -164,11 +164,11 @@ ggplot() +
 
 ```{r}
 
-ggplot() + 
-  geom_function(fun = function(x) loglik(mu = x, sigma = sigma_sq_hat)) + 
+ggplot() +
+  geom_function(fun = function(x) loglik(mu = x, sigma = sigma_sq_hat)) +
   xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
   xlab("possible values of mu") +
-  ylab('log(likelihood)') + 
+  ylab("log(likelihood)") +
   geom_vline(xintercept = mean(glucose_data), col = "red")
 
 
@@ -180,23 +180,23 @@ ggplot() +
 ```{r}
 
 
-ggplot() + 
-  geom_function(fun = function(x) lik(sigma = x, mu = mean(glucose_data))) + 
-  xlim(sd(glucose_data) * c(.9,1.1)) + 
+ggplot() +
+  geom_function(fun = function(x) lik(sigma = x, mu = mean(glucose_data))) +
+  xlim(sd(glucose_data) * c(.9,1.1)) +
   geom_vline(
-    xintercept = sd(glucose_data) * sqrt(n.obs - 1)/sqrt(n.obs), 
+    xintercept = sd(glucose_data) * sqrt(n.obs - 1)/sqrt(n.obs),
     col = "red") +
   xlab("possible values for sigma") +
-  ylab('Likelihood')
+  ylab("Likelihood")
 
-ggplot() + 
+ggplot() +
   geom_function(
     fun = function(x) loglik(sigma = x, mu = mean(glucose_data))
-  ) + 
+  ) +
   xlim(sd(glucose_data) * c(0.9, 1.1)) +
   geom_vline(
-    xintercept = 
-      sd(glucose_data) * sqrt(n.obs - 1) / sqrt(n.obs), 
+    xintercept =
+      sd(glucose_data) * sqrt(n.obs - 1) / sqrt(n.obs),
     col = "red") +
   xlab("possible values for sigma") +
   ylab("log(likelihood)")
@@ -206,14 +206,14 @@ ggplot() +
 
 ### Standard errors by sample size:
 
-Recall from previous sections that the asymptotic standard error of ${\widehat{\mu}}_{ML}$ is $\HSE{{\widehat{\mu}}} = \sqrt{\sb{\inv{\heinff{{\widehat{\mu}}_{ML}}}}} = \frac{\hat{\sigma}}{\sqrt{n}}$
+Recall from previous sections that the asymptotic standard error of ${\widehat{\mu}}_{ML}$ is $\widehat{\text{SE}}\left({\widehat{\mu}}\right) = \sqrt{\left[\left(\hat{\mathcal{I}}\left(\widehat{\mu}_{ML}\right)\right)^{-1}\right]} = \frac{\hat{\sigma}}{\sqrt{n}}$
 
 
 ```{r}
 
 se.mu.hat = function(n, sigma = sd(glucose_data)) sigma/sqrt(n)
-ggplot() + 
-  geom_function(fun = se.mu.hat) + 
+ggplot() +
+  geom_function(fun = se.mu.hat) +
   scale_x_continuous(trans = "log10", limits = c(10, 10^5), name = "Sample size") +
   ylab("Standard error of mu (mg/dl)") +
   theme_classic()
@@ -228,8 +228,8 @@ $$ \mu_0 \pm \Phi^{-1}(0.975) \sqrt{\frac{\sigma^2}{n}} $$ NOTE: this is for the
 
 ```{r}
 mu_0 = 95
-se = se.mu.hat(n=100)
-margin = qnorm(0.975)*se
+se = se.mu.hat(n = 100)
+margin = qnorm(0.975) * se
 #qt(0.975,nrow(hers)-1)
 upperbound = mu_0 + margin
 lowerbound = mu_0 - margin
@@ -243,12 +243,12 @@ Against the simple alternative that the true value is actually the estimated mea
 
 ```{r}
 prob_low = pnorm(
-  q = (lowerbound-mu_hat)/se,
+  q = (lowerbound - mu_hat) / se,
   lower.tail = TRUE
   )
 
 prob_high = pnorm(
-  q = (upperbound-mu_hat)/se,
+  q = (upperbound - mu_hat) / se,
   lower.tail = FALSE
   )
 
@@ -258,8 +258,7 @@ print(power)
 
 #### Power as a function of sample size
 ```{r}
-power = function(n = 100, null = 95, alt = 98.66)
-{
+power = function(n = 100, null = 95, alt = 98.66){
   # there's no such thing as fractional sample size:
   n = floor(n)
   # using the function we wrote earlier:
@@ -271,22 +270,22 @@ power = function(n = 100, null = 95, alt = 98.66)
       q = reject_lower,
       mean = alt,
       sd = se_null
-      )
+    )
   p_reject_low =
     pnorm(
       q = reject_upper,
       mean = alt,
       sd = se_null,
       lower = FALSE
-      )
+    )
   p_reject = p_reject_high + p_reject_low
   return(p_reject)
 }
 power_plot =
   ggplot() +
-  geom_function(fun = power,n=500) +
-  xlim(c(1,100)) +
-  ylim(0,1) +
+  geom_function(fun = power, n = 200) +
+  xlim(c(1, 200)) +
+  ylim(0, 1) +
   ylab("Power") +
   xlab("n") +
   theme_bw()
@@ -305,15 +304,15 @@ do_one_sim = function(
     n = 100,
     mu = mean(glucose_data),
     mu0 = mean(glucose_data) * 0.9,
-    sigma2 = var(glucose_data), 
-    return_data = FALSE # if this is set to true, we will create a list() containing both 
+    sigma2 = var(glucose_data),
+    return_data = FALSE # if this is set to true, we will create a list() containing both
     # the analytic results and the vector of simulated data
 )
 {
-  
+
   # generate data
   x = rnorm(n = 100, mean = mu, sd = sqrt(sigma2))
-  
+
   # analyze data
   mu_hat = mean(x)
   sigmahat = sd(x)
@@ -323,7 +322,7 @@ do_one_sim = function(
   pval = pt(df = n - 1, q = tstat, lower = FALSE) * 2
   confint_covers = between(mu, confint[1], confint[2])
   test_rejects = pval < 0.05
-  
+
   # if you want spaces, hyphens, or characters in your column names, use "", '', or ``:
   to_return = tibble(
     "mu-hat" = mu_hat,
@@ -332,22 +331,22 @@ do_one_sim = function(
     "confint_left" = confint[1],
     "confint_right" = confint[2],
     "tstat" = tstat,
-    "pval" = pval, 
+    "pval" = pval,
     "confint covers true mu" = confint_covers,
     "test rejects null hypothesis" = test_rejects
   )
-  
+
   if(return_data)
   {
     return(
       list(
-        data = x, 
+        data = x,
         results = to_return))
   } else
   {
     return(to_return)
   }
-  
+
 }
 
 ```
@@ -370,13 +369,13 @@ set.seed(1)
 mu = mean(glucose_data)
 mu0 = 80
 sim.output = do_one_sim(mu0 = mu0, return_data = TRUE)
-our_results = 
-  sim.output$results |> 
+our_results =
+  sim.output$results |>
   mutate(source = "`do_one_sim()`")
 
 results_t.test = t.test(sim.output$data, mu = mu0)
 
-results2 = 
+results2 =
   tibble(
     source = "`stats::t.test()`",
     "mu-hat" = results_t.test$estimate,
@@ -390,11 +389,11 @@ results2 =
      `test rejects null hypothesis` = pval < 0.05
   )
 
-comparison = 
+comparison =
   bind_rows(
     our_results,
     results2
-  ) |> 
+  ) |>
   relocate(
     "source",
     .before = everything()
@@ -417,24 +416,24 @@ do_n_sims = function(
     ... # this symbol means "allow additional arguments to be passed on to the `do_sim_once` function
 )
 {
-  
-  sim_results = NULL # we're going to create a "tibble" of results, 
+
+  sim_results = NULL # we're going to create a "tibble" of results,
   # row by row (slightly different from the hint on the homework)
-  
+
   for (i in 1:n_sims)
   {
-    
+  
     set.seed(i)
-    
-    current_results = 
+  
+    current_results =
       do_one_sim(...) |> # here's where the simulation actually gets run
       mutate(
         sim_number = i
-      ) |> 
+      ) |>
       relocate(sim_number, .before = everything())
     
-    sim_results = 
-      sim_results |> 
+    sim_results =
+      sim_results |>
       bind_rows(current_results)
     
   }
@@ -449,7 +448,7 @@ do_n_sims = function(
 sim_results = do_n_sims(
   n_sims = 100,
   mu = mean(glucose_data),
-  sigma2 = var(glucose_data),  
+  sigma2 = var(glucose_data),
   n = 100 # this is the number of samples per simulated data set
 )
 
@@ -465,17 +464,17 @@ To do that, we write another function:
 ```{r}
 
 summarize_sim = function(
-    sim_results, 
+    sim_results,
     mu = mean(glucose_data),
-    sigma2 = var(glucose_data), 
+    sigma2 = var(glucose_data),
     n = 100)
 {
-  
-  
+
+
   # calculate the true standard error based on the data-generating parameters:
   `se(mu-hat)` = sqrt(sigma2/n)
-  
-  sim_results |> 
+
+  sim_results |>
     summarize(
       `bias[mu-hat]` = mean(`mu-hat`) - mu,
       `SE(mu-hat)` = sd(`mu-hat`),
@@ -484,7 +483,7 @@ summarize_sim = function(
       coverage = mean(`confint covers true mu`),
       power = mean(`test rejects null hypothesis`)
     )
-  
+
 }
 
 ```
@@ -494,10 +493,10 @@ Let's try it out:
 ```{r}
 
 sim_summary = summarize_sim(
-  sim_results, 
-  mu = mean(glucose_data), 
+  sim_results,
+  mu = mean(glucose_data),
   # this function needs to know the true parameter values in order to assess bias
-  sigma2 = var(glucose_data), 
+  sigma2 = var(glucose_data),
   n = 100)
 
 sim_summary
