@@ -84,6 +84,7 @@ birthweight |> knitr::kable()
 ```{r}
 #| label: tbl-birthweight-data2
 #| tbl-cap: "`birthweight` data reshaped"
+library(tidyverse)
 bw <-
   birthweight |>
   pivot_longer(
@@ -191,9 +192,9 @@ bw_lm1 <- lm(
   data = bw
 )
 
-bw_lm1 |>
-  parameters() |>
-  print_md(
+bw_lm1 |> 
+  parameters::parameters() |>
+  parameters::print_md(
     include_reference = TRUE,
     select = "{estimate}"
   )
@@ -1308,9 +1309,11 @@ bw_lm1 |>
   )
 ```
 
-This is a `list()`; you can extract the elements with `$` or `magrittr::use_series()`:
+The output of `predict.lm(se.fit = TRUE)` is a `list()`; 
+you can extract the elements with `$` or `magrittr::use_series()`:
 
 ```{r}
+library(magrittr)
 bw_lm1 |>
   predict(
     newdata = x,
@@ -2228,7 +2231,18 @@ model.matrix(iris_lm2) |>
   unique()
 ```
 
-This is called a "corner point parametrization".
+This format is called a "corner point parametrization" 
+(e.g., in @dobson4e) or "treatment coding" (e.g., in @dunn2018generalized).
+
+The default contrasts are controlled by `options("contrasts")`:
+
+```{r}
+options("contrasts")
+```
+
+See `?options` for more details.
+
+---
 
 ```{r}
 #| label: tbl-iris-group-point-parameterization
@@ -2238,7 +2252,7 @@ model.matrix(iris_lm2b) |>
   unique()
 ```
 
-This can be called a "group point parametrization".
+This format is called a "group point parametrization" (e.g., in @dobson4e).
 
 There are more options; see @dobson4e §6.4.1 and the 
 [`codingMatrices` package](https://CRAN.R-project.org/package=codingMatrices) 
