@@ -206,7 +206,7 @@ ggplot() +
 
 ### Standard errors by sample size:
 
-Recall from previous sections that the asymptotic standard error of ${\widehat{\mu}}_{ML}$ is $\HSE{{\widehat{\mu}}} = \sqrt{\sb{\inv{\heinff{{\widehat{\mu}}_{ML}}}} = \frac{\hat{\sigma}}{\sqrt{n}}$
+Recall from previous sections that the asymptotic standard error of ${\widehat{\mu}}_{ML}$ is $\HSE{{\widehat{\mu}}} = \sqrt{\sb{\inv{\heinff{{\widehat{\mu}}_{ML}}}}} = \frac{\hat{\sigma}}{\sqrt{n}}$
 
 
 ```{r}
@@ -217,6 +217,80 @@ ggplot() +
   scale_x_continuous(trans = "log10", limits = c(10, 10^5), name = "Sample size") +
   ylab("Standard error of mu (mg/dl)") +
   theme_classic()
+```
+
+### Power 
+
+#### Rejection region
+
+For example, suppose we wish to detect a difference from the hypothesized value $\mu_0 = 95$.We reject the null hypothesis for any value outside the interval 
+$$ \mu_0 \pm \Phi^{-1}(0.975) \sqrt{\frac{\sigma^2}{n}} $$ NOTE: this is for the simplest case when $\sigma$ is known.
+
+```{r}
+mu_0 = 95
+se = se.mu.hat(n=100)
+margin = qnorm(0.975)*se
+#qt(0.975,nrow(hers)-1)
+upperbound = mu_0 + margin
+lowerbound = mu_0 - margin
+```
+
+In this case, the interval is $[`r lowerbound`, `r upperbound`]$.
+
+#### Calculate power under a simple alternative
+
+Against the simple alternative that the true value is actually the estimated mean calculated from the data (i.e.$`r mu_hat`$). Let's also assume that the known standard deviation is what we estimated from the data.
+
+```{r}
+prob_low = pnorm(
+  q = (lowerbound-mu_hat)/se,
+  lower.tail = TRUE
+  )
+
+prob_high = pnorm(
+  q = (upperbound-mu_hat)/se,
+  lower.tail = FALSE
+  )
+
+power = prob_low + prob_high
+print(power)
+```
+
+#### Power as a function of sample size
+```{r}
+power = function(n = 100, null = 95, alt = 98.66)
+{
+  # there's no such thing as fractional sample size:
+  n = floor(n)
+  # using the function we wrote earlier:
+  se_null = se.mu.hat(n = n)
+  reject_upper = (null + qnorm(0.975) * se_null)
+  reject_lower = (null - qnorm(0.975) * se_null)
+  p_reject_high =
+    pnorm(
+      q = reject_lower,
+      mean = alt,
+      sd = se_null
+      )
+  p_reject_low =
+    pnorm(
+      q = reject_upper,
+      mean = alt,
+      sd = se_null,
+      lower = FALSE
+      )
+  p_reject = p_reject_high + p_reject_low
+  return(p_reject)
+}
+power_plot =
+  ggplot() +
+  geom_function(fun = power,n=500) +
+  xlim(c(1,100)) +
+  ylim(0,1) +
+  ylab("Power") +
+  xlab("n") +
+  theme_bw()
+print(power_plot)
 ```
 
 ### Simulations
