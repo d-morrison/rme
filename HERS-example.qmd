@@ -223,13 +223,15 @@ ggplot() +
 
 #### Rejection region
 
-For example, suppose we wish to detect a difference from the hypothesized value $\mu_0 = 95$.We reject the null hypothesis for any value outside the interval 
-$$ \mu_0 \pm \Phi^{-1}(0.975) \sqrt{\frac{\sigma^2}{n}} $$ NOTE: this is for the simplest case when $\sigma$ is known.
+For example, suppose we wish to detect a difference from the hypothesized value $\mu_0 = 95$. We reject the null hypothesis for any mean value outside the interval 
+$$ \mu_0 \pm  F^{-1}_{t(n-1)}(1-\alpha/2) \sqrt{\frac{\sigma^2}{n}} $$ 
+
 
 ```{r}
 mu_0 = 95
-se = se.mu.hat(n = 100)
-margin = qnorm(0.975) * se
+n = length(glucose_data)
+se = se.mu.hat(n = n)
+margin = qt(0.975, df = n - 1) * se
 #qt(0.975,nrow(hers)-1)
 upperbound = mu_0 + margin
 lowerbound = mu_0 - margin
@@ -242,13 +244,15 @@ In this case, the interval is $[`r lowerbound`, `r upperbound`]$.
 Against the simple alternative that the true value is actually the estimated mean calculated from the data (i.e.$`r mu_hat`$). Let's also assume that the known standard deviation is what we estimated from the data.
 
 ```{r}
-prob_low = pnorm(
+prob_low = pt(
   q = (lowerbound - mu_hat) / se,
+  df = n - 1,
   lower.tail = TRUE
   )
 
-prob_high = pnorm(
+prob_high = pt(
   q = (upperbound - mu_hat) / se,
+  df = n - 1,
   lower.tail = FALSE
   )
 
@@ -262,20 +266,18 @@ power = function(n = 100, null = 95, alt = 98.66){
   # there's no such thing as fractional sample size:
   n = floor(n)
   # using the function we wrote earlier:
-  se_null = se.mu.hat(n = n)
-  reject_upper = (null + qnorm(0.975) * se_null)
-  reject_lower = (null - qnorm(0.975) * se_null)
+  se = se.mu.hat(n = n)
+  reject_upper = ( (null + qt(0.975, df = n - 1) * se) - alt ) / se
+  reject_lower = ( (null - qt(0.975, df = n - 1) * se) - alt ) / se
   p_reject_high =
-    pnorm(
+    pt(
       q = reject_lower,
-      mean = alt,
-      sd = se_null
+      df = n - 1
     )
   p_reject_low =
-    pnorm(
+    pt(
       q = reject_upper,
-      mean = alt,
-      sd = se_null,
+      df = n - 1,
       lower = FALSE
     )
   p_reject = p_reject_high + p_reject_low
@@ -283,8 +285,8 @@ power = function(n = 100, null = 95, alt = 98.66){
 }
 power_plot =
   ggplot() +
-  geom_function(fun = power, n = 200) +
-  xlim(c(1, 200)) +
+  geom_function(fun = power, n = 100) +
+  xlim(c(2, 200)) + # n = 1 is not allowed for t-distribution
   ylim(0, 1) +
   ylab("Power") +
   xlab("n") +
