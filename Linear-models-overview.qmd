@@ -191,7 +191,6 @@ bw_lm1 |>
   parameters() |>
   print_md(
     include_reference = TRUE,
-    # show_sigma = TRUE,
     select = "{estimate}"
   )
 ```
@@ -246,10 +245,8 @@ coef(bw_lm1)
 \ 
 ```{r}
 pred_female <- coef(bw_lm1)["(Intercept)"] + coef(bw_lm1)["age"] * 36
-coef(bw_lm1)
-# print(pred_female)
-### built-in prediction:
-# predict(bw_lm1, newdata = tibble(sex = "female", age = 36))
+### or using built-in prediction:
+pred_female_alt <- predict(bw_lm1, newdata = tibble(sex = "female", age = 36))
 ```
 
 $$
@@ -371,7 +368,6 @@ bw_lm2 |>
   parameters() |>
   print_md(
     include_reference = TRUE,
-    # show_sigma = TRUE,
     select = "{estimate}"
   )
 ```
@@ -546,7 +542,6 @@ bw_lm2 |>
   parameters() |>
   print_md(
     include_reference = TRUE,
-    # show_sigma = TRUE,
     select = "{estimate}"
   )
 ```
@@ -572,7 +567,6 @@ bw_lm_strat <-
 bw_lm_strat |>
   parameters() |>
   print_md(
-    # show_sigma = TRUE,
     select = "{estimate}"
   )
 ```
@@ -962,7 +956,7 @@ print(confint_z)
 logLik(bw_lm2)
 logLik(bw_lm1)
 
-lLR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
+log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
 delta_df <- (bw_lm1$df.residual - df.residual(bw_lm2))
 
 
@@ -975,13 +969,13 @@ x_max <- 1
 #| label: fig-chisq-plot
 #| fig-cap: "Chi-square distribution"
 
-d_lLR <- function(x, df = delta_df) dchisq(x, df = df)
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)
 
 chisq_plot <-
   ggplot() +
-  geom_function(fun = d_lLR) +
-  stat_function(fun = d_lLR, xlim = c(lLR, x_max), geom = "area", fill = "gray") +
-  geom_segment(aes(x = lLR, xend = lLR, y = 0, yend = d_lLR(lLR)), col = "red") +
+  geom_function(fun = d_log_LR) +
+  stat_function(fun = d_log_LR, xlim = c(log_LR, x_max), geom = "area", fill = "gray") +
+  geom_segment(aes(x = log_LR, xend = log_LR, y = 0, yend = d_log_LR(log_LR)), col = "red") +
   xlim(0.0001, x_max) +
   ylim(0, 4) +
   ylab("p(X=x)") +
@@ -997,7 +991,7 @@ Now we can get the p-value:
 ```{r}
 #| label: LRT-pval
 pchisq(
-  q = 2 * lLR,
+  q = 2 * log_LR,
   df = delta_df,
   lower = FALSE
 ) |>
@@ -1610,10 +1604,10 @@ bw <-
   mutate(
     fitted_lm2 = fitted(bw_lm2),
     resid_lm2 = resid(bw_lm2),
-    # resid_lm2 = weight - fitted_lm2,
+    resid_lm2_alt = weight - fitted_lm2,
 
     std_resid_lm2 = rstandard(bw_lm2),
-    # std_resid_lm2 = resid_lm2 / sigma(bw_lm2)
+    std_resid_lm2_alt = resid_lm2 / sigma(bw_lm2)
   )
 
 bw |>
