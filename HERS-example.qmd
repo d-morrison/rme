@@ -106,7 +106,7 @@ loglik <- function(
     mu, # I'm assigning default values, which the function will use
     # unless we tell it otherwise
     sigma = sd(x), # note that you can define some default inputs
-                   #based on other arguments
+    # based on other arguments
     x = glucose_data,
     n = length(x)) {
   normalizing_constants <- -n / 2 * log((sigma^2) * 2 * pi)
@@ -190,11 +190,13 @@ $\widehat{\text{SE}}\paren{{\widehat{\mu}}} = \sqrt{\left[\left(\hat{\mathcal{I}
 
 
 ```{r}
-se.mu.hat <- function(n, sigma = sd(glucose_data)) sigma / sqrt(n)
+se_mu_hat <- function(n, sigma = sd(glucose_data)) sigma / sqrt(n)
 ggplot() +
-  geom_function(fun = se.mu.hat) +
-  scale_x_log10(limits = c(10, 10^5), name = "Sample size",
-                labels = scales::label_comma()) +
+  geom_function(fun = se_mu_hat) +
+  scale_x_log10(
+    limits = c(10, 10^5), name = "Sample size",
+    labels = scales::label_comma()
+  ) +
   ylab("Standard error of mu (mg/dl)") +
   theme_classic()
 ```
@@ -210,9 +212,8 @@ $$ \mu_0 \pm  F^{-1}_{t(n-1)}(1-\alpha/2) \sqrt{\frac{\sigma^2}{n}} $$
 ```{r}
 mu_0 <- 95
 n <- length(glucose_data)
-se <- se.mu.hat(n = n)
+se <- se_mu_hat(n = n)
 margin <- qt(0.975, df = n - 1) * se
-# qt(0.975,nrow(hers)-1)
 upperbound <- mu_0 + margin
 lowerbound <- mu_0 - margin
 ```
@@ -249,7 +250,7 @@ power <- function(n = 100, null = 95, alt = 98.66) {
   # there's no such thing as fractional sample size:
   n <- floor(n)
   # using the function we wrote earlier:
-  se <- se.mu.hat(n = n)
+  se <- se_mu_hat(n = n)
   reject_upper <- ((null + qt(0.975, df = n - 1) * se) - alt) / se
   reject_lower <- ((null - qt(0.975, df = n - 1) * se) - alt) / se
   p_reject_high <-
@@ -285,13 +286,13 @@ Here's a function that performs a single simulation of a Gaussian modeling analy
 
 ```{r}
 do_one_sim <- function(
-    n = 100,
-    mu = mean(glucose_data),
-    mu0 = mean(glucose_data) * 0.9,
-    sigma2 = var(glucose_data),
-    return_data = FALSE # if this is set to true, we will create a list() containing both
-    # the analytic results and the vector of simulated data
-    ) {
+  n = 100,
+  mu = mean(glucose_data),
+  mu_0 = mean(glucose_data) * 0.9,
+  sigma2 = var(glucose_data),
+  return_data = FALSE # if this is set to true, we will create a list() 
+  # containing both the analytic results and the vector of simulated data
+) {
   # generate data
   x <- rnorm(n = 100, mean = mu, sd = sqrt(sigma2))
 
@@ -300,12 +301,13 @@ do_one_sim <- function(
   sigmahat <- sd(x)
   se_hat <- sigmahat / sqrt(n)
   confint <- mu_hat + c(-1, 1) * se_hat * qt(.975, df = n - 1)
-  tstat <- abs(mu_hat - mu0) / se_hat
+  tstat <- abs(mu_hat - mu_0) / se_hat
   pval <- pt(df = n - 1, q = tstat, lower = FALSE) * 2
   confint_covers <- between(mu, confint[1], confint[2])
   test_rejects <- pval < 0.05
 
-  # if you want spaces, hyphens, or characters in your column names, use "", '', or ``:
+  # if you want spaces, hyphens, or characters in your column names, 
+  # use "", '', or ``:
   to_return <- tibble(
     "mu-hat" = mu_hat,
     "sigma-hat" = sigmahat,
@@ -344,24 +346,24 @@ Now let's check it against the `t.test()` function from the `stats` package:
 ```{r}
 set.seed(1)
 mu <- mean(glucose_data)
-mu0 <- 80
-sim.output <- do_one_sim(mu0 = mu0, return_data = TRUE)
+mu_0 <- 80
+sim_output <- do_one_sim(mu_0 = mu_0, return_data = TRUE)
 our_results <-
-  sim.output$results |>
+  sim_output$results |>
   mutate(source = "`do_one_sim()`")
 
-results_t.test <- t.test(sim.output$data, mu = mu0)
+results_t_test <- t.test(sim_output$data, mu = mu_0)
 
 results2 <-
   tibble(
     source = "`stats::t.test()`",
-    "mu-hat" = results_t.test$estimate,
-    "sigma-hat" = results_t.test$stderr * sqrt(length(sim.output$data)),
-    "se_hat" = results_t.test$stderr,
-    confint_left = results_t.test$conf.int[1],
-    confint_right = results_t.test$conf.int[2],
-    tstat = results_t.test$statistic,
-    pval = results_t.test$p.value,
+    "mu-hat" = results_t_test$estimate,
+    "sigma-hat" = results_t_test$stderr * sqrt(length(sim_output$data)),
+    "se_hat" = results_t_test$stderr,
+    confint_left = results_t_test$conf.int[1],
+    confint_right = results_t_test$conf.int[2],
+    tstat = results_t_test$statistic,
+    pval = results_t_test$p.value,
     "confint covers true mu" = between(mu, confint_left, confint_right),
     `test rejects null hypothesis` = pval < 0.05
   )
@@ -387,14 +389,14 @@ Here's a function that calls the previous function `n_sims` times and summarizes
 
 ```{r}
 do_n_sims <- function(
-    n_sims = 1000,
-    ... # this symbol means "allow additional arguments to be passed on to the `do_sim_once` function
-    ) {
+  n_sims = 1000,
+  ... # this symbol means "allow additional arguments to be passed on to the 
+  # `do_sim_once` function
+) {
   sim_results <- NULL # we're going to create a "tibble" of results,
   # row by row (slightly different from the hint on the homework)
 
-  for (i in 1:n_sims)
-  {
+  for (i in 1:n_sims) {
     set.seed(i)
 
     current_results <-
@@ -402,7 +404,7 @@ do_n_sims <- function(
       mutate(
         sim_number = i
       ) |>
-      relocate(sim_number, .before = everything())
+      relocate("sim_number", .before = everything())
 
     sim_results <-
       sim_results |>
@@ -437,16 +439,16 @@ summarize_sim <- function(
     sigma2 = var(glucose_data),
     n = 100) {
   # calculate the true standard error based on the data-generating parameters:
-  `se(mu-hat)` <- sqrt(sigma2 / n)
+  se_mu_hat <- sqrt(sigma2 / n)
 
   sim_results |>
     summarize(
-      `bias[mu-hat]` = mean(`mu-hat`) - mu,
-      `SE(mu-hat)` = sd(`mu-hat`),
-      `bias[SE-hat]` = mean(se_hat) - `se(mu-hat)`,
-      `SE(SE-hat)` = sd(se_hat),
-      coverage = mean(`confint covers true mu`),
-      power = mean(`test rejects null hypothesis`)
+      `bias[mu-hat]` = mean(.data$`mu-hat`) - mu,
+      `SE(mu-hat)` = sd(.data$`mu-hat`),
+      `bias[SE-hat]` = mean(.data$se_hat) - se_mu_hat,
+      `SE(SE-hat)` = sd(.data$se_hat),
+      coverage = mean(.data$`confint covers true mu`),
+      power = mean(.data$`test rejects null hypothesis`)
     )
 }
 ```
@@ -457,7 +459,8 @@ Let's try it out:
 sim_summary <- summarize_sim(
   sim_results,
   mu = mean(glucose_data),
-  # this function needs to know the true parameter values in order to assess bias
+  # this function needs to know the true parameter values in order to assess 
+  # bias
   sigma2 = var(glucose_data),
   n = 100
 )
