@@ -10,9 +10,9 @@ The `cyclones` dataset in the `dobson` package (@tbl-cyclones-data) records the 
 
 Suppose we want to learn about how many cyclones to expect per season.
 
+:::{#tbl-cyclones-data}
+
 ```{r}
-#| tbl-cap: "Number of tropical cyclones during a season from November to April in Northeastern Australia"
-#| label: tbl-cyclones-data
 library(dobson)
 library(dplyr)
 data(cyclones)
@@ -20,15 +20,19 @@ library(pander)
 pander(cyclones |> relocate(season, .before = everything()))
 ```
 
+Number of tropical cyclones during a season from November to April in Northeastern Australia
+
+:::
+
 ---
 
+::: {#fig-dobson-cyclone-time-series}
+
 ```{r}
-#| label: fig-dobson-cyclone-time-series
-#| fig-cap: "Number of tropical cyclones per season in northeastern Australia, 1956-1969"
 library(ggplot2)
 library(dplyr)
 cyclones |>
-  mutate(years = years |> factor(levels = years)) |>
+  mutate(years = factor(years, levels = years)) |>
   ggplot(aes(x = years, y = number, group = 1)) +
   geom_point() +
   geom_line() +
@@ -37,6 +41,10 @@ cyclones |>
   expand_limits(y = 0) +
   theme(axis.text.x = element_text(vjust = .5, angle = 45))
 ```
+
+Number of tropical cyclones per season in northeastern Australia, 1956-1969
+
+:::
 
 There's no obvious correlation between adjacent seasons, 
 so let's assume that each season is independent of the others.
@@ -69,12 +77,15 @@ cyclones |>
 #| label: tbl-dobson-cyclones-sumstat
 #| tbl-cap: "Summary statistics for `cyclones` data"
 
-n = nrow(cyclones)
-sumx = cyclones |> pull(number) |> sum()
-xbar =  cyclones |> pull(number) |> mean()
+n <- nrow(cyclones)
+sumx <- cyclones |>
+  pull(number) |>
+  sum()
+xbar <- cyclones |>
+  pull(number) |>
+  mean()
 
-cyclones |> table1::table1(x = ~ number)
-
+cyclones |> table1::table1(x = ~number)
 ```
 
 ### Model
@@ -221,18 +232,17 @@ Graph the likelihood as a function of $\lambda$.
 #| label: fig-cyclone-lik
 #| fig-cap: "Likelihood of Dobson cyclone data"
 
-lik = function(lambda, y = cyclones$number, n = length(y)) 
-{
-lambda^sum(y) * exp(-n*lambda) / prod(factorial(y))
+lik <- function(lambda, y = cyclones$number, n = length(y)) {
+  lambda^sum(y) * exp(-n * lambda) / prod(factorial(y))
 }
 
 library(ggplot2)
-lik_plot = 
-ggplot() +
-geom_function(fun = lik, n = 1001) +
-xlim(min(cyclones$number), max(cyclones$number)) +
-ylab("likelihood") +
-xlab('lambda')
+lik_plot <-
+  ggplot() +
+  geom_function(fun = lik, n = 1001) +
+  xlim(min(cyclones$number), max(cyclones$number)) +
+  ylab("likelihood") +
+  xlab("lambda")
 
 print(lik_plot)
 ```
@@ -282,18 +292,16 @@ Graph the log-likelihood as a function of $\lambda$.
 #| fig-cap: "log-likelihood of Dobson cyclone data"
 
 
-loglik = function(lambda, y = cyclones$number, n = length(y))
-{
-sum(y) * log(lambda) - n*lambda - sum(log(factorial(y)))
+loglik <- function(lambda, y = cyclones$number, n = length(y)) {
+  sum(y) * log(lambda) - n * lambda - sum(log(factorial(y)))
 }
 
-ll_plot = ggplot() +
-geom_function(fun = loglik, n = 1001) +
-xlim(min(cyclones$number), max(cyclones$number)) +
-ylab("log-likelihood") +
-xlab('lambda')
+ll_plot <- ggplot() +
+  geom_function(fun = loglik, n = 1001) +
+  xlim(min(cyclones$number), max(cyclones$number)) +
+  ylab("log-likelihood") +
+  xlab("lambda")
 ll_plot
-
 ```
 
 ::::
@@ -344,19 +352,16 @@ Graph the score function.
 #| fig-cap: "score function of Dobson cyclone data"
 
 
-score = function(lambda, y = cyclones$number, n = length(y))
-{
+score <- function(lambda, y = cyclones$number, n = length(y)) {
   (sum(y) / lambda) - n
 }
 
 ggplot() +
-geom_function(fun = score, n = 1001) +
-xlim(min(cyclones$number), max(cyclones$number)) +
-
-ylab("l'(lambda)") +
-xlab('lambda') +
-geom_hline(yintercept = 0, col = 'red')
-
+  geom_function(fun = score, n = 1001) +
+  xlim(min(cyclones$number), max(cyclones$number)) +
+  ylab("l'(lambda)") +
+  xlab("lambda") +
+  geom_hline(yintercept = 0, col = "red")
 ```
 
 ::::
@@ -403,20 +408,16 @@ Graph the Hessian.
 #| fig-cap: "Hessian function of Dobson cyclone data"
 
 
-hessian = function(lambda, y = cyclones$number, n = length(y))
-{
--sum(y)/(lambda^2)
+hessian <- function(lambda, y = cyclones$number, n = length(y)) {
+  -sum(y) / (lambda^2)
 }
 
 ggplot() +
-geom_function(fun = hessian, n = 1001) +
-xlim(min(cyclones$number), max(cyclones$number)) +
-
-ylab("l''(lambda)") +
-xlab('lambda') +
-geom_hline(yintercept = 0, col = 'red')
-
-
+  geom_function(fun = hessian, n = 1001) +
+  xlim(min(cyclones$number), max(cyclones$number)) +
+  ylab("l''(lambda)") +
+  xlab("lambda") +
+  geom_hline(yintercept = 0, col = "red")
 ```
 
 ::::
@@ -501,7 +502,7 @@ Since $\ell''(\tilde \lambda; \vec x)<0$, $\tilde \lambda$ is at least a local m
 
 ```{r}
 #| label: calc-mle
-mle = mean(cyclones$number)
+mle <- mean(cyclones$number)
 ```
 
 $$\hat{\lambda}_{\text{ML}} = \bar x = `r mle`$$
@@ -525,8 +526,8 @@ Graph the log-likelihood with the MLE superimposed.
 #| fig-cap: "log-likelihood of Dobson cyclone data with MLE"
 library(dplyr)
 
-mle_data = tibble(x = mle, y = loglik(mle))
-ll_plot + geom_point(data = mle_data, aes(x = x, y = y), col = 'red')
+mle_data <- tibble(x = mle, y = loglik(mle))
+ll_plot + geom_point(data = mle_data, aes(x = x, y = y), col = "red")
 ```
 
 ::::
@@ -538,13 +539,13 @@ ll_plot + geom_point(data = mle_data, aes(x = x, y = y), col = 'red')
 ```{r}
 #| label: fig-obs-inf-matrix
 #| fig-cap: "Observed information function of Dobson cyclone data"
-obs_inf = function(...) -hessian(...)
+obs_inf <- function(...) -hessian(...)
 ggplot() +
-geom_function(fun = obs_inf, n = 1001) +
-xlim(min(cyclones$number), max(cyclones$number)) +
-ylab("I(lambda)") +
-xlab('lambda') +
-geom_hline(yintercept = 0, col = 'red') 
+  geom_function(fun = obs_inf, n = 1001) +
+  xlim(min(cyclones$number), max(cyclones$number)) +
+  ylab("I(lambda)") +
+  xlab("lambda") +
+  geom_hline(yintercept = 0, col = "red")
 ```
 
 ---
@@ -568,7 +569,7 @@ such as $\esttmpl = 3$, and use the [Newton-Raphson algorithm](#sec-newton-raphs
 ```{r}
 #| label: initial guess
 # specify initial guess:
-cur_lambda_est = 3
+cur_lambda_est <- 3
 ```
 
 :::::::
@@ -616,48 +617,55 @@ $$
 
 :::
 
-```{r}
-#| label: fig-cyclone-newton-step1
-#| fig-cap: "score function of Dobson cyclone data and approximate score function"
+:::{#fig-cyclone-newton-step1}
 
-approx_score = function(lambda, lhat, ...)
-{
+```{r}
+
+approx_score <- function(lambda, lhat, ...) {
   score(lambda = lhat, ...) +
-  hessian(lambda = lhat, ...) * (lambda - lhat)
+    hessian(lambda = lhat, ...) * (lambda - lhat)
 }
 
-point_size = 5
+point_size <- 5
 
-plot1 = ggplot() +
-geom_function(
-  fun = score, 
-  aes(col = "true score function"), 
-  n = 1001) +
-geom_function(
-  fun = approx_score, 
-  aes(col = "approximate score function"),
-  n = 1001, 
-  args = list(lhat = cur_lambda_est)) +
-geom_point(
-  size = point_size,
-  aes(x = cur_lambda_est, y = score(lambda = cur_lambda_est),
-      col = "current estimate")
-) +
-geom_point(
-size = point_size,
-aes(
-x = xbar,
-y = 0,
-col = "true MLE"
-)
-) +
-xlim(min(cyclones$number), max(cyclones$number)) +
-ylab("l'(lambda)") +
-xlab('lambda') +
-geom_hline(yintercept = 0)
+plot1 <- ggplot() +
+  geom_function(
+    fun = score,
+    aes(col = "true score function"),
+    n = 1001
+  ) +
+  geom_function(
+    fun = approx_score,
+    aes(col = "approximate score function"),
+    n = 1001,
+    args = list(lhat = cur_lambda_est)
+  ) +
+  geom_point(
+    size = point_size,
+    aes(
+      x = cur_lambda_est, y = score(lambda = cur_lambda_est),
+      col = "current estimate"
+    )
+  ) +
+  geom_point(
+    size = point_size,
+    aes(
+      x = xbar,
+      y = 0,
+      col = "true MLE"
+    )
+  ) +
+  xlim(min(cyclones$number), max(cyclones$number)) +
+  ylab("l'(lambda)") +
+  xlab("lambda") +
+  geom_hline(yintercept = 0)
 
 print(plot1)
 ```
+
+Score function of Dobson cyclone data and approximate score function
+
+:::
 
 ---
 
@@ -674,46 +682,53 @@ $$
 \frac{1}{2}\hessian(\esttmpl)(\lambda-\esttmpl)^2
 $$
 
-```{r}
-#| label: fig-cyclone-newton-step1-loglik
-#| fig-cap: "log-likelihood of Dobson cyclone data and approximate log-likelihood function"
+:::{#fig-cyclone-newton-step1-loglik}
 
-approx_loglik = function(lambda, lhat, ...)
-{
-loglik(lambda = lhat, ...) +
-score(lambda = lhat, ...) * (lambda - lhat) +
-  1/2 * hessian(lambda = lhat, ...) * (lambda - lhat)^2
+```{r}
+
+approx_loglik <- function(lambda, lhat, ...) {
+  loglik(lambda = lhat, ...) +
+    score(lambda = lhat, ...) * (lambda - lhat) +
+    1 / 2 * hessian(lambda = lhat, ...) * (lambda - lhat)^2
 }
 
-plot_loglik = ggplot() +
-geom_function(
-  fun = loglik, 
-  aes(col = "true log-likelihood"), 
-  n = 1001) +
-geom_function(
-  fun = approx_loglik, 
-  aes(col = "approximate log-likelihood"),
-  n = 1001, 
-  args = list(lhat = cur_lambda_est)) +
-geom_point(
-  size = point_size,
-  aes(x = cur_lambda_est, y = loglik(lambda = cur_lambda_est),
-      col = "current estimate")
-) +
-geom_point(
-size = point_size,
-aes(
-x = xbar,
-y = loglik(xbar),
-col = "true MLE"
-)
-) +
-xlim(min(cyclones$number) - 1, max(cyclones$number)) +
-ylab("l'(lambda)") +
-xlab('lambda')
+plot_loglik <- ggplot() +
+  geom_function(
+    fun = loglik,
+    aes(col = "true log-likelihood"),
+    n = 1001
+  ) +
+  geom_function(
+    fun = approx_loglik,
+    aes(col = "approximate log-likelihood"),
+    n = 1001,
+    args = list(lhat = cur_lambda_est)
+  ) +
+  geom_point(
+    size = point_size,
+    aes(
+      x = cur_lambda_est, y = loglik(lambda = cur_lambda_est),
+      col = "current estimate"
+    )
+  ) +
+  geom_point(
+    size = point_size,
+    aes(
+      x = xbar,
+      y = loglik(xbar),
+      col = "true MLE"
+    )
+  ) +
+  xlim(min(cyclones$number) - 1, max(cyclones$number)) +
+  ylab("l'(lambda)") +
+  xlab("lambda")
 
 print(plot_loglik)
 ```
+
+log-likelihood of Dobson cyclone data and approximate log-likelihood function
+
+:::
 
 ---
 
@@ -734,38 +749,47 @@ $$
 
 ```{r}
 #| label: NR-one-step
-new_lambda_est <- 
-   cur_lambda_est - 
-   score(cur_lambda_est) * hessian(cur_lambda_est)^-1
+new_lambda_est <-
+  cur_lambda_est -
+  score(cur_lambda_est) * hessian(cur_lambda_est)^-1
 ```
 
 ---
 
-```{r}
-#| label: fig-cyclone-newton-step1-with-new-est
-#| fig-cap: "score function of Dobson cyclone data and approximate score function"
+:::{#fig-cyclone-newton-step1-with-new-est}
 
-plot2 = plot1 +
-  geom_point(size = point_size,
-             aes(x = new_lambda_est,
-                 y = 0,
-                 col = "new estimate")) +
+```{r}
+
+plot2 <- plot1 +
+  geom_point(
+    size = point_size,
+    aes(
+      x = new_lambda_est,
+      y = 0,
+      col = "new estimate"
+    )
+  ) +
   geom_segment(
     arrow = grid::arrow(),
     linewidth = 2,
     alpha = .7,
     aes(
       x = cur_lambda_est,
-      y = approx_score(lhat = cur_lambda_est,
-                       lambda = cur_lambda_est),
+      y = approx_score(
+        lhat = cur_lambda_est,
+        lambda = cur_lambda_est
+      ),
       xend = new_lambda_est,
       yend = 0,
       col = "update"
     )
   )
 print(plot2)
-
 ```
+
+score function of Dobson cyclone data and approximate score function
+
+:::
 
 ---
 
@@ -775,23 +799,29 @@ So we update $\esttmpl \leftarrow `r new_lambda_est`$ and repeat our estimation 
 
 :::
 
+:::{#fig-cyclone-newton-step2}
+
 ```{r}
-#| label: fig-cyclone-newton-step2
-#| fig-cap: "score function of Dobson cyclone data and approximate score function"
 
 plot2 +
-geom_function(
-  fun = approx_score, 
-  aes(col = "new approximate score function"),
-  n = 1001, 
-  args = list(lhat = new_lambda_est)) +
-geom_point(
-  size = point_size,
-  aes(x = new_lambda_est, y = score(lambda = new_lambda_est),
-      col = "new estimate")
-)
-
+  geom_function(
+    fun = approx_score,
+    aes(col = "new approximate score function"),
+    n = 1001,
+    args = list(lhat = new_lambda_est)
+  ) +
+  geom_point(
+    size = point_size,
+    aes(
+      x = new_lambda_est, y = score(lambda = new_lambda_est),
+      col = "new estimate"
+    )
+  )
 ```
+
+score function of Dobson cyclone data and approximate score function
+
+:::
 
 ---
 
@@ -799,33 +829,30 @@ geom_point(
 We repeat this process until the likelihood converges:
 :::
 
+:::{#tbl-mle-converge}
+
 ```{r}
-#| label: tbl-mle-converge
-#| tbl-cap: "Convergence of Newton-Raphson Algorithm for finding MLE of `cyclone` data"
-
-
 library(tibble)
-cur_lambda_est = 3 # restarting
-diff_loglik = Inf
-tolerance = 10 ^ -4
-max_iter = 100
-NR_info = tibble(
+cur_lambda_est <- 3 # restarting
+diff_loglik <- Inf
+tolerance <- 10^-4
+max_iter <- 100
+NR_info <- tibble( # nolint: object_name_linter
   iteration = 0,
   lambda = cur_lambda_est |> num(digits = 4),
   likelihood = lik(cur_lambda_est),
-  `log(likelihood)` = loglik(cur_lambda_est)  |> num(digits = 4),
+  `log(likelihood)` = loglik(cur_lambda_est) |> num(digits = 4),
   score = score(cur_lambda_est),
   hessian = hessian(cur_lambda_est)
 )
 
-for (cur_iter in 1:max_iter)
-{
+for (cur_iter in 1:max_iter) {
   new_lambda_est <-
-    cur_lambda_est - score(cur_lambda_est) * hessian(cur_lambda_est) ^ -1
-  
-  diff_loglik = loglik(new_lambda_est) - loglik(cur_lambda_est)
-  
-  new_NR_info = tibble(
+    cur_lambda_est - score(cur_lambda_est) * hessian(cur_lambda_est)^-1
+
+  diff_loglik <- loglik(new_lambda_est) - loglik(cur_lambda_est)
+
+  new_NR_info <- tibble( # nolint: object_name_linter
     iteration = cur_iter,
     lambda = new_lambda_est,
     likelihood = lik(new_lambda_est),
@@ -834,19 +861,22 @@ for (cur_iter in 1:max_iter)
     hessian = hessian(new_lambda_est),
     `diff(loglik)` = diff_loglik
   )
-  
-  NR_info = NR_info |> bind_rows(new_NR_info)
-  
-  cur_lambda_est = new_lambda_est
-  
-  if (abs(diff_loglik) < tolerance)
+
+  NR_info <- NR_info |> bind_rows(new_NR_info) # nolint: object_name_linter
+
+  cur_lambda_est <- new_lambda_est
+
+  if (abs(diff_loglik) < tolerance) {
     break
-  
+  }
 }
 
 NR_info
-
 ```
+
+Convergence of Newton-Raphson Algorithm for finding MLE of `cyclone` data
+
+:::
 
 ::: notes
 Compare with @exr-find-mle
@@ -854,15 +884,13 @@ Compare with @exr-find-mle
 
 ---
 
-```{r}
-#| label: fig-NR-converge
-#| fig-cap: "Newton-Raphson algorithm for finding MLE of [model @eq-iid-model] for `cyclone` data"
+:::{#fig-NR-converge}
 
+```{r}
 ll_plot +
   geom_segment(
     data = NR_info,
     arrow = grid::arrow(),
-    # linewidth = 2,
     alpha = .7,
     aes(
       x = lambda,
@@ -872,6 +900,8 @@ ll_plot +
       col = factor(iteration)
     )
   )
-
 ```
 
+Newton-Raphson algorithm for finding MLE of [model @eq-iid-model] for `cyclone` data
+
+:::
