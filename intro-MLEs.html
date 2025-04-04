@@ -391,6 +391,8 @@ window.Quarto = {
   <li><a href="#exploratory-analysis" id="toc-exploratory-analysis" class="nav-link" data-scroll-target="#exploratory-analysis"><span class="header-section-number">F.2.2</span> Exploratory analysis</a></li>
   <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model"><span class="header-section-number">F.2.3</span> Model</a></li>
   <li><a href="#estimating-the-model-parameters-using-maximum-likelihood" id="toc-estimating-the-model-parameters-using-maximum-likelihood" class="nav-link" data-scroll-target="#estimating-the-model-parameters-using-maximum-likelihood"><span class="header-section-number">F.2.4</span> Estimating the model parameters using maximum likelihood</a></li>
+  <li><a href="#finding-the-mle-analytically" id="toc-finding-the-mle-analytically" class="nav-link" data-scroll-target="#finding-the-mle-analytically"><span class="header-section-number">F.2.5</span> Finding the MLE analytically</a></li>
+  <li><a href="#finding-the-mle-using-the-newton-raphson-algorithm" id="toc-finding-the-mle-using-the-newton-raphson-algorithm" class="nav-link" data-scroll-target="#finding-the-mle-using-the-newton-raphson-algorithm"><span class="header-section-number">F.2.6</span> Finding the MLE using the Newton-Raphson algorithm</a></li>
   </ul>
 </li>
   <li>
@@ -430,7 +432,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-04-03: 20:57:34 (PM)</p>
+      <p class="date">Last modified: 2025-04-04: 5:59:27 (AM)</p>
     </div>
   </div>
   
@@ -845,18 +847,18 @@ Key point
 </section><section id="exploratory-analysis" class="level3" data-number="F.2.2"><h3 data-number="F.2.2" class="anchored" data-anchor-id="exploratory-analysis">
 <span class="header-section-number">F.2.2</span> Exploratory analysis</h3>
 <p>Suppose we want to learn about how many cyclones to expect per season.</p>
-<div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">dobson</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rapporter.github.io/pander/">pander</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html">pander</a></span><span class="op">(</span><span class="va">cyclones</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html">relocate</a></span><span class="op">(</span><span class="va">season</span>, .before <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div id="tbl-cyclones-data" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+</details><div id="tbl-cyclones-data" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cyclones-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;F.1: Number of tropical cyclones during a season from November to April in Northeastern Australia
 </figcaption><div aria-describedby="tbl-cyclones-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell">
 <div class="cell-output-display">
-<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<table class="caption-top table table-sm table-striped small">
 <colgroup>
 <col style="width: 12%">
 <col style="width: 13%">
@@ -937,14 +939,14 @@ Table&nbsp;F.1: Number of tropical cyclones during a season from November to Apr
 </table>
 </div>
 </div>
+</div>
 </figure>
 </div>
-</div>
-<div class="cell">
+<hr>
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="va">cyclones</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>years <span class="op">=</span> <span class="va">years</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span>levels <span class="op">=</span> <span class="va">years</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>years <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">years</span>, levels <span class="op">=</span> <span class="va">years</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">years</span>, y <span class="op">=</span> <span class="va">number</span>, group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
@@ -952,19 +954,25 @@ Table&nbsp;F.1: Number of tropical cyclones during a season from November to Apr
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Number of cyclones"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expand_limits.html">expand_limits</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>vjust <span class="op">=</span> <span class="fl">.5</span>, angle <span class="op">=</span> <span class="fl">45</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
-<div id="fig-dobson-cyclone-time-series" class="quarto-float quarto-figure quarto-figure-center anchored">
+</details><div id="fig-dobson-cyclone-time-series" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-dobson-cyclone-time-series-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;F.1: Number of tropical cyclones per season in northeastern Australia, 1956-1969
 </figcaption><div aria-describedby="fig-dobson-cyclone-time-series-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="intro-MLEs_files/figure-html/fig-dobson-cyclone-time-series-1.png" class="img-fluid figure-img" width="672">
-</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+</div>
+</figure>
+</div>
 <p>There’s no obvious correlation between adjacent seasons, so let’s assume that each season is independent of the others.</p>
-<p>Let’s also assume that they are identically distributed; let’s denote this distribution as <span class="math inline">\(P(Y=y)\)</span> (note that there’s no index <span class="math inline">\(i\)</span> in this expression, since we are assuming the <span class="math inline">\(Y_i\)</span>s are identically distributed). We can visualize the distribution using a bar plot (<a href="#fig-cyclones-bar-plot" class="quarto-xref">Figure&nbsp;<span>F.2</span></a>). <a href="#tbl-dobson-cyclones-sumstat" class="quarto-xref">Table&nbsp;<span>F.2</span></a> provides summary statistics.</p>
+<p>Let’s also assume that they are identically distributed; let’s denote this distribution as <span class="math inline">\(P(Y=y)\)</span>. Note that there’s no index <span class="math inline">\(i\)</span> in this expression, since we are assuming the <span class="math inline">\(Y_i\)</span>s are identically distributed.</p>
+<hr>
+<p>We can visualize the distribution using a bar plot (<a href="#fig-cyclones-bar-plot" class="quarto-xref">Figure&nbsp;<span>F.2</span></a>).</p>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cyclones</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
@@ -983,12 +991,18 @@ Figure&nbsp;F.2: Bar plot of cyclones per season
 </div>
 </div>
 </div>
+<hr>
+<p><a href="#tbl-dobson-cyclones-sumstat" class="quarto-xref">Table&nbsp;<span>F.2</span></a> provides summary statistics.</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">)</span></span>
-<span><span class="va">sumx</span> <span class="op">=</span> <span class="va">cyclones</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">number</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">xbar</span> <span class="op">=</span>  <span class="va">cyclones</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">number</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">)</span></span>
+<span><span class="va">sumx</span> <span class="op">&lt;-</span> <span class="va">cyclones</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">number</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">xbar</span> <span class="op">&lt;-</span> <span class="va">cyclones</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">number</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cyclones</span> <span class="op">|&gt;</span> <span class="fu">table1</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html">table1</a></span><span class="op">(</span>x <span class="op">=</span> <span class="op">~</span> <span class="va">number</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">cyclones</span> <span class="op">|&gt;</span> <span class="fu">table1</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/table1/man/table1.html">table1</a></span><span class="op">(</span>x <span class="op">=</span> <span class="op">~</span><span class="va">number</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div id="tbl-dobson-cyclones-sumstat" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-dobson-cyclones-sumstat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
@@ -1029,25 +1043,30 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 <span class="header-section-number">F.2.3</span> Model</h3>
 <p>We want to estimate <span class="math inline">\(P(Y=y)\)</span>; that is, <span class="math inline">\(P(Y=y)\)</span> is our <a href="./estimation.html#def-estimand">estimand</a>.</p>
 <p>We could estimate <span class="math inline">\(P(Y=y)\)</span> for each value of <span class="math inline">\(y\)</span> in <span class="math inline">\(0:\infty\)</span> separately (“nonparametrically”) using the fraction of our data with <span class="math inline">\(Y_i=y\)</span>, but then we would be estimating an infinitely large set of parameters, and we would have low precision. We will probably do better with a parametric model.</p>
+<hr>
 <div id="exr-cyclone-choose-dist" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.1</strong></span> What parametric probability distribution family might we use to model this empirical distribution?</p>
 </div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span>Let’s use the Poisson. The Poisson distribution is appropriate for this data , because the data are counts that could theoretically take any integer value (discrete) in the range <span class="math inline">\(0:\infty\)</span>. Visually, the plot of our data closely resembles a Poisson or binomial distribution. Since cyclones do not have an “upper limit” on the number of events we could potentially observe in one season, the Poisson distribution is more appropriate than the binomial.</p>
 </div>
+<hr>
 <div id="exr-def-poisson" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.2</strong></span> Write down the Poisson distribution’s probability mass function.</p>
 </div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span><span id="eq-iid-model"><span class="math display">\[P(Y=y) = \frac{\lambda^{y} e^{-\lambda}}{y!} \tag{F.6}\]</span></span></p>
 </div>
 </section><section id="estimating-the-model-parameters-using-maximum-likelihood" class="level3" data-number="F.2.4"><h3 data-number="F.2.4" class="anchored" data-anchor-id="estimating-the-model-parameters-using-maximum-likelihood">
 <span class="header-section-number">F.2.4</span> Estimating the model parameters using maximum likelihood</h3>
 <p>Now, we can estimate the parameter <span class="math inline">\(\lambda\)</span> for this distribution using maximum likelihood estimation.</p>
-<p>What is the likelihood?</p>
+<hr>
 <div id="exr-poisson-likelihood" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.3</strong></span> Write down the likelihood (probability mass function or probability density function) of a single observation <span class="math inline">\(x\)</span>, according to your model.</p>
+<p><span class="theorem-title"><strong>Exercise F.3 (What is the likelihood?)</strong></span> Write down the likelihood (probability mass function or probability density function) of a single observation <span class="math inline">\(x\)</span>, according to your model.</p>
 </div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span><span class="math display">\[
 \begin{aligned}
@@ -1057,16 +1076,20 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 \end{aligned}
 \]</span></p>
 </div>
+<hr>
 <div id="exr-poisson-parameters" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.4</strong></span> Write down the vector of parameters in your model.</p>
 </div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span>There is only one parameter, <span class="math inline">\(\lambda\)</span>:</p>
 <p><span class="math display">\[\theta = (\lambda)\]</span></p>
 </div>
+<hr>
 <div id="exr-poisson-mean-and-variance" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.5</strong></span> Write down the population mean and variance of a single observation from your chosen probability model, as a function of the parameters (extra credit - derive them).</p>
 </div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span></p>
 <ul>
@@ -1076,9 +1099,11 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 </li>
 </ul>
 </div>
+<hr>
 <div id="exr-sample-likelihood" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.6</strong></span> Write down the likelihood of the full dataset.</p>
 </div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span><span class="math display">\[
 \begin{aligned}
@@ -1090,23 +1115,25 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 \end{aligned}
 \]</span></p>
 </div>
+<hr>
 <div id="exr-graph-likelihood" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.7</strong></span> Graph the likelihood as a function of <span class="math inline">\(\lambda\)</span>.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span></p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lik</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">y</span> <span class="op">=</span> <span class="va">cyclones</span><span class="op">$</span><span class="va">number</span>, <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span> </span>
-<span><span class="op">{</span></span>
-<span><span class="va">lambda</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">n</span><span class="op">*</span><span class="va">lambda</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/prod.html">prod</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Special.html">factorial</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lik</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">y</span> <span class="op">=</span> <span class="va">cyclones</span><span class="op">$</span><span class="va">number</span>, <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">lambda</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">n</span> <span class="op">*</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/prod.html">prod</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Special.html">factorial</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="va">lik_plot</span> <span class="op">=</span> </span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">lik</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"likelihood"</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">'lambda'</span><span class="op">)</span></span>
+<span><span class="va">lik_plot</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">lik</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"likelihood"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"lambda"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">lik_plot</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
@@ -1121,9 +1148,11 @@ Figure&nbsp;F.3: Likelihood of Dobson cyclone data
 </div>
 </div>
 </div>
-</div>
+<hr>
 <div id="exr-sample-llik" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.8</strong></span> Write down the log-likelihood of the full dataset.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span><span class="math display">\[
 \begin{aligned}
@@ -1137,23 +1166,24 @@ Figure&nbsp;F.3: Likelihood of Dobson cyclone data
 \end{aligned}
 \]</span></p>
 </div>
-</div>
+<hr>
 <div id="exr-graph-loglikelihood" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.9</strong></span> Graph the log-likelihood as a function of <span class="math inline">\(\lambda\)</span>.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span></p>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
-<span><span class="va">loglik</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">y</span> <span class="op">=</span> <span class="va">cyclones</span><span class="op">$</span><span class="va">number</span>, <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">{</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span> <span class="op">-</span> <span class="va">n</span><span class="op">*</span><span class="va">lambda</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Special.html">factorial</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">loglik</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">y</span> <span class="op">=</span> <span class="va">cyclones</span><span class="op">$</span><span class="va">number</span>, <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span> <span class="op">-</span> <span class="va">n</span> <span class="op">*</span> <span class="va">lambda</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Special.html">factorial</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">ll_plot</span> <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">loglik</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"log-likelihood"</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">'lambda'</span><span class="op">)</span></span>
+<span><span class="va">ll_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">loglik</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"log-likelihood"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"lambda"</span><span class="op">)</span></span>
 <span><span class="va">ll_plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div id="fig-cyclone-llik" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -1167,10 +1197,12 @@ Figure&nbsp;F.4: log-likelihood of Dobson cyclone data
 </div>
 </div>
 </div>
-</div>
+<hr>
 <section id="the-score-function-1" class="level4"><h4 class="anchored" data-anchor-id="the-score-function-1">The score function</h4>
 <div id="exr-cyclone-score-fn" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.10</strong></span> Derive the score function for the dataset.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span>The score function is the first derivative of the log-likelihood:</p>
 <p><span class="math display">\[
@@ -1186,25 +1218,25 @@ Figure&nbsp;F.4: log-likelihood of Dobson cyclone data
 \end{aligned}
 \]</span></p>
 </div>
-</div>
+<hr>
 <div id="exr-graph-score-function" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.11</strong></span> Graph the score function.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span></p>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
-<span><span class="va">score</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">y</span> <span class="op">=</span> <span class="va">cyclones</span><span class="op">$</span><span class="va">number</span>, <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">{</span></span>
+<span><span class="va">score</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">y</span> <span class="op">=</span> <span class="va">cyclones</span><span class="op">$</span><span class="va">number</span>, <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">/</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">-</span> <span class="va">n</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">score</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"l'(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">'lambda'</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">score</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"l'(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"lambda"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div id="fig-cyclone-score" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cyclone-score-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1217,10 +1249,11 @@ Figure&nbsp;F.5: score function of Dobson cyclone data
 </div>
 </div>
 </div>
-</div>
-</section><section id="sec-hessian" class="level4"><h4 class="anchored" data-anchor-id="sec-hessian">The Hessian matrix</h4>
+<hr></section><section id="sec-hessian" class="level4"><h4 class="anchored" data-anchor-id="sec-hessian">The Hessian matrix</h4>
 <div id="exr-hessian" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.12</strong></span> Derive the Hessian matrix.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span>The Hessian function for an iid sample is the 2nd derivative(s) of the log-likelihood:</p>
 <p><span class="math display">\[
@@ -1233,25 +1266,25 @@ Figure&nbsp;F.5: score function of Dobson cyclone data
 \end{aligned}
 \]</span></p>
 </div>
-</div>
+<hr>
 <div id="exr-graph-hession" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.13</strong></span> Graph the Hessian.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span></p>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
-<span><span class="va">hessian</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">y</span> <span class="op">=</span> <span class="va">cyclones</span><span class="op">$</span><span class="va">number</span>, <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">{</span></span>
-<span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">lambda</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">hessian</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">y</span> <span class="op">=</span> <span class="va">cyclones</span><span class="op">$</span><span class="va">number</span>, <span class="va">n</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">lambda</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">hessian</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"l''(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">'lambda'</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">hessian</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"l''(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"lambda"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div id="fig-cyclone-hessian" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cyclone-hessian-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1264,15 +1297,22 @@ Figure&nbsp;F.6: Hessian function of Dobson cyclone data
 </div>
 </div>
 </div>
-</div>
+<hr>
 <div id="exr-score-equation" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.14</strong></span> Write the score equation (estimating equation).</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span><span class="math display">\[\ell'( \lambda; \tilde{x} ) = 0\]</span></p>
 </div>
-</div>
+</section></section><section id="finding-the-mle-analytically" class="level3" data-number="F.2.5"><h3 data-number="F.2.5" class="anchored" data-anchor-id="finding-the-mle-analytically">
+<span class="header-section-number">F.2.5</span> Finding the MLE analytically</h3>
+<p>In this case, we can find the MLE of <span class="math inline">\(\lambda\)</span> by solving the score equation for <span class="math inline">\(\lambda\)</span> analytically (using algebra):</p>
+<hr>
 <div id="exr-solve-score-equation" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.15</strong></span> Solve the estimating equation for <span class="math inline">\(\lambda\)</span>:</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span><span class="math display">\[
 \begin{aligned}
@@ -1285,11 +1325,13 @@ n\lambda &amp;= \sum_{i = 1}^nx_i\\
 \end{aligned}
 \]</span></p>
 </div>
-</div>
 <p>Let’s call this solution of the estimating equation <span class="math inline">\(\tilde \lambda\)</span> for now:</p>
 <p><span class="math display">\[\tilde \lambda \stackrel{\text{def}}{=}\bar x\]</span></p>
+<hr>
 <div id="exr-check-hessian" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.16</strong></span> Confirm that the Hessian <span class="math inline">\(\ell''(\lambda; \tilde{x})\)</span> is negative when evaluated at <span class="math inline">\(\tilde \lambda\)</span>.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span><span class="math display">\[
 \begin{aligned}
@@ -1301,27 +1343,31 @@ n\lambda &amp;= \sum_{i = 1}^nx_i\\
 \end{aligned}
 \]</span></p>
 </div>
-</div>
+<hr>
 <div id="exr-find-mle" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.17</strong></span> Find the MLE of <span class="math inline">\(\lambda\)</span>.</p>
+<p><span class="theorem-title"><strong>Exercise F.17</strong></span> Draw conclusions about the MLE of <span class="math inline">\(\lambda\)</span>.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span>Since <span class="math inline">\(\ell''(\tilde \lambda; \tilde{x})&lt;0\)</span>, <span class="math inline">\(\tilde \lambda\)</span> is at least a local maximizer of the likelihood function <span class="math inline">\(\mathcal L(\lambda)\)</span>. Since there is only one solution to the estimating equation and the Hessian is negative definite everywhere, <span class="math inline">\(\tilde \lambda\)</span> must also be the global maximizer of <span class="math inline">\(\mathcal L(\lambda; \tilde{x})\)</span>:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mle</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mle</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><span class="math display">\[\hat{\lambda}_{\text{ML}} = \bar x = 5.5385\]</span></p>
 </div>
-</div>
+<hr>
 <div id="exr-graph-mle" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise F.18</strong></span> Graph the log-likelihood with the MLE superimposed.</p>
+</div>
+<hr>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span></p>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">mle_data</span> <span class="op">=</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">mle</span>, y <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">mle</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">ll_plot</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mle_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">mle_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">mle</span>, y <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">mle</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ll_plot</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mle_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div id="fig-cyclone-llik-mle" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cyclone-llik-mle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1334,16 +1380,16 @@ Figure&nbsp;F.7: log-likelihood of Dobson cyclone data with MLE
 </div>
 </div>
 </div>
-</div>
-</section><section id="information-matrices" class="level4"><h4 class="anchored" data-anchor-id="information-matrices">Information matrices</h4>
+<hr>
+<section id="information-matrices" class="level4"><h4 class="anchored" data-anchor-id="information-matrices">Information matrices</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">obs_inf</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="op">-</span><span class="fu">hessian</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">obs_inf</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="op">-</span><span class="fu">hessian</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">obs_inf</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"I(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">'lambda'</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">'red'</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="va">obs_inf</span>, n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"I(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"lambda"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div id="fig-obs-inf-matrix" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-obs-inf-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1355,6 +1401,8 @@ Figure&nbsp;F.8: Observed information function of Dobson cyclone data
 </div>
 </div>
 </div>
+</section></section><section id="finding-the-mle-using-the-newton-raphson-algorithm" class="level3" data-number="F.2.6"><h3 data-number="F.2.6" class="anchored" data-anchor-id="finding-the-mle-using-the-newton-raphson-algorithm">
+<span class="header-section-number">F.2.6</span> Finding the MLE using the Newton-Raphson algorithm</h3>
 <hr>
 <div id="exm-dobson-cyclones-Newton" class="theorem example">
 <p><span class="theorem-title"><strong>Example F.1 (Finding the MLE using the Newton-Raphson algorithm)</strong></span> &nbsp;</p>
@@ -1365,7 +1413,7 @@ Figure&nbsp;F.8: Observed information function of Dobson cyclone data
 </div>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># specify initial guess:</span></span>
-<span><span class="va">cur_lambda_est</span> <span class="op">=</span> <span class="fl">3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">cur_lambda_est</span> <span class="op">&lt;-</span> <span class="fl">3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -1398,54 +1446,61 @@ Figure&nbsp;F.8: Observed information function of Dobson cyclone data
 <div class="notes">
 <p><a href="#fig-cyclone-newton-step1" class="quarto-xref">Figure&nbsp;<span>F.9</span></a> compares the true score function and the approximate score function at <span class="math inline">\({\widehat{\lambda}}^*= 3\)</span>.</p>
 </div>
-<div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">approx_score</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span></span>
-<span><span class="op">{</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<span><span class="va">approx_score</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">score</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">hessian</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">lambda</span> <span class="op">-</span> <span class="va">lhat</span><span class="op">)</span></span>
+<span>    <span class="fu">hessian</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">lambda</span> <span class="op">-</span> <span class="va">lhat</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">point_size</span> <span class="op">=</span> <span class="fl">5</span></span>
+<span><span class="va">point_size</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
 <span></span>
-<span><span class="va">plot1</span> <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
-<span>  fun <span class="op">=</span> <span class="va">score</span>, </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"true score function"</span><span class="op">)</span>, </span>
-<span>  n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
-<span>  fun <span class="op">=</span> <span class="va">approx_score</span>, </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"approximate score function"</span><span class="op">)</span>,</span>
-<span>  n <span class="op">=</span> <span class="fl">1001</span>, </span>
-<span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>lhat <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
-<span>  size <span class="op">=</span> <span class="va">point_size</span>,</span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">cur_lambda_est</span>, y <span class="op">=</span> <span class="fu">score</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span>,</span>
-<span>      col <span class="op">=</span> <span class="st">"current estimate"</span><span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
-<span>size <span class="op">=</span> <span class="va">point_size</span>,</span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
-<span>x <span class="op">=</span> <span class="va">xbar</span>,</span>
-<span>y <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>col <span class="op">=</span> <span class="st">"true MLE"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"l'(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">'lambda'</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
+<span>    fun <span class="op">=</span> <span class="va">score</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"true score function"</span><span class="op">)</span>,</span>
+<span>    n <span class="op">=</span> <span class="fl">1001</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
+<span>    fun <span class="op">=</span> <span class="va">approx_score</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"approximate score function"</span><span class="op">)</span>,</span>
+<span>    n <span class="op">=</span> <span class="fl">1001</span>,</span>
+<span>    args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>lhat <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
+<span>    size <span class="op">=</span> <span class="va">point_size</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="va">cur_lambda_est</span>, y <span class="op">=</span> <span class="fu">score</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span>,</span>
+<span>      col <span class="op">=</span> <span class="st">"current estimate"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
+<span>    size <span class="op">=</span> <span class="va">point_size</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="va">xbar</span>,</span>
+<span>      y <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>      col <span class="op">=</span> <span class="st">"true MLE"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"l'(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"lambda"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
-<div id="fig-cyclone-newton-step1" class="quarto-float quarto-figure quarto-figure-center anchored">
+</details><div id="fig-cyclone-newton-step1" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cyclone-newton-step1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;F.9: score function of Dobson cyclone data and approximate score function
+Figure&nbsp;F.9: Score function of Dobson cyclone data and approximate score function
 </figcaption><div aria-describedby="fig-cyclone-newton-step1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="intro-MLEs_files/figure-html/fig-cyclone-newton-step1-1.png" class="img-fluid figure-img" width="672">
-</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
+</div>
+</div>
+</figure>
 </div>
 <hr>
 <div class="notes">
@@ -1457,52 +1512,59 @@ Figure&nbsp;F.9: score function of Dobson cyclone data and approximate score fun
 (\lambda - {\widehat{\lambda}}^*) \ell'({\widehat{\lambda}}^*) +
 \frac{1}{2}\ell''({\widehat{\lambda}}^*)(\lambda-{\widehat{\lambda}}^*)^2
 \]</span></p>
-<div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">approx_loglik</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span></span>
-<span><span class="op">{</span></span>
-<span><span class="fu">loglik</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu">score</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">lambda</span> <span class="op">-</span> <span class="va">lhat</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fl">1</span><span class="op">/</span><span class="fl">2</span> <span class="op">*</span> <span class="fu">hessian</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">lambda</span> <span class="op">-</span> <span class="va">lhat</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<span><span class="va">approx_loglik</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lambda</span>, <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">loglik</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">score</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">lambda</span> <span class="op">-</span> <span class="va">lhat</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span> <span class="op">*</span> <span class="fu">hessian</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">lhat</span>, <span class="va">...</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">lambda</span> <span class="op">-</span> <span class="va">lhat</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">plot_loglik</span> <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
-<span>  fun <span class="op">=</span> <span class="va">loglik</span>, </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"true log-likelihood"</span><span class="op">)</span>, </span>
-<span>  n <span class="op">=</span> <span class="fl">1001</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
-<span>  fun <span class="op">=</span> <span class="va">approx_loglik</span>, </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"approximate log-likelihood"</span><span class="op">)</span>,</span>
-<span>  n <span class="op">=</span> <span class="fl">1001</span>, </span>
-<span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>lhat <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
-<span>  size <span class="op">=</span> <span class="va">point_size</span>,</span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">cur_lambda_est</span>, y <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span>,</span>
-<span>      col <span class="op">=</span> <span class="st">"current estimate"</span><span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
-<span>size <span class="op">=</span> <span class="va">point_size</span>,</span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
-<span>x <span class="op">=</span> <span class="va">xbar</span>,</span>
-<span>y <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">xbar</span><span class="op">)</span>,</span>
-<span>col <span class="op">=</span> <span class="st">"true MLE"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"l'(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">'lambda'</span><span class="op">)</span></span>
+<span><span class="va">plot_loglik</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
+<span>    fun <span class="op">=</span> <span class="va">loglik</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"true log-likelihood"</span><span class="op">)</span>,</span>
+<span>    n <span class="op">=</span> <span class="fl">1001</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
+<span>    fun <span class="op">=</span> <span class="va">approx_loglik</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"approximate log-likelihood"</span><span class="op">)</span>,</span>
+<span>    n <span class="op">=</span> <span class="fl">1001</span>,</span>
+<span>    args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>lhat <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
+<span>    size <span class="op">=</span> <span class="va">point_size</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="va">cur_lambda_est</span>, y <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span>,</span>
+<span>      col <span class="op">=</span> <span class="st">"current estimate"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
+<span>    size <span class="op">=</span> <span class="va">point_size</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="va">xbar</span>,</span>
+<span>      y <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">xbar</span><span class="op">)</span>,</span>
+<span>      col <span class="op">=</span> <span class="st">"true MLE"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">cyclones</span><span class="op">$</span><span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"l'(lambda)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"lambda"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot_loglik</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
-<div id="fig-cyclone-newton-step1-loglik" class="quarto-float quarto-figure quarto-figure-center anchored">
+</details><div id="fig-cyclone-newton-step1-loglik" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cyclone-newton-step1-loglik-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;F.10: log-likelihood of Dobson cyclone data and approximate log-likelihood function
 </figcaption><div aria-describedby="fig-cyclone-newton-step1-loglik-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="intro-MLEs_files/figure-html/fig-cyclone-newton-step1-loglik-1.png" class="img-fluid figure-img" width="672">
-</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
+</div>
+</div>
+</figure>
 </div>
 <hr>
 <div class="notes">
@@ -1516,98 +1578,112 @@ Figure&nbsp;F.10: log-likelihood of Dobson cyclone data and approximate log-like
 \end{aligned}
 \]</span></p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">new_lambda_est</span> <span class="op">&lt;-</span> </span>
-<span>   <span class="va">cur_lambda_est</span> <span class="op">-</span> </span>
-<span>   <span class="fu">score</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span> <span class="op">*</span> <span class="fu">hessian</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span><span class="op">^</span><span class="op">-</span><span class="fl">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">new_lambda_est</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">cur_lambda_est</span> <span class="op">-</span></span>
+<span>  <span class="fu">score</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span> <span class="op">*</span> <span class="fu">hessian</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span><span class="op">^</span><span class="op">-</span><span class="fl">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <hr>
-<div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plot2</span> <span class="op">=</span> <span class="va">plot1</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="va">point_size</span>,</span>
-<span>             <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">new_lambda_est</span>,</span>
-<span>                 y <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>                 col <span class="op">=</span> <span class="st">"new estimate"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<span><span class="va">plot2</span> <span class="op">&lt;-</span> <span class="va">plot1</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
+<span>    size <span class="op">=</span> <span class="va">point_size</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="va">new_lambda_est</span>,</span>
+<span>      y <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>      col <span class="op">=</span> <span class="st">"new estimate"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span></span>
 <span>    arrow <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/arrow.html">arrow</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    linewidth <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>    alpha <span class="op">=</span> <span class="fl">.7</span>,</span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
 <span>      x <span class="op">=</span> <span class="va">cur_lambda_est</span>,</span>
-<span>      y <span class="op">=</span> <span class="fu">approx_score</span><span class="op">(</span>lhat <span class="op">=</span> <span class="va">cur_lambda_est</span>,</span>
-<span>                       lambda <span class="op">=</span> <span class="va">cur_lambda_est</span><span class="op">)</span>,</span>
+<span>      y <span class="op">=</span> <span class="fu">approx_score</span><span class="op">(</span></span>
+<span>        lhat <span class="op">=</span> <span class="va">cur_lambda_est</span>,</span>
+<span>        lambda <span class="op">=</span> <span class="va">cur_lambda_est</span></span>
+<span>      <span class="op">)</span>,</span>
 <span>      xend <span class="op">=</span> <span class="va">new_lambda_est</span>,</span>
 <span>      yend <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>      col <span class="op">=</span> <span class="st">"update"</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
-<div id="fig-cyclone-newton-step1-with-new-est" class="quarto-float quarto-figure quarto-figure-center anchored">
+</details><div id="fig-cyclone-newton-step1-with-new-est" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cyclone-newton-step1-with-new-est-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;F.11: score function of Dobson cyclone data and approximate score function
 </figcaption><div aria-describedby="fig-cyclone-newton-step1-with-new-est-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="intro-MLEs_files/figure-html/fig-cyclone-newton-step1-with-new-est-1.png" class="img-fluid figure-img" width="672">
-</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
+</div>
+</div>
+</figure>
 </div>
 <hr>
 <div class="notes">
 <p>So we update <span class="math inline">\({\widehat{\lambda}}^*\leftarrow 4.375\)</span> and repeat our estimation process:</p>
 </div>
-<div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plot2</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
-<span>  fun <span class="op">=</span> <span class="va">approx_score</span>, </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"new approximate score function"</span><span class="op">)</span>,</span>
-<span>  n <span class="op">=</span> <span class="fl">1001</span>, </span>
-<span>  args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>lhat <span class="op">=</span> <span class="va">new_lambda_est</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
-<span>  size <span class="op">=</span> <span class="va">point_size</span>,</span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">new_lambda_est</span>, y <span class="op">=</span> <span class="fu">score</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">new_lambda_est</span><span class="op">)</span>,</span>
-<span>      col <span class="op">=</span> <span class="st">"new estimate"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
-<div id="fig-cyclone-newton-step2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<span><span class="va">plot2</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_function.html">geom_function</a></span><span class="op">(</span></span>
+<span>    fun <span class="op">=</span> <span class="va">approx_score</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"new approximate score function"</span><span class="op">)</span>,</span>
+<span>    n <span class="op">=</span> <span class="fl">1001</span>,</span>
+<span>    args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>lhat <span class="op">=</span> <span class="va">new_lambda_est</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
+<span>    size <span class="op">=</span> <span class="va">point_size</span>,</span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="va">new_lambda_est</span>, y <span class="op">=</span> <span class="fu">score</span><span class="op">(</span>lambda <span class="op">=</span> <span class="va">new_lambda_est</span><span class="op">)</span>,</span>
+<span>      col <span class="op">=</span> <span class="st">"new estimate"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div id="fig-cyclone-newton-step2" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cyclone-newton-step2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;F.12: score function of Dobson cyclone data and approximate score function
 </figcaption><div aria-describedby="fig-cyclone-newton-step2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="intro-MLEs_files/figure-html/fig-cyclone-newton-step2-1.png" class="img-fluid figure-img" width="672">
-</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
+</div>
+</div>
+</figure>
 </div>
 <hr>
 <div class="notes">
 <p>We repeat this process until the likelihood converges:</p>
 </div>
-<div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span></span>
-<span><span class="va">cur_lambda_est</span> <span class="op">=</span> <span class="fl">3</span> <span class="co"># restarting</span></span>
-<span><span class="va">diff_loglik</span> <span class="op">=</span> <span class="cn">Inf</span></span>
-<span><span class="va">tolerance</span> <span class="op">=</span> <span class="fl">10</span> <span class="op">^</span> <span class="op">-</span><span class="fl">4</span></span>
-<span><span class="va">max_iter</span> <span class="op">=</span> <span class="fl">100</span></span>
-<span><span class="va">NR_info</span> <span class="op">=</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span></span>
+<span><span class="va">cur_lambda_est</span> <span class="op">&lt;-</span> <span class="fl">3</span> <span class="co"># restarting</span></span>
+<span><span class="va">diff_loglik</span> <span class="op">&lt;-</span> <span class="cn">Inf</span></span>
+<span><span class="va">tolerance</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">^</span><span class="op">-</span><span class="fl">4</span></span>
+<span><span class="va">max_iter</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
+<span><span class="va">NR_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span> <span class="co"># nolint: object_name_linter</span></span>
 <span>  iteration <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  lambda <span class="op">=</span> <span class="va">cur_lambda_est</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/num.html">num</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,</span>
 <span>  likelihood <span class="op">=</span> <span class="fu">lik</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span>,</span>
-<span>  `log(likelihood)` <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span>  <span class="op">|&gt;</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/num.html">num</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,</span>
+<span>  `log(likelihood)` <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/num.html">num</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,</span>
 <span>  score <span class="op">=</span> <span class="fu">score</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span>,</span>
 <span>  hessian <span class="op">=</span> <span class="fu">hessian</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">cur_iter</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">max_iter</span><span class="op">)</span></span>
-<span><span class="op">{</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">cur_iter</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">max_iter</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">new_lambda_est</span> <span class="op">&lt;-</span></span>
-<span>    <span class="va">cur_lambda_est</span> <span class="op">-</span> <span class="fu">score</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span> <span class="op">*</span> <span class="fu">hessian</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span> <span class="op">^</span> <span class="op">-</span><span class="fl">1</span></span>
-<span>  </span>
-<span>  <span class="va">diff_loglik</span> <span class="op">=</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">new_lambda_est</span><span class="op">)</span> <span class="op">-</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span></span>
-<span>  </span>
-<span>  <span class="va">new_NR_info</span> <span class="op">=</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    <span class="va">cur_lambda_est</span> <span class="op">-</span> <span class="fu">score</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span> <span class="op">*</span> <span class="fu">hessian</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span><span class="op">^</span><span class="op">-</span><span class="fl">1</span></span>
+<span></span>
+<span>  <span class="va">diff_loglik</span> <span class="op">&lt;-</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">new_lambda_est</span><span class="op">)</span> <span class="op">-</span> <span class="fu">loglik</span><span class="op">(</span><span class="va">cur_lambda_est</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">new_NR_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span> <span class="co"># nolint: object_name_linter</span></span>
 <span>    iteration <span class="op">=</span> <span class="va">cur_iter</span>,</span>
 <span>    lambda <span class="op">=</span> <span class="va">new_lambda_est</span>,</span>
 <span>    likelihood <span class="op">=</span> <span class="fu">lik</span><span class="op">(</span><span class="va">new_lambda_est</span><span class="op">)</span>,</span>
@@ -1616,21 +1692,22 @@ Figure&nbsp;F.12: score function of Dobson cyclone data and approximate score fu
 <span>    hessian <span class="op">=</span> <span class="fu">hessian</span><span class="op">(</span><span class="va">new_lambda_est</span><span class="op">)</span>,</span>
 <span>    `diff(loglik)` <span class="op">=</span> <span class="va">diff_loglik</span></span>
 <span>  <span class="op">)</span></span>
-<span>  </span>
-<span>  <span class="va">NR_info</span> <span class="op">=</span> <span class="va">NR_info</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">new_NR_info</span><span class="op">)</span></span>
-<span>  </span>
-<span>  <span class="va">cur_lambda_est</span> <span class="op">=</span> <span class="va">new_lambda_est</span></span>
-<span>  </span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">diff_loglik</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">tolerance</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">NR_info</span> <span class="op">&lt;-</span> <span class="va">NR_info</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">new_NR_info</span><span class="op">)</span> <span class="co"># nolint: object_name_linter</span></span>
+<span></span>
+<span>  <span class="va">cur_lambda_est</span> <span class="op">&lt;-</span> <span class="va">new_lambda_est</span></span>
+<span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">diff_loglik</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">tolerance</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw">break</span></span>
-<span>  </span>
+<span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">NR_info</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div id="tbl-mle-converge" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+</details><div id="tbl-mle-converge" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mle-converge-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;F.3: Convergence of Newton-Raphson Algorithm for finding MLE of <code>cyclone</code> data
 </figcaption><div aria-describedby="tbl-mle-converge-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell">
 <div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -1639,19 +1716,17 @@ Table&nbsp;F.3: Convergence of Newton-Raphson Algorithm for finding MLE of <code
 </div>
 </div>
 </div>
-</figure>
 </div>
+</figure>
 </div>
 <div class="notes">
 <p>Compare with <a href="#exr-find-mle" class="quarto-xref">Exercise&nbsp;<span>F.17</span></a></p>
 </div>
 <hr>
-<div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ll_plot</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span></span>
 <span>    data <span class="op">=</span> <span class="va">NR_info</span>,</span>
 <span>    arrow <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/arrow.html">arrow</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    <span class="co"># linewidth = 2,</span></span>
 <span>    alpha <span class="op">=</span> <span class="fl">.7</span>,</span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
 <span>      x <span class="op">=</span> <span class="va">lambda</span>,</span>
@@ -1661,18 +1736,22 @@ Table&nbsp;F.3: Convergence of Newton-Raphson Algorithm for finding MLE of <code
 <span>      col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">iteration</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
-<div id="fig-NR-converge" class="quarto-float quarto-figure quarto-figure-center anchored">
+</details><div id="fig-NR-converge" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-NR-converge-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;F.13: Newton-Raphson algorithm for finding MLE of <a href="#eq-iid-model" class="quarto-xref">model&nbsp;<span>F.6</span></a> for <code>cyclone</code> data
 </figcaption><div aria-describedby="fig-NR-converge-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="intro-MLEs_files/figure-html/fig-NR-converge-1.png" class="img-fluid figure-img" width="672">
-</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-</section></section></section><section id="maximum-likelihood-inference-for-univariate-gaussian-models" class="level2" data-number="F.3"><h2 data-number="F.3" class="anchored" data-anchor-id="maximum-likelihood-inference-for-univariate-gaussian-models">
+</div>
+</figure>
+</div>
+</section></section><section id="maximum-likelihood-inference-for-univariate-gaussian-models" class="level2" data-number="F.3"><h2 data-number="F.3" class="anchored" data-anchor-id="maximum-likelihood-inference-for-univariate-gaussian-models">
 <span class="header-section-number">F.3</span> Maximum likelihood inference for univariate Gaussian models</h2>
 <p>Suppose <span class="math inline">\(X_{1}, ..., X_{n} \ \sim_{\text{iid}}\ N(\mu, \sigma^{2})\)</span>. Let <span class="math inline">\(X = (X_{1},\ldots,X_{n})^{\top}\)</span> be these random variables in vector format. Let <span class="math inline">\(x_{i}\)</span> and <span class="math inline">\(x\)</span> denote the corresponding observed data. Then <span class="math inline">\(\theta = (\mu,\sigma^{2})\)</span> is the vector of true parameters, and <span class="math inline">\(\Theta = (\text{M}, \Sigma^2)\)</span> is the vector of parameters as a random vector.</p>
 <p>Then the log-likelihood is:</p>
@@ -1862,7 +1941,7 @@ Table&nbsp;F.4: HERS dataset
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1889,7 +1968,7 @@ Table&nbsp;F.4: HERS dataset
 <span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1940,7 +2019,7 @@ Table&nbsp;F.4: HERS dataset
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">glucose_data</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1958,7 +2037,7 @@ Table&nbsp;F.4: HERS dataset
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">glucose_data</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1977,7 +2056,7 @@ Table&nbsp;F.4: HERS dataset
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Likelihood"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1996,7 +2075,7 @@ Table&nbsp;F.4: HERS dataset
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"log(likelihood)"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-17-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -2016,7 +2095,7 @@ Table&nbsp;F.4: HERS dataset
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -2089,7 +2168,7 @@ Table&nbsp;F.4: HERS dataset
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">power_plot</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="intro-MLEs_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -2153,7 +2232,7 @@ Table&nbsp;F.4: HERS dataset
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["mu-hat"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["sigma-hat"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se_hat"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["confint_left"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["confint_right"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["tstat"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pval"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["confint covers true mu"],"name":[8],"type":["lgl"],"align":["right"]},{"label":["test rejects null hypothesis"],"name":[9],"type":["lgl"],"align":["right"]}],"data":[{"1":"99.74","2":"10.34","3":"1.034","4":"97.69","5":"101.8","6":"10.6","7":"5.52e-18","8":"TRUE","9":"TRUE"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["mu-hat"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["sigma-hat"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se_hat"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["confint_left"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["confint_right"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["tstat"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pval"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["confint covers true mu"],"name":[8],"type":["lgl"],"align":["right"]},{"label":["test rejects null hypothesis"],"name":[9],"type":["lgl"],"align":["right"]}],"data":[{"1":"98.03","2":"10.22","3":"1.022","4":"96","5":"100.1","6":"9.031","7":"1.422e-14","8":"TRUE","9":"TRUE"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
