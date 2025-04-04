@@ -118,31 +118,34 @@ to determine how many in each groups have MIs.
 
 :::
 
+:::{#tbl-oc-mi}
+
 ```{r}
 #| message: false
 #| code-fold: true
-#| label: tbl-oc-mi
-#| tbl-cap: Simulated data from study of oral contraceptive use and heart attack risk
 library(dplyr)
-oc_mi = 
+oc_mi <-
   tribble(
     ~OC, ~MI, ~Total,
     "OC use", 13, 5000,
     "No OC use", 7, 10000
-  ) |> 
-  mutate(`No MI` = Total - MI) |> 
+  ) |>
+  mutate(`No MI` = Total - MI) |>
   relocate(`No MI`, .after = MI)
 
-totals = 
-  oc_mi |> 
-  summarize(across(c(MI, `No MI`, Total), sum)) |> 
+totals <-
+  oc_mi |>
+  summarize(across(c(MI, `No MI`, Total), sum)) |>
   mutate(OC = "Total")
 
-tbl_oc_mi = bind_rows(oc_mi, totals)
+tbl_oc_mi <- bind_rows(oc_mi, totals)
 
 tbl_oc_mi
-
 ```
+
+Simulated data from study of oral contraceptive use and heart attack risk
+
+:::
 
 :::::
 
@@ -159,8 +162,8 @@ Review: estimate the probabilities of MI for OC users and non-OC users in @exm-o
 
 ```{r, include = FALSE}
 #| label: calc-prs
-p_MI_OC = 13/5000
-p_MI_nOC = 7/10000
+p_MI_OC <- 13 / 5000 # nolint: object_name_linter
+p_MI_nOC <- 7 / 10000 # nolint: object_name_linter
 ```
 
 $$\ph(MI|OC) = \frac{13}{5000} = `r p_MI_OC`$$
@@ -218,7 +221,7 @@ $$\delta(\pi_1,\pi_2) \eqdef \pi_1 - \pi_2$$
 In @exm-oc-mi, the maximum likelihood estimate of the difference in MI risk between OC users and OC non-users is:
 ```{r, include = FALSE}
 #| label: compute-risk-diff
-rd_OC = p_MI_OC - p_MI_nOC
+rd_OC <- p_MI_OC - p_MI_nOC # nolint: object_name_linter
 ```
 
 $$
@@ -265,7 +268,7 @@ So we might estimate that the *relative risk* of MI for OC versus non-OC is:
 
 ```{r}
 #| label: compute-risk-ratio
-rr = (13/5000)/(7/10000)
+rr <- (13 / 5000) / (7 / 10000)
 ```
 
 $$
@@ -400,14 +403,18 @@ $$\logit(\pi) \eqdef \log{\odds(\pi)}$$
 #| code-fold: true
 #| fig-cap: "The logit function"
 #| label: fig-logit
-logit = function(p) log(odds(p))
 
-logit_plot = 
-  ggplot() + 
+odds <- function(pi) pi / (1 - pi)
+
+logit <- function(p) log(odds(p))
+
+logit_plot <-
+  ggplot() +
   geom_function(
     fun = logit,
-    arrow = arrow(ends = "both")) + 
-  xlim(.001, .999) + 
+    arrow = arrow(ends = "both")
+  ) +
+  xlim(.001, .999) +
   ylab("logit(p)") +
   xlab("p") +
   theme_bw()
@@ -482,13 +489,16 @@ $$\expit(\logodds) \eqdef \oddsinvf{\expf{\logodds}}$$
 #| label: fig-expit-plot
 #| fig-cap: The expit function
 #| code-fold: true
-expit = function(eta)
+expit <- function(eta) {
   exp(eta) / (1 + exp(eta))
+}
 library(ggplot2)
-expit_plot =
+expit_plot <-
   ggplot() +
-  geom_function(fun = expit,
-                arrow = arrow(ends = "both")) +
+  geom_function(
+    fun = expit,
+    arrow = arrow(ends = "both")
+  ) +
   xlim(-8, 8) +
   ylim(0, 1) +
   ylab(expression(expit(eta))) +
@@ -741,101 +751,119 @@ $$\pi(\vec x) = \expit(\vx'\beta)$${#eq-logistic-link}
 
 ### Meet the beetles
 
+:::{#fig-beetles_1a}
+
 ```{r}
-#| label: fig-beetles_1a
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
 library(glmx)
 
 data(BeetleMortality, package = "glmx")
-beetles = BeetleMortality |>
+beetles <- BeetleMortality |>
   mutate(
-    pct = died/n,
+    pct = died / n,
     survived = n - died
   )
 
-plot1 = 
-  beetles |> 
+plot1 <-
+  beetles |>
   ggplot(aes(x = dose, y = pct)) +
   geom_point(aes(size = n)) +
   xlab("Dose (log mg/L)") +
   ylab("Mortality rate (%)") +
   scale_y_continuous(labels = scales::percent) +
-  scale_size(range = c(1,2)) +
+  scale_size(range = c(1, 2)) +
   theme_bw(base_size = 18)
 
 print(plot1)
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
+
 ### Why don't we use linear regression?
 
-```{r}
-#| label: fig-beetles_2
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
+:::{#fig-beetles_2}
 
-beetles_long = beetles  |> 
-   reframe(
+```{r}
+beetles_long <- beetles |>
+  reframe(
     .by = everything(),
     outcome = c(
-      rep(1, times = died), 
-      rep(0, times = survived))) |> 
+      rep(1, times = died),
+      rep(0, times = survived)
+    )
+  ) |>
   as_tibble()
 
-lm1 = beetles_long |> lm(formula = outcome ~ dose)
-f.linear = function(x) predict(lm1, newdata = data.frame(dose = x))
+lm1 <- beetles_long |> lm(formula = outcome ~ dose)
+f_linear <- function(x) predict(lm1, newdata = data.frame(dose = x))
 
-range1 = range(beetles$dose) + c(-.2, .2)
+range1 <- range(beetles$dose) + c(-.2, .2)
 
-plot2 = 
-  plot1 + 
+plot2 <-
+  plot1 +
   geom_function(
-    fun = f.linear, 
-    aes(col = "Straight line")) +
-  labs(colour="Model", size = "")
+    fun = f_linear,
+    aes(col = "Straight line")
+  ) +
+  labs(colour = "Model", size = "")
 
 plot2 |> print()
-
 ```
+
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
 
 ### Zoom out
 
+:::{#fig-beetles_3}
+
 ```{r}
-#| label: fig-beetles_3
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
 (plot2 + expand_limits(x = c(1.6, 2))) |> print()
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
+
 ### log transformation of dose?
 
+:::{#fig-beetles_4}
+
 ```{r}
-#| label: fig-beetles_4
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
+lm2 <- beetles_long |> lm(formula = outcome ~ log(dose))
+f_linearlog <- function(x) predict(lm2, newdata = data.frame(dose = x))
 
-lm2 = beetles_long |> lm(formula = outcome ~ log(dose))
-f.linearlog = function(x) predict(lm2, newdata = data.frame(dose = x))
-
-plot3 = plot2 + 
+plot3 <- plot2 +
   expand_limits(x = c(1.6, 2)) +
-  geom_function(fun = f.linearlog, aes(col = "Log-transform dose"))
+  geom_function(fun = f_linearlog, aes(col = "Log-transform dose"))
 (plot3 + expand_limits(x = c(1.6, 2))) |> print()
-
 ```
+
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
 
 ### Logistic regression
 
+:::{#fig-beetles_5}
+
 ```{r}
-
-#| label: fig-beetles_5
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
-
-beetles_glm_grouped = beetles |>
+beetles_glm_grouped <- beetles |>
   glm(formula = cbind(died, survived) ~ dose, family = "binomial")
-f = function(x)
+f <- function(x) {
   beetles_glm_grouped |>
-  predict(newdata = data.frame(dose = x), type = "response")
+    predict(newdata = data.frame(dose = x), type = "response")
+}
 
-plot4 = plot3 + geom_function(fun = f, aes(col = "Logistic regression"))
+plot4 <- plot3 + geom_function(fun = f, aes(col = "Logistic regression"))
 plot4 |> print()
 ```
+
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
 
 ---
 
@@ -854,18 +882,17 @@ function)
 ### Logistic regression in R
 
 ```{r}
-
-beetles_glm_grouped = 
-  beetles |> 
+beetles_glm_grouped <-
+  beetles |>
   glm(
-    formula = cbind(died, survived) ~ dose, 
-    family = "binomial")
+    formula = cbind(died, survived) ~ dose,
+    family = "binomial"
+  )
 
 library(parameters)
-beetles_glm_grouped |> 
-  parameters() |> 
+beetles_glm_grouped |>
+  parameters() |>
   print_md()
-
 ```
 
 ---
@@ -877,7 +904,7 @@ fitted.values(beetles_glm_grouped)
 predict(beetles_glm_grouped, type = "response")
 predict(beetles_glm_grouped, type = "link")
 
-fit_y = beetles$n * fitted.values(beetles_glm_grouped)
+fit_y <- beetles$n * fitted.values(beetles_glm_grouped)
 ```
 
 ---
@@ -889,32 +916,44 @@ fit_y = beetles$n * fitted.values(beetles_glm_grouped)
 #| label: tbl-beetles-long
 
 beetles_long
-
 ```
 
 ---
 
-```{r}
-#| label: tbl-beetles-model-ungrouped
-#| tbl-cap: "logistic regression model for beetles data with individual Bernoulli data"
-beetles_glm_ungrouped = 
-  beetles_long |> 
-  glm(
-    formula = outcome ~ dose, 
-    family = "binomial")
+:::{#tbl-beetles-model-ungrouped}
 
-beetles_glm_ungrouped |> parameters() |> print_md()
+```{r}
+beetles_glm_ungrouped <-
+  beetles_long |>
+  glm(
+    formula = outcome ~ dose,
+    family = "binomial"
+  )
+
+beetles_glm_ungrouped |>
+  parameters() |>
+  print_md()
 ```
+
+logistic regression model for beetles data with individual Bernoulli data
+
+:::
 
 ::: notes
 Here's the previous version again:
 :::
 
+:::{#tbl-beetles-model-grouped}
+
 ```{r}
-#| label: tbl-beetles-model-grouped
-#| tbl-cap: "logistic regression model for beetles data with grouped (binomial) data"
-beetles_glm_grouped |> parameters() |> print_md()
+beetles_glm_grouped |>
+  parameters() |>
+  print_md()
 ```
+
+logistic regression model for beetles data with grouped (binomial) data
+
+:::
 
 ---
 
@@ -923,10 +962,8 @@ They seem the same! But not quite:
 :::
 
 ```{r}
-
 logLik(beetles_glm_grouped)
 logLik(beetles_glm_ungrouped)
-
 ```
 
 ::: notes
@@ -1038,12 +1075,12 @@ Here, I load the data:
 
 ### load the data directly from a UCSF website:
 library(haven)
-url = paste0(
-    # I'm breaking up the url into two chunks for readability
-    "https://regression.ucsf.edu/sites/g/files/",
-    "tkssra6706/f/wysiwyg/home/data/wcgs.dta")
-wcgs = haven::read_dta(url)
-
+url <- paste0(
+  # I'm breaking up the url into two chunks for readability
+  "https://regression.ucsf.edu/sites/g/files/",
+  "tkssra6706/f/wysiwyg/home/data/wcgs.dta"
+)
+wcgs <- haven::read_dta(url)
 ```
 
 ```{r}
@@ -1051,10 +1088,9 @@ wcgs = haven::read_dta(url)
 # I presaved the data in my project's `data` folder
 library(here) # provides the `here()` function
 library(fs) # provides the `path()` function
-here::here() |> 
-  fs::path('Data/wcgs.rda') |> 
+here::here() |>
+  fs::path("Data/wcgs.rda") |>
   load()
-
 ```
 
 ```{r}
@@ -1076,43 +1112,38 @@ library(arsenal) # provides `set_labels()`
 library(forcats) # provides `as_factor()`
 library(haven)
 library(plotly)
-wcgs = wcgs |> 
+wcgs <- wcgs |>
   mutate(
-    age = age |> 
+    age = age |>
       arsenal::set_labels("Age (years)"),
-    
-    arcus = 
-      arcus |> 
-      as.logical() |> 
+    arcus = arcus |>
+      as.logical() |>
       arsenal::set_labels("Arcus Senilis"),
-    
-    time169 = 
-      time169 |> 
-      as.numeric() |> 
+    time169 = time169 |>
+      as.numeric() |>
       arsenal::set_labels("Observation (follow up) time (days)"),
-    
-    dibpat =
-      dibpat |> 
-      as_factor() |> 
-      relevel(ref = "Type B") |> 
+    dibpat = dibpat |>
+      as_factor() |>
+      relevel(ref = "Type B") |>
       arsenal::set_labels("Behavioral Pattern"),
-    
-    typchd69 = typchd69 |> 
+    typchd69 = typchd69 |>
       labelled(
         label = "Type of CHD Event",
-        labels = 
+        labels =
           c(
-            "None" = 0, 
+            "None" = 0,
             "infdeath" = 1,
             "silent" = 2,
-            "angina" = 3)),
-    
+            "angina" = 3
+          )
+      ),
+
     # turn stata-style labelled variables in to R-style factors:
     across(
-      where(is.labelled), 
-      haven::as_factor)
+      where(is.labelled),
+      haven::as_factor
+    )
   )
-
 ```
 
 ### What's in the data {.smaller}
@@ -1126,8 +1157,8 @@ wcgs |>
   summary(
     pfootnote = TRUE,
     title =
-      "Baseline characteristics by CHD status at end of follow-up")
-
+      "Baseline characteristics by CHD status at end of follow-up"
+  )
 ```
 
 ### Data by age and personality type
@@ -1138,17 +1169,18 @@ the event rates for each combination of age:
 
 ```{r}
 #| label: "event rates by age"
-chd_grouped_data = 
-  wcgs |> 
+chd_grouped_data <-
+  wcgs |>
   summarize(
     .by = c(age, dibpat),
     n = sum(chd69 %in% c("Yes", "No")),
-    x = sum(chd69 == "Yes")) |> 
+    x = sum(chd69 == "Yes")
+  ) |>
   mutate(
     `n - x` = n - x,
-    `p(chd)` = (x / n) |> 
+    `p(chd)` = (x / n) |>
       labelled(label = "CHD Event by 1969"),
-    `odds(chd)` = `p(chd)` / (1 - `p(chd)`), 
+    `odds(chd)` = `p(chd)` / (1 - `p(chd)`),
     `logit(chd)` = log(`odds(chd)`)
   )
 
@@ -1164,16 +1196,17 @@ chd_grouped_data
 library(ggplot2)
 library(ggeasy)
 library(scales)
-chd_plot_probs = 
-  chd_grouped_data |> 
+chd_plot_probs <-
+  chd_grouped_data |>
   ggplot(
     aes(
-      x = age, 
-      y = `p(chd)`, 
-      col = dibpat)
+      x = age,
+      y = `p(chd)`,
+      col = dibpat
+    )
   ) +
-  geom_point(aes(size = n), alpha = .7) + 
-  scale_size(range = c(1,4)) +
+  geom_point(aes(size = n), alpha = .7) +
+  scale_size(range = c(1, 4)) +
   geom_line() +
   theme_bw() +
   ylab("P(CHD Event by 1969)") +
@@ -1181,7 +1214,9 @@ chd_plot_probs =
     labels = scales::label_percent(),
     sec.axis = sec_axis(
       ~ odds(.),
-      name = "odds(CHD Event by 1969)")) +
+      name = "odds(CHD Event by 1969)"
+    )
+  ) +
   ggeasy::easy_labs() +
   theme(legend.position = "bottom")
 
@@ -1196,18 +1231,21 @@ print(chd_plot_probs)
 #| label: fig-chd-odds-scale
 #| fig-cap: "CHD rates by age group, odds spacing"
 
-trans_odds = trans_new(
-  name = "odds", 
-  transform = odds, 
-  inverse = odds_inv)
+trans_odds <- trans_new(
+  name = "odds",
+  transform = odds,
+  inverse = odds_inv
+)
 
-chd_plot_odds = chd_plot_probs + 
+chd_plot_odds <- chd_plot_probs +
   scale_y_continuous(
     trans = trans_odds, # this line changes the vertical spacing
     name = chd_plot_probs$labels$y,
     sec.axis = sec_axis(
       ~ odds(.),
-      name = "odds(CHD Event by 1969)"))
+      name = "odds(CHD Event by 1969)"
+    )
+  )
 
 print(chd_plot_odds)
 ```
@@ -1220,13 +1258,14 @@ print(chd_plot_odds)
 #| label: fig-chd_plot_logit
 #| fig-cap: "CHD data (logit-scale)"
 
-trans_logit = trans_new(
-  name = "logit", 
-  transform = logit, 
-  inverse = expit)
+trans_logit <- trans_new(
+  name = "logit",
+  transform = logit,
+  inverse = expit
+)
 
-chd_plot_logit = 
-  chd_plot_probs + 
+chd_plot_logit <-
+  chd_plot_probs +
   scale_y_continuous(
     trans = trans_logit, # this line changes the vertical spacing
     name = chd_plot_probs$labels$y,
@@ -1234,7 +1273,9 @@ chd_plot_logit =
     minor_breaks = NULL,
     sec.axis = sec_axis(
       ~ logit(.),
-      name = "log(odds(CHD Event by 1969))"))
+      name = "log(odds(CHD Event by 1969))"
+    )
+  )
 
 print(chd_plot_logit)
 ```
@@ -1246,14 +1287,15 @@ Here, we fit stratified models for CHD by personality type.
 ```{r}
 #| tbl-cap: "CHD model, stratified parametrization"
 #| label: tbl-chd-strat
-chd_glm_strat = glm(
-  "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1, 
+chd_glm_strat <- glm(
+  "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1,
   "data" = wcgs,
   "family" = binomial(link = "logit")
 )
 
-chd_glm_strat |> parameters() |> print_md()
-
+chd_glm_strat |>
+  parameters() |>
+  print_md()
 ```
 
 We can get the corresponding odds ratios ($e^{\beta}$s) by passing
@@ -1262,8 +1304,8 @@ We can get the corresponding odds ratios ($e^{\beta}$s) by passing
 ```{r}
 #| tbl-cap: "Odds ratio estimates for CHD model"
 #| label: tbl-chd-glm-strat-OR
-chd_glm_strat |> 
-  parameters(exponentiate = TRUE) |> 
+chd_glm_strat |>
+  parameters(exponentiate = TRUE) |>
   print_md()
 ```
 
@@ -1277,22 +1319,21 @@ log-odds).
 #### probability scale
 
 ```{r}
-
-curve_type_A = function(x) 
-{
+curve_type_A <- function(x) { # nolint: object_name_linter
   chd_glm_strat |> predict(
     type = "response",
-    newdata = tibble(age = x, dibpat = "Type A"))
+    newdata = tibble(age = x, dibpat = "Type A")
+  )
 }
 
-curve_type_B = function(x) 
-{
+curve_type_B <- function(x) { # nolint: object_name_linter
   chd_glm_strat |> predict(
     type = "response",
-    newdata = tibble(age = x, dibpat = "Type B"))
+    newdata = tibble(age = x, dibpat = "Type B")
+  )
 }
 
-chd_plot_probs_2 =
+chd_plot_probs_2 <-
   chd_plot_probs +
   geom_function(
     fun = curve_type_A,
@@ -1307,24 +1348,11 @@ print(chd_plot_probs_2)
 
 ---
 
-#### odds scale
+:::{fig-fitted-odds-chd}
 
 ```{r}
-#| label: fig-fitted-odds-chd
-# curve_type_A = function(x) 
-# {
-#   chd_glm_strat |> predict(
-#     type = "link",
-#     newdata = tibble(age = x, dibpat = "Type A")) |> exp()
-# }
-# curve_type_B = function(x) 
-# {
-#   chd_glm_strat |> predict(
-#     type = "link",
-#     newdata = tibble(age = x, dibpat = "Type B")) |> exp()
-# }
 
-chd_plot_odds_2 =
+chd_plot_odds_2 <-
   chd_plot_odds +
   geom_function(
     fun = curve_type_A,
@@ -1335,8 +1363,11 @@ chd_plot_odds_2 =
     aes(col = "Type B")
   )
 print(chd_plot_odds_2)
-
 ```
+
+odds scale
+
+:::
 
 ---
 
@@ -1345,7 +1376,7 @@ print(chd_plot_odds_2)
 ```{r}
 #| label: fig-fitted-log-odds
 
-chd_plot_logit_2 =
+chd_plot_logit_2 <-
   chd_plot_logit +
   geom_function(
     fun = curve_type_A,
@@ -1367,16 +1398,16 @@ and contrasts):
 ```{r}
 #| label: tbl-model-corner-point
 #| tbl-cap: "CHD model (corner-point parametrization)"
-chd_glm_contrasts = 
-  wcgs |> 
+chd_glm_contrasts <-
+  wcgs |>
   glm(
     "data" = _,
-    "formula" = chd69 == "Yes" ~ dibpat*I(age - 50), 
+    "formula" = chd69 == "Yes" ~ dibpat * I(age - 50),
     "family" = binomial(link = "logit")
   )
 
-chd_glm_contrasts |> 
-  parameters() |> 
+chd_glm_contrasts |>
+  parameters() |>
   print_md()
 ```
 
@@ -1389,8 +1420,8 @@ Compare with @tbl-chd-glm-strat-OR.
 ```{r}
 #| tbl-cap: "Odds ratio estimates for CHD model"
 #| label: tbl-chd-glm-strat-OR-v2
-chd_glm_strat |> 
-  parameters() |> 
+chd_glm_strat |>
+  parameters() |>
   print_md()
 ```
 
@@ -1594,15 +1625,14 @@ log-likelihood). You can see some information about this process like so:
 #| label: out-glm-fitting-process
 #| code-fold: false
 options(digits = 8)
-temp = 
-  wcgs |> 
+temp <-
+  wcgs |>
   glm(
     control = glm.control(trace = TRUE),
     data = _,
-    formula = chd69 == "Yes" ~ dibpat*age, 
+    formula = chd69 == "Yes" ~ dibpat * age,
     family = binomial(link = "logit")
   )
-
 ```
 
 ::: notes
@@ -1665,17 +1695,19 @@ found to be approximately $g-2$.
 For our CHD model, this procedure would be:
 
 ```{r}
-wcgs = 
-  wcgs |> 
+wcgs <-
+  wcgs |>
   mutate(
     pred_probs_glm1 = chd_glm_strat |> fitted(),
-    pred_prob_cats1 = 
-      pred_probs_glm1 |> 
-      cut(breaks = seq(0, 1, by = .1), 
-          include.lowest = TRUE))
+    pred_prob_cats1 = pred_probs_glm1 |>
+      cut(
+        breaks = seq(0, 1, by = .1),
+        include.lowest = TRUE
+      )
+  )
 
-HL_table = 
-  wcgs |> 
+HL_table <- # nolint: object_name_linter
+  wcgs |>
   summarize(
     .by = pred_prob_cats1,
     n = n(),
@@ -1686,14 +1718,14 @@ HL_table =
 library(pander)
 HL_table |> pander()
 
-X2 = HL_table |> 
+X2 <- HL_table |> # nolint: object_name_linter
   summarize(
-    `X^2` = sum((o-e)^2/e)
-  ) |> 
+    `X^2` = sum((o - e)^2 / e)
+  ) |>
   pull(`X^2`)
 print(X2)
 
-pval1 = pchisq(X2, lower = FALSE, df = nrow(HL_table) - 2)
+pval1 <- pchisq(X2, lower = FALSE, df = nrow(HL_table) - 2)
 ```
 
 Our statistic is $X^2 = `r X2`$; $p(\chi^2(1) > `r X2`) = `r pval1`$,
@@ -1705,17 +1737,19 @@ probability, typically analysts use deciles of the predicted
 probabilities:
 
 ```{r}
-wcgs = 
-  wcgs |> 
+wcgs <-
+  wcgs |>
   mutate(
     pred_probs_glm1 = chd_glm_strat |> fitted(),
-    pred_prob_cats1 = 
-      pred_probs_glm1 |> 
-      cut(breaks = quantile(pred_probs_glm1, seq(0, 1, by = .1)), 
-          include.lowest = TRUE))
+    pred_prob_cats1 = pred_probs_glm1 |>
+      cut(
+        breaks = quantile(pred_probs_glm1, seq(0, 1, by = .1)),
+        include.lowest = TRUE
+      )
+  )
 
-HL_table = 
-  wcgs |> 
+HL_table <- # nolint: object_name_linter
+  wcgs |>
   summarize(
     .by = pred_prob_cats1,
     n = n(),
@@ -1725,15 +1759,15 @@ HL_table =
 
 HL_table |> pander()
 
-X2 = HL_table |> 
+X2 <- HL_table |> # nolint: object_name_linter
   summarize(
-    `X^2` = sum((o-e)^2/e)
-  ) |> 
+    `X^2` = sum((o - e)^2 / e)
+  ) |>
   pull(`X^2`)
 
 print(X2)
 
-pval1 = pchisq(X2, lower = FALSE, df = nrow(HL_table) - 2)
+pval1 <- pchisq(X2, lower = FALSE, df = nrow(HL_table) - 2)
 ```
 
 Now we have more evenly split categories. The p-value is $`r pval1`$,
@@ -1742,15 +1776,16 @@ still not significant.
 Graphically, we have compared:
 
 ```{r}
-
-HL_plot = 
-  HL_table |> 
-  ggplot(aes(x = pred_prob_cats1)) + 
-  geom_line(aes(y = e, x = pred_prob_cats1, group = "Expected", col = "Expected")) +
+HL_plot <- # nolint: object_name_linter
+  HL_table |>
+  ggplot(aes(x = pred_prob_cats1)) +
+  geom_line(
+    aes(y = e, x = pred_prob_cats1, group = "Expected", col = "Expected")
+  ) +
   geom_point(aes(y = e, size = n, col = "Expected")) +
   geom_point(aes(y = o, size = n, col = "Observed")) +
   geom_line(aes(y = o, col = "Observed", group = "Observed")) +
-  scale_size(range = c(1,4)) +
+  scale_size(range = c(1, 4)) +
   theme_bw() +
   ylab("number of CHD events") +
   theme(axis.text.x = element_text(angle = 45))
@@ -1786,9 +1821,8 @@ Here we will create the grouped-data version of our CHD model from the
 WCGS study:
 
 ```{r}
-
-wcgs_grouped = 
-  wcgs |> 
+wcgs_grouped <-
+  wcgs |>
   summarize(
     .by = c(dibpat, age),
     n = n(),
@@ -1796,14 +1830,15 @@ wcgs_grouped =
     `!chd` = sum(chd69 == "No")
   )
 
-chd_glm_strat_grouped = glm(
-  "formula" = cbind(chd, `!chd`) ~ dibpat + dibpat:age - 1, 
+chd_glm_strat_grouped <- glm(
+  "formula" = cbind(chd, `!chd`) ~ dibpat + dibpat:age - 1,
   "data" = wcgs_grouped,
   "family" = binomial(link = "logit")
 )
 
-chd_glm_strat_grouped |> parameters() |> print_md()
-
+chd_glm_strat_grouped |>
+  parameters() |>
+  print_md()
 ```
 
 ### (Response) residuals
@@ -1817,36 +1852,36 @@ $\hat\pi(x_k)$:
 
 ```{r}
 #| code-fold: show
-wcgs_grouped = 
-  wcgs_grouped |> 
+wcgs_grouped <-
+  wcgs_grouped |>
   mutate(
     fitted = chd_glm_strat_grouped |> fitted(),
     fitted_logit = fitted |> logit(),
-    response_resids = 
-      chd_glm_strat_grouped |> resid(type = "response")
+    response_resids = chd_glm_strat_grouped |> resid(type = "response")
   )
 
-wcgs_response_resid_plot = 
-  wcgs_grouped |> 
+wcgs_response_resid_plot <-
+  wcgs_grouped |>
   ggplot(
     mapping = aes(
       x = fitted,
       y = response_resids
     )
-  ) + 
+  ) +
   geom_point(
     aes(col = dibpat)
   ) +
-  geom_hline(yintercept = 0) + 
+  geom_hline(yintercept = 0) +
   geom_smooth( #<1>
-    se = TRUE,  #<1>
+    se = TRUE, #<1>
     method.args = list( #<1>
-      span=2/3, #<1>
-      degree=1, #<1>
-      family="symmetric", #<1>
-      iterations=3), #<1>
-    method = stats::loess) #<1>
-
+      span = 2 / 3, #<1>
+      degree = 1, #<1>
+      family = "symmetric", #<1>
+      iterations = 3
+    ), #<1>
+    method = stats::loess
+  ) #<1>
 ```
 
 1.  Don't worry about these options for now; I chose them to match
@@ -1968,44 +2003,40 @@ If you want to check your understanding of what these residual plots
 are, try building them yourself:
 
 ```{r}
-
-wcgs_grouped = 
-  wcgs_grouped |> 
+wcgs_grouped <-
+  wcgs_grouped |>
   mutate(
     fitted = chd_glm_strat_grouped |> fitted(),
     fitted_logit = fitted |> logit(),
     resids = chd_glm_strat_grouped |> resid(type = "pearson")
   )
 
-wcgs_resid_plot1 = 
-  wcgs_grouped |> 
+wcgs_resid_plot1 <-
+  wcgs_grouped |>
   ggplot(
     mapping = aes(
       x = fitted_logit,
       y = resids
-      
-    ) 
-    
-  ) + 
+    )
+  ) +
   geom_point(
     aes(col = dibpat)
   ) +
-  geom_hline(yintercept = 0) + 
-  geom_smooth(se = FALSE, 
-              method.args = list(
-                span=2/3,
-                degree=1,
-                family="symmetric",
-                iterations=3,
-                surface="direct"
-                # span = 2/3, 
-                # iterations = 3
-              ),
-              method = stats::loess)
-# plot.glm and autoplot use stats::lowess, which is hard to use with 
-# geom_smooth and hard to match exactly; 
+  geom_hline(yintercept = 0) +
+  geom_smooth(
+    se = FALSE,
+    method.args = list(
+      span = 2 / 3,
+      degree = 1,
+      family = "symmetric",
+      iterations = 3,
+      surface = "direct"
+    ),
+    method = stats::loess
+  )
+# plot.glm and autoplot use stats::lowess, which is hard to use with
+# geom_smooth and hard to match exactly;
 # see https://support.bioconductor.org/p/2323/
-
 ```
 
 ::: {.content-visible when-format="pdf"}
@@ -2023,24 +2054,23 @@ wcgs_resid_plot1 |> ggplotly()
 
 ### Pearson chi-squared goodness of fit test
 
-The Pearson chi-squared goodness of fit statistic is: $$
-X^2 = \sum_{k=1}^m X_k^2 
-$$ Under the null hypothesis that the model in question is correct
+The Pearson chi-squared goodness of fit statistic is: 
+$$X^2 = \sum_{k=1}^m X_k^2$$ 
+
+Under the null hypothesis that the model in question is correct
 (i.e., sufficiently complex), $X^2\ \dot \sim\ \chi^2(N-p)$.
 
 ```{r}
-
-X = chd_glm_strat_grouped |> 
+x_pearson <- chd_glm_strat_grouped |>
   resid(type = "pearson")
 
-chisq_stat = sum(X^2)
+chisq_stat <- sum(x_pearson^2)
 
-pval = pchisq(
-  chisq_stat, 
-  lower = FALSE, 
-  df = length(X) - length(coef(chd_glm_strat_grouped)))
-
-
+pval <- pchisq(
+  chisq_stat,
+  lower = FALSE,
+  df = length(x_pearson) - length(coef(chd_glm_strat_grouped))
+)
 ```
 
 For our CHD model, the p-value for this test is `r pval`; no significant
@@ -2080,7 +2110,9 @@ our `CHD` model:
 #| fig-cap: "Diagnostics for CHD model"
 #| label: fig-chd-model-diagnostics
 
-chd_glm_strat_grouped |> autoplot(which = 1:6) |> print()
+chd_glm_strat_grouped |>
+  autoplot(which = 1:6) |>
+  print()
 ```
 
 ::: notes
@@ -2098,7 +2130,9 @@ Let's look at the beetles model diagnostic plots for comparison:
 #| fig-height: 6
 #| label: fig-beetles-glm-diag
 #| fig-cap: "Diagnostics for logistic model of `BeetleMortality` data"
-beetles_glm_grouped |> autoplot(which = 1:6) |> print()
+beetles_glm_grouped |>
+  autoplot(which = 1:6) |>
+  print()
 ```
 
 
@@ -2115,19 +2149,21 @@ If you want risk ratios, you can sometimes get them by changing the link
 function:
 
 ```{r}
-
 data(anthers, package = "dobson")
-anthers.sum<-aggregate(
-  anthers[c("n","y")], 
-  by=anthers[c("storage")],FUN=sum) 
+anthers_sum <- aggregate(
+  anthers[c("n", "y")],
+  by = anthers[c("storage")], FUN = sum
+)
 
-anthers_glm_log = glm(
-  formula = cbind(y,n-y)~storage,
-  data=anthers.sum, 
-  family=binomial(link="log"))
+anthers_glm_log <- glm(
+  formula = cbind(y, n - y) ~ storage,
+  data = anthers_sum,
+  family = binomial(link = "log")
+)
 
-anthers_glm_log |> parameters() |> print_md()
-
+anthers_glm_log |>
+  parameters() |>
+  print_md()
 ```
 
 ---
@@ -2135,8 +2171,9 @@ anthers_glm_log |> parameters() |> print_md()
 Now $\exp{\beta}$ gives us risk ratios instead of odds ratios:
 
 ```{r}
-anthers_glm_log |> parameters(exponentiate = TRUE) |> print_md()
-
+anthers_glm_log |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
 ```
 
 ---
@@ -2144,14 +2181,15 @@ anthers_glm_log |> parameters(exponentiate = TRUE) |> print_md()
 Let's compare this model with a logistic model:
 
 ```{r}
-
-anthers_glm_logit = glm(
+anthers_glm_logit <- glm(
   formula = cbind(y, n - y) ~ storage,
-  data = anthers.sum,
-  family = binomial(link = "logit"))
+  data = anthers_sum,
+  family = binomial(link = "logit")
+)
 
-anthers_glm_logit |> parameters(exponentiate = TRUE) |> print_md()
-
+anthers_glm_logit |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
 ```
 
 \[to add: fitted plots on each outcome scale\]
@@ -2174,31 +2212,32 @@ confusing and not very appealing.
 ### WCGS: link functions
 
 ```{r}
-wcgs_glm_logit_link = 
-  chd_grouped_data |> 
-  mutate(type = dibpat |> relevel(ref = "Type B")) |> 
+wcgs_glm_logit_link <- chd_grouped_data |>
+  mutate(type = relevel(dibpat, ref = "Type B")) |>
   glm(
-    "formula" = cbind(x, `n - x`) ~ dibpat * age, 
+    "formula" = cbind(x, `n - x`) ~ dibpat * age,
     "data" = _,
     "family" = binomial(link = "logit")
   )
 
-wcgs_glm_identity_link = 
-  chd_grouped_data |> 
-  mutate(type = dibpat |> relevel(ref = "Type B")) |> 
+wcgs_glm_identity_link <-
+  chd_grouped_data |>
+  mutate(type = relevel(dibpat, ref = "Type B")) |>
   glm(
-    "formula" = cbind(x, `n - x`) ~ dibpat * age, 
+    "formula" = cbind(x, `n - x`) ~ dibpat * age,
     "data" = _,
     "family" = binomial(link = "identity")
   )
-wcgs_glm_identity_link |> coef() |> pander()
+wcgs_glm_identity_link |>
+  coef() |>
+  pander()
 ```
 
 ```{r}
 #| label: fig-diagnostics-glm1
 #| fig-cap: "Residuals vs Fitted plot for `wcgs` models"
 #| layout-ncol: 2
-#| fig-subcap: 
+#| fig-subcap:
 #| - "Logistic link"
 #| - "Identity link"
 
@@ -2211,17 +2250,18 @@ wcgs_glm_identity_link |> autoplot(which = c(1), ncol = 1) + facet_wrap(~dibpat)
 #| label: fig-diagnostics-beetles
 #| fig-cap: "Residuals vs Fitted plot for `BeetleMortality` models"
 #| layout-ncol: 2
-#| fig-subcap: 
+#| fig-subcap:
 #| - "Logistic link"
 #| - "Identity link"
 
-beetles_lm = 
-  beetles_long |> 
+beetles_lm <-
+  beetles_long |>
   lm(formula = died ~ dose)
 
-beetles = 
+beetles <-
   beetles |> mutate(
-    resid_logit = beetles_glm_grouped |> resid(type = "response"))
+    resid_logit = beetles_glm_grouped |> resid(type = "response")
+  )
 beetles_glm_grouped |> autoplot(which = c(1), ncol = 1)
 beetles_lm |> autoplot(which = c(1), ncol = 1)
 ```
