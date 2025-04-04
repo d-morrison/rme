@@ -4,22 +4,21 @@
 
 {{< include shared-config.qmd >}}
 
-## Introduction to Epi 204 {.scrollable}
+## Welcome
 
 Welcome to Epidemiology 204: Quantitative Epidemiology III (Statistical Models).
 
-In this course, we will start where Epi 203 left off: with linear regression models.
+Epi 204 is a course on **regression modeling**. 
 
-::: callout-note
-Epi 203/STA 130B/STA 131B is a prerequisite for this course. 
-If you haven't passed one of these courses, please talk to me ASAP.
-:::
+## What you should already know {.scrollable}
 
-### What you should already know {.scrollable}
+---
 
 {{< include prereq-knowledge.qmd >}}
 
-### What we will cover in this course
+## What we will cover in this course
+
+---
 
 * Linear (Gaussian) regression models (review and more details)
 
@@ -30,13 +29,28 @@ If you haven't passed one of these courses, please talk to me ASAP.
 
 * Statistical analysis using R
 
-## Regression models
+We will start where Epi 203 left off: with linear regression models.
 
-Why do we need them?
+## Motivations for regression models
 
-*   continuous predictors
+---
 
-*   not enough data to analyze some subgroups individually
+:::{#exr-why-regression}
+
+Why do we need regression models?
+
+:::
+
+---
+
+::: {#sol-why-regression .incremental}
+
+*   when there's not enough data to analyze every subgroup of interest 
+individually
+
+*   especially when subgroups are defined using continuous predictors
+
+:::
 
 ### Example: Adelie penguins
 
@@ -48,13 +62,14 @@ Why do we need them?
 library(ggplot2)
 library(plotly)
 library(dplyr)
-ggpenguins <- 
-  palmerpenguins::penguins |> 
-  dplyr::filter(species == "Adelie") |> 
+ggpenguins <-
+  palmerpenguins::penguins |>
+  dplyr::filter(species == "Adelie") |>
   ggplot(
-    aes(x = bill_length_mm , y = body_mass_g)) +
-  geom_point() + 
-  xlab("Bill length (mm)") + 
+  ) +
+  aes(x = bill_length_mm, y = body_mass_g) +
+  geom_point() +
+  xlab("Bill length (mm)") +
   ylab("Body mass (g)")
 
 print(ggpenguins)
@@ -65,14 +80,15 @@ print(ggpenguins)
 ```{r}
 #| label: fig-palmer-2
 #| fig-cap: Palmer penguins with linear regression fit
-ggpenguins2 = 
+ggpenguins2 <-
   ggpenguins +
-  stat_smooth(method = "lm",
-              formula = y ~ x,
-              geom = "smooth")
+  stat_smooth(
+    method = "lm",
+    formula = y ~ x,
+    geom = "smooth"
+  )
 
 ggpenguins2 |> print()
-
 ```
 
 ### Curved regression lines
@@ -80,12 +96,13 @@ ggpenguins2 |> print()
 ```{r}
 #| label: fig-palmer-3
 #| fig-cap: Palmer penguins - curved regression lines
-ggpenguins2 = ggpenguins +
+ggpenguins2 <- ggpenguins +
   stat_smooth(
     method = "lm",
     formula = y ~ log(x),
-    geom = "smooth") +
-  xlab("Bill length (mm)") + 
+    geom = "smooth"
+  ) +
+  xlab("Bill length (mm)") +
   ylab("Body mass (g)")
 ggpenguins2
 ```
@@ -96,135 +113,200 @@ ggpenguins2
 #| label: fig-palmer-4
 #| fig-cap: "Palmer penguins - multiple groups"
 
-ggpenguins =
-  palmerpenguins::penguins |> 
+ggpenguins <-
+  palmerpenguins::penguins |>
   ggplot(
-    aes(x = bill_length_mm , 
-        y = body_mass_g,
-        color = species
+    aes(
+      x = bill_length_mm,
+      y = body_mass_g,
+      color = species
     )
   ) +
   geom_point() +
   stat_smooth(
     method = "lm",
     formula = y ~ x,
-    geom = "smooth") +
-  xlab("Bill length (mm)") + 
+    geom = "smooth"
+  ) +
+  xlab("Bill length (mm)") +
   ylab("Body mass (g)")
 ggpenguins |> print()
-
 ```
 
 ### Modeling non-Gaussian outcomes
 
+::: {#fig-beetles_1a}
+
 ```{r}
-#| label: fig-beetles_1a
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
 
 library(glmx)
 data(BeetleMortality)
-beetles = BeetleMortality |>
+beetles <- BeetleMortality |>
   mutate(
-    pct = died/n,
+    pct = died / n,
     survived = n - died
   )
 
-plot1 = 
-  beetles |> 
+plot1 <-
+  beetles |>
   ggplot(aes(x = dose, y = pct)) +
   geom_point(aes(size = n)) +
   xlab("Dose (log mg/L)") +
   ylab("Mortality rate (%)") +
   scale_y_continuous(labels = scales::percent) +
   # xlab(bquote(log[10]), bquote(CS[2])) +
-  scale_size(range = c(1,2))
+  scale_size(range = c(1, 2))
 
 print(plot1)
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
+
 ### Why don't we use linear regression?
 
+:::{#fig-beetles-plot1}
+
 ```{r}
-#| label: fig-beetles-plot1
-#| fig-cap: "Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)"
-beetles_long = 
-  beetles  |> 
-  reframe(.by = everything(),
-          outcome = c(
-            rep(1, times = died), 
-            rep(0, times = survived))
+beetles_long <-
+  beetles |>
+  reframe(
+    .by = everything(),
+    outcome = c(
+      rep(1, times = died),
+      rep(0, times = survived)
+    )
   )
 
-lm1 = 
-  beetles_long |> 
+lm1 <-
+  beetles_long |>
   lm(
-    formula = outcome ~ dose, 
-    data = _)
+    formula = outcome ~ dose,
+    data = _
+  )
 
 
-range1 = range(beetles$dose) + c(-.2, .2)
+range1 <- range(beetles$dose) + c(-.2, .2)
 
-f.linear = function(x) predict(lm1, newdata = data.frame(dose = x))
+f_linear <- function(x) predict(lm1, newdata = data.frame(dose = x))
 
-plot2 = 
-  plot1 + 
-  geom_function(fun = f.linear, aes(col = "Straight line")) +
-  labs(colour="Model", size = "")
+plot2 <-
+  plot1 +
+  geom_function(fun = f_linear, aes(col = "Straight line")) +
+  labs(colour = "Model", size = "")
 print(plot2)
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to 
+gaseous carbon disulphide (Bliss 1935)
+
+:::
+
 ### Zoom out
 
+:::{#fig-beetles2}
 ```{r}
-#| label: fig-beetles2
-#| fig-cap: Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
 #| echo: false
 print(plot2 + expand_limits(x = c(1.6, 2)))
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to 
+gaseous carbon disulphide (Bliss 1935)
+
+::::
+
 ### log transformation of dose?
 
+:::{#fig-beetles3}
 ```{r}
-#| label: fig-beetles3
-#| fig-cap: Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
 
-
-lm2 = 
-  beetles_long |> 
+lm2 <-
+  beetles_long |>
   lm(formula = outcome ~ log(dose), data = _)
 
-f.linearlog = function(x) predict(lm2, newdata = data.frame(dose = x))
+f_linearlog <- function(x) predict(lm2, newdata = data.frame(dose = x))
 
-plot3 = plot2 + 
+plot3 <- plot2 +
   expand_limits(x = c(1.6, 2)) +
-  geom_function(fun = f.linearlog, aes(col = "Log-transform dose"))
+  geom_function(fun = f_linearlog, aes(col = "Log-transform dose"))
 
-print(plot3  + expand_limits(x = c(1.6, 2)))
+print(plot3 + expand_limits(x = c(1.6, 2)))
 ```
 
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+
+:::
 
 ### Logistic regression
 
-```{r}
-#| label: fig-beetles4b
-#| fig-cap: Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+:::{#fig-beetles4b}
 
-glm1 = beetles |> 
+```{r}
+
+glm1 <- beetles |>
   glm(formula = cbind(died, survived) ~ dose, family = "binomial")
 
-f = function(x) predict(glm1, newdata = data.frame(dose = x), type = "response")
+f <- function(x) {
+  glm1 |> 
+    predict(newdata = data.frame(dose = x), type = "response")
+}
 
-plot4 = plot3 + geom_function(fun = f, aes(col = "Logistic regression"))
+plot4 <- plot3 + geom_function(fun = f, aes(col = "Logistic regression"))
 print(plot4)
 ```
 
+Mortality rates of adult flour beetles 
+after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
 
-### Three parts to regression models
+:::
 
--   What distribution does the outcome have for a specific sub-population defined by covariates? (**outcome model**)
+## Structure of regression models
 
--   How does the combination of covariates relate to the mean? (**link function**)
+---
 
--   How do the covariates combine? (**linear predictor/linear component**)
-$$\eta \eqdef \vx \' \vb = \b_0 + \b_1 x_1 + \b_2 x_2 + ...$$
+{{< include _sec_regression_defs.qmd >}}
 
+---
+
+:::{#exr-glm-structure}
+
+What is the general structure of a generalized linear model?
+
+:::
+
+---
+
+Generalized linear models have three components:
+
+---
+
+1.   The **outcome distribution** family:
+
+* Gaussian (normal)
+* Binomial
+* Poisson
+* Exponential
+* Gamma
+* Negative binomial
+
+---
+
+2.   The **linear component** 
+(aka *linear predictor* or *linear functional form*) 
+describing how the covariates combine to define subpopulations:
+
+$$\eta(\vx) \eqdef \vx \' \vb = \b_0 + \b_1 x_1 + \b_2 x_2 + ...$$
+
+---
+
+3.  The **link function** relating the outcome distribution 
+to the linear component, typically through through the mean:
+
+* identity: $\mu(y) = \eta(\vx)$
+* logit: $\logf{\frac{\mu(y)}{1-\mu(y)}} = \eta(\vx)$
+* log: $\logf{\mu(y)} = \eta(\vx)$
+* inverse: $\invf{\mu(y)} = \eta(\vx)$
+* clog-log: $\logf{-\logf{1-\mu(y)}} = \eta(\vx)$
+
+---
