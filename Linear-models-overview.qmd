@@ -8,6 +8,10 @@ df-print: paged
 
 {{< include shared-config.qmd >}}
 
+```{r}
+include_reference_lines = FALSE
+```
+
 ---
 
 :::{.callout-note}
@@ -65,7 +69,11 @@ so everyone here should have some understanding of linear regression already.
 
 ### Motivating example: birthweights and gestational age {.smaller}
 
-Suppose we want to learn about the distributions of birthweights (*outcome* $Y$) for (human) babies born at different gestational ages (*covariate* $A$) and with different chromosomal sexes (*covariate* $S$) (@dobson4e Example 2.2.2).
+Suppose we want to learn about the distributions of birthweights (*outcome* $Y$) 
+for (human) babies born at different gestational ages (*covariate* $A$) 
+and with different chromosomal sexes (*covariate* $S$) (@dobson4e Example 2.2.2).
+
+### Dobson `birthweight` data {.smaller}
 
 ::::: {.panel-tabset}
 
@@ -133,9 +141,11 @@ print(plot1 + facet_wrap(~sex))
 
 ---
 
-#### Data notation
+#### Data notation {.smaller}
 
-Let's define some notation to represent this data.
+::: notes
+Let's define some notation to represent this data:
+:::
 
 -   $Y$: birthweight (measured in grams)
 -   $S$: chromosomal sex: "male" (XY) or "female" (XX)
@@ -148,7 +158,7 @@ Let's define some notation to represent this data.
 
 -   $A$: estimated gestational age at birth (measured in weeks).
 
-::: callout-note
+::: notes
 Female is the **reference level** for the categorical variable $S$ 
 (chromosomal sex) and corresponding indicator variable $M$ . 
 The choice of a reference level is arbitrary and does not limit what 
@@ -157,20 +167,20 @@ it only makes it more computationally convenient to make inferences
 about comparisons involving that reference group.
 :::
 
-### Parallel lines regression
+### Parallel lines regression {.smaller}
 
+::: notes
 We don't have enough data to model the distribution of birth weight 
 separately for each combination of gestational age and sex, 
 so let's instead consider a (relatively) simple model for how that 
 distribution varies with gestational age and sex:
+:::
 
-$$Y=y|A=a,S=s \siid N(\mu(a,s), \sigma^2)$$
 
 $$
 \ba
-\mu(a,s)
-&\eqdef \Exp{Y|A=a, S=s} \\
-&= \beta_0 + \beta_A a+ \beta_M m
+Y|A,M &\siid N(\mu(M,A), \sigma^2)\\
+\mu(a,m) &= \beta_0 + \beta_M m + \beta_A a
 \ea
 $$ {#eq-lm-parallel}
 
@@ -185,7 +195,7 @@ $$ {#eq-lm-parallel}
 
 ```{r}
 #| label: tbl-lm-parallel
-#| tbl-cap: "Estimate of [Model @eq-lm-parallel] for `birthweight` data"
+#| tbl-cap: "Regression parameter estimates for [Model @eq-lm-parallel] of `birthweight` data"
 
 bw_lm1 <- lm(
   formula = weight ~ sex + age,
@@ -195,7 +205,7 @@ bw_lm1 <- lm(
 bw_lm1 |> 
   parameters::parameters() |>
   parameters::print_md(
-    include_reference = TRUE,
+    include_reference = FALSE,
     select = "{estimate}"
   )
 ```
@@ -232,22 +242,41 @@ print(plot2)
 To learn what this model is assuming, let's plug in a few values.
 :::
 
+---
+
 ::: {#exr-pred-fem-parallel}
 
-According to this model, what's the mean birthweight for a female born at 36 weeks?
+What's the mean birthweight for a female born at 36 weeks?
 
 ```{r}
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
-#| label: tbl-coef-model1
-coef(bw_lm1)
+#| code-fold: false
+#| echo: false
+bw_lm1 |>   
+parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
 ```
 
 :::
 
 ---
 
-:::{.solution}
+:::{.solution .smaller}
 \ 
+
+```{r}
+#| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
+#| code-fold: false
+#| echo: false
+bw_lm1 |>   
+parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
 ```{r}
 pred_female <- coef(bw_lm1)["(Intercept)"] + coef(bw_lm1)["age"] * 36
 ### or using built-in prediction:
@@ -256,8 +285,10 @@ pred_female_alt <- predict(bw_lm1, newdata = tibble(sex = "female", age = 36))
 
 $$
 \ba
-E[Y|A = 0, A = 36] 
-&= \beta_0 + \beta_M \cdot 0+ \beta_A \cdot 36 \\
+E[Y|M = 0, A = 36] 
+&= \beta_0 + \paren{\beta_M \cdot 0}+ \paren{\beta_A \cdot 36} \\
+&= `r coef(bw_lm1)["(Intercept)"]` + \paren{`r coef(bw_lm1)["sexmale"]` \cdot 0} 
++ \paren{`r coef(bw_lm1)["age"]` \cdot 36} \\
 &=  `r pred_female`
 \ea
 $$
@@ -270,7 +301,14 @@ $$
 What's the mean birthweight for a male born at 36 weeks?
 
 ```{r}
-coef(bw_lm1)
+#| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
+#| code-fold: false
+#| echo: false
+bw_lm1 |>   
+parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
 ```
 
 :::
@@ -281,11 +319,21 @@ coef(bw_lm1)
 \ 
 
 ```{r}
-pred_male <-
+#| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
+#| code-fold: false
+#| echo: false
+bw_lm1 |>   
+parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+```{r}
+pred_male <-  
   coef(bw_lm1)["(Intercept)"] +
   coef(bw_lm1)["sexmale"] +
   coef(bw_lm1)["age"] * 36
-coef(bw_lm1)
 ```
 
 $$
@@ -372,7 +420,7 @@ bw_lm2 <- lm(weight ~ sex + age + sex:age, data = bw)
 bw_lm2 |>
   parameters() |>
   print_md(
-    include_reference = TRUE,
+    include_reference = include_reference_lines,
     select = "{estimate}"
   )
 ```
@@ -415,16 +463,19 @@ $$
 E[Y|A, M] = \beta_0 + \beta_M M+ (\beta_A + \beta_{AM} M) A
 $$
 
-::: callout-note
-If you want to understand a coefficient in a model with interactions, collect terms for the corresponding variable, and you will see what other variables are interacting with the variable you are interested in.
-:::
-
-:::{.notes}
-In this case, the coefficient $S$ is interacting with $A$. So the slope of $Y$ with respect to $A$ depends on the value of $M$.
-
-According to this model, there is no such thing as "*the* slope of birthweight with respect to age". There are two slopes, one for each sex.^[using the definite article "the" would mean there is only one slope.] We can only talk about "the slope of birthweight with respect to age among males" and "the slope of birthweight with respect to age among females".
-
-Then: that coefficient is the difference in means per unit change in its corresponding coefficient, when the other collected variables are set to 0.
+::: notes
+If you want to understand a coefficient in a model with interactions, 
+collect terms for the corresponding variable, 
+and you will see what other variables are interacting with the variable you are interested in.
+In this case, the coefficient $S$ is interacting with $A$. 
+So the slope of $Y$ with respect to $A$ depends on the value of $M$.
+According to this model, there is no such thing as "*the* slope of birthweight with respect to age". 
+There are two slopes, one for each sex.
+We can only talk about 
+"the slope of birthweight with respect to age among males" 
+and "the slope of birthweight with respect to age among females".
+Then: that coefficient is the difference in means per unit change in its corresponding coefficient, 
+when the other collected variables are set to 0.
 :::
 
 ---
@@ -437,10 +488,33 @@ To learn what this model is assuming, let's plug in a few values.
 According to this model, what's the mean birthweight for a female born at 36 weeks?
 :::
 
+```{r}
+#| code-fold: false
+#| echo: false
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
+
 ---
 
 ::: {.solution}
 \ 
+
+```{r}
+#| code-fold: false
+#| echo: false
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
 
 ```{r}
 pred_female <- coef(bw_lm2)["(Intercept)"] + coef(bw_lm2)["age"] * 36
@@ -459,12 +533,34 @@ $$
 :::{#exr-pred-interact-male_36}
 What's the mean birthweight for a male born at 36 weeks?
 
+```{r}
+#| code-fold: false
+#| echo: false
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
 :::
 
 ---
 
 ::: solution
 \ 
+
+```{r}
+#| code-fold: false
+#| echo: false
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
 
 ```{r}
 pred_male <-
@@ -524,7 +620,7 @@ $$
 \beta_F f + \beta_{AF} (a \cdot f)
 $$ {#eq-model-strat}
 
-Compare this stratified model with our interaction model, @eq-BW-lm-interact:
+Compare this stratified model (@eq-model-strat) with our interaction model, @eq-BW-lm-interact:
 
 $$
 \E{Y|A=a, S=s} = 
@@ -546,7 +642,7 @@ bw_lm2 <- lm(weight ~ sex + age + sex:age, data = bw)
 bw_lm2 |>
   parameters() |>
   print_md(
-    include_reference = TRUE,
+    include_reference = include_reference_lines,
     select = "{estimate}"
   )
 ```
@@ -581,7 +677,9 @@ bw_lm_strat |>
 ### Curved-line regression
 
 ::: notes
-If we transform some of our covariates ($X$s) and plot the resulting model on the original covariate scale, we end up with curved regression lines:
+If we transform some of our covariates ($X$s) 
+and plot the resulting model on the original covariate scale, 
+we end up with curved regression lines:
 :::
 
 ```{r}
@@ -610,6 +708,8 @@ ggbw2 <- ggbw +
 
 ggbw2 |> print()
 ```
+
+---
 
 ::: notes
 Below is an example with a slightly more obvious curve.
@@ -650,29 +750,31 @@ ggpenguins2 |> print()
 
 :::{.notes}
 
-In EPI 203 and @sec-intro-MLEs, we learned how to fit outcome-only models of the form $p(X=x|\theta)$ to iid data $\vx = (x_1,…,x_n)$ using maximum likelihood estimation.
+In EPI 203 and [our review of MLEs](intro-MLEs.qmd#sec-intro-MLEs), 
+we learned how to fit outcome-only models of the form $p(X=x|\theta)$ 
+to iid data $\vx = (x_1,…,x_n)$ using maximum likelihood estimation.
 
 Now, we apply the same procedure to linear regression models:
 
 :::
 
 $$
-\mathcal L(\vec y|\mat x,\beta, \sigma^2) = 
+\mathcal L(\vy|\mat x, \vb, \sigma^2) = 
 \prod_{i=1}^n (2\pi\sigma^2)^{-1/2} 
-\exp{-\frac{1}{2\sigma^2}(y_i - \vec{x_i}'\beta)^2}
+\exp{-\frac{1}{2\sigma^2}\paren{y_i - \paren{\vxi \cdot \vb}}^2}
 $$ {#eq-linreg-lik}
 
 $$
 \ell(\vec y|\mat x,\beta, \sigma^2) 
 = -\frac{n}{2}\log{\sigma^2} - 
-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i - \vec{x_i}' \beta)^2
+\frac{1}{2\sigma^2}\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2
 $$ {#eq-linreg-loglik}
 
 $$
-\ell'_{\beta}(\vec y|\mat x,\beta, \sigma^2) 
+\ell'_{\vb}(\vec y|\mat x, \vb, \sigma^2) 
 = - 
-\frac{1}{2\sigma^2}\deriv{\beta}
-\paren{\sum_{i=1}^n (y_i - \vec{x_i}\' \beta)^2}
+\frac{1}{2\sigma^2}\deriv{\vb}
+\paren{\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2}
 $$ {#eq-linreg-score}
 
 ---
@@ -683,7 +785,7 @@ Let's switch to matrix-vector notation:
 
 $$
 \sum_{i=1}^n (y_i - \vx_i\' \vb)^2 
-= (\vy - \mX\vb)'(\vy - \mX\vb)
+= (\vy - \mX\vb) \cdot (\vy - \mX\vb)
 $$
 
 ---
@@ -694,8 +796,8 @@ $$
 \begin{aligned}
 (\vy - \mX\vb)'(\vy - \mX\vb) 
 &= (\vy' - \vb'X')(\vy - \mX\vb)
-\\ &= y'y - \vb'X'y - y'\mX\vb +\vb'\mX'\mX\beta
-\\ &= y'y - 2y'\mX\beta +\beta'\mX'\mX\beta
+\\ &= \vy'\vy - \vb'X'\vy - \vy'\mX\vb +\vb'\mX'\mX\beta
+\\ &= \vy'\vy - 2\vy'\mX\beta +\beta'\mX'\mX\beta
 \end{aligned}
 $$
 
