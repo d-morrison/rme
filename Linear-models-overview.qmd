@@ -140,11 +140,11 @@ Let's define some notation to represent this data.
 -   $Y$: birthweight (measured in grams)
 -   $S$: chromosomal sex: "male" (XY) or "female" (XX)
 -   $M$: indicator variable for $S$ = "male"^[$M$ is implicitly a deterministic function of $S$]
--   $M = 0$ if female (XX)
--   $M = 1$ if male (XY)
+    -   $M = 0$ if female (XX)
+    -   $M = 1$ if male (XY)
 -   $F$: indicator variable for $S$ = "female"^[$F$ is implicitly a deterministic function of $S$]
--   $F = 1$ if female (XX)
--   $F = 0$ if male (XY)
+    -   $F = 1$ if female (XX)
+    -   $F = 0$ if male (XY)
 
 -   $A$: estimated gestational age at birth (measured in weeks).
 
@@ -164,7 +164,7 @@ separately for each combination of gestational age and sex,
 so let's instead consider a (relatively) simple model for how that 
 distribution varies with gestational age and sex:
 
-$$p(Y=y|A=a,S=s) \siid N(\mu(a,s), \sigma^2)$$
+$$Y=y|A=a,S=s \siid N(\mu(a,s), \sigma^2)$$
 
 $$
 \ba
@@ -585,9 +585,39 @@ If we transform some of our covariates ($X$s) and plot the resulting model on th
 :::
 
 ```{r}
+#| label: fig-birthweight-log-x
+#| fig-cap: "`birthweight` model with `age` entering on log scale"
+bw_lm3 <- lm(weight ~ sex:log(age) - 1, data = bw)
+
+ggbw <-
+  bw |>
+  ggplot(
+    aes(x = age, y = weight)
+  ) +
+  geom_point() +
+  xlab("Gestational Age (weeks)") +
+  ylab("Birth Weight (g)")
+
+ggbw2 <- ggbw +
+  stat_smooth(
+    method = "lm",
+    formula = y ~ log(x),
+    geom = "smooth"
+  ) +
+  xlab("Gestational Age (weeks)") +
+  ylab("Birth Weight (g)")
+
+
+ggbw2 |> print()
+```
+
+::: notes
+Below is an example with a slightly more obvious curve.
+:::
+
+```{r}
 #| label: fig-penguins-log-x
 #| fig-cap: "`palmerpenguins` model with `bill_length` entering on log scale"
-bw_lm3 <- lm(weight ~ sex:log(age) - 1, data = bw)
 library(palmerpenguins)
 
 ggpenguins <-
@@ -611,6 +641,7 @@ ggpenguins2 <- ggpenguins +
 
 
 ggpenguins2 |> print()
+
 ```
 
 ## Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}
@@ -1169,7 +1200,7 @@ lrtest(lm_max, bw_lm2)
 
 The likelihood ratio statistic for this test is $$\lambda = 2 * (\ell_{\text{full}} - \ell) = `r 2 * (logLik(lm_max) - logLik(bw_lm2))`$$ where:
 
--   $\ell_{\text{max}}$ is the log-likelihood of the full model: `r logLik(lm_max)`
+-   $\ell_{\text{full}}$ is the log-likelihood of the full model: `r logLik(lm_max)`
 -   $\ell$ is the log-likelihood of our comparison model (two slopes, two intercepts): `r logLik(bw_lm2)`
 
 This statistic is called the **deviance** or **residual deviance** for our two-slopes and two-intercepts model; it tells us how much the likelihood of that model deviates from the likelihood of the maximal model.
