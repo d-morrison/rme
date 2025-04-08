@@ -620,7 +620,7 @@ $$
 \beta_F f + \beta_{AF} (a \cdot f)
 $$ {#eq-model-strat}
 
-Compare this stratified model with our interaction model, @eq-BW-lm-interact:
+Compare this stratified model (@eq-model-strat) with our interaction model, @eq-BW-lm-interact:
 
 $$
 \E{Y|A=a, S=s} = 
@@ -642,7 +642,7 @@ bw_lm2 <- lm(weight ~ sex + age + sex:age, data = bw)
 bw_lm2 |>
   parameters() |>
   print_md(
-    include_reference = TRUE,
+    include_reference = include_reference_lines,
     select = "{estimate}"
   )
 ```
@@ -759,22 +759,22 @@ Now, we apply the same procedure to linear regression models:
 :::
 
 $$
-\mathcal L(\vec y|\mat x,\beta, \sigma^2) = 
+\mathcal L(\vy|\mat x, \vb, \sigma^2) = 
 \prod_{i=1}^n (2\pi\sigma^2)^{-1/2} 
-\exp{-\frac{1}{2\sigma^2}(y_i - \vec{x_i}'\beta)^2}
+\exp{-\frac{1}{2\sigma^2}\paren{y_i - \paren{\vxi \cdot \vb}}^2}
 $$ {#eq-linreg-lik}
 
 $$
 \ell(\vec y|\mat x,\beta, \sigma^2) 
 = -\frac{n}{2}\log{\sigma^2} - 
-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i - \vec{x_i}' \beta)^2
+\frac{1}{2\sigma^2}\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2
 $$ {#eq-linreg-loglik}
 
 $$
-\ell'_{\beta}(\vec y|\mat x,\beta, \sigma^2) 
+\ell'_{\vb}(\vec y|\mat x, \vb, \sigma^2) 
 = - 
-\frac{1}{2\sigma^2}\deriv{\beta}
-\paren{\sum_{i=1}^n (y_i - \vec{x_i}\' \beta)^2}
+\frac{1}{2\sigma^2}\deriv{\vb}
+\paren{\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2}
 $$ {#eq-linreg-score}
 
 ---
@@ -785,7 +785,7 @@ Let's switch to matrix-vector notation:
 
 $$
 \sum_{i=1}^n (y_i - \vx_i\' \vb)^2 
-= (\vy - \mX\vb)'(\vy - \mX\vb)
+= (\vy - \mX\vb) \cdot (\vy - \mX\vb)
 $$
 
 ---
@@ -796,8 +796,8 @@ $$
 \begin{aligned}
 (\vy - \mX\vb)'(\vy - \mX\vb) 
 &= (\vy' - \vb'X')(\vy - \mX\vb)
-\\ &= y'y - \vb'X'y - y'\mX\vb +\vb'\mX'\mX\beta
-\\ &= y'y - 2y'\mX\beta +\beta'\mX'\mX\beta
+\\ &= \vy'\vy - \vb'X'\vy - \vy'\mX\vb +\vb'\mX'\mX\beta
+\\ &= \vy'\vy - 2\vy'\mX\beta +\beta'\mX'\mX\beta
 \end{aligned}
 $$
 
