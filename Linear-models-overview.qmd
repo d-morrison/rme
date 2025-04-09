@@ -9,7 +9,7 @@ df-print: paged
 {{< include shared-config.qmd >}}
 
 ```{r}
-include_reference_lines = FALSE
+include_reference_lines <- FALSE
 ```
 
 ---
@@ -202,7 +202,7 @@ bw_lm1 <- lm(
   data = bw
 )
 
-bw_lm1 |> 
+bw_lm1 |>
   parameters::parameters() |>
   parameters::print_md(
     include_reference = FALSE,
@@ -252,8 +252,8 @@ What's the mean birthweight for a female born at 36 weeks?
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
 #| code-fold: false
 #| echo: false
-bw_lm1 |>   
-parameters::parameters() |>
+bw_lm1 |>
+  parameters::parameters() |>
   parameters::print_md(
     select = "{estimate}"
   )
@@ -270,8 +270,8 @@ parameters::parameters() |>
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
 #| code-fold: false
 #| echo: false
-bw_lm1 |>   
-parameters::parameters() |>
+bw_lm1 |>
+  parameters::parameters() |>
   parameters::print_md(
     select = "{estimate}"
   )
@@ -304,8 +304,8 @@ What's the mean birthweight for a male born at 36 weeks?
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
 #| code-fold: false
 #| echo: false
-bw_lm1 |>   
-parameters::parameters() |>
+bw_lm1 |>
+  parameters::parameters() |>
   parameters::print_md(
     select = "{estimate}"
   )
@@ -322,15 +322,15 @@ parameters::parameters() |>
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
 #| code-fold: false
 #| echo: false
-bw_lm1 |>   
-parameters::parameters() |>
+bw_lm1 |>
+  parameters::parameters() |>
   parameters::print_md(
     select = "{estimate}"
   )
 ```
 
 ```{r}
-pred_male <-  
+pred_male <-
   coef(bw_lm1)["(Intercept)"] +
   coef(bw_lm1)["sexmale"] +
   coef(bw_lm1)["age"] * 36
@@ -741,7 +741,6 @@ ggpenguins2 <- ggpenguins +
 
 
 ggpenguins2 |> print()
-
 ```
 
 ## Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}
@@ -1107,20 +1106,22 @@ x_max <- 1
 #| label: fig-chisq-plot
 #| fig-cap: "Chi-square distribution"
 
-d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)  # nolint: object_name_linter
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df) # nolint: object_name_linter
 
 chisq_plot <-
   ggplot() +
   geom_function(fun = d_log_LR) +
-  stat_function(fun = d_log_LR, 
-                xlim = c(log_LR, x_max), 
-                geom = "area", 
-                fill = "gray") +
+  stat_function(
+    fun = d_log_LR,
+    xlim = c(log_LR, x_max),
+    geom = "area",
+    fill = "gray"
+  ) +
   geom_segment(
     aes(
-      x = log_LR, xend = log_LR, y = 0, 
+      x = log_LR, xend = log_LR, y = 0,
       yend = d_log_LR(log_LR)
-    ), 
+    ),
     col = "red"
   ) +
   xlim(0.0001, x_max) +
@@ -1201,7 +1202,7 @@ Large values of AIC and BIC are worse than small values. There are no hypothesis
 Let $q$ be the number of distinct covariate combinations in a data set.
 
 ```{r}
-bw_X_unique <-  # nolint: object_name_linter
+bw_X_unique <- # nolint: object_name_linter
   bw |>
   count(sex, age)
 
@@ -1758,7 +1759,6 @@ bw <-
     fitted_lm2 = fitted(bw_lm2),
     resid_lm2 = resid(bw_lm2),
     resid_lm2_alt = weight - fitted_lm2,
-    
     std_resid_lm2 = rstandard(bw_lm2),
     std_resid_lm2_alt = resid_lm2 / sigma(bw_lm2)
   )
@@ -2130,18 +2130,17 @@ cv_results |>
 ```{r}
 compare_results <- tribble(
   ~model, ~cvRMSE, ~r.squared, ~adj.r.squared, ~trainRMSE, ~loglik,
-  "full", 
-  cv_full$cv, 
-  summary(full_model)$r.squared, 
-  summary(full_model)$adj.r.squared, 
-  sigma(full_model), 
+  "full",
+  cv_full$cv,
+  summary(full_model)$r.squared,
+  summary(full_model)$adj.r.squared,
+  sigma(full_model),
   logLik(full_model) |> as.numeric(),
-  
-  "reduced", 
-  cv_reduced$cv, 
-  summary(reduced_model)$r.squared, 
-  summary(reduced_model)$adj.r.squared, 
-  sigma(reduced_model), 
+  "reduced",
+  cv_reduced$cv,
+  summary(reduced_model)$r.squared,
+  summary(reduced_model)$adj.r.squared,
+  sigma(reduced_model),
   logLik(reduced_model) |> as.numeric()
 )
 
@@ -2421,4 +2420,3 @@ hers |> head()
 ---
 
 Check out `?codingMatrices::contr.diff`
-
