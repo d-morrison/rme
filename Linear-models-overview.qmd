@@ -9,7 +9,7 @@ df-print: paged
 {{< include shared-config.qmd >}}
 
 ```{r}
-include_reference_lines = FALSE
+include_reference_lines <- FALSE
 ```
 
 ---
@@ -193,22 +193,25 @@ $$ {#eq-lm-parallel}
 
 ::: {.column width=40%}
 
-```{r}
-#| label: tbl-lm-parallel
-#| tbl-cap: "Regression parameter estimates for [Model @eq-lm-parallel] of `birthweight` data"
+::: {#tbl-lm-parallel}
 
+```{r}
 bw_lm1 <- lm(
   formula = weight ~ sex + age,
   data = bw
 )
 
-bw_lm1 |> 
+bw_lm1 |>
   parameters::parameters() |>
   parameters::print_md(
     include_reference = FALSE,
     select = "{estimate}"
   )
 ```
+
+Regression parameter estimates for [Model @eq-lm-parallel] of `birthweight` data
+
+:::
 
 :::
 
@@ -252,8 +255,8 @@ What's the mean birthweight for a female born at 36 weeks?
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
 #| code-fold: false
 #| echo: false
-bw_lm1 |>   
-parameters::parameters() |>
+bw_lm1 |>
+  parameters::parameters() |>
   parameters::print_md(
     select = "{estimate}"
   )
@@ -270,8 +273,8 @@ parameters::parameters() |>
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
 #| code-fold: false
 #| echo: false
-bw_lm1 |>   
-parameters::parameters() |>
+bw_lm1 |>
+  parameters::parameters() |>
   parameters::print_md(
     select = "{estimate}"
   )
@@ -304,8 +307,8 @@ What's the mean birthweight for a male born at 36 weeks?
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
 #| code-fold: false
 #| echo: false
-bw_lm1 |>   
-parameters::parameters() |>
+bw_lm1 |>
+  parameters::parameters() |>
   parameters::print_md(
     select = "{estimate}"
   )
@@ -322,15 +325,15 @@ parameters::parameters() |>
 #| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
 #| code-fold: false
 #| echo: false
-bw_lm1 |>   
-parameters::parameters() |>
+bw_lm1 |>
+  parameters::parameters() |>
   parameters::print_md(
     select = "{estimate}"
   )
 ```
 
 ```{r}
-pred_male <-  
+pred_male <-
   coef(bw_lm1)["(Intercept)"] +
   coef(bw_lm1)["sexmale"] +
   coef(bw_lm1)["age"] * 36
@@ -741,7 +744,6 @@ ggpenguins2 <- ggpenguins +
 
 
 ggpenguins2 |> print()
-
 ```
 
 ## Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}
@@ -1094,7 +1096,7 @@ print(confint_z)
 logLik(bw_lm2)
 logLik(bw_lm1)
 
-log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric() # nolint: object_name_linter
+log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
 delta_df <- (bw_lm1$df.residual - df.residual(bw_lm2))
 
 
@@ -1107,20 +1109,22 @@ x_max <- 1
 #| label: fig-chisq-plot
 #| fig-cap: "Chi-square distribution"
 
-d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)  # nolint: object_name_linter
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)
 
 chisq_plot <-
   ggplot() +
   geom_function(fun = d_log_LR) +
-  stat_function(fun = d_log_LR, 
-                xlim = c(log_LR, x_max), 
-                geom = "area", 
-                fill = "gray") +
+  stat_function(
+    fun = d_log_LR,
+    xlim = c(log_LR, x_max),
+    geom = "area",
+    fill = "gray"
+  ) +
   geom_segment(
     aes(
-      x = log_LR, xend = log_LR, y = 0, 
+      x = log_LR, xend = log_LR, y = 0,
       yend = d_log_LR(log_LR)
-    ), 
+    ),
     col = "red"
   ) +
   xlim(0.0001, x_max) +
@@ -1201,7 +1205,7 @@ Large values of AIC and BIC are worse than small values. There are no hypothesis
 Let $q$ be the number of distinct covariate combinations in a data set.
 
 ```{r}
-bw_X_unique <-  # nolint: object_name_linter
+bw_X_unique <-
   bw |>
   count(sex, age)
 
@@ -1488,8 +1492,8 @@ $$Y|\vX \simind N(\vX'\b,\ss)$$
 1. Normality: The distribution conditional on a given $X$ value is normal
 
 2. Correct Functional Form: The conditional means have the structure 
+$$E[Y|\vec X = \vec x] = \vx \cdot \beta$$
 
-$$E[Y|\vec X = \vec x] = \vec x'\beta$$
 3. Homoskedasticity: The variance $\ss$ is constant (with respect to $\vx$)
 
 4. Independence: The observations are statistically independent
@@ -1497,7 +1501,8 @@ $$E[Y|\vec X = \vec x] = \vec x'\beta$$
 ### Direct visualization
 
 ::: notes
-The most direct way to examine the fit of a model is to compare it to the raw observed data.
+The most direct way to examine the fit of a model is 
+to compare it to the raw observed data.
 :::
 
 ```{r}
@@ -1759,7 +1764,6 @@ bw <-
     fitted_lm2 = fitted(bw_lm2),
     resid_lm2 = resid(bw_lm2),
     resid_lm2_alt = weight - fitted_lm2,
-    
     std_resid_lm2 = rstandard(bw_lm2),
     std_resid_lm2_alt = resid_lm2 / sigma(bw_lm2)
   )
@@ -2020,19 +2024,10 @@ resid_vs_fit <- bw |>
   geom_point() +
   theme_classic() +
   geom_hline(yintercept = 0)
-```
 
-::: {.content-visible when-format="html"}
-```{r}
 print(resid_vs_fit)
 ```
-:::
 
-::: {.content-visible when-format="pdf"}
-```{r}
-print(resid_vs_fit)
-```
-:::
 
 ##### Standardized residuals vs fitted
 
@@ -2140,18 +2135,17 @@ cv_results |>
 ```{r}
 compare_results <- tribble(
   ~model, ~cvRMSE, ~r.squared, ~adj.r.squared, ~trainRMSE, ~loglik,
-  "full", 
-  cv_full$cv, 
-  summary(full_model)$r.squared, 
-  summary(full_model)$adj.r.squared, 
-  sigma(full_model), 
+  "full",
+  cv_full$cv,
+  summary(full_model)$r.squared,
+  summary(full_model)$adj.r.squared,
+  sigma(full_model),
   logLik(full_model) |> as.numeric(),
-  
-  "reduced", 
-  cv_reduced$cv, 
-  summary(reduced_model)$r.squared, 
-  summary(reduced_model)$adj.r.squared, 
-  sigma(reduced_model), 
+  "reduced",
+  cv_reduced$cv,
+  summary(reduced_model)$r.squared,
+  summary(reduced_model)$adj.r.squared,
+  sigma(reduced_model),
   logLik(reduced_model) |> as.numeric()
 )
 
@@ -2177,7 +2171,7 @@ olsrr:::ols_step_both_aic(full_model)
 
 #### Lasso
 
-$$\arg min_{\theta} \llik(\th) + \lambda \sum_{j=1}^p|\beta_j|$$
+$$\am_{\theta} \cb{\llik(\th) - \lambda \sum_{j=1}^p|\beta_j|}$$
 
 ```{r}
 library(glmnet)
