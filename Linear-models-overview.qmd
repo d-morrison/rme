@@ -193,10 +193,9 @@ $$ {#eq-lm-parallel}
 
 ::: {.column width=40%}
 
-```{r}
-#| label: tbl-lm-parallel
-#| tbl-cap: "Regression parameter estimates for [Model @eq-lm-parallel] of `birthweight` data"
+::: {#tbl-lm-parallel}
 
+```{r}
 bw_lm1 <- lm(
   formula = weight ~ sex + age,
   data = bw
@@ -209,6 +208,10 @@ bw_lm1 |>
     select = "{estimate}"
   )
 ```
+
+Regression parameter estimates for [Model @eq-lm-parallel] of `birthweight` data
+
+:::
 
 :::
 
@@ -1093,7 +1096,7 @@ print(confint_z)
 logLik(bw_lm2)
 logLik(bw_lm1)
 
-log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric() # nolint: object_name_linter
+log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
 delta_df <- (bw_lm1$df.residual - df.residual(bw_lm2))
 
 
@@ -1106,7 +1109,7 @@ x_max <- 1
 #| label: fig-chisq-plot
 #| fig-cap: "Chi-square distribution"
 
-d_log_LR <- function(x, df = delta_df) dchisq(x, df = df) # nolint: object_name_linter
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)
 
 chisq_plot <-
   ggplot() +
@@ -1202,7 +1205,7 @@ Large values of AIC and BIC are worse than small values. There are no hypothesis
 Let $q$ be the number of distinct covariate combinations in a data set.
 
 ```{r}
-bw_X_unique <- # nolint: object_name_linter
+bw_X_unique <-
   bw |>
   count(sex, age)
 
@@ -1488,7 +1491,8 @@ $$Y|\vX \simind N(\vX'\b,\ss)$$
 
 1. Normality: The distribution conditional on a given $X$ value is normal
 
-2. Correct Functional Form: The conditional means have the structure $$E[Y|\vec X = \vec x] = \vec x'\beta$$
+2. Correct Functional Form: The conditional means have the structure 
+$$E[Y|\vec X = \vec x] = \vx \cdot \beta$$
 
 3. Homoskedasticity: The variance $\ss$ is constant (with respect to $\vx$)
 
@@ -1497,7 +1501,8 @@ $$Y|\vX \simind N(\vX'\b,\ss)$$
 ### Direct visualization
 
 ::: notes
-The most direct way to examine the fit of a model is to compare it to the raw observed data.
+The most direct way to examine the fit of a model is 
+to compare it to the raw observed data.
 :::
 
 ```{r}
@@ -2166,7 +2171,7 @@ olsrr:::ols_step_both_aic(full_model)
 
 #### Lasso
 
-$$\am_{\theta} \llik(\th) + \lambda \sum_{j=1}^p|\beta_j|$$
+$$\am_{\theta} \cb{\llik(\th) - \lambda \sum_{j=1}^p|\beta_j|}$$
 
 ```{r}
 library(glmnet)
