@@ -410,7 +410,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-04-10: 3:06:54 (AM)</p>
+      <p class="date">Last modified: 2025-04-10: 5:36:39 (AM)</p>
     </div>
   </div>
   
@@ -896,7 +896,8 @@ Figure&nbsp;1.9: Mortality rates of adult flour beetles after five hours’ expo
 <hr>
 <div id="def-predictors" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 1.3 (Predictors)</strong></span> The predictor variables in a regression model are the conditioning variables defining subpopulations among which the outcome distribution might vary.</p>
-<p>Predictors are also called <strong>regressors</strong>, <strong>covariates</strong>, <strong>independent variables</strong>, <strong>explanatory variables</strong>, <strong>risk factors</strong>, <strong>exposure variables</strong>, <strong>input variables</strong>, <strong>exogenous variables</strong>, or <strong>features</strong> and are typically denoted <span class="math inline">\(\tilde{X}\)</span>. <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>Predictors are also called <strong>regressors</strong>, <strong>covariates</strong>, <strong>independent variables</strong>, <strong>explanatory variables</strong>, <strong>risk factors</strong>, <strong>exposure variables</strong>, <strong>input variables</strong>, <strong>exogenous variables</strong>, <strong>candidate variables</strong> (<span class="citation" data-cites="dunn2018generalized">Dunn and Smyth (<a href="references.html#ref-dunn2018generalized" role="doc-biblioref">2018</a>)</span>), <strong>carriers</strong> (<span class="citation" data-cites="dunn2018generalized">Dunn and Smyth (<a href="references.html#ref-dunn2018generalized" role="doc-biblioref">2018</a>)</span>), <strong>manipulated variables</strong>,</p>
+<p>or <strong>features</strong> and are typically denoted <span class="math inline">\(\tilde{X}\)</span>. <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 </div>
 <hr>
 <div id="tbl-regression-antonyms" class="smaller quarto-float quarto-figure quarto-figure-center anchored">
@@ -963,7 +964,7 @@ Table&nbsp;1.1: Common pairings of terms for variables <span class="math inline"
 <p>Generalized linear models have three components:</p>
 <hr>
 <ol type="1">
-<li>The <strong>outcome distribution</strong> family:</li>
+<li>The <strong>outcome distribution</strong> family (a.k.a. the <strong>random component</strong> of the model)</li>
 </ol>
 <ul>
 <li>Gaussian (normal)</li>
@@ -975,7 +976,7 @@ Table&nbsp;1.1: Common pairings of terms for variables <span class="math inline"
 </ul>
 <hr>
 <ol start="2" type="1">
-<li>The <strong>linear component</strong> (aka <em>linear predictor</em> or <em>linear functional form</em>) describing how the covariates combine to define subpopulations:</li>
+<li>The <strong>linear component</strong> (a.k.a. the <em>linear predictor</em> or <em>linear functional form</em>) describing how the covariates combine to define subpopulations:</li>
 </ol>
 <p><span class="math display">\[\eta(\tilde{x}) \stackrel{\text{def}}{=}\tilde{x}^{\top} \tilde{\beta}= \beta_0 + \beta_1 x_1 + \beta_2 x_2 + ...\]</span></p>
 <hr>
@@ -994,6 +995,7 @@ Table&nbsp;1.1: Common pairings of terms for variables <span class="math inline"
 <li>clog-log: <span class="math inline">\(\text{log}\left\{-\text{log}\left\{1-\mu(y)\right\}\right\} = \eta(\tilde{x})\)</span>
 </li>
 </ul>
+<p>Components 2 and 3 together are sometimes called the <strong>systematic component</strong> of the model (for example, in <span class="citation" data-cites="dunn2018generalized">Dunn and Smyth (<a href="references.html#ref-dunn2018generalized" role="doc-biblioref">2018</a>)</span>),</p>
 <hr>
 
 
@@ -1002,6 +1004,9 @@ Table&nbsp;1.1: Common pairings of terms for variables <span class="math inline"
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
 <div id="ref-dalgaardintroductory" class="csl-entry" role="listitem">
 Dalgaard, Peter. 2008. <em>Introductory Statistics with r</em>. New York, NY: Springer New York. <a href="https://link.springer.com/book/10.1007/978-0-387-79054-1">https://link.springer.com/book/10.1007/978-0-387-79054-1</a>.
+</div>
+<div id="ref-dunn2018generalized" class="csl-entry" role="listitem">
+Dunn, Peter K, and Gordon K Smyth. 2018. <em>Generalized Linear Models with Examples in <span>R</span></em>. Vol. 53. Springer. <a href="https://link.springer.com/book/10.1007/978-1-4419-0118-7">https://link.springer.com/book/10.1007/978-1-4419-0118-7</a>.
 </div>
 <div id="ref-r4ds" class="csl-entry" role="listitem">
 Wickham, Hadley, Mine Çetinkaya-Rundel, and Garrett Grolemund. 2023. <em>R for Data Science</em>. " O’Reilly Media, Inc.". <a href="https://r4ds.hadley.nz/">https://r4ds.hadley.nz/</a>.
@@ -1915,35 +1920,40 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb10-296"><a href="#cb10-296" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-297"><a href="#cb10-297" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb10-298"><a href="#cb10-298" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-299"><a href="#cb10-299" aria-hidden="true" tabindex="-1"></a><span class="ss">1.   </span>The **outcome distribution** family:</span>
-<span id="cb10-300"><a href="#cb10-300" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-301"><a href="#cb10-301" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Gaussian (normal)</span>
-<span id="cb10-302"><a href="#cb10-302" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Binomial</span>
-<span id="cb10-303"><a href="#cb10-303" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Poisson</span>
-<span id="cb10-304"><a href="#cb10-304" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Exponential</span>
-<span id="cb10-305"><a href="#cb10-305" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Gamma</span>
-<span id="cb10-306"><a href="#cb10-306" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Negative binomial</span>
-<span id="cb10-307"><a href="#cb10-307" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-308"><a href="#cb10-308" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb10-309"><a href="#cb10-309" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-310"><a href="#cb10-310" aria-hidden="true" tabindex="-1"></a><span class="ss">2.   </span>The **linear component** </span>
-<span id="cb10-311"><a href="#cb10-311" aria-hidden="true" tabindex="-1"></a>(aka *linear predictor* or *linear functional form*) </span>
-<span id="cb10-312"><a href="#cb10-312" aria-hidden="true" tabindex="-1"></a>describing how the covariates combine to define subpopulations:</span>
-<span id="cb10-313"><a href="#cb10-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-314"><a href="#cb10-314" aria-hidden="true" tabindex="-1"></a>$$\eta(\vx) \eqdef \vx \' \vb = \b_0 + \b_1 x_1 + \b_2 x_2 + ...$$</span>
-<span id="cb10-315"><a href="#cb10-315" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-316"><a href="#cb10-316" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb10-317"><a href="#cb10-317" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-318"><a href="#cb10-318" aria-hidden="true" tabindex="-1"></a><span class="ss">3.  </span>The **link function** relating the outcome distribution </span>
-<span id="cb10-319"><a href="#cb10-319" aria-hidden="true" tabindex="-1"></a>to the linear component, typically through through the mean:</span>
-<span id="cb10-320"><a href="#cb10-320" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-321"><a href="#cb10-321" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>identity: $\mu(y) = \eta(\vx)$</span>
-<span id="cb10-322"><a href="#cb10-322" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>logit: $\logf{\frac{\mu(y)}{1-\mu(y)}} = \eta(\vx)$</span>
-<span id="cb10-323"><a href="#cb10-323" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>log: $\logf{\mu(y)} = \eta(\vx)$</span>
-<span id="cb10-324"><a href="#cb10-324" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>inverse: $\invf{\mu(y)} = \eta(\vx)$</span>
-<span id="cb10-325"><a href="#cb10-325" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>clog-log: $\logf{-\logf{1-\mu(y)}} = \eta(\vx)$</span>
-<span id="cb10-326"><a href="#cb10-326" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-327"><a href="#cb10-327" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb10-299"><a href="#cb10-299" aria-hidden="true" tabindex="-1"></a><span class="ss">1.   </span>The **outcome distribution** family </span>
+<span id="cb10-300"><a href="#cb10-300" aria-hidden="true" tabindex="-1"></a>(a.k.a. the **random component** of the model)</span>
+<span id="cb10-301"><a href="#cb10-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-302"><a href="#cb10-302" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Gaussian (normal)</span>
+<span id="cb10-303"><a href="#cb10-303" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Binomial</span>
+<span id="cb10-304"><a href="#cb10-304" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Poisson</span>
+<span id="cb10-305"><a href="#cb10-305" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Exponential</span>
+<span id="cb10-306"><a href="#cb10-306" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Gamma</span>
+<span id="cb10-307"><a href="#cb10-307" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Negative binomial</span>
+<span id="cb10-308"><a href="#cb10-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-309"><a href="#cb10-309" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb10-310"><a href="#cb10-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-311"><a href="#cb10-311" aria-hidden="true" tabindex="-1"></a><span class="ss">2.   </span>The **linear component** </span>
+<span id="cb10-312"><a href="#cb10-312" aria-hidden="true" tabindex="-1"></a>(a.k.a. the *linear predictor* or *linear functional form*) </span>
+<span id="cb10-313"><a href="#cb10-313" aria-hidden="true" tabindex="-1"></a>describing how the covariates combine to define subpopulations:</span>
+<span id="cb10-314"><a href="#cb10-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-315"><a href="#cb10-315" aria-hidden="true" tabindex="-1"></a>$$\eta(\vx) \eqdef \vx \' \vb = \b_0 + \b_1 x_1 + \b_2 x_2 + ...$$</span>
+<span id="cb10-316"><a href="#cb10-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-317"><a href="#cb10-317" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb10-318"><a href="#cb10-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-319"><a href="#cb10-319" aria-hidden="true" tabindex="-1"></a><span class="ss">3.  </span>The **link function** relating the outcome distribution </span>
+<span id="cb10-320"><a href="#cb10-320" aria-hidden="true" tabindex="-1"></a>to the linear component, typically through through the mean:</span>
+<span id="cb10-321"><a href="#cb10-321" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-322"><a href="#cb10-322" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>identity: $\mu(y) = \eta(\vx)$</span>
+<span id="cb10-323"><a href="#cb10-323" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>logit: $\logf{\frac{\mu(y)}{1-\mu(y)}} = \eta(\vx)$</span>
+<span id="cb10-324"><a href="#cb10-324" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>log: $\logf{\mu(y)} = \eta(\vx)$</span>
+<span id="cb10-325"><a href="#cb10-325" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>inverse: $\invf{\mu(y)} = \eta(\vx)$</span>
+<span id="cb10-326"><a href="#cb10-326" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>clog-log: $\logf{-\logf{1-\mu(y)}} = \eta(\vx)$</span>
+<span id="cb10-327"><a href="#cb10-327" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-328"><a href="#cb10-328" aria-hidden="true" tabindex="-1"></a>Components 2 and 3 together are sometimes called </span>
+<span id="cb10-329"><a href="#cb10-329" aria-hidden="true" tabindex="-1"></a>the **systematic component** of the model</span>
+<span id="cb10-330"><a href="#cb10-330" aria-hidden="true" tabindex="-1"></a>(for example, in @dunn2018generalized),</span>
+<span id="cb10-331"><a href="#cb10-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-332"><a href="#cb10-332" aria-hidden="true" tabindex="-1"></a>---</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
