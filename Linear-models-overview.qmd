@@ -210,6 +210,7 @@ bw_lm1 <- lm(
   data = bw
 )
 
+library(parameters)
 bw_lm1 |>
   parameters::parameters() |>
   parameters::print_md(
@@ -431,7 +432,7 @@ Now, the slope of mean birthweight $E[Y|A,S]$ with respect to gestational age $A
 bw_lm2 <- lm(weight ~ sex + age + sex:age, data = bw)
 bw_lm2 |>
   parameters() |>
-  print_md(
+  parameters::print_md(
     include_reference = include_reference_lines,
     select = "{estimate}"
   )
@@ -826,8 +827,8 @@ $$
 \begin{aligned}
 \deriv{\beta}\paren{\sum_{i=1}^n (y_i - x_i' \beta)^2} 
 &= \deriv{\beta}(\vy - X\beta)'(\vy - X\beta)
-\\ &= \deriv{\beta} (y'y - 2y'X\beta +\beta'X'X\beta)
-\\ &= (- 2X'y +2X'X\beta)
+\\ &= \deriv{\beta} (y'y - 2y'X\beta +\beta'\mX'\mX\beta)
+\\ &= (- 2X'y +2\mX'\mX\beta)
 \\ &= - 2X'(y - X\beta)
 \\ &= - 2X'(y - \Expp[y])
 \\ &= - 2X' \err(y)
@@ -840,10 +841,10 @@ So if $\score(\beta,\sigma^2) = 0$, then
 
 $$
 \begin{aligned}
-0 &= (- 2X'y +2X'X\beta)\\
-2X'y &= 2X'X\beta\\
-X'y &= X'X\beta\\
-(X'X)^{-1}X'y &= \beta
+0 &= (- 2X'y +2\mX'\mX\beta)\\
+2X'y &= 2\mX'\mX\beta\\
+X'y &= \mX'\mX\beta\\
+(\mX'\mX)^{-1}X'y &= \beta
 \end{aligned}
 $$
 
@@ -854,10 +855,10 @@ The Hessian (second derivative matrix) is:
 $$
 \ba
 \ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)
-&= -\frac{1}{2\sigma^2}X'X
+&= -\frac{1}{2\sigma^2}\mX'\mX
 \ea$$
 
-$\ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)$  is negative definite at $\beta = (X'X)^{-1}X'y$, so $\hat \beta_{ML} = (X'X)^{-1}X'y$ is the MLE for $\beta$.
+$\ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)$  is negative definite at $\beta = (\mX'\mX)^{-1}X'y$, so $\hat \beta_{ML} = (\mX'\mX)^{-1}X'y$ is the MLE for $\beta$.
 
 ---
 
@@ -872,7 +873,7 @@ And
 $$
 \begin{aligned}
 \mathcal I_{\beta} &= E[-\ell_{\beta, \beta'} ''(Y|X,\beta, \sigma^2)]\\
-&= \frac{1}{\sigma^2}X'X
+&= \frac{1}{\sigma^2}\mX'\mX
 \end{aligned}
 $$
 
@@ -881,7 +882,7 @@ $$
 So:
 
 $$
-Var(\hat \beta) \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (X'X)^{-1}
+Var(\hat \beta) \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (\mX'\mX)^{-1}
 $$
 
 and
@@ -1405,14 +1406,17 @@ parameters(bw_lm2, ci_method = "wald") |> print_md()
 :::{#def-predicted-value}
 #### Predicted value
 
-In a regression model $\p(y|x)$, the **predicted value** of $y$ given $x$ is the estimated mean of $Y$ given $X$:
+In a regression model $\p(y|x)$, 
+the **predicted value** of $y$ given $x$ is the estimated mean of $Y$ given $X$:
 
 $$\hat y \eqdef \hE{Y|X=x}$$
 :::
 
 ---
 
-For linear models, the predicted value can be straightforwardly calculated by multiplying each predictor value $x_j$ by its corresponding coefficient $\beta_j$ and adding up the results:
+For linear models, the predicted value can be straightforwardly calculated 
+by multiplying each predictor value $x_j$ by its corresponding coefficient $\beta_j$ 
+and adding up the results:
 
 $$
 \begin{aligned}
@@ -1480,7 +1484,32 @@ bw_lm1 |>
   use_series(se.fit)
 ```
 
-You can get **confidence intervals** for $\E{Y|X=x}$:
+---
+
+We can construct **confidence intervals** for $\E{Y|X=x}$ 
+using the usual formula:
+
+
+$$\mu(\vx) \in 
+\paren{\red{\hat{\mu}(\vx)} \pm \blue{\zeta_\alpha}}$$
+
+$$
+\blue{\zeta_\alpha} = 
+t_{n-p}\paren{1-\frac{\alpha}{2}} * \hse{\hat{\mu}(\vx)}
+$$
+
+$$\red{\hat{\mu}(\vx)} = \vx \cdot \hb$$
+
+$$\se{\hat{\mu}(\vx)} = \sqrt{\Var{\hat{\mu}(\vx)}}$$
+$$
+\ba
+\Var{\hat{\mu}(\vx)} &= \Var{x'\hat{\beta}}
+\\&= x' \Var{\hat{\beta}} x
+\\&= x' \sigma^2(\mX'\mX)^{-1} x
+\\&= \sigma^2 x' (\mX'\mX)^{-1} x
+\ea
+$$
+$$\hVar{\hat{\mu}(\vx)} = \hs^2 x' (\mX'\mX)^{-1} x$$
 
 ```{R}
 bw_lm1 |> predict(
@@ -1488,6 +1517,8 @@ bw_lm1 |> predict(
   interval = "confidence"
 )
 ```
+
+---
 
 You can also get **prediction intervals** for the value of an individual outcome $Y$:
 
