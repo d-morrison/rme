@@ -662,6 +662,7 @@ bw_lm2 |>
     include_reference = include_reference_lines,
     select = "{estimate}"
   )
+  
 ```
 
 :::
@@ -856,7 +857,8 @@ $$
 \ba
 \ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)
 &= -\frac{1}{2\sigma^2}\mX'\mX
-\ea$$
+\ea
+$$
 
 $\ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)$  is negative definite at $\beta = (\mX'\mX)^{-1}X'y$, so $\hat \beta_{ML} = (\mX'\mX)^{-1}X'y$ is the MLE for $\beta$.
 
@@ -907,11 +909,20 @@ $$
 
 ---
 
-In our model 2 above, $\heinf(\beta)$ is:
+In model [-@eq-BW-lm-interact] above, $\heinf(\beta)$ is:
+
+:::{#tbl-vcov}
 
 ```{r}
+#| code-fold: show
 bw_lm2 |> vcov()
 ```
+
+Covariance matrix of $\hvb$ for `birthweight` model [-@eq-BW-lm-interact] (with interaction term)
+
+:::
+
+---
 
 If we take the square roots of the diagonals, we get the standard errors listed in the model output:
 
@@ -1507,12 +1518,13 @@ $$
 \\&= x' \Var{\hat{\beta}} x
 \\&= x' \sigma^2(\mX'\mX)^{-1} x
 \\&= \sigma^2 x' (\mX'\mX)^{-1} x
+\\&= \sumin \sumjn x_i x_j \Covs{\hb_i}{\hb_j}
 \ea
 $$
 $$\hVar{\hat{\mu}(\vx)} = \hs^2 x' (\mX'\mX)^{-1} x$$
 
 ```{R}
-bw_lm1 |> predict(
+bw_lm2 |> predict(
   newdata = x,
   interval = "confidence"
 )
@@ -1520,16 +1532,86 @@ bw_lm1 |> predict(
 
 ---
 
+:::{#fig-pred-int}
+
+```{r}
+library(sjPlot)
+bw_lm2 |> 
+  plot_model(type = "pred", terms = c("age", "sex"), show.data = TRUE) +
+  theme_sjplot() +
+  theme(legend.position = "bottom")
+```
+
+Predicted values and confidence bands for the `birthweight` model with interaction term
+:::
+
+
+---
+
 You can also get **prediction intervals** for the value of an individual outcome $Y$:
 
 ```{r}
-bw_lm1 |>
+#| code-fold: show
+bw_lm2 |>
   predict(newdata = x, interval = "predict")
+
+```
+
+---
+
+If you don't specify `newdata`, you get a warning:
+
+```{r}
+#| code-fold: show
+bw_lm2 |>
+  predict(interval = "predict")
 ```
 
 The warning from the last command is: "predictions on current data refer to *future* responses" (since you already know what happened to the current data, and thus don't need to predict it).
 
 See `?predict.lm` for more.
+
+---
+
+:::{#fig-pred-int-bw}
+```{r}
+cis <- bw_lm2 |>
+  predict(interval = "confidence") |> suppressWarnings() |> 
+  as_tibble()
+
+names(cis)[2:3] = paste("ci", names(cis)[2:3], sep = "_")
+
+preds <- bw_lm2 |>
+  predict(interval = "predict") |> suppressWarnings() |> 
+  as_tibble()
+names(preds)[2:3] = paste("pred" , names(preds)[2:3], sep = "_")
+
+bind_cols(bw, cis, preds) |> 
+  ggplot() +
+  aes(x = age, y = weight, col = sex) + 
+  geom_point() +
+  theme(legend.position = "bottom") +
+  geom_ribbon(
+    aes(
+      ymin = pred_lwr,
+      ymax = pred_upr
+    ),
+    alpha = 0.2
+  ) + 
+  geom_ribbon(
+    aes(
+      ymin = ci_lwr,
+      ymax = ci_upr
+    ),
+    alpha = 0.5
+  ) +
+  facet_wrap(~sex)
+
+```
+
+Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact]
+
+:::
 
 ## Diagnostics {#sec-diagnose-LMs}
 
