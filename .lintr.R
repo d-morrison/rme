@@ -3,13 +3,11 @@
 withr::local_package("rex")
 snake_case_ACRO <- rex::rex(
   start,
-  rex::maybe("."),
-  rex::some_of(lower, digit) %or%
-    rex::some_of(upper, digit),
-  rex::zero_or_more(
+  maybe("."),
+  some_of(lower, digit) %or% some_of(upper, digit),
+  zero_or_more(
     "_",
-    rex::some_of(lower, digit) %or%
-      rex::some_of(upper, digit)
+    some_of(lower, digit) %or% some_of(upper, digit)
   ),
   end
 )
