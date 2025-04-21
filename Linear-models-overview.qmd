@@ -210,6 +210,7 @@ bw_lm1 <- lm(
   data = bw
 )
 
+library(parameters)
 bw_lm1 |>
   parameters::parameters() |>
   parameters::print_md(
@@ -431,7 +432,7 @@ Now, the slope of mean birthweight $E[Y|A,S]$ with respect to gestational age $A
 bw_lm2 <- lm(weight ~ sex + age + sex:age, data = bw)
 bw_lm2 |>
   parameters() |>
-  print_md(
+  parameters::print_md(
     include_reference = include_reference_lines,
     select = "{estimate}"
   )
@@ -661,6 +662,7 @@ bw_lm2 |>
     include_reference = include_reference_lines,
     select = "{estimate}"
   )
+  
 ```
 
 :::
@@ -826,8 +828,8 @@ $$
 \begin{aligned}
 \deriv{\beta}\paren{\sum_{i=1}^n (y_i - x_i' \beta)^2} 
 &= \deriv{\beta}(\vy - X\beta)'(\vy - X\beta)
-\\ &= \deriv{\beta} (y'y - 2y'X\beta +\beta'X'X\beta)
-\\ &= (- 2X'y +2X'X\beta)
+\\ &= \deriv{\beta} (y'y - 2y'X\beta +\beta'\mX'\mX\beta)
+\\ &= (- 2X'y +2\mX'\mX\beta)
 \\ &= - 2X'(y - X\beta)
 \\ &= - 2X'(y - \Expp[y])
 \\ &= - 2X' \err(y)
@@ -840,10 +842,10 @@ So if $\score(\beta,\sigma^2) = 0$, then
 
 $$
 \begin{aligned}
-0 &= (- 2X'y +2X'X\beta)\\
-2X'y &= 2X'X\beta\\
-X'y &= X'X\beta\\
-(X'X)^{-1}X'y &= \beta
+0 &= (- 2X'y +2\mX'\mX\beta)\\
+2X'y &= 2\mX'\mX\beta\\
+X'y &= \mX'\mX\beta\\
+(\mX'\mX)^{-1}X'y &= \beta
 \end{aligned}
 $$
 
@@ -854,10 +856,11 @@ The Hessian (second derivative matrix) is:
 $$
 \ba
 \ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)
-&= -\frac{1}{2\sigma^2}X'X
-\ea$$
+&= -\frac{1}{2\sigma^2}\mX'\mX
+\ea
+$$
 
-$\ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)$  is negative definite at $\beta = (X'X)^{-1}X'y$, so $\hat \beta_{ML} = (X'X)^{-1}X'y$ is the MLE for $\beta$.
+$\ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)$  is negative definite at $\beta = (\mX'\mX)^{-1}X'y$, so $\hat \beta_{ML} = (\mX'\mX)^{-1}X'y$ is the MLE for $\beta$.
 
 ---
 
@@ -872,7 +875,7 @@ And
 $$
 \begin{aligned}
 \mathcal I_{\beta} &= E[-\ell_{\beta, \beta'} ''(Y|X,\beta, \sigma^2)]\\
-&= \frac{1}{\sigma^2}X'X
+&= \frac{1}{\sigma^2}\mX'\mX
 \end{aligned}
 $$
 
@@ -881,7 +884,7 @@ $$
 So:
 
 $$
-Var(\hat \beta) \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (X'X)^{-1}
+Var(\hat \beta) \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (\mX'\mX)^{-1}
 $$
 
 and
@@ -906,11 +909,20 @@ $$
 
 ---
 
-In our model 2 above, $\heinf(\beta)$ is:
+In model [-@eq-BW-lm-interact] above, $\heinf(\beta)$ is:
+
+:::{#tbl-vcov}
 
 ```{r}
+#| code-fold: show
 bw_lm2 |> vcov()
 ```
+
+Covariance matrix of $\hvb$ for `birthweight` model [-@eq-BW-lm-interact] (with interaction term)
+
+:::
+
+---
 
 If we take the square roots of the diagonals, we get the standard errors listed in the model output:
 
@@ -1405,14 +1417,17 @@ parameters(bw_lm2, ci_method = "wald") |> print_md()
 :::{#def-predicted-value}
 #### Predicted value
 
-In a regression model $\p(y|x)$, the **predicted value** of $y$ given $x$ is the estimated mean of $Y$ given $X$:
+In a regression model $\p(y|x)$, 
+the **predicted value** of $y$ given $x$ is the estimated mean of $Y$ given $X$:
 
 $$\hat y \eqdef \hE{Y|X=x}$$
 :::
 
 ---
 
-For linear models, the predicted value can be straightforwardly calculated by multiplying each predictor value $x_j$ by its corresponding coefficient $\beta_j$ and adding up the results:
+For linear models, the predicted value can be straightforwardly calculated 
+by multiplying each predictor value $x_j$ by its corresponding coefficient $\beta_j$ 
+and adding up the results:
 
 $$
 \begin{aligned}
@@ -1480,25 +1495,127 @@ bw_lm1 |>
   use_series(se.fit)
 ```
 
-You can get **confidence intervals** for $\E{Y|X=x}$:
+---
+
+We can construct **confidence intervals** for $\E{Y|X=x}$ 
+using the usual formula:
+
+
+$$\mu(\vx) \in 
+\paren{\red{\hat{\mu}(\vx)} \pm \blue{\zeta_\alpha}}$$
+
+$$
+\blue{\zeta_\alpha} = 
+t_{n-p}\paren{1-\frac{\alpha}{2}} * \hse{\hat{\mu}(\vx)}
+$$
+
+$$\red{\hat{\mu}(\vx)} = \vx \cdot \hb$$
+
+$$\se{\hat{\mu}(\vx)} = \sqrt{\Var{\hat{\mu}(\vx)}}$$
+$$
+\ba
+\Var{\hat{\mu}(\vx)} &= \Var{x'\hat{\beta}}
+\\&= x' \Var{\hat{\beta}} x
+\\&= x' \sigma^2(\mX'\mX)^{-1} x
+\\&= \sigma^2 x' (\mX'\mX)^{-1} x
+\\&= \sumin \sumjn x_i x_j \Covs{\hb_i}{\hb_j}
+\ea
+$$
+$$\hVar{\hat{\mu}(\vx)} = \hs^2 x' (\mX'\mX)^{-1} x$$
 
 ```{R}
-bw_lm1 |> predict(
+bw_lm2 |> predict(
   newdata = x,
   interval = "confidence"
 )
 ```
 
+---
+
+:::{#fig-pred-int}
+
+```{r}
+library(sjPlot)
+bw_lm2 |> 
+  plot_model(type = "pred", terms = c("age", "sex"), show.data = TRUE) +
+  theme_sjplot() +
+  theme(legend.position = "bottom")
+```
+
+Predicted values and confidence bands for the `birthweight` model with interaction term
+:::
+
+
+---
+
 You can also get **prediction intervals** for the value of an individual outcome $Y$:
 
 ```{r}
-bw_lm1 |>
+#| code-fold: show
+bw_lm2 |>
   predict(newdata = x, interval = "predict")
+
+```
+
+---
+
+If you don't specify `newdata`, you get a warning:
+
+```{r}
+#| code-fold: show
+#| warning: true
+bw_lm2 |>
+  predict(interval = "predict") |> 
+  head()
 ```
 
 The warning from the last command is: "predictions on current data refer to *future* responses" (since you already know what happened to the current data, and thus don't need to predict it).
 
 See `?predict.lm` for more.
+
+---
+
+:::{#fig-pred-int-bw}
+```{r}
+cis <- bw_lm2 |>
+  predict(interval = "confidence") |> 
+  suppressWarnings() |> 
+  as_tibble()
+
+names(cis)[2:3] <- paste("ci", names(cis)[2:3], sep = "_")
+
+preds <- bw_lm2 |>
+  predict(interval = "predict") |> 
+  suppressWarnings() |> 
+  as_tibble()
+names(preds)[2:3] <- paste("pred", names(preds)[2:3], sep = "_")
+
+bind_cols(bw, cis, preds) |> 
+  ggplot() +
+  aes(x = age, y = weight, col = sex) + 
+  geom_point() +
+  theme(legend.position = "bottom") +
+  geom_ribbon(
+    aes(
+      ymin = pred_lwr,
+      ymax = pred_upr
+    ),
+    alpha = 0.2
+  ) + 
+  geom_ribbon(
+    aes(
+      ymin = ci_lwr,
+      ymax = ci_upr
+    ),
+    alpha = 0.5
+  ) +
+  facet_wrap(~sex)
+
+```
+
+Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact]
+
+:::
 
 ## Diagnostics {#sec-diagnose-LMs}
 
@@ -1551,7 +1668,8 @@ If there are multiple continuous covariates, it becomes even harder to visualize
 ### Residuals
 
 ::: notes
-Maybe we can transform the data and model in some way to make it easier to inspect.
+Maybe we can transform the data and model in some way 
+to make it easier to inspect.
 :::
 :::{#def-resid-noise}
 #### Residual noise
