@@ -1,0 +1,151 @@
+---
+title: "Models for Count Outcomes"
+subtitle: "(Poisson Regression and Variations)"
+author: "Ezra Morrison"
+date: last-modified
+date-format: "[Last modified:] YYYY-MM-DD: H:mm:ss (A)"
+format: 
+  revealjs:
+    theme: dark
+    html-math-method: mathjax
+    smaller: false
+    number-sections: true
+    slide-number: true
+    scrollable: true
+    echo: true
+    code-fold: true
+    code-link: true
+    code-summary: "[R code]"
+    code-overflow: scroll
+    # chalkboard: true
+    # fig-width: 7
+    # fig-height: 5
+    # out-width: "100%"
+  html:
+    toc: true
+    number-sections: true
+    code-fold: true
+    code-tools: true
+    code-summary: "Show the code"
+    code-link: true
+  pdf:
+    toc: true
+    number-sections: true
+    code-link: true
+    code-overflow: wrap
+editor_options: 
+  chunk_output_type: console
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+::: hidden
+\def\cd{\cdot}
+\def\eqdef{\stackrel{\text{def}}{=}}
+\def\se{\text{SE}}
+\def\hse{\hat{\se}}
+\def\hb{\hat\beta}
+\def\za{z_{1 - \frac{\alpha}{2}}}
+\def\cirad{\za \cd \hse(\hb)}
+\def\ci{\hb {\color{red}\pm} \cirad}
+:::
+
+## Acknowledgements{.unnumbered}
+
+This content is adapted from:
+
+-   Dobson & Barnett 2018, "An Introduction to Generalized Linear Models", 4th edition, Chapter 9
+-   Vittinghoff et al 2012, "Regression Methods in Biostatistics", 2nd edition, Chapter 8
+-   Lecture slides and videos from the 2021 edition of this course (http://dmrocke.ucdavis.edu/Class/EPI204-Spring-2021/EPI204-Spring-2021.html)
+
+::: {.content-hidden when-format="revealjs"}
+## Configuring R{.unnumbered}
+
+Functions from these packages will be used throughout this document:
+
+```{r packages, message = FALSE}
+library(pander) # format tables for markdown
+library(ggplot2) # graphics
+library(ggeasy) # help with graphics
+library(dplyr) # manipulate data
+library(haven) # import Stata files
+library(knitr) # format R output for markdown
+library(tidyr) # Tools to help to create tidy data
+library(plotly) # interactive graphics
+library(dobson) # datasets from Dobson and Barnett 2018
+library(parameters) # format model output tables for markdown
+library(conflicted) # check for conflicting function definitions
+```
+
+Here are some R settings I use in this document:
+
+```{r options, message=FALSE}
+rm(list = ls()) # delete any data that's already loaded into R
+knitr::opts_chunk$set(message = FALSE)
+pander::panderOptions("table.emphasize.rownames", FALSE)
+options('digits' = 4)
+```
+:::
+
+# Introduction
+
+There are three intersecting modeling challenges in this section.
+
+1. censoring
+
+3. time-to-event modeling
+
+4. semiparametric models
+
+## Time to Event Data
+* Survival Analysis is a term for analyzing time-to-event data.
+* This is used in clinical trials, where the event is often death or
+recurrence of disease.
+\item It is used in engineering reliability analysis, where the event is failure
+of a device or system.
+\item It is used in insurance, particularly life insurance, where the event is death.
+\ei
+\end{frame}
+
+# The exponential distribution
+
+## PDF
+
+## Mean
+
+## Variance
+
+## MLE
+
+## Information
+
+# some new quantities
+
+## survival function
+
+## hazard function
+
+# Censoring
+
+## noninformative censoring
+
+C and T are independent, at least conditional on the covariates, and don't share any parameters.
+
+So the likelihood factors, and we can ignore the C part.
+
+# Truncation
+
+We have to define the starting point:
+
+* disease onset? 
+* disease diagnosis?
+* birth?
+* study enrollment date?
+
+What's the earliest time point when the event could have occurred for each individual? that's typically time 0.
+
+In some of these cases, some participants don't enter the data set until sometime after time 0. If the event had occurred between time 0 and when they entered the study.
+
+We need to account for that missing time.
+
