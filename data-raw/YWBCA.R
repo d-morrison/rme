@@ -1,6 +1,6 @@
 library(haven)
 conflicts_prefer(haven::read_sas)
-ywbca0 = read_sas("data/YWBCA/ywbca.sas7bdat")
+ywbca0 = read_sas("inst/extdata/YWBCA/ywbca.sas7bdat")
 
 
 # :::{.callout-tip}
@@ -80,3 +80,5 @@ var_label(ywbca) = var_label(ywbca0)[names(ywbca)]
 
 
 usethis::use_data(ywbca, overwrite = TRUE)
+
+ywbca |> readr::write_rds("inst/extdata/ywbca.rds")
