@@ -1,11 +1,5 @@
 ---
 title: "Gaussian MLEs"
-output:
-  pdf_document:
-    toc: yes
-  html_document:
-    code_folding: show
-    toc: yes
 ---
 
 ```{r setup, message=FALSE}
@@ -31,10 +25,6 @@ We are going to model the distribution of fasting glucose among nondiabetics who
 # load the data directly from a UCSF website
 hers = haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
 
-```
-
-```{r}
-
 n.obs = 100 # we're going to take a small subset of the data to look at; 
 # if we took the whole data set, the likelihood function would be hard to 
 # graph nicely
@@ -53,10 +43,9 @@ glucose_data =
 plot1 = 
   data1 |> 
   ggplot() +
-  geom_histogram(aes(x = glucose)) +
+  geom_histogram(aes(x = glucose), bins = 30) +
   theme_classic() +
   easy_labs()
-
 
 plot1 |> ggplotly() 
 
@@ -67,7 +56,6 @@ Looks somewhat plausibly Gaussian. Good enough for this example!
 ## Construct the likelihood and log-likelihood functions
 
 ```{r}
-
 # it's computationally better to construct the log-likelihood first and then 
 # exponentiate it to get the likelihood
 
@@ -105,18 +93,26 @@ lik = function(...) exp(loglik(...))
 
 ### Graph the Likelihood
 
-```{r}
+:::{#fig-likelihood-mu}
 
-ggplot() + 
+```{r}
+mu_likplot <- 
+  ggplot() + 
   geom_function(fun = function(x) lik(mu = x)) + 
   xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
   ylab("likelihood") + 
+  xlab("mu") +
   geom_vline(xintercept = mean(glucose_data), col = "red")
-
 
 ```
 
+Likelihood of `hers` data w.r.t. $\mu$
+
+:::
+
 ### Graph the Log-likelihood
+
+:::{#fig-loglik-mu}
 
 ```{r}
 
@@ -124,18 +120,21 @@ ggplot() +
   geom_function(fun = function(x) loglik(mu = x)) + 
   xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
   ylab('log(likelihood)') + 
+  xlab("mu") +
   geom_vline(xintercept = mean(glucose_data), col = "red")
 
 
 ```
 
+Log-likelihood of `hers` data w.r.t. $\mu$
+
+:::
+
 ## Likelihood and log-likelihood for $\sigma^2$, conditional on $\mu = \hat\mu$:
 
 
 ```{r}
-
-
-ggplot() + 
+lik_plot = ggplot() + 
   geom_function(fun = function(x) lik(sigma = x, mu = mean(glucose_data))) + 
   xlim(sd(glucose_data) * c(.9,1.1)) + 
   geom_vline(
@@ -143,7 +142,11 @@ ggplot() +
     col = "red") +
   ylab('Likelihood')
 
-ggplot() + 
+```
+
+
+```{r}
+loglik_plot = ggplot() + 
   geom_function(
     fun = function(x) loglik(sigma = x, mu = mean(glucose_data))
   ) + 
@@ -157,8 +160,9 @@ ggplot() +
 
 ```
 
+:::{#fig-3d-llik}
 
-```{r, include = FALSE, eval = FALSE}
+```{r}
 
 ## Graph the likelihood ranging over both parameters at once (3D graph!):
 
@@ -176,12 +180,17 @@ fig <- plot_ly(
   x = ~mu,
   y = ~sigma,
   z = ~llik)
-fig1 <- fig %>% plotly::layout(
-  scene = list(
-    xaxis = list(nticks = 20),
-    zaxis = list(nticks = 4),
-    camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-    aspectratio = list(x = .9, y = .8, z = 0.2)))
+fig1 <- fig %>% 
+  plotly::layout(
+    scene = list(
+      xaxis = list(nticks = 20),
+      zaxis = list(nticks = 4),
+      camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.2)))
 
 fig1 
 ```
+
+Log-likelihood of `hers` data w.r.t. $\mu$ and $\sigma^2$
+
+:::

@@ -1,0 +1,261 @@
+---
+title: "Gaussian MLEs for `hers` data"
+server: shiny
+---
+
+```{r setup, message=FALSE}
+
+rm(list = ls()) # delete any data that's already loaded into R
+options(digits = 4)
+library(pander)
+library(ggplot2)
+library(plotly)
+library(ggeasy)
+library(dplyr)
+library(haven)
+```
+
+
+Here we look at the "heart and estrogen/progestin study" (HERS), a clinical
+trial of hormone therapy for prevention of recurrent heart attacks and
+death among 2,763 post-menopausal women with existing coronary heart disease
+(CHD) (Hulley et al. 1998).
+
+We are going to model the distribution of fasting glucose among nondiabetics who don't exercise.
+
+```{r}
+#| context: setup
+# load the data directly from a UCSF website
+hers = haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
+
+n.obs = 100 # we're going to take a small subset of the data to look at;
+# if we took the whole data set, the likelihood function would be hard to
+# graph nicely
+
+data1 =
+  hers |>
+  filter(
+    diabetes == 0,
+    exercise == 0) |>
+  head(n.obs)
+
+glucose_data =
+  data1 |>
+  pull(glucose)
+
+plot1 =
+  data1 |>
+  ggplot() +
+  geom_histogram(aes(x = glucose), bins = 30) +
+  theme_classic() +
+  easy_labs()
+
+nobs <-  length(glucose_data)
+mles <- tibble(
+  mu_hat = mean(glucose_data),
+  sigma_hat = sqrt(mean((glucose_data - mu_hat)^2)))
+
+plot1 |> ggplotly()
+
+```
+
+Looks somewhat plausibly Gaussian. Good enough for this example!
+
+## Construct the likelihood and log-likelihood functions
+
+```{r}
+#| context: setup
+# it's computationally better to construct the log-likelihood first and then
+# exponentiate it to get the likelihood
+
+loglik = function(
+    mu = mles$mu_hat, # I'm assigning default values, which the function will use
+    # unless we tell it otherwise
+    sigma = mles$sigma_hat, # note that you can define some defaults based on other arguments
+    x = glucose_data,
+    n = length(x)
+)
+{
+
+  normalizing_constants = -n/2 * log((sigma^2) * 2 * pi)
+
+  likelihood_kernel = - 1/(2 * sigma^2) *
+    {
+      # I have to do this part in a somewhat complicated way
+      # so that we can pass in vectors of possible values of mu
+      # and get the likelihood for each value;
+      # for the binomial case it's easier
+      sum(x^2) - 2 * sum(x) * mu + n * mu^2
+    }
+
+  answer = normalizing_constants + likelihood_kernel
+
+  return(answer)
+
+}
+
+# `...` means pass any inputs to lik() along to loglik()
+lik = function(...) exp(loglik(...))
+
+
+```
+
+### Graph the Likelihood
+
+:::{#fig-likelihood-mu}
+
+```{r}
+ggplot() +
+  geom_function(fun = function(x) lik(mu = x)) +
+  xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
+  ylab("likelihood") +
+  xlab("mu") +
+  geom_vline(xintercept = mean(glucose_data), col = "red")
+
+```
+
+Likelihood of `hers` data w.r.t. $\mu$
+
+:::
+
+### Graph the Log-likelihood
+
+:::{#fig-loglik-mu}
+
+```{r}
+
+ggplot() +
+  geom_function(fun = function(x) loglik(mu = x)) +
+  xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
+  ylab('log(likelihood)') +
+  xlab("mu") +
+  geom_vline(xintercept = mean(glucose_data), col = "red")
+
+
+```
+
+Log-likelihood of `hers` data w.r.t. $\mu$
+
+:::
+
+## Likelihood and log-likelihood for $\sigma^2$, conditional on $\mu = \hat\mu$:
+
+
+
+```{r}
+shiny::sliderInput(inputId = "mu",
+                   label = "mu-hat",
+                   min = 95,
+                   max = 105,
+                   value = mean(glucose_data),
+                   step = .1)
+```
+
+
+```{r}
+#| context: server
+
+library(ggplot2)
+library(plotly)
+lik_plot = 
+  ggplot() +
+  geom_function(
+    fun = function(x) lik(sigma = x, mu = input$mu)
+  ) +
+  xlim(sd(glucose_data) * c(.9,1.1)) +
+  geom_vline(
+    xintercept = mles$sigma_hat,
+    col = "red") +
+  ylab('Likelihood') +
+  xlab('sigma')
+
+loglik_plot = ggplot() +
+  geom_function(
+    fun = function(x) loglik(sigma = x, mu = input$mu)
+  ) +
+  xlim(sd(glucose_data) * c(0.9, 1.1)) +
+  # ylim(1e-164, 1e-162) +
+  geom_vline(
+    xintercept = mles$sigma_hat,
+    col = "red") +
+  ylab("log(likelihood)") +
+  xlab('sigma')
+
+output$lik_plot <- shiny::renderPlot(lik_plot)
+output$loglik_plot <- shiny::renderPlot(loglik_plot)
+```
+
+:::{#fig-shiny1 layout-ncol=2}
+
+:::{#fig-lik-plot1}
+
+```{r}
+shiny::plotOutput("lik_plot")
+```
+
+Likelihood of data, conditional on mu
+
+:::
+
+:::{#fig-loglik-plot1}
+
+```{r}
+shiny::plotOutput("loglik_plot")
+
+```
+
+log-likelihood of data, conditional on mu
+
+:::
+
+:::
+
+---
+
+:::{#tbl-mles}
+
+```{r}
+print(mles)
+```
+
+:::
+
+---
+
+:::{#fig-3d-llik}
+
+```{r}
+
+## Graph the likelihood ranging over both parameters at once (3D graph!):
+
+library(plotly)
+
+n_points = 100
+mu = seq(95, 105, length.out = n_points)
+sigma = seq(sd(glucose_data) * .8, 
+            sd(glucose_data) * 1.2, 
+            length.out = n_points)
+names(mu) = round(mu, 5)
+names(sigma) = round(sigma, 5)
+llik = outer(mu, sigma, loglik)
+liks = outer(mu, sigma, lik)
+library(plotly)
+fig <- plot_ly(
+  type = 'surface',
+  x = ~mu,
+  y = ~sigma,
+  z = ~t(llik)) # not sure why transpose is required
+fig1 <- fig %>%
+  plotly::layout(
+    scene = list(
+      xaxis = list(nticks = 20),
+      zaxis = list(nticks = 10),
+      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.8)))
+
+fig1
+```
+
+Log-likelihood of `hers` data w.r.t. $\mu$ and $\sigma^2$
+
+:::
