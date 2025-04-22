@@ -40,3 +40,4 @@ wcgs <- wcgs |>
   )
 
 usethis::use_data(wcgs, overwrite = TRUE)
+wcgs |> readr::write_rds("inst/extdata/wcgs.rds")
