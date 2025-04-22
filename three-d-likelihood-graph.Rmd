@@ -1,0 +1,187 @@
+---
+title: "Gaussian MLEs"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    code_folding: show
+    toc: yes
+---
+
+```{r setup, message=FALSE}
+rm(list = ls()) # delete any data that's already loaded into R
+options(digits = 4)
+library(pander)
+library(ggplot2)
+library(plotly)
+library(ggeasy)
+library(dplyr)
+library(haven)
+```
+
+
+Here we look at the "heart and estrogen/progestin study" (HERS), a clinical 
+trial of hormone therapy for prevention of recurrent heart attacks and 
+death among 2,763 post-menopausal women with existing coronary heart disease 
+(CHD) (Hulley et al. 1998).
+
+We are going to model the distribution of fasting glucose among nondiabetics who don't exercise.
+
+```{r}
+# load the data directly from a UCSF website
+hers = haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
+
+```
+
+```{r}
+
+n.obs = 100 # we're going to take a small subset of the data to look at; 
+# if we took the whole data set, the likelihood function would be hard to 
+# graph nicely
+
+data1 = 
+  hers |> 
+  filter(
+    diabetes == 0,
+    exercise == 0) |> 
+  head(n.obs)
+
+glucose_data = 
+  data1 |> 
+  pull(glucose)
+
+plot1 = 
+  data1 |> 
+  ggplot() +
+  geom_histogram(aes(x = glucose)) +
+  theme_classic() +
+  easy_labs()
+
+
+plot1 |> ggplotly() 
+
+```
+
+Looks somewhat plausibly Gaussian. Good enough for this example!
+
+## Construct the likelihood and log-likelihood functions
+
+```{r}
+
+# it's computationally better to construct the log-likelihood first and then 
+# exponentiate it to get the likelihood
+
+loglik = function(
+    mu = mean(x), # I'm assigning default values, which the function will use 
+    # unless we tell it otherwise
+    sigma = sd(x), # note that you can define some defaults based on other arguments
+    x = glucose_data, 
+    n = length(x)
+)
+{
+  
+  normalizing_constants = -n/2 * log((sigma^2) * 2 * pi) 
+  
+  likelihood_kernel = - 1/(2 * sigma^2) * 
+    {
+      # I have to do this part in a somewhat complicated way
+      # so that we can pass in vectors of possible values of mu
+      # and get the likelihood for each value;
+      # for the binomial case it's easier
+      sum(x^2) - 2 * sum(x) * mu + n * mu^2
+    }
+  
+  answer = normalizing_constants + likelihood_kernel
+  
+  return(answer)
+  
+}
+
+# `...` means pass any inputs to lik() along to loglik()
+lik = function(...) exp(loglik(...))
+
+
+```
+
+### Graph the Likelihood
+
+```{r}
+
+ggplot() + 
+  geom_function(fun = function(x) lik(mu = x)) + 
+  xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
+  ylab("likelihood") + 
+  geom_vline(xintercept = mean(glucose_data), col = "red")
+
+
+```
+
+### Graph the Log-likelihood
+
+```{r}
+
+ggplot() + 
+  geom_function(fun = function(x) loglik(mu = x)) + 
+  xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
+  ylab('log(likelihood)') + 
+  geom_vline(xintercept = mean(glucose_data), col = "red")
+
+
+```
+
+## Likelihood and log-likelihood for $\sigma^2$, conditional on $\mu = \hat\mu$:
+
+
+```{r}
+
+
+ggplot() + 
+  geom_function(fun = function(x) lik(sigma = x, mu = mean(glucose_data))) + 
+  xlim(sd(glucose_data) * c(.9,1.1)) + 
+  geom_vline(
+    xintercept = sd(glucose_data) * sqrt(n.obs - 1)/sqrt(n.obs), 
+    col = "red") +
+  ylab('Likelihood')
+
+ggplot() + 
+  geom_function(
+    fun = function(x) loglik(sigma = x, mu = mean(glucose_data))
+  ) + 
+  xlim(sd(glucose_data) * c(0.9, 1.1)) +
+  geom_vline(
+    xintercept = 
+      sd(glucose_data) * sqrt(n.obs - 1) / sqrt(n.obs), 
+    col = "red") +
+  ylab("log(likelihood)")
+
+
+```
+
+
+```{r, include = FALSE, eval = FALSE}
+
+## Graph the likelihood ranging over both parameters at once (3D graph!):
+
+library(plotly)
+
+n_points = 50
+mu = seq(mean(glucose_data) - 1, mean(glucose_data) + 1, length.out = n_points)
+sigma = seq(sd(glucose_data) * .9, sd(glucose_data) * 1.1, length.out = n_points)
+
+llik = outer(mu, sigma, loglik)
+
+library(plotly)
+fig <- plot_ly(
+  type = 'surface',
+  x = ~mu,
+  y = ~sigma,
+  z = ~llik)
+fig1 <- fig %>% plotly::layout(
+  scene = list(
+    xaxis = list(nticks = 20),
+    zaxis = list(nticks = 4),
+    camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+    aspectratio = list(x = .9, y = .8, z = 0.2)))
+
+fig1 
+```
