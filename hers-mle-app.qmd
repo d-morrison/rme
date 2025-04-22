@@ -230,21 +230,20 @@ print(mles)
 
 library(plotly)
 
-n_points = 100
+n_points = 200
 mu = seq(95, 105, length.out = n_points)
-sigma = seq(sd(glucose_data) * .8, 
-            sd(glucose_data) * 1.2, 
+sigma = seq(7, 15, 
             length.out = n_points)
 names(mu) = round(mu, 5)
 names(sigma) = round(sigma, 5)
-llik = outer(mu, sigma, loglik)
+lliks = outer(mu, sigma, loglik)
 liks = outer(mu, sigma, lik)
-library(plotly)
+
 fig <- plot_ly(
   type = 'surface',
   x = ~mu,
   y = ~sigma,
-  z = ~t(llik)) # not sure why transpose is required
+  z = ~t(lliks)) # not sure why transpose is required
 fig1 <- fig %>%
   plotly::layout(
     scene = list(
