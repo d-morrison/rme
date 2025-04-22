@@ -1,7 +1,7 @@
 # define snake_case with uppercase acronyms allowed;
 # see https://github.com/r-lib/lintr/issues/2844 for details:
 withr::local_package("rex")
-snake_case_ACRO = rex::rex(
+snake_case_ACRO <- rex::rex(
   start,
   maybe("."),
   some_of(lower, digit) %or% some_of(upper, digit),
