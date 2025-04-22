@@ -1,10 +1,5 @@
----
-title: "Gaussian MLEs"
----
 
-```{r setup, message=FALSE}
-rm(list = ls()) # delete any data that's already loaded into R
-options(digits = 4)
+```{r}
 library(pander)
 library(ggplot2)
 library(plotly)
@@ -12,14 +7,6 @@ library(ggeasy)
 library(dplyr)
 library(haven)
 ```
-
-
-Here we look at the "heart and estrogen/progestin study" (HERS), a clinical 
-trial of hormone therapy for prevention of recurrent heart attacks and 
-death among 2,763 post-menopausal women with existing coronary heart disease 
-(CHD) (Hulley et al. 1998).
-
-We are going to model the distribution of fasting glucose among nondiabetics who don't exercise.
 
 ```{r}
 # load the data directly from a UCSF website
@@ -168,27 +155,30 @@ loglik_plot = ggplot() +
 
 library(plotly)
 
-n_points = 50
-mu = seq(mean(glucose_data) - 1, mean(glucose_data) + 1, length.out = n_points)
-sigma = seq(sd(glucose_data) * .9, sd(glucose_data) * 1.1, length.out = n_points)
+n_points = 200
+mu = seq(95, 105, length.out = n_points)
+sigma = seq(7, 15, 
+            length.out = n_points)
+names(mu) = round(mu, 5)
+names(sigma) = round(sigma, 5)
+lliks = outer(mu, sigma, loglik)
+liks = outer(mu, sigma, lik)
 
-llik = outer(mu, sigma, loglik)
-
-library(plotly)
 fig <- plot_ly(
   type = 'surface',
   x = ~mu,
   y = ~sigma,
-  z = ~llik)
-fig1 <- fig %>% 
+  z = ~t(lliks)) 
+ # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
+fig1 <- fig %>%
   plotly::layout(
     scene = list(
       xaxis = list(nticks = 20),
-      zaxis = list(nticks = 4),
-      camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-      aspectratio = list(x = .9, y = .8, z = 0.2)))
+      zaxis = list(nticks = 10),
+      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.8)))
 
-fig1 
+fig1
 ```
 
 Log-likelihood of `hers` data w.r.t. $\mu$ and $\sigma^2$
