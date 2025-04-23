@@ -1,0 +1,208 @@
+---
+title: "outtakes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{outtakes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+# library(2023)
+```
+
+Describing subpopulations
+
+## plotly test
+
+```{r, fig.height = 4}
+
+library(ggplot2)
+library(plotly)
+
+lm1 = lm(
+  body_mass_g ~ bill_length_mm, 
+  data = palmerpenguins::penguins
+)
+
+ggpenguins <- qplot(bill_length_mm , body_mass_g, 
+                    data = palmerpenguins::penguins, color = species) +
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth")
+
+ggplotly(ggpenguins)
+
+```
+
+
+
+```{r, fig.height = 4}
+library(ggplot2)
+library(plotly)
+
+lm1 = lm(
+  body_mass_g ~ bill_length_mm, 
+  data = palmerpenguins::penguins
+)
+
+ggpenguins <- qplot(bill_length_mm , body_mass_g, 
+                    data = palmerpenguins::penguins, color = species) +
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth")
+
+
+
+ggplotly(ggpenguins)
+```
+
+What if we assume that the means fall on a straight line, and all of the variances are the same?
+
+Then all we have to do is figure out what that line and variance should be, and then we can make predictions for any bill length we want!
+
+## Not limited to straight lines
+
+We could make the lines curve:
+
+```{r, fig.height = 4}
+library(ggplot2)
+library(plotly)
+
+lm1 = lm(
+  body_mass_g ~ bill_length_mm, 
+  data = palmerpenguins::penguins
+)
+
+ggpenguins <- qplot(bill_length_mm , body_mass_g, 
+                    data = palmerpenguins::penguins, color = species) +
+  stat_smooth(method = "lm",
+              formula = y ~ log(x),
+              geom = "smooth")
+
+ggplotly(ggpenguins)
+```
+
+```{r}
+library(ggplot2)
+library(plotly)
+
+lm1 = lm(
+  body_mass_g ~ bill_length_mm, 
+  data = palmerpenguins::penguins
+)
+
+ggpenguins <- qplot(bill_length_mm , body_mass_g, 
+                    data = palmerpenguins::penguins) +
+  stat_smooth(
+    method = "lm",
+    formula = y ~ log(x),
+    geom = "smooth")
+
+ggplotly(ggpenguins)
+```
+
+We can make the lines specific to each subgroup.
+
+## Interactions
+
+If we have too many subgroups, we might have to restrict the ways in which the subgroups differ; maybe they all have to have the same slope, but they can the lines can be shifted vertically from each other.
+
+Or maybe the slopes can also be different. That's an interaction: the relationship between bill length and body mass (the slope of these lines) varies by species.
+
+If the relationship between body mass and bill length varies between species, then the relationship between species and bill length varies by bill length, which we can also see here: the vertical distances between the species for small bill lengths are narrower than the vertical distances for large bill lengths.
+
+Once you have interactions, the interpretation of the model becomes a little more tricky. You can't say anything about "the relationship between bill length and body mass", because saying "the relationship" implies that there's only one relationship, and now there are three different relationships, one for each species. Instead, you can talk about each relationship separately, or you can talk compare those relationships (differences between the slopes).
+
+The more subgroups you want to consider, the more relationships you have, and the less data you have about any particular subgroup.
+
+And sometimes, you might think that the slope of the outcome relative to one numeric variable depends on the value of some other numeric variable.
+
+For example ....
+
+Now you could have an infinite number of subgroups, one for every value of the second variable, and most of those subgroups you have zero observations for. So you will need to make some even stronger assumptions about the shape of the interaction, if you want to make any progress.
+
+# What are generalized linear models
+
+So far, you've seen a variety of distributions for single populations, and you've seen a variety of model structures for Gaussian distributions that vary across subpopulations.
+
+Now, we're going to combine those two, and look at model structures explaining how non-Gaussian distributions vary across subpopulations.
+
+# Link functions
+
+Let's look at some count data.
+
+Do we want a linear relationship between the predictors and the outcome?
+
+You could try to transform each covariate individually, get all the interactions right, so that the model fits well.
+
+Or, you could add all the covariate terms together, and then transform them.
+
+In particular, when you take the log at the end, you can easily ensure that you get a model structure that you like, that never goes negative or above 1 for example.
+
+But once there's a non-identity link function, the interpretation of the slopes gets harder. Even if you don't have interactions,
+
+## Example of link function
+
+Here's the data from an experiment estimating mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide, by dosage (measured in $\log_{10}CS_2mgl^{-1}$) (Bliss 1935):
+
+```{r}
+library(ggplot2)
+plot1 = 
+  beetles |> 
+  ggplot(aes(x = dose, y = pct, size = n)) +
+  geom_point() +
+  xlab("Dose") +
+  ylab("Mortality rate (%)") +
+  scale_y_continuous(labels = scales::percent) +
+  # xlab(bquote(log[10]), bquote(CS[2])) +
+  scale_size(range = c(1,2))
+library(plotly)
+# ggplotly(plot1)
+plot1
+```
+
+
+```{r}
+
+glm1 = beetles |> 
+  glm(formula = cbind(died, survived) ~ dose, family = "binomial")
+
+lm1 = 
+  beetles  |> 
+  reframe(.by = everything(),
+          outcome = c(rep(1, times = died), rep(0, times = survived))
+  ) |> 
+  lm(
+    formula = outcome ~ dose, 
+    data = _)
+
+lm2 = 
+  beetles  |> 
+  reframe(.by = everything(),
+          outcome = c(rep(1, times = died), rep(0, times = survived))
+  ) |> 
+  lm(
+    formula = outcome ~ log(dose), 
+    data = _)
+
+
+range1 = range(beetles$dose) + c(-.2, .2)
+f = function(x) predict(glm1, newdata = data.frame(dose = x), type = "response")
+f.linear = function(x) predict(lm1, newdata = data.frame(dose = x))
+f.linearlog = function(x) predict(lm2, newdata = data.frame(dose = x))
+plot(pct ~ dose, data = beetles, ylim = c(-.1, 1.2), xlim = range1,
+     ylab = "Pr(died)")
+plot(f, add = TRUE, xlim = range1)
+plot(f.linear, add = TRUE, xlim = range1, col = "red")
+plot(f.linearlog, add = TRUE, xlim = range1, col = "blue")
+```
+
+
