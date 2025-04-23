@@ -1,0 +1,54 @@
+---
+title: "qqplots"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{qqplots}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+
+```
+
+Copied from: https://rpubs.com/markheckmann/45771
+
+```{r}
+set.seed(0)
+x <- sample(0:9, 100, rep=T)    
+```
+
+```{r}
+qqnorm(x, datax=T)      # uses Blom method by default
+qqline(x, datax=T)
+```
+
+```{r}
+n <- length(x)          # number of observations
+r <- order(order(x))    # order of values, i.e. ranks without averaged ties
+p <- (r - 1/2) / n      # assign to ranks using Blom's method
+y <- qnorm(p)           # theoretical standard normal quantiles for p values
+plot(x, y)              # plot empirical against theoretical values
+```
+
+```{r}
+plot(x, y)                      # plot empirical against theoretical values
+ps <- c(.25, .75)               # reference probabilities
+a <- quantile(x, ps)            # empirical quantiles
+b <- qnorm(ps)                  # theoretical quantiles
+lines(a, b, lwd=4, col="red")   # our QQ line
+qqline(x, datax=T)             # R QQ line
+
+# abline(0,1, col = "green")
+
+```
+
