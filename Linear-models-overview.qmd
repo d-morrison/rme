@@ -102,6 +102,7 @@ bw <-
   ) |>
   rename(age = `gestational age`) |>
   mutate(
+    id = row_number(),
     sex = sex |>
       case_match(
         "boy" ~ "male",
@@ -124,7 +125,6 @@ plot1 <- bw |>
   ggplot(aes(
     x = age,
     y = weight,
-    linetype = sex,
     shape = sex,
     col = sex
   )) +
@@ -1155,7 +1155,9 @@ chisq_plot <-
   ) +
   geom_segment(
     aes(
-      x = log_LR, xend = log_LR, y = 0,
+      x = log_LR, 
+      xend = log_LR, 
+      y = 0,
       yend = d_log_LR(log_LR)
     ),
     col = "red"
@@ -1382,7 +1384,8 @@ plot_PIs_and_CIs(lm_max, bw)
 Saturated model
 :::
 
-Model [-@eq-BW-lm-interact] and saturated model for `birthweight` data, with confidence and prediction intervals
+Model [-@eq-BW-lm-interact] and saturated model for `birthweight` data, 
+with confidence and prediction intervals
 
 :::
 
@@ -1401,7 +1404,9 @@ We can compare this model to our other models using chi-square tests, as usual:
 lrtest(lm_max, bw_lm2)
 ```
 
-The likelihood ratio statistic for this test is $$\lambda = 2 * (\ell_{\text{full}} - \ell) = `r 2 * (logLik(lm_max) - logLik(bw_lm2))`$$ where:
+The likelihood ratio statistic for this test is 
+$$\lambda = 2 * (\ell_{\text{full}} - \ell) = `r 2 * (logLik(lm_max) - logLik(bw_lm2))`$$ 
+where:
 
 -   $\ell_{\text{full}}$ is the log-likelihood of the full model: `r logLik(lm_max)`
 -   $\ell$ is the log-likelihood of our comparison model (two slopes, two intercepts): `r logLik(bw_lm2)`
@@ -1733,13 +1738,16 @@ to make it easier to inspect.
 :::{#def-resid-noise}
 #### Residual noise
 
-The **residual noise** in a probabilistic model $p(Y)$ is the difference between an observed value $y$ and its distributional mean:
+The **residual noise** in a probabilistic model $p(Y)$,
+also known as the **deviation of an observation from its mean**,
+is the difference between an observed value $y$ and its distributional mean:
 
 $$\eps(y) \eqdef y - \Exp{Y}$$ {#eq-def-resid}
 :::
 
 :::{.notes}
 We use the same notation for residual noise that we used for [errors](estimation.qmd#def-error). 
+
 $\Exp{Y}$ can be viewed as an estimate of $Y$, before $y$ is observed.
 Conversely, each observation $y$ can be viewed as an estimate of $\Exp{Y}$ (albeit an imprecise one, individually, since $n=1$). 
 
@@ -1754,7 +1762,8 @@ $$y = \Exp{Y} + \epsp{y}$$
 :::{#thm-gaussian-resid-noise}
 #### Residuals in Gaussian models
 
-If $Y$ has a Gaussian distribution, then $\err(Y)$ also has a Gaussian distribution, and vice versa.
+If $Y$ has a Gaussian distribution, 
+then $\err(Y)$ also has a Gaussian distribution, and vice versa.
 :::
 
 :::{.proof}
@@ -1764,9 +1773,9 @@ Left to the reader.
 ---
 
 :::{#def-resid-fitted}
-#### Residual errors of a fitted model value
+#### Residuals of a fitted model value
 
-The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error):
+The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error) relative to the observed data:
 $$
 \ba
 e(\hat y) &\eqdef \erf{\hat y}
@@ -1775,68 +1784,38 @@ e(\hat y) &\eqdef \erf{\hat y}
 $$
 :::
 
-$e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
-
-$$
-\ba
-e(\hy) &= y - \hat y
-\\ &= \hat\eps_{ML}
-\ea
-$$
-
----
-
-#### General characteristics of residuals
-
-:::{#thm-resid-unbiased}
-For [unbiased](estimation.qmd#sec-unbiased-estimators) estimators $\hth$:
-
-$$\E{e(y)} = 0$$ {#eq-mean-resid-unbiased}
-$$\Var{e(y)} \approx \ss$$ {#eq-var-resid-unbiased}
-
-:::
-
-:::{.proof}
-\ 
-
-@eq-mean-resid-unbiased:
-
-$$
-\ba
-\Ef{e(y)} &= \Ef{y - \hat y}
-\\ &= \Ef{y} - \Ef{\hat y}
-\\ &= \Ef{y} - \Ef{y}
-\\ &= 0
-\ea
-$$
-
-@eq-var-resid-unbiased:
-
-$$
-\ba
-\Var{e(y)} &= \Var{y - \hy}
-\\ &= \Var{y} + \Var{\hy} - 2 \Cov{y, \hy}
-\\ &{\dot{\approx}} \Var{y} + 0 - 2 \cdot 0
-\\ &= \Var{y}
-\\ &= \ss
-\ea
-$$
-:::
-
----
-
-#### Characteristics of residuals in Gaussian models
-
-With enough data and a correct model, the residuals will be approximately Guassian distributed, with variance $\sigma^2$, which we can estimate using $\hat\sigma^2$: that is:
-
-$$
-e_i \siid N(0, \hat\sigma^2)
-$$
-
 ---
 
 :::{#exm-resid-bw}
+
 #### residuals in `birthweight` data
+
+:::{#fig-bw-resids1}
+
+```{r}
+plot1_interact +
+  facet_wrap(~sex) +
+  geom_segment(
+    aes(
+      x = age,
+      y = predlm2,
+      xend = age,
+      yend = weight,
+      col = sex,
+      group = id
+    ),
+    linetype = "dotted"
+  )
+
+```
+
+Fitted values plus residuals for interaction model for `birthweight` data
+
+:::
+
+:::
+
+---
 
 R provides a function for residuals:
 
@@ -1844,7 +1823,8 @@ R provides a function for residuals:
 resid(bw_lm2)
 ```
 
-:::
+
+---
 
 :::{#exr-calc-resids}
 Check R's output by computing the residuals directly.
@@ -1889,6 +1869,72 @@ plot_bw_resid <-
   geom_point(alpha = .7)
 print(plot_bw_resid + facet_wrap(~sex))
 ```
+
+---
+
+
+---
+
+$e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
+
+$$
+\ba
+e(\hy) &= y - \hat y
+\\ &= \hat\eps_{ML}
+\ea
+$$
+
+---
+
+#### General characteristics of residuals
+
+:::{#thm-resid-unbiased}
+If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
+estimator of the mean $\Expf{Y}$, then:
+
+$$\E{e(y)} = 0$$ {#eq-mean-resid-unbiased}
+$$\Var{e(y)} \approx \ss$$ {#eq-var-resid-unbiased}
+
+:::
+
+---
+
+:::{.proof}
+\ 
+
+@eq-mean-resid-unbiased:
+
+$$
+\ba
+\Ef{e(y)} &= \Ef{y - \hat y}
+\\ &= \Ef{y} - \Ef{\hat y}
+\\ &= \Ef{y} - \Ef{y}
+\\ &= 0
+\ea
+$$
+
+@eq-var-resid-unbiased:
+
+$$
+\ba
+\Var{e(y)} &= \Var{y - \hy}
+\\ &= \Var{y} + \Var{\hy} - 2 \Cov{y, \hy}
+\\ &{\dot{\approx}} \Var{y} + 0 - 2 \cdot 0
+\\ &= \Var{y}
+\\ &= \ss
+\ea
+$$
+:::
+
+---
+
+#### Characteristics of residuals in Gaussian models
+
+With enough data and a correct model, the residuals will be approximately Guassian distributed, with variance $\sigma^2$, which we can estimate using $\hat\sigma^2$: that is:
+
+$$
+e_i \siid N(0, \hat\sigma^2)
+$$
 
 ---
 
