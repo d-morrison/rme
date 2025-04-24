@@ -10,6 +10,7 @@ df-print: paged
 
 ```{r}
 include_reference_lines <- FALSE
+
 ```
 
 ---
@@ -207,6 +208,7 @@ $$ {#eq-lm-parallel}
 ::: {#tbl-lm-parallel}
 
 ```{r}
+
 bw_lm1 <- lm(
   formula = weight ~ sex + age,
   data = bw
@@ -1749,6 +1751,7 @@ Suppose we want to try forcing the intercept to go through 0:
 hers = haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
 
 hers_lm_with_int <- lm(
+  na.action = na.exclude,
   LDL ~ smoking*age, data = hers)
 
 
@@ -1759,6 +1762,7 @@ equatiomatic::extract_eq(hers_lm_with_int)
 
 ```{r}
 hers_lm_no_int <- lm(
+  na.action = na.exclude,
   LDL ~ age + smoking:age - 1, data = hers)
 
 library(equatiomatic)
@@ -2050,6 +2054,13 @@ plot_bw_resid <-
   xlab("Gestational age (weeks)") +
   ylab("residuals (grams)") +
   theme(legend.position = "bottom") +
+  geom_hline(aes(yintercept = 0,
+                 col = sex)) +
+  geom_segment(
+    aes(yend = 0),
+    linetype = "dotted"
+  ) +
+  geom_point()
   # expand_limits(y = 0, x = 0) +
   geom_point(alpha = .7)
 print(plot_bw_resid + facet_wrap(~sex))
@@ -2057,12 +2068,73 @@ print(plot_bw_resid + facet_wrap(~sex))
 
 ---
 
+:::{#fig-resids-hers-1 layout-ncol=2}
+
+```{r}
+hers <- hers |> 
+  mutate(
+    resids_no_intcpt = 
+      LDL - fitted(hers_lm_no_int),
+    resids_with_intcpt = 
+      LDL - fitted(hers_lm_with_int)
+  )
+```
+
+:::{#fig-resid-hers-pred-no-intcpt}
+
+```{r}
+hers |> 
+  arrange(age) |> 
+  ggplot() +
+  aes(x = age, y = resids_no_intcpt, col = factor(smoking)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0, col = factor(smoking))) +
+  facet_wrap(~smoking, labeller = "label_both") +
+  theme(legend.position = "bottom") +
+  geom_smooth(col = "blue")
+```
+
+no intercept
+:::
+
+:::{#fig-resid-hers-pred-no-intcpt}
+
+```{r}
+hers |> 
+  arrange(age) |> 
+  ggplot() +
+  aes(x = age, y = resids_with_intcpt, col = factor(smoking)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0, col = factor(smoking))) +
+  facet_wrap(~smoking, labeller = "label_both") +
+  theme(legend.position = "bottom") +
+  geom_smooth(col = "blue")
+```
+
+
+with intercept
+:::
+
+Residuals of hers data vs predictors
+
+:::
+
+
+#### Residuals versus fitted values
+
+::: notes
+If the model contains multiple continuous covariates,
+how do check for errors in the mean structure assumption?
+:::
+
+
 ```{r}
 #| label: fig-resids-intxn-hers
 #| fig-cap: "Residuals of interaction model for `hers` data"
 
 library(ggfortify)
 hers_lm_no_int |> 
+  update(na.action = na.omit) |> 
   autoplot(
     which = 1, 
     ncol = 1,
@@ -2081,7 +2153,8 @@ We can add a LOESS smooth to visualize where the residual mean is nonzero:
 #| fig-cap: "Residuals of interaction model for `hers` data, no intercept term"
 
 library(ggfortify)
-hers_lm_no_int |> 
+hers_lm_no_int |>
+  update(na.action = na.omit) |> 
   autoplot(
     which = 1, 
     ncol = 1
@@ -2097,9 +2170,9 @@ hers_lm_no_int |>
 :::{#fig-resids-intxn-hers-smooth-no-int-2}
 
 ```{r}
-
 library(ggfortify)
 hers_lm_no_int |> 
+  update(na.action = na.omit) |> 
   autoplot(
     which = 1, 
     ncol = 1
@@ -2117,6 +2190,7 @@ no intercept term
 ```{r}
 
 hers_lm_with_int |> 
+  update(na.action = na.omit) |> 
   autoplot(
     which = 1, 
     ncol = 1
@@ -2134,15 +2208,6 @@ Residuals of interaction model for `hers` data, with and without intercept term
 :::
 
 ---
-
-
-#### Residuals versus fitted values
-
-::: notes
-If the model contains multiple continuous covariates,
-how do check for errors in the mean structure assumption?
-:::
-
 
 :::{#def-stred}
 
