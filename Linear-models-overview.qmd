@@ -49,8 +49,8 @@ so everyone here should have some understanding of linear regression already.
 :::{.fragment .fade-in}
 
 * We will review linear regression to:
-  - make sure everyone is caught up
-  - to provide an epidemiological perspective on model interpretation.
+- make sure everyone is caught up
+- to provide an epidemiological perspective on model interpretation.
 
 :::
 
@@ -150,11 +150,11 @@ Let's define some notation to represent this data:
 -   $Y$: birthweight (measured in grams)
 -   $S$: chromosomal sex: "male" (XY) or "female" (XX)
 -   $M$: indicator variable for $S$ = "male"^[$M$ is implicitly a deterministic function of $S$]
-    -   $M = 0$ if $S$ = "female"
-    -   $M = 1$ if $S$ = "male"
+-   $M = 0$ if $S$ = "female"
+-   $M = 1$ if $S$ = "male"
 -   $F$: indicator variable for $S$ = "female"^[$F$ is implicitly a deterministic function of $S$]
-    -   $F = 1$ if $S$ = "female"
-    -   $F = 0$ if $S$ = "male"
+-   $F = 1$ if $S$ = "female"
+-   $F = 0$ if $S$ = "male"
 -   $A$: estimated gestational age at birth (measured in weeks).
 
 ::: notes
@@ -662,7 +662,7 @@ bw_lm2 |>
     include_reference = include_reference_lines,
     select = "{estimate}"
   )
-  
+
 ```
 
 :::
@@ -776,7 +776,7 @@ Now, we apply the same procedure to linear regression models:
 :::
 
 $$
-\mathcal L(\vy|\mat x, \vb, \sigma^2) = 
+\Lik(\vy|\mat x, \vb, \sigma^2) = 
 \prod_{i=1}^n (2\pi\sigma^2)^{-1/2} 
 \exp{-\frac{1}{2\sigma^2}\paren{y_i - \paren{\vxi \cdot \vb}}^2}
 $$ {#eq-linreg-lik}
@@ -1325,6 +1325,70 @@ lm_max |>
 
 We call this model the **full**, **maximal**, or **saturated** model for this dataset.
 
+---
+
+```{r}
+plot_PIs_and_CIs <- function(model, data) {
+  cis <- model |>
+    predict(interval = "confidence") |> 
+    suppressWarnings() |> 
+    as_tibble()
+  names(cis) <- paste("ci", names(cis), sep = "_")
+  
+  preds <- model |>
+    predict(interval = "predict") |> 
+    suppressWarnings() |> 
+    as_tibble()
+  names(preds) <- paste("pred", names(preds), sep = "_")
+  bind_cols(bw, cis, preds) |> 
+    ggplot() +
+    aes(x = age, y = weight, col = sex) + 
+    geom_point() +
+    theme(legend.position = "bottom") +
+    geom_line(aes(y = ci_fit)) +
+    geom_ribbon(
+      aes(
+        ymin = pred_lwr,
+        ymax = pred_upr
+      ),
+      alpha = 0.2
+    ) + 
+    geom_ribbon(
+      aes(
+        ymin = ci_lwr,
+        ymax = ci_upr
+      ),
+      alpha = 0.5
+    ) +
+    facet_wrap(~sex)
+}
+```
+
+:::{#fig-max-vs-intxn-fits layout-ncol=2}
+
+:::{#fig-fit-intxn}
+
+```{r}
+plot_PIs_and_CIs(bw_lm2, bw)
+```
+Model [-@eq-BW-lm-interact] (linear with age:sex interaction)
+:::
+
+:::{#fig-fit-max}
+
+```{r}
+plot_PIs_and_CIs(lm_max, bw)
+```
+Saturated model
+:::
+
+Model [-@eq-BW-lm-interact] and saturated model for `birthweight` data, with confidence and prediction intervals
+
+:::
+
+
+---
+
 We can calculate the log-likelihood of this model as usual:
 
 ```{r}
@@ -1359,6 +1423,19 @@ lm0 |>
   parameters() |>
   print_md()
 ```
+
+---
+
+:::{#fig-null-model}
+```{r}
+lm0 |> plot_PIs_and_CIs()
+```
+
+Null model for birthweight data, with 95% confidence and prediction intervals.
+:::
+
+
+---
 
 This model also has a likelihood:
 
@@ -1577,39 +1654,7 @@ See `?predict.lm` for more.
 
 :::{#fig-pred-int-bw}
 ```{r}
-cis <- bw_lm2 |>
-  predict(interval = "confidence") |> 
-  suppressWarnings() |> 
-  as_tibble()
-
-names(cis)[2:3] <- paste("ci", names(cis)[2:3], sep = "_")
-
-preds <- bw_lm2 |>
-  predict(interval = "predict") |> 
-  suppressWarnings() |> 
-  as_tibble()
-names(preds)[2:3] <- paste("pred", names(preds)[2:3], sep = "_")
-
-bind_cols(bw, cis, preds) |> 
-  ggplot() +
-  aes(x = age, y = weight, col = sex) + 
-  geom_point() +
-  theme(legend.position = "bottom") +
-  geom_ribbon(
-    aes(
-      ymin = pred_lwr,
-      ymax = pred_upr
-    ),
-    alpha = 0.2
-  ) + 
-  geom_ribbon(
-    aes(
-      ymin = ci_lwr,
-      ymax = ci_upr
-    ),
-    alpha = 0.5
-  ) +
-  facet_wrap(~sex)
+plot_PIs_and_CIs(bw_lm2, bw)
 
 ```
 
@@ -2550,7 +2595,7 @@ hers <- read_dta(url)
 ```{r}
 #| include: false
 library(haven)
-hers <- read_stata("Data/hersdata.dta")
+hers <- read_stata(fs::path_package("rme", "extdata/hersdata.dta"))
 ```
 
 ```{r}
