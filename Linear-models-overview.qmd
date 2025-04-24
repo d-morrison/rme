@@ -108,7 +108,9 @@ bw <-
         "boy" ~ "male",
         "girl" ~ "female"
       ) |>
-      factor(levels = c("female", "male"))
+      factor(levels = c("female", "male")),
+    male = sex == "male",
+    female = sex == "female"
   )
 
 bw
@@ -1687,13 +1689,16 @@ Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact
 This section is adapted from @dobson4e [§6.2-6.3] and 
 @dunn2018generalized [Chapter 3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_3).
 :::
+
 ### Assumptions in linear regression models {.smaller .scrollable}
 
 $$Y|\vX \simind N(\vX'\b,\ss)$$
 
 1. Normality: The distribution conditional on a given $X$ value is normal
 
-2. Correct Functional Form: The conditional means have the structure 
+2. Correct Functional Form of Conditional Mean Structure (Linear Component):
+
+The model assumes that the conditional means have the structure:
 $$E[Y|\vX = \vx] = \vx \cdot \vb$$
 
 3. Homoskedasticity: The variance $\ss$ is constant (with respect to $\vx$)
@@ -1726,8 +1731,33 @@ print(plot1_interact)
 
 ::: notes
 It's not easy to assess these assumptions from this model.
-If there are multiple continuous covariates, it becomes even harder to visualize the raw data.
+If there are multiple continuous covariates, 
+it becomes even harder to visualize the raw data.
 :::
+
+---
+
+Suppose we want to try forcing the intercepts to go through 0:
+
+```{r}
+
+# hers = haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
+
+bw_lm_no_int <- lm(
+  weight ~ age:sex - 1, data = bw)
+
+library(sjPlot)
+
+bw_lm_no_int |> 
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "sex"),
+    show.data = TRUE
+  ) +
+  facet_wrap(~group_col)
+
+```
+
 
 ### Residuals
 
@@ -1749,11 +1779,14 @@ $$\eps(y) \eqdef y - \Exp{Y}$$ {#eq-def-resid}
 We use the same notation for residual noise that we used for [errors](estimation.qmd#def-error). 
 
 $\Exp{Y}$ can be viewed as an estimate of $Y$, before $y$ is observed.
-Conversely, each observation $y$ can be viewed as an estimate of $\Exp{Y}$ (albeit an imprecise one, individually, since $n=1$). 
+Conversely, each observation $y$ can be viewed as an estimate of $\Exp{Y}$ 
+(albeit an imprecise one, individually, since $n=1$). 
 
 :::
 
-We can rearrange @eq-def-resid to view $y$ as the sum of its mean plus the residual noise:
+We can rearrange @eq-def-resid 
+to view $y$ as 
+the sum of its mean plus the residual noise:
 
 $$y = \Exp{Y} + \epsp{y}$$
 
@@ -1817,63 +1850,7 @@ Fitted values plus residuals for interaction model for `birthweight` data
 
 ---
 
-R provides a function for residuals:
-
-```{r}
-resid(bw_lm2)
-```
-
-
----
-
-:::{#exr-calc-resids}
-Check R's output by computing the residuals directly.
-:::
-
-:::{.solution}
-\ 
-```{r}
-bw$weight - fitted(bw_lm2)
-```
-
-This matches R's output!
-:::
-
----
-
-#### Graph the residuals
-
-```{r}
-#| label: fig-resids-intxn
-#| fig-cap: "Residuals of interaction model for `birthweight` data"
-bw <- bw |>
-  mutate(
-    resids_intxn =
-      weight - fitted(bw_lm2)
-  )
-
-plot_bw_resid <-
-  bw |>
-  ggplot(aes(
-    x = age,
-    y = resids_intxn,
-    linetype = sex,
-    shape = sex,
-    col = sex
-  )) +
-  theme_bw() +
-  xlab("Gestational age (weeks)") +
-  ylab("residuals (grams)") +
-  theme(legend.position = "bottom") +
-  # expand_limits(y = 0, x = 0) +
-  geom_point(alpha = .7)
-print(plot_bw_resid + facet_wrap(~sex))
-```
-
----
-
-
----
+#### Residuals of fitted values vs residual noise
 
 $e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
 
@@ -1930,13 +1907,82 @@ $$
 
 #### Characteristics of residuals in Gaussian models
 
-With enough data and a correct model, the residuals will be approximately Guassian distributed, with variance $\sigma^2$, which we can estimate using $\hat\sigma^2$: that is:
+With enough data and a correct model, 
+the residuals will be approximately Guassian distributed, 
+with variance $\sigma^2$, 
+which we can estimate using $\hat\sigma^2$;
+that is:
 
 $$
 e_i \siid N(0, \hat\sigma^2)
 $$
 
 ---
+
+#### Computing residuals in R
+
+R provides a function for residuals:
+
+```{r}
+resid(bw_lm2)
+```
+
+
+---
+
+:::{#exr-calc-resids}
+Check R's output by computing the residuals directly.
+:::
+
+:::{.solution}
+\ 
+```{r}
+bw$weight - fitted(bw_lm2)
+```
+
+This matches R's output!
+:::
+
+---
+
+#### Graphing the residuals
+
+```{r}
+#| label: fig-resids-intxn
+#| fig-cap: "Residuals of interaction model for `birthweight` data"
+bw <- bw |>
+  mutate(
+    resids_intxn =
+      weight - fitted(bw_lm2)
+  )
+
+plot_bw_resid <-
+  bw |>
+  ggplot(aes(
+    x = age,
+    y = resids_intxn,
+    linetype = sex,
+    shape = sex,
+    col = sex
+  )) +
+  theme_bw() +
+  xlab("Gestational age (weeks)") +
+  ylab("residuals (grams)") +
+  theme(legend.position = "bottom") +
+  # expand_limits(y = 0, x = 0) +
+  geom_point(alpha = .7)
+print(plot_bw_resid + facet_wrap(~sex))
+```
+
+---
+
+#### Residuals versus fitted values
+
+::: notes
+If the model contains multiple continuous covariates,
+how do check for errors in the mean structure assumption?
+:::
+
 
 :::{#def-stred}
 
