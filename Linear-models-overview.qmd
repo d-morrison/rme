@@ -1345,21 +1345,25 @@ plot_PIs_and_CIs <- function(model, data) {
   names(preds) <- paste("pred", names(preds), sep = "_")
   bind_cols(bw, cis, preds) |>
     ggplot() +
-    aes(x = age, y = weight, col = sex) +
+    aes(
+      x = .data$age, 
+      y = .data$weight, 
+      col = .data$sex
+    ) +
     geom_point() +
     theme(legend.position = "bottom") +
-    geom_line(aes(y = ci_fit)) +
+    geom_line(aes(y = .data$ci_fit)) +
     geom_ribbon(
       aes(
-        ymin = pred_lwr,
-        ymax = pred_upr
+        ymin = .data$pred_lwr,
+        ymax = .data$pred_upr
       ),
       alpha = 0.2
     ) +
     geom_ribbon(
       aes(
-        ymin = ci_lwr,
-        ymax = ci_upr
+        ymin = .data$ci_lwr,
+        ymax = .data$ci_upr
       ),
       alpha = 0.5
     ) +
@@ -1742,7 +1746,7 @@ Suppose we want to try forcing the intercept to go through 0:
 :::
 
 ```{r}
-hers <- haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
+hers <- fs::path_package("rme", "extdata/hersdata.dta") |> haven::read_dta()
 
 hers_lm_with_int <- lm(
   na.action = na.exclude,
