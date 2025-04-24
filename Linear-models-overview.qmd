@@ -10,7 +10,6 @@ df-print: paged
 
 ```{r}
 include_reference_lines <- FALSE
-
 ```
 
 ---
@@ -208,7 +207,6 @@ $$ {#eq-lm-parallel}
 ::: {#tbl-lm-parallel}
 
 ```{r}
-
 bw_lm1 <- lm(
   formula = weight ~ sex + age,
   data = bw
@@ -666,7 +664,6 @@ bw_lm2 |>
     include_reference = include_reference_lines,
     select = "{estimate}"
   )
-
 ```
 
 :::
@@ -1159,8 +1156,8 @@ chisq_plot <-
   ) +
   geom_segment(
     aes(
-      x = log_LR, 
-      xend = log_LR, 
+      x = log_LR,
+      xend = log_LR,
       y = 0,
       yend = d_log_LR(log_LR)
     ),
@@ -1336,19 +1333,19 @@ We call this model the **full**, **maximal**, or **saturated** model for this da
 ```{r}
 plot_PIs_and_CIs <- function(model, data) {
   cis <- model |>
-    predict(interval = "confidence") |> 
-    suppressWarnings() |> 
+    predict(interval = "confidence") |>
+    suppressWarnings() |>
     as_tibble()
   names(cis) <- paste("ci", names(cis), sep = "_")
-  
+
   preds <- model |>
-    predict(interval = "predict") |> 
-    suppressWarnings() |> 
+    predict(interval = "predict") |>
+    suppressWarnings() |>
     as_tibble()
   names(preds) <- paste("pred", names(preds), sep = "_")
-  bind_cols(bw, cis, preds) |> 
+  bind_cols(bw, cis, preds) |>
     ggplot() +
-    aes(x = age, y = weight, col = sex) + 
+    aes(x = age, y = weight, col = sex) +
     geom_point() +
     theme(legend.position = "bottom") +
     geom_line(aes(y = ci_fit)) +
@@ -1358,7 +1355,7 @@ plot_PIs_and_CIs <- function(model, data) {
         ymax = pred_upr
       ),
       alpha = 0.2
-    ) + 
+    ) +
     geom_ribbon(
       aes(
         ymin = ci_lwr,
@@ -1622,7 +1619,7 @@ bw_lm2 |> predict(
 
 ```{r}
 library(sjPlot)
-bw_lm2 |> 
+bw_lm2 |>
   plot_model(type = "pred", terms = c("age", "sex"), show.data = TRUE) +
   theme_sjplot() +
   theme(legend.position = "bottom")
@@ -1654,7 +1651,6 @@ See @hoggtanis2015 §7.6 (p. 340) for a longer version.
 #| code-fold: show
 bw_lm2 |>
   predict(newdata = x, interval = "predict")
-
 ```
 
 ---
@@ -1665,7 +1661,7 @@ If you don't specify `newdata`, you get a warning:
 #| code-fold: show
 #| warning: true
 bw_lm2 |>
-  predict(interval = "predict") |> 
+  predict(interval = "predict") |>
   head()
 ```
 
@@ -1678,7 +1674,6 @@ See `?predict.lm` for more.
 :::{#fig-pred-int-bw}
 ```{r}
 plot_PIs_and_CIs(bw_lm2, bw)
-
 ```
 
 Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact]
@@ -1747,23 +1742,23 @@ Suppose we want to try forcing the intercept to go through 0:
 :::
 
 ```{r}
-
-hers = haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
+hers <- haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
 
 hers_lm_with_int <- lm(
   na.action = na.exclude,
-  LDL ~ smoking*age, data = hers)
+  LDL ~ smoking * age, data = hers
+)
 
 
 library(equatiomatic)
 equatiomatic::extract_eq(hers_lm_with_int)
-
 ```
 
 ```{r}
 hers_lm_no_int <- lm(
   na.action = na.exclude,
-  LDL ~ age + smoking:age - 1, data = hers)
+  LDL ~ age + smoking:age - 1, data = hers
+)
 
 library(equatiomatic)
 equatiomatic::extract_eq(hers_lm_no_int)
@@ -1800,18 +1795,17 @@ No intercept
 ```{r}
 library(sjPlot)
 
-hers_plot1 <- hers_lm_no_int |> 
+hers_plot1 <- hers_lm_no_int |>
   sjPlot::plot_model(
     type = "pred",
     terms = c("age", "smoking"),
     show.data = TRUE
-  ) + 
+  ) +
   facet_wrap(~group_col) +
   expand_limits(y = 0) +
   theme(legend.position = "bottom")
 
 hers_plot1
-
 ```
 
 No intercept
@@ -1823,18 +1817,17 @@ No intercept
 ```{r}
 library(sjPlot)
 
-hers_plot2 <- hers_lm_with_int |> 
+hers_plot2 <- hers_lm_with_int |>
   sjPlot::plot_model(
     type = "pred",
     terms = c("age", "smoking"),
     show.data = TRUE
-  ) + 
+  ) +
   facet_wrap(~group_col) +
   expand_limits(y = 0) +
   theme(legend.position = "bottom")
 
 hers_plot2
-
 ```
 
 :::
@@ -1923,7 +1916,6 @@ plot1_interact +
     ),
     linetype = "dotted"
   )
-
 ```
 
 Fitted values plus residuals for interaction model for `birthweight` data
@@ -2054,15 +2046,17 @@ plot_bw_resid <-
   xlab("Gestational age (weeks)") +
   ylab("residuals (grams)") +
   theme(legend.position = "bottom") +
-  geom_hline(aes(yintercept = 0,
-                 col = sex)) +
+  geom_hline(aes(
+    yintercept = 0,
+    col = sex
+  )) +
   geom_segment(
     aes(yend = 0),
     linetype = "dotted"
   ) +
   geom_point()
-  # expand_limits(y = 0, x = 0) +
-  geom_point(alpha = .7)
+# expand_limits(y = 0, x = 0) +
+geom_point(alpha = .7)
 print(plot_bw_resid + facet_wrap(~sex))
 ```
 
@@ -2071,11 +2065,11 @@ print(plot_bw_resid + facet_wrap(~sex))
 :::{#fig-resids-hers-1 layout-ncol=2}
 
 ```{r}
-hers <- hers |> 
+hers <- hers |>
   mutate(
-    resids_no_intcpt = 
+    resids_no_intcpt =
       LDL - fitted(hers_lm_no_int),
-    resids_with_intcpt = 
+    resids_with_intcpt =
       LDL - fitted(hers_lm_with_int)
   )
 ```
@@ -2083,8 +2077,8 @@ hers <- hers |>
 :::{#fig-resid-hers-pred-no-intcpt}
 
 ```{r}
-hers |> 
-  arrange(age) |> 
+hers |>
+  arrange(age) |>
   ggplot() +
   aes(x = age, y = resids_no_intcpt, col = factor(smoking)) +
   geom_point() +
@@ -2100,8 +2094,8 @@ no intercept
 :::{#fig-resid-hers-pred-no-intcpt}
 
 ```{r}
-hers |> 
-  arrange(age) |> 
+hers |>
+  arrange(age) |>
   ggplot() +
   aes(x = age, y = resids_with_intcpt, col = factor(smoking)) +
   geom_point() +
@@ -2133,15 +2127,14 @@ how do check for errors in the mean structure assumption?
 #| fig-cap: "Residuals of interaction model for `hers` data"
 
 library(ggfortify)
-hers_lm_no_int |> 
-  update(na.action = na.omit) |> 
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
   autoplot(
-    which = 1, 
+    which = 1,
     ncol = 1,
     smooth.colour = NA
   ) +
-  geom_hline(yintercept = 0, col = 'red')
-
+  geom_hline(yintercept = 0, col = "red")
 ```
 
 ---
@@ -2154,13 +2147,12 @@ We can add a LOESS smooth to visualize where the residual mean is nonzero:
 
 library(ggfortify)
 hers_lm_no_int |>
-  update(na.action = na.omit) |> 
+  update(na.action = na.omit) |>
   autoplot(
-    which = 1, 
+    which = 1,
     ncol = 1
   ) +
-  geom_hline(yintercept = 0, col = 'red')
-
+  geom_hline(yintercept = 0, col = "red")
 ```
 
 ---
@@ -2171,14 +2163,13 @@ hers_lm_no_int |>
 
 ```{r}
 library(ggfortify)
-hers_lm_no_int |> 
-  update(na.action = na.omit) |> 
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
   autoplot(
-    which = 1, 
+    which = 1,
     ncol = 1
   ) +
-  geom_hline(yintercept = 0, col = 'red')
-
+  geom_hline(yintercept = 0, col = "red")
 ```
 
 no intercept term
@@ -2188,15 +2179,13 @@ no intercept term
 :::{#fig-resids-intxn-hers-smooth-with-int}
 
 ```{r}
-
-hers_lm_with_int |> 
-  update(na.action = na.omit) |> 
+hers_lm_with_int |>
+  update(na.action = na.omit) |>
   autoplot(
-    which = 1, 
+    which = 1,
     ncol = 1
   ) +
-  geom_hline(yintercept = 0, col = 'red')
-
+  geom_hline(yintercept = 0, col = "red")
 ```
 
 with intercept term
