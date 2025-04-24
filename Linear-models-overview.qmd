@@ -1737,27 +1737,107 @@ it becomes even harder to visualize the raw data.
 
 ---
 
-Suppose we want to try forcing the intercepts to go through 0:
+#### Fitted model for `hers` data
+
+::: notes
+Consider the `hers` data from @vittinghoff2e.
+Suppose we want to try forcing the intercept to go through 0:
+:::
 
 ```{r}
 
-# hers = haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
+hers = haven::read_dta("https://regression.ucsf.edu/sites/g/files/tkssra6706/f/wysiwyg/home/data/hersdata.dta")
 
-bw_lm_no_int <- lm(
-  weight ~ age:sex - 1, data = bw)
+hers_lm_with_int <- lm(
+  LDL ~ smoking*age, data = hers)
 
-library(sjPlot)
 
-bw_lm_no_int |> 
-  sjPlot::plot_model(
-    type = "pred",
-    terms = c("age", "sex"),
-    show.data = TRUE
-  ) +
-  facet_wrap(~group_col)
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_with_int)
 
 ```
 
+```{r}
+hers_lm_no_int <- lm(
+  LDL ~ age + smoking:age - 1, data = hers)
+
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_no_int)
+```
+
+:::{#tbl-hers-maybe-int layout-ncol=2}
+
+:::{#tbl-hers-with-int}
+```{r}
+parameters(hers_lm_with_int)
+```
+With intercept
+:::
+
+:::{#tbl-hers-no-int}
+```{r}
+parameters(hers_lm_no_int)
+```
+
+No intercept
+:::
+
+`hers` data models with and without intercepts
+
+:::
+
+---
+
+:::{#fig-hers-maybe-int layout-ncol=2}
+
+
+:::{#fig-hers-no-int}
+
+```{r}
+library(sjPlot)
+
+hers_plot1 <- hers_lm_no_int |> 
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "smoking"),
+    show.data = TRUE
+  ) + 
+  facet_wrap(~group_col) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
+
+hers_plot1
+
+```
+
+No intercept
+
+:::
+
+:::{#fig-hers-with-intercept}
+
+```{r}
+library(sjPlot)
+
+hers_plot2 <- hers_lm_with_int |> 
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "smoking"),
+    show.data = TRUE
+  ) + 
+  facet_wrap(~group_col) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
+
+hers_plot2
+
+```
+
+:::
+
+`hers` data models with and without intercepts
+
+:::
 
 ### Residuals
 
@@ -1948,8 +2028,9 @@ This matches R's output!
 #### Graphing the residuals
 
 ```{r}
-#| label: fig-resids-intxn
+#| label: fig-resids-intxn-bw
 #| fig-cap: "Residuals of interaction model for `birthweight` data"
+
 bw <- bw |>
   mutate(
     resids_intxn =
@@ -1975,6 +2056,85 @@ print(plot_bw_resid + facet_wrap(~sex))
 ```
 
 ---
+
+```{r}
+#| label: fig-resids-intxn-hers
+#| fig-cap: "Residuals of interaction model for `hers` data"
+
+library(ggfortify)
+hers_lm_no_int |> 
+  autoplot(
+    which = 1, 
+    ncol = 1,
+    smooth.colour = NA
+  ) +
+  geom_hline(yintercept = 0, col = 'red')
+
+```
+
+---
+
+We can add a LOESS smooth to visualize where the residual mean is nonzero:
+
+```{r}
+#| label: fig-resids-intxn-hers-smooth-no-int
+#| fig-cap: "Residuals of interaction model for `hers` data, no intercept term"
+
+library(ggfortify)
+hers_lm_no_int |> 
+  autoplot(
+    which = 1, 
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = 'red')
+
+```
+
+---
+
+:::{#fig-resid-hers-compare layout-ncol=2}
+
+:::{#fig-resids-intxn-hers-smooth-no-int-2}
+
+```{r}
+
+library(ggfortify)
+hers_lm_no_int |> 
+  autoplot(
+    which = 1, 
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = 'red')
+
+```
+
+no intercept term
+
+:::
+
+:::{#fig-resids-intxn-hers-smooth-with-int}
+
+```{r}
+
+hers_lm_with_int |> 
+  autoplot(
+    which = 1, 
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = 'red')
+
+```
+
+with intercept term
+
+:::
+
+Residuals of interaction model for `hers` data, with and without intercept term
+
+:::
+
+---
+
 
 #### Residuals versus fitted values
 
