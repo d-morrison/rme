@@ -1641,9 +1641,9 @@ given $\vX^*=\vx^*$:
 
 $$
 \ba
-\hat{Y^*} &= \hat\mu(\vx^*) + \hat{\epsilon}^*
+\hat{Y^*} &= \hat\mu({\vx}^*) + \hat{\epsilon}^*
 \\ \Var{\hat{Y}} &= \Var{\hat\mu} + \Var{\hat\epsilon}
-\\ &= \sigma^2 {\vx^*}' (\mX'\mX)^{-1} {\vx^*} + \sigma^2
+\\ &= \sigma^2 {{\vx}^*}' (\mX'\mX)^{-1} {{\vx}^*} + \sigma^2
 \ea
 $$
 
@@ -1742,12 +1742,28 @@ it becomes even harder to visualize the raw data.
 
 ::: notes
 Consider the `hers` data from @vittinghoff2e.
-Suppose we want to try forcing the intercept to go through 0:
+
+{{< include _sec_hers_intro.qmd >}}
+
 :::
+
+
 
 ```{r}
 hers <- fs::path_package("rme", "extdata/hersdata.dta") |> haven::read_dta()
+hers
+```
 
+---
+
+::: notes
+Suppose we want to try forcing the intercept to go through 0:
+:::
+
+:::{#tbl-hers-maybe-int layout-ncol=2}
+
+:::{#tbl-hers-with-int}
+```{r}
 hers_lm_with_int <- lm(
   na.action = na.exclude,
   LDL ~ smoking * age, data = hers
@@ -1756,22 +1772,7 @@ hers_lm_with_int <- lm(
 
 library(equatiomatic)
 equatiomatic::extract_eq(hers_lm_with_int)
-```
 
-```{r}
-hers_lm_no_int <- lm(
-  na.action = na.exclude,
-  LDL ~ age + smoking:age - 1, data = hers
-)
-
-library(equatiomatic)
-equatiomatic::extract_eq(hers_lm_no_int)
-```
-
-:::{#tbl-hers-maybe-int layout-ncol=2}
-
-:::{#tbl-hers-with-int}
-```{r}
 library(gtsummary)
 hers_lm_with_int |> tbl_regression()
 ```
@@ -1780,6 +1781,13 @@ With intercept
 
 :::{#tbl-hers-no-int}
 ```{r}
+hers_lm_no_int <- lm(
+  na.action = na.exclude,
+  LDL ~ age + smoking:age - 1, data = hers
+)
+
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_no_int)
 hers_lm_no_int |> tbl_regression()
 ```
 
