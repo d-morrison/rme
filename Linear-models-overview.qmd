@@ -1322,17 +1322,18 @@ We call this model the **full**, **maximal**, or **saturated** model for this da
 ---
 
 ```{r}
+library(rlang) # defines the `.data` pronoun
 plot_PIs_and_CIs <- function(model, data) {
   cis <- model |>
     predict(interval = "confidence") |>
     suppressWarnings() |>
-    as_tibble()
+    tibble::as_tibble()
   names(cis) <- paste("ci", names(cis), sep = "_")
 
   preds <- model |>
     predict(interval = "predict") |>
     suppressWarnings() |>
-    as_tibble()
+    tibble::as_tibble()
   names(preds) <- paste("pred", names(preds), sep = "_")
   dplyr::bind_cols(bw, cis, preds) |>
     ggplot2::ggplot() +
