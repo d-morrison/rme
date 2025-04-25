@@ -1,7 +1,3 @@
----
-df-print: paged
----
-
 # Linear (Gaussian) Models
 
 ---
@@ -179,7 +175,8 @@ such as using the values -1 and 1
 
 ### Parallel lines regression {.smaller}
 
-(c.f. @dunn2018generalized §2.10.3)
+(c.f. @dunn2018generalized 
+[§2.10.3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_2#Sec31))
 
 ::: notes
 
@@ -234,9 +231,9 @@ Regression parameter estimates for [Model @eq-lm-parallel] of `birthweight` data
 
 :::{.column width=50%}
 
+:::{#fig-parallel-fit1}
+
 ```{r}
-#| label: fig-parallel-fit1
-#| fig-cap: "Parallel-slopes model of birthweight"
 bw <-
   bw |>
   mutate(`E[Y|X=x]` = fitted(bw_lm1)) |>
@@ -248,6 +245,10 @@ plot2 <-
 
 print(plot2)
 ```
+
+Graph of [Model @eq-lm-parallel] for `birthweight` data
+
+:::
 
 :::
 
@@ -1325,17 +1326,18 @@ We call this model the **full**, **maximal**, or **saturated** model for this da
 ---
 
 ```{r}
+library(rlang) # defines the `.data` pronoun
 plot_PIs_and_CIs <- function(model, data) {
   cis <- model |>
     predict(interval = "confidence") |>
     suppressWarnings() |>
-    as_tibble()
+    tibble::as_tibble()
   names(cis) <- paste("ci", names(cis), sep = "_")
 
   preds <- model |>
     predict(interval = "predict") |>
     suppressWarnings() |>
-    as_tibble()
+    tibble::as_tibble()
   names(preds) <- paste("pred", names(preds), sep = "_")
   dplyr::bind_cols(bw, cis, preds) |>
     ggplot2::ggplot() +
@@ -1639,7 +1641,7 @@ $$
 \\ \Var{\hat{Y}} &= \Var{\hat\mu} + \Var{\hat\epsilon}
 \\ &= \sigma^2 {{\vx}^{*\top}} (\mX'\mX)^{-1} {{\vx}^*} + \sigma^2
 \ea
-$$
+$${#eq-prediction-var}
 
 ::: notes
 See @hoggtanis2015 §7.6 (p. 340) for a longer version.
@@ -1751,13 +1753,16 @@ Consider the `hers` data from @vittinghoff2e.
 
 :::
 
+:::{#tbl-hers-data}
+
 ```{r}
-#| tbl-cap: "`hers` data"
-#| label: tbl-hers-data
 hers <- fs::path_package("rme", "extdata/hersdata.dta") |> 
   haven::read_dta()
 hers
 ```
+
+`hers` data
+:::
 
 ---
 
@@ -1831,7 +1836,7 @@ hers_plot1 <- hers_lm_no_int |>
     terms = c("age", "smoking"),
     show.data = TRUE
   ) +
-  facet_wrap(~group_col) +
+  facet_wrap(~group_col, ncol = 1) +
   expand_limits(y = 0) +
   theme(legend.position = "bottom")
 
@@ -1853,7 +1858,7 @@ hers_plot2 <- hers_lm_with_int |>
     terms = c("age", "smoking"),
     show.data = TRUE
   ) +
-  facet_wrap(~group_col) +
+  facet_wrap(~group_col, ncol = 1) +
   expand_limits(y = 0) +
   theme(legend.position = "bottom")
 
