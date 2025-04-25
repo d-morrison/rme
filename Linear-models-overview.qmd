@@ -969,17 +969,9 @@ In the `summary.lm()` output, this estimate is labeled as `"Residual standard er
 summary(bw_lm2)
 ```
 
----
-
 ::: notes
-However, this is a misnomer:
+However, this is a misnomer: see note in `?stats::sigma`
 :::
-
-```{r, printr.help.sections = c("description", "note")}
-#| code-fold: show
-library(printr) # captures ? documentation
-?stats::sigma
-```
 
 ## Inference about Gaussian Linear Regression Models {#sec-infer-LMs}
 
@@ -1693,18 +1685,28 @@ This section is adapted from @dobson4e [§6.2-6.3] and
 
 ### Assumptions in linear regression models {.smaller .scrollable}
 
-$$Y|\vX \simind N(\vX'\b,\ss)$$
+$$Y_i|\vX_i \sim_{\red{\ind}} \blue{\Normal}(\orange{\vX_i'\vb}, \green{\ss})$$
 
-1. Normality: The distribution conditional on a given $X$ value is normal
+1. $\blue{\text{Normality}}$
 
-2. Correct Functional Form of Conditional Mean Structure (Linear Component):
+The model assumes that the distribution conditional on a given $X$ value is Gaussian.
+
+2. $\orange{\text{Correct Functional Form}}$ of Conditional Mean Structure 
+(Linear Component)
 
 The model assumes that the conditional means have the structure:
-$$E[Y|\vX = \vx] = \vx \cdot \vb$$
+$$\Expp[Y|\vX = \vx] = \vx'\vb$$
 
-3. Homoskedasticity: The variance $\ss$ is constant (with respect to $\vx$)
+3. $\green{\text{Homoskedasticity}}$
 
-4. Independence: The observations are statistically independent
+The model assumes that variance $\ss$ is constant (with respect to $\vx$).
+
+
+4. $\red{\text{Independence}}$
+
+::: notes
+The model assumes that the observations are statistically independent.
+:::
 
 ### Direct visualization
 
@@ -1747,8 +1749,6 @@ Consider the `hers` data from @vittinghoff2e.
 
 :::
 
-
-
 ```{r}
 #| tbl-cap: "`hers` data"
 #| label: tbl-hers-data
@@ -1775,9 +1775,12 @@ hers_lm_with_int <- lm(
 
 library(equatiomatic)
 equatiomatic::extract_eq(hers_lm_with_int)
+```
 
+```{r}
 library(gtsummary)
-hers_lm_with_int |> tbl_regression()
+hers_lm_with_int |> 
+  tbl_regression(intercept = TRUE)
 ```
 With intercept
 :::
@@ -1791,7 +1794,11 @@ hers_lm_no_int <- lm(
 
 library(equatiomatic)
 equatiomatic::extract_eq(hers_lm_no_int)
-hers_lm_no_int |> tbl_regression()
+```
+
+```{r}
+hers_lm_no_int |> 
+  tbl_regression(intercept = TRUE)
 ```
 
 No intercept
