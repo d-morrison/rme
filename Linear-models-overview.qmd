@@ -1,7 +1,3 @@
----
-df-print: paged
----
-
 # Linear (Gaussian) Models
 
 ---
@@ -27,8 +23,10 @@ There are numerous textbooks specifically for linear regression, including:
 - @chatterjee2015regression: used for Stanford MS-level linear models class
 - @seber2012linear: used for UCLA Biostatistics PhD level linear models class and UC Davis STA 108.
 - @kleinbaum2014applied: same first author as @kleinbaum2010logistic and @kleinbaum2012survival
-- @weisberg2005applied
 - *Linear Models with R* [@Faraway2025-io]
+- *Applied Linear Regression* by Sanford Weisberg [@weisberg2005applied]
+
+For more recommendations, see the discussion on [Reddit](https://www.reddit.com/r/statistics/comments/qwgctl/q_books_on_applied_linear_modelsregression_for/).
 
 :::
 
@@ -84,7 +82,7 @@ and with different chromosomal sexes (*covariate* $S$) (@dobson4e Example 2.2.2)
 #| tbl-cap: "`birthweight` data (@dobson4e Example 2.2.2)"
 library(dobson)
 data("birthweight", package = "dobson")
-birthweight |> knitr::kable()
+birthweight
 ```
 
 #### Reshape data for graphing
@@ -102,12 +100,15 @@ bw <-
   ) |>
   rename(age = `gestational age`) |>
   mutate(
+    id = row_number(),
     sex = sex |>
       case_match(
         "boy" ~ "male",
         "girl" ~ "female"
       ) |>
-      factor(levels = c("female", "male"))
+      factor(levels = c("female", "male")),
+    male = sex == "male",
+    female = sex == "female"
   )
 
 bw
@@ -124,7 +125,6 @@ plot1 <- bw |>
   ggplot(aes(
     x = age,
     y = weight,
-    linetype = sex,
     shape = sex,
     col = sex
   )) +
@@ -175,7 +175,8 @@ such as using the values -1 and 1
 
 ### Parallel lines regression {.smaller}
 
-(c.f. @dunn2018generalized §2.10.3)
+(c.f. @dunn2018generalized 
+[§2.10.3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_2#Sec31))
 
 ::: notes
 
@@ -214,7 +215,7 @@ library(parameters)
 bw_lm1 |>
   parameters::parameters() |>
   parameters::print_md(
-    include_reference = FALSE,
+    include_reference = include_reference_lines,
     select = "{estimate}"
   )
 ```
@@ -230,9 +231,9 @@ Regression parameter estimates for [Model @eq-lm-parallel] of `birthweight` data
 
 :::{.column width=50%}
 
+:::{#fig-parallel-fit1}
+
 ```{r}
-#| label: fig-parallel-fit1
-#| fig-cap: "Parallel-slopes model of birthweight"
 bw <-
   bw |>
   mutate(`E[Y|X=x]` = fitted(bw_lm1)) |>
@@ -244,6 +245,10 @@ plot2 <-
 
 print(plot2)
 ```
+
+Graph of [Model @eq-lm-parallel] for `birthweight` data
+
+:::
 
 :::
 
@@ -662,7 +667,6 @@ bw_lm2 |>
     include_reference = include_reference_lines,
     select = "{estimate}"
   )
-
 ```
 
 :::
@@ -968,17 +972,9 @@ In the `summary.lm()` output, this estimate is labeled as `"Residual standard er
 summary(bw_lm2)
 ```
 
----
-
 ::: notes
-However, this is a misnomer:
+However, this is a misnomer: see note in `?stats::sigma`
 :::
-
-```{r, printr.help.sections = c("description", "note")}
-#| code-fold: show
-library(printr) # captures ? documentation
-?stats::sigma
-```
 
 ## Inference about Gaussian Linear Regression Models {#sec-infer-LMs}
 
@@ -1155,7 +1151,9 @@ chisq_plot <-
   ) +
   geom_segment(
     aes(
-      x = log_LR, xend = log_LR, y = 0,
+      x = log_LR,
+      xend = log_LR,
+      y = 0,
       yend = d_log_LR(log_LR)
     ),
     col = "red"
@@ -1328,39 +1326,44 @@ We call this model the **full**, **maximal**, or **saturated** model for this da
 ---
 
 ```{r}
+library(rlang) # defines the `.data` pronoun
 plot_PIs_and_CIs <- function(model, data) {
   cis <- model |>
-    predict(interval = "confidence") |> 
-    suppressWarnings() |> 
-    as_tibble()
+    predict(interval = "confidence") |>
+    suppressWarnings() |>
+    tibble::as_tibble()
   names(cis) <- paste("ci", names(cis), sep = "_")
-  
+
   preds <- model |>
-    predict(interval = "predict") |> 
-    suppressWarnings() |> 
-    as_tibble()
+    predict(interval = "predict") |>
+    suppressWarnings() |>
+    tibble::as_tibble()
   names(preds) <- paste("pred", names(preds), sep = "_")
-  bind_cols(bw, cis, preds) |> 
-    ggplot() +
-    aes(x = age, y = weight, col = sex) + 
-    geom_point() +
-    theme(legend.position = "bottom") +
-    geom_line(aes(y = ci_fit)) +
-    geom_ribbon(
-      aes(
-        ymin = pred_lwr,
-        ymax = pred_upr
+  dplyr::bind_cols(bw, cis, preds) |>
+    ggplot2::ggplot() +
+    ggplot2::aes(
+      x = .data$age, 
+      y = .data$weight, 
+      col = .data$sex
+    ) +
+    ggplot2::geom_point() +
+    ggplot2::theme(legend.position = "bottom") +
+    ggplot2::geom_line(ggplot2::aes(y = .data$ci_fit)) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(
+        ymin = .data$pred_lwr,
+        ymax = .data$pred_upr
       ),
       alpha = 0.2
-    ) + 
-    geom_ribbon(
-      aes(
-        ymin = ci_lwr,
-        ymax = ci_upr
+    ) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(
+        ymin = .data$ci_lwr,
+        ymax = .data$ci_upr
       ),
       alpha = 0.5
     ) +
-    facet_wrap(~sex)
+    ggplot2::facet_wrap(~sex)
 }
 ```
 
@@ -1382,7 +1385,8 @@ plot_PIs_and_CIs(lm_max, bw)
 Saturated model
 :::
 
-Model [-@eq-BW-lm-interact] and saturated model for `birthweight` data, with confidence and prediction intervals
+Model [-@eq-BW-lm-interact] and saturated model for `birthweight` data, 
+with confidence and prediction intervals
 
 :::
 
@@ -1401,7 +1405,9 @@ We can compare this model to our other models using chi-square tests, as usual:
 lrtest(lm_max, bw_lm2)
 ```
 
-The likelihood ratio statistic for this test is $$\lambda = 2 * (\ell_{\text{full}} - \ell) = `r 2 * (logLik(lm_max) - logLik(bw_lm2))`$$ where:
+The likelihood ratio statistic for this test is 
+$$\lambda = 2 * (\ell_{\text{full}} - \ell) = `r 2 * (logLik(lm_max) - logLik(bw_lm2))`$$ 
+where:
 
 -   $\ell_{\text{full}}$ is the log-likelihood of the full model: `r logLik(lm_max)`
 -   $\ell$ is the log-likelihood of our comparison model (two slopes, two intercepts): `r logLik(bw_lm2)`
@@ -1474,11 +1480,11 @@ bw <-
     `age - 36wks` = age - 36
   )
 
-lm1c <- lm(weight ~ sex + `age - 36wks`, data = bw)
+lm1_c <- lm(weight ~ sex + `age - 36wks`, data = bw)
 
-lm2c <- lm(weight ~ sex + `age - 36wks` + sex:`age - 36wks`, data = bw)
+lm2_c <- lm(weight ~ sex + `age - 36wks` + sex:`age - 36wks`, data = bw)
 
-parameters(lm2c, ci_method = "wald") |> print_md()
+parameters(lm2_c, ci_method = "wald") |> print_md()
 ```
 
 Compare with what we got without rescaling:
@@ -1613,7 +1619,7 @@ bw_lm2 |> predict(
 
 ```{r}
 library(sjPlot)
-bw_lm2 |> 
+bw_lm2 |>
   plot_model(type = "pred", terms = c("age", "sex"), show.data = TRUE) +
   theme_sjplot() +
   theme(legend.position = "bottom")
@@ -1625,13 +1631,29 @@ Predicted values and confidence bands for the `birthweight` model with interacti
 
 ---
 
-You can also get **prediction intervals** for the value of an individual outcome $Y$:
+We can also get **prediction intervals** for 
+the value of a new observation $Y^*$,
+given $\vX^*=\vx^*$:
+
+$$
+\ba
+\hat{Y^*} &= \hat\mu({\vx}^*) + \hat{\epsilon}^*
+\\ \Var{\hat{Y}} &= \Var{\hat\mu} + \Var{\hat\epsilon}
+\\ \Var{\hat{Y}} &= \Var{x'\hb} + \Var{\hat\epsilon}
+\\ &= {{\vx}^{*\top}} \Var{\hb} {{\vx}^*} + \sigma^2
+\\ &=  {{\vx}^{*\top}} \paren{\sigma^2(\mX'\mX)^{-1}} {{\vx}^*} + \sigma^2
+\\ &= \sigma^2 {{\vx}^{*\top}} (\mX'\mX)^{-1} {{\vx}^*} + \sigma^2
+\ea
+$${#eq-prediction-var}
+
+::: notes
+See @hoggtanis2015 §7.6 (p. 340) for a longer version.
+:::
 
 ```{r}
 #| code-fold: show
 bw_lm2 |>
   predict(newdata = x, interval = "predict")
-
 ```
 
 ---
@@ -1642,7 +1664,7 @@ If you don't specify `newdata`, you get a warning:
 #| code-fold: show
 #| warning: true
 bw_lm2 |>
-  predict(interval = "predict") |> 
+  predict(interval = "predict") |>
   head()
 ```
 
@@ -1655,7 +1677,6 @@ See `?predict.lm` for more.
 :::{#fig-pred-int-bw}
 ```{r}
 plot_PIs_and_CIs(bw_lm2, bw)
-
 ```
 
 Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact]
@@ -1668,18 +1689,31 @@ Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact
 This section is adapted from @dobson4e [§6.2-6.3] and 
 @dunn2018generalized [Chapter 3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_3).
 :::
+
 ### Assumptions in linear regression models {.smaller .scrollable}
 
-$$Y|\vX \simind N(\vX'\b,\ss)$$
+$$Y_i|\vX_i \sim_{\red{\ind}} \blue{\Normal}(\orange{\vX_i'\vb}, \green{\ss})$$
 
-1. Normality: The distribution conditional on a given $X$ value is normal
+1. $\blue{\text{Normality}}$
 
-2. Correct Functional Form: The conditional means have the structure 
-$$E[Y|\vX = \vx] = \vx \cdot \vb$$
+The model assumes that the distribution conditional on a given $X$ value is Gaussian.
 
-3. Homoskedasticity: The variance $\ss$ is constant (with respect to $\vx$)
+2. $\orange{\text{Correct Functional Form}}$ of Conditional Mean Structure 
+(Linear Component)
 
-4. Independence: The observations are statistically independent
+The model assumes that the conditional means have the structure:
+$$\Expp[Y|\vX = \vx] = \vx'\vb$$
+
+3. $\green{\text{Homoskedasticity}}$
+
+The model assumes that variance $\ss$ is constant (with respect to $\vx$).
+
+
+4. $\red{\text{Independence}}$
+
+::: notes
+The model assumes that the observations are statistically independent.
+:::
 
 ### Direct visualization
 
@@ -1707,7 +1741,138 @@ print(plot1_interact)
 
 ::: notes
 It's not easy to assess these assumptions from this model.
-If there are multiple continuous covariates, it becomes even harder to visualize the raw data.
+If there are multiple continuous covariates, 
+it becomes even harder to visualize the raw data.
+:::
+
+---
+
+#### Fitted model for `hers` data {.smaller}
+
+::: notes
+Consider the `hers` data from @vittinghoff2e.
+
+{{< include _sec_hers_intro.qmd >}}
+
+:::
+
+:::{#tbl-hers-data}
+
+```{r}
+hers <- fs::path_package("rme", "extdata/hersdata.dta") |> 
+  haven::read_dta()
+hers
+```
+
+`hers` data
+:::
+
+---
+
+::: notes
+Suppose we consider models with and without intercept terms (i.e.,
+possibly forcing the intercept to go through 0):
+:::
+
+```{r}
+hers_lm_with_int <- lm(
+  na.action = na.exclude,
+  LDL ~ smoking * age, data = hers
+)
+
+
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_with_int)
+```
+
+```{r}
+hers_lm_no_int <- lm(
+  na.action = na.exclude,
+  LDL ~ age + smoking:age - 1, data = hers
+)
+
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_no_int)
+```
+
+
+:::{#tbl-hers-maybe-int layout-ncol=2}
+
+:::{#tbl-hers-with-int}
+
+
+```{r}
+library(gtsummary)
+hers_lm_with_int |> 
+  tbl_regression(intercept = TRUE)
+```
+With intercept
+:::
+
+:::{#tbl-hers-no-int}
+
+```{r}
+hers_lm_no_int |> 
+  tbl_regression(intercept = TRUE)
+```
+
+No intercept
+:::
+
+`hers` data models with and without intercepts
+
+:::
+
+---
+
+:::{#fig-hers-maybe-int layout-ncol=2}
+
+
+:::{#fig-hers-no-int}
+
+```{r}
+library(sjPlot)
+
+hers_plot1 <- hers_lm_no_int |>
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "smoking"),
+    show.data = TRUE
+  ) +
+  facet_wrap(~group_col, ncol = 1) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
+
+hers_plot1
+```
+
+No intercept
+
+:::
+
+:::{#fig-hers-with-intercept}
+
+```{r}
+library(sjPlot)
+
+hers_plot2 <- hers_lm_with_int |>
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "smoking"),
+    show.data = TRUE
+  ) +
+  facet_wrap(~group_col, ncol = 1) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
+
+hers_plot2
+```
+
+With intercept
+:::
+
+`hers` data models with and without intercepts
+
 :::
 
 ### Residuals
@@ -1719,28 +1884,35 @@ to make it easier to inspect.
 :::{#def-resid-noise}
 #### Residual noise
 
-The **residual noise** in a probabilistic model $p(Y)$ is the difference between an observed value $y$ and its distributional mean:
+The **residual noise** in a probabilistic model $p(Y)$,
+also known as the **deviation of an observation from its mean**,
+is the difference between an observed value $y$ and its distributional mean:
 
 $$\eps(y) \eqdef y - \Exp{Y}$$ {#eq-def-resid}
 :::
 
 :::{.notes}
 We use the same notation for residual noise that we used for [errors](estimation.qmd#def-error). 
+
 $\Exp{Y}$ can be viewed as an estimate of $Y$, before $y$ is observed.
-Conversely, each observation $y$ can be viewed as an estimate of $\Exp{Y}$ (albeit an imprecise one, individually, since $n=1$). 
+Conversely, each observation $y$ can be viewed as an estimate of $\Exp{Y}$ 
+(albeit an imprecise one, individually, since $n=1$). 
 
 :::
 
-We can rearrange @eq-def-resid to view $y$ as the sum of its mean plus the residual noise:
+We can rearrange @eq-def-resid 
+to view $y$ as 
+the sum of its mean plus the residual noise:
 
-$$y = \Exp{Y} + \eps{y}$$
+$$y = \Exp{Y} + \epsp{y}$$
 
 ---
 
 :::{#thm-gaussian-resid-noise}
 #### Residuals in Gaussian models
 
-If $Y$ has a Gaussian distribution, then $\err(Y)$ also has a Gaussian distribution, and vice versa.
+If $Y$ has a Gaussian distribution, 
+then $\err(Y)$ also has a Gaussian distribution, and vice versa.
 :::
 
 :::{.proof}
@@ -1750,9 +1922,9 @@ Left to the reader.
 ---
 
 :::{#def-resid-fitted}
-#### Residual errors of a fitted model value
+#### Residuals of a fitted model value
 
-The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error):
+The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error) relative to the observed data:
 $$
 \ba
 e(\hat y) &\eqdef \erf{\hat y}
@@ -1760,6 +1932,40 @@ e(\hat y) &\eqdef \erf{\hat y}
 \ea
 $$
 :::
+
+---
+
+:::{#exm-resid-bw}
+
+#### residuals in `birthweight` data
+
+:::{#fig-bw-resids1}
+
+```{r}
+plot1_interact +
+  facet_wrap(~sex) +
+  geom_segment(
+    aes(
+      x = age,
+      y = predlm2,
+      xend = age,
+      yend = weight,
+      col = sex,
+      group = id
+    ),
+    linetype = "dotted"
+  )
+```
+
+Fitted values and residuals for interaction model for `birthweight` data
+
+:::
+
+:::
+
+---
+
+#### Residuals of fitted values vs residual noise
 
 $e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
 
@@ -1775,12 +1981,15 @@ $$
 #### General characteristics of residuals
 
 :::{#thm-resid-unbiased}
-For [unbiased](estimation.qmd#sec-unbiased-estimators) estimators $\hth$:
+If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
+estimator of the mean $\Expf{Y}$, then:
 
 $$\E{e(y)} = 0$$ {#eq-mean-resid-unbiased}
 $$\Var{e(y)} \approx \ss$$ {#eq-var-resid-unbiased}
 
 :::
+
+---
 
 :::{.proof}
 \ 
@@ -1813,7 +2022,11 @@ $$
 
 #### Characteristics of residuals in Gaussian models
 
-With enough data and a correct model, the residuals will be approximately Guassian distributed, with variance $\sigma^2$, which we can estimate using $\hat\sigma^2$: that is:
+With enough data and a correct model, 
+the residuals will be approximately Guassian distributed, 
+with variance $\sigma^2$, 
+which we can estimate using $\hat\sigma^2$;
+that is:
 
 $$
 e_i \siid N(0, \hat\sigma^2)
@@ -1821,8 +2034,7 @@ $$
 
 ---
 
-:::{#exm-resid-bw}
-#### residuals in `birthweight` data
+#### Computing residuals in R
 
 R provides a function for residuals:
 
@@ -1830,7 +2042,8 @@ R provides a function for residuals:
 resid(bw_lm2)
 ```
 
-:::
+
+---
 
 :::{#exr-calc-resids}
 Check R's output by computing the residuals directly.
@@ -1847,11 +2060,35 @@ This matches R's output!
 
 ---
 
-#### Graph the residuals
+#### Graphing the residuals
+
+:::{#fig-resid-bw layout-ncol=2}
+
+:::{#fig-bw-resids1-c2}
 
 ```{r}
-#| label: fig-resids-intxn
-#| fig-cap: "Residuals of interaction model for `birthweight` data"
+plot1_interact +
+  facet_wrap(~sex) +
+  geom_segment(
+    aes(
+      x = age,
+      y = predlm2,
+      xend = age,
+      yend = weight,
+      col = sex,
+      group = id
+    ),
+    linetype = "dotted"
+  )
+```
+
+fitted values
+
+:::
+
+:::{#fig-resids-intxn-bw}
+```{r}
+
 bw <- bw |>
   mutate(
     resids_intxn =
@@ -1871,10 +2108,166 @@ plot_bw_resid <-
   xlab("Gestational age (weeks)") +
   ylab("residuals (grams)") +
   theme(legend.position = "bottom") +
-  # expand_limits(y = 0, x = 0) +
-  geom_point(alpha = .7)
+  geom_hline(aes(
+    yintercept = 0,
+    col = sex
+  )) +
+  geom_segment(
+    aes(yend = 0),
+    linetype = "dotted"
+  ) +
+  geom_point()
+# expand_limits(y = 0, x = 0) +
+geom_point(alpha = .7)
 print(plot_bw_resid + facet_wrap(~sex))
 ```
+
+Residuals
+
+:::
+
+Fitted values and residuals for interaction model for `birthweight` data
+
+:::
+
+---
+
+#### Residuals versus predictors
+
+```{r}
+hers <- hers |>
+  mutate(
+    resids_no_intcpt =
+      LDL - fitted(hers_lm_no_int),
+    resids_with_intcpt =
+      LDL - fitted(hers_lm_with_int)
+  )
+```
+
+:::{#fig-resids-hers-1 layout-ncol=2}
+
+:::{#fig-resid-hers-pred-no-intcpt} 
+
+```{r}
+hers |>
+  arrange(age) |>
+  ggplot() +
+  aes(x = age, y = resids_no_intcpt, col = factor(smoking)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0, col = factor(smoking))) +
+  facet_wrap(~smoking, labeller = "label_both") +
+  theme(legend.position = "bottom") +
+  geom_smooth(col = "blue")
+```
+
+no intercept
+:::
+
+:::{#fig-resid-hers-pred-no-intcpt}
+
+```{r}
+hers |>
+  arrange(age) |>
+  ggplot() +
+  aes(x = age, y = resids_with_intcpt, col = factor(smoking)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0, col = factor(smoking))) +
+  facet_wrap(~smoking, labeller = "label_both") +
+  theme(legend.position = "bottom") +
+  geom_smooth(col = "blue")
+```
+
+
+with intercept
+:::
+
+Residuals of `hers` data vs predictors
+
+:::
+
+---
+
+#### Residuals versus fitted values
+
+::: notes
+If the model contains multiple continuous covariates,
+how do we check for errors in the mean structure assumption?
+:::
+
+
+```{r}
+#| label: fig-resids-intxn-hers
+#| fig-cap: "Residuals of interaction model for `hers` data"
+
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1,
+    smooth.colour = NA
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+---
+
+We can add a LOESS smooth to visualize where the residual mean is nonzero:
+
+```{r}
+#| label: fig-resids-intxn-hers-smooth-no-int
+#| fig-cap: "Residuals of interaction model for `hers` data, no intercept term"
+
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+---
+
+:::{#fig-resid-hers-compare layout-ncol=2}
+
+:::{#fig-resids-intxn-hers-smooth-no-int-2}
+
+```{r}
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+no intercept term
+
+:::
+
+:::{#fig-resids-intxn-hers-smooth-with-int}
+
+```{r}
+hers_lm_with_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+with intercept term
+
+:::
+
+Residuals of interaction model for `hers` data, with and without intercept term
+
+:::
 
 ---
 
@@ -2504,8 +2897,8 @@ If you don't want the default and offset option, you can use "-1" like we've see
 
 ```{r}
 #| label: tbl-iris-no-intcpt
-iris_lm2b <- lm(Sepal.Length ~ Species - 1, data = iris)
-iris_lm2b |>
+iris_lm2_no_int <- lm(Sepal.Length ~ Species - 1, data = iris)
+iris_lm2_no_int |>
   parameters() |>
   print_md()
 ```
@@ -2557,8 +2950,8 @@ See `?options` for more details.
 
 ```{r}
 #| label: tbl-iris-group-point-parameterization
-formula(iris_lm2b)
-model.matrix(iris_lm2b) |>
+formula(iris_lm2_no_int)
+model.matrix(iris_lm2_no_int) |>
   as_tibble() |>
   unique()
 ```

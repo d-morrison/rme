@@ -1,0 +1,47 @@
+---
+title: "survminer"
+format: html
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+```{r}
+library(survival)
+library(survminer)
+data(cancer, package="survival")
+# Use only uncensored subject data (those who died with recurrence)
+colon.new <- merge(aggregate(time ~ id, data = colon, max), aggregate(status ~ id, data = colon, max))
+colon.new <- colon.new[!(colon.new$status %in% 1), ]
+
+# 1. Km and cox fits
+colon.kaplan <- survfit(Surv(time) ~ 1, data = colon.new)
+colon.coxPH <- survfit(coxph(Surv(time) ~ 1, data = colon.new))
+
+both.fits <- list(Kaplan = colon.kaplan, Cox = colon.coxPH)
+
+ggsurv.both <- ggsurvplot(both.fits, legend = "right", legend.title = "LEGEND",
+                          legend.labs = c("Kaplan-Meier", "Cox PH"), 
+                          linetype = c(1, 2), combine = TRUE, fun = 'event', 
+                          ggtheme = theme_gray(), conf.int = TRUE, 
+                          palette = "jco", censor = FALSE)
+
+nonParametric.plot <- ggsurv.both + 
+  ggtitle("DEATH WITH RECURRENCE") + 
+  labs(subtitle = "(The Uncensored Data)", x ="TIME", y = "CDF")
+
+# 2. Fit weibull distribution
+library("fitdistrplus")
+colon.time <- colon.new$time
+weib.fit <- fitdist(colon.time, distr = "weibull", method = "mle")
+
+
+plot.all <- nonParametric.plot$plot + 
+  stat_function(fun = pweibull, size = 2, args = list(weib.fit$estimate[1], weib.fit$estimate[2]), aes(colour = "Weibull")) 
+
+plot.all
+```
+
