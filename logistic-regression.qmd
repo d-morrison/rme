@@ -19,9 +19,23 @@ This content is adapted from:
 
 ## Introduction
 
-### What is logistic regression?
+---
 
+:::{#exr-def-logistic-regression}
+
+What is logistic regression?
+
+:::
+
+---
+
+:::{#sol-def-logistic-regression}
+
+:::{#def-logistic-regression}
 **Logistic regression** is a framework for modeling [binary](probability.qmd#def-binary) outcomes, conditional on one or more *predictors* (a.k.a. *covariates*).
+:::
+
+:::
 
 ---
 
@@ -34,7 +48,7 @@ What are some examples of binary outcomes in the health sciences?
 
 ----
 
-:::: {.solution}
+:::: {#sol-binary-examples}
 
 {{< include binary-outcome-examples.qmd >}}
 
@@ -54,7 +68,7 @@ Write down a mathematical definition of the Bernoulli distribution.
 
 ---
 
-::::{.solution}
+::::{#sol-def-bernoulli}
 
 {{< include def-bernoulli.qmd >}}
 
@@ -68,16 +82,23 @@ Logistic regression differs from linear regression, which uses the Gaussian ("no
 
 ---
 
-:::: {#exr-linear}
+:::: {#exr-examples-linreg}
 
 Recall: what kinds of outcomes is linear regression used for?
 ::::
 
 ---
 
-::: {.solution}
+::: {#sol-examples-linreg}
 
-Linear regression is typically used for numerical outcomes that aren't event counts or waiting times for an event. Examples of outcomes that are often analyzed using linear regression include include weight, height, and income.
+Linear regression is typically used for numerical outcomes that aren't event counts or waiting times for an event. 
+
+Examples of outcomes that are often analyzed using linear regression include:
+
+- weight
+- height
+- income
+- prices
 
 :::
 
@@ -140,7 +161,7 @@ totals <-
 
 tbl_oc_mi <- bind_rows(oc_mi, totals)
 
-tbl_oc_mi
+tbl_oc_mi |> pander::pander()
 ```
 
 Simulated data from study of oral contraceptive use and heart attack risk
@@ -153,12 +174,12 @@ Simulated data from study of oral contraceptive use and heart attack risk
 
 ::::{#exr-probs}
 
-Review: estimate the probabilities of MI for OC users and non-OC users in @exm-oc-mi.
+Estimate the probabilities of MI for OC users and non-OC users in @exm-oc-mi.
 ::::
 
 ----
 
-:::{.solution}
+:::{#sol-compute-probs}
 
 ```{r, include = FALSE}
 #| label: calc-prs
@@ -174,28 +195,53 @@ $$\ph(MI|\neg OC) = \frac{7}{10000} = `r p_MI_nOC`$$
 
 ---
 
-#### Controls
+:::{#exr-def-controls}
 
-::::{.callout-note}
-##### Two meanings of "controls"
+What does the term "controls" mean in the context of study design?
 
-Depending on context, "controls" can mean either individuals who don't experience an *exposure* of interest, or individuals who don't experience an *outcome* of interest.
-
-::::
-
----
-
-:::{#def-cases-retrospective}
-##### cases and controls in retrospective studies
-In *retrospective studies*, participants who experience the outcome of interest are called **cases**, while participants who don't experience that outcome are called **controls**. 
 :::
 
 ---
 
+:::{#sol-def-controls}
+::::{#def-controls}
+##### Two meanings of "controls"
+
+Depending on context, "controls" can mean either:
+
+- individuals who don't experience an *exposure* of interest, 
+- or individuals who don't experience an *outcome* of interest.
+
+::::
+:::
+
+---
+
+:::{#exr-controls-use-cases}
+What types of studies do the two definitions of controls correspond to?
+:::
+
+---
+
+:::{#sol-controls-use-cases}
+:::{#def-cases-retrospective}
+##### cases and controls in retrospective studies
+In *retrospective case-control studies*, 
+participants who experience the outcome of interest are called **cases**, 
+while participants who don't experience that outcome are called **controls**. 
+:::
+
 :::{#def-cases-prospective}
 ##### treatment groups and control groups in prospective studies
-In *prospective studies*, the group of participants who experience the treatment or exposure of interest is called the **treatment group**, while the participants who receive the baseline or comparison treatment  (for example, clinical trial participants who receive a placebo or a standard-of-care treatment rather than an experimental treatment) are called **controls**.
+In *prospective studies*, 
+the group of participants who experience the treatment or exposure of interest 
+is called the **treatment group**, 
+while the participants who receive the baseline or comparison treatment  
+(for example, clinical trial participants who receive a placebo 
+or a standard-of-care treatment rather than an experimental treatment) 
+are called **controls**.
 
+:::
 :::
 
 ## Comparing Probabilities
@@ -238,21 +284,71 @@ $$
 
 ---
 
+:::{#exr-interpret-rr}
+#### interpreting risk differences
+
+How can we interpret the preceding relative risk estimate in prose?
+:::
+
+---
+
+:::{#sol-interpret-rd}
+
+#### interpreting risk differences
+
+"The difference in risk of MI between OC users and non-users was `r rd_OC`."
+
+or
+
+"The difference in risk of MI between OC users and non-users was `r rd_OC*100` 
+[percentage points](https://en.wikipedia.org/wiki/Percentage_point)."
+
+:::
+
+::: notes
+See the note about working with percentages in the [Appendix](notation.qmd#percent-sign).
+:::
+
+---
+
 ### Risk ratios
 
-:::{#def-RR}
-### Relative risk ratios
+:::{#exr-name-RR}
 
-:::: notes
-The **relative risk** of probability $\pi_1$ compared to another probability $\pi_2$, also called the **risk ratio**, **relative risk ratio**, **probability ratio**, or **rate ratio**, is the ratio of those probabilities:
-::::
+If $\pi_1$ and $\pi_2$ are two probabilities, 
+what do we call the following ratio?
 
 $$\rho(\pi_1,\pi_2) = \frac{\pi_1}{\pi_2}$$
 :::
 
 ---
 
-:::{#exm-RR}
+:::{#sol-exr-name-RR}
+
+:::{#def-RR}
+### Relative risk ratios
+
+The ratio of two probabilities $\pi_1$ and $\pi_2$, 
+
+$$\rho(\pi_1,\pi_2) = \frac{\pi_1}{\pi_2}$$
+
+is called the:
+
+- **risk ratio**,
+- **relative risk ratio**,
+- **probability ratio**,
+- or **rate ratio**
+
+of $\pi_1$ compared to $\pi_2$.
+
+:::
+
+:::
+
+
+---
+
+:::{#exr-RR}
 
 :::: notes
 Above, we estimated that:
@@ -262,8 +358,16 @@ $$\ph(MI|OC) = `r 13/5000`$$
 
 $$\ph(MI|\neg OC) = `r 7/10000`$$
 
+Now, estimate the *relative risk* of MI for OC versus non-OC.
+
+:::
+
+---
+
+:::{#sol-exr-RR}
+
 :::: notes
-So we might estimate that the *relative risk* of MI for OC versus non-OC is:
+The *relative risk* of MI for OC versus non-OC is:
 ::::
 
 ```{r}
@@ -280,8 +384,20 @@ $$
 \end{aligned}
 $$
 
+:::
+
+---
+
+:::{#exr-interpret-rr}
+How can we interpret the preceding relative risk estimate in prose?
+:::
+
+---
+
+:::{#sol-interpret-rr}
+
 :::: notes
-We might summarize this result by saying that "the estimated probability of MI among OC users was `r rr` as high as the estimated probability among OC non-users. 
+We might summarize this result by saying that "the estimated probability of MI among OC users was `r rr` [times as high as]{.underline}, or `r rr - 1` [times higher than]{.underline}, the estimated probability among OC non-users. 
 ::::
 
 :::
@@ -1625,7 +1741,7 @@ log-likelihood). You can see some information about this process like so:
 ```{r}
 #| label: out-glm-fitting-process
 #| code-fold: false
-options(digits = 8)
+
 temp <-
   wcgs |>
   glm(
