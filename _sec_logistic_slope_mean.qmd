@@ -1,0 +1,79 @@
+{{< include macros.qmd >}}
+
+:::{#exr-logistic-slope}
+Consider a logistic regression model with a single predictor, $X$:
+
+$$
+\ba
+Y_i|X_i &\simind \Ber(\pi(X_i))
+\\
+\pi(x) &= \expitf{\eta(x)} = \pi(\omega(\eta(x)))
+\\
+\eta(x) &= \alpha + \beta x
+\ea
+$${#eq-unipredictor-logreg}
+
+Find the derivative of $\pi(x) = \Expf{Y|X=x}$ with respect to $x$:
+
+$$\derivf{\pi}{x} = ?$$
+
+:::
+
+---
+
+:::{#sol-logistic-slope}
+
+$$\derivf{\pi}{x} = 
+\red{\derivf{\pi}{\omega}} \green{\derivf{\omega}{\eta}} \blue{\derivf{\eta}{x}}$$
+
+$$
+\ba
+\red{\derivf{\pi}{\omega}} &= \deriv{\omega} \frac{\omega}{1+\omega}
+\\
+&= \frac{1}{1+\omega} - \frac{\omega}{(1+\omega)^2}
+\\
+&= \frac{1+\omega}{(1+\omega)^2} - \frac{\omega}{(1+\omega)^2}
+\\
+&= \frac{1+\omega - \omega}{(1+\omega)^2}
+\\
+&= \frac{1}{(1+\omega)^2}
+\\
+\green{\derivf{\omega}{\eta}} &=  \deriv{\eta} \exp{\eta}
+\\
+&= \exp{\eta}
+\\
+&= \omega
+\\
+\blue{\derivf{\eta}{x}} &= \deriv{x} (\alpha + \beta x)
+\\
+&= \beta
+\ea
+$$
+
+Therefore:
+
+$$
+\ba
+\derivf{\pi}{x} &= 
+\red{\derivf{\pi}{\omega}} \green{\derivf{\omega}{\eta}} \blue{\derivf{\eta}{x}}
+\\
+&= \red{\frac{1}{(1+\omega)^2}} \green{\omega} \blue{\beta}
+\\
+&= \frac{\green{\omega}}{\red{(1+\omega)^2}}  \blue{\beta}
+\\
+&= \frac{\green{\omega}}{\red{(1+\omega)}} \frac{1}{\red{(1+\omega)}} \blue{\beta}
+\\
+&= \pi (1-\pi) \blue{\beta}
+\\
+&= \Varf{Y|X=x} \cdot \blue{\beta}
+\ea
+$$
+
+::: notes
+The slope is steepest at $\pi = 0.5$, i.e., at $\eta = 0$,
+which for a unipredictor model occurs at $x = -\alpha/\beta$.
+The slope goes to 0 as $x$ goes to $-\infty$ or $+\infty$
+(compare with @fig-expit-plot).
+:::
+
+:::
