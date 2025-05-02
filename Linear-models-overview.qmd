@@ -435,16 +435,17 @@ $$
 &= \beta_A
 \end{aligned}
 $$
-:::
 
 ---
 
 :::{#exr-interpret-age-slope}
-What is the interpretation of $\beta_A$ in the model?
+What is the interpretation of $\beta_A$ in [Model @eq-lm-parallel]?
 :::
 
+---
+
 :::{.solution}
-Slope (of the mean with respect to age) for males:
+$\beta_A$ is the slope of mean birthweight (with respect to gestational age), holding sex constant:
 
 $$
 \begin{aligned}
@@ -457,21 +458,19 @@ $$
 
 Conclusion:
 
-$$\frac{d}{da}\mu(a,m) = \beta_A$$
+$$\beta_A = \frac{d}{da}\mu(a,m)$$
 :::
 
----
 
 :::{.notes}
 $\beta_A$ is the slope of mean birthweight with respect to gestational age, adjusting for sex.
 
 Or we can plug in the definition of slope:
 
-$\beta_A$ is the difference in mean birthweight per one-unit difference in gestational age, adjusting for sex.
-$$\beta_A = E[Y|m,a+1] - E[Y|m,a]$$
+$\beta_A$ is the difference in mean birthweight per one-unit difference in gestational age, adjusting for sex:
 :::
+$$\beta_A = E[Y|m,a+1] - E[Y|m,a]$$
 
----
 
 :::{.notes}
 Exchangeability and consistency have not been assessed; so we are not discussing potential outcomes (causality), only observed outcomes.
@@ -479,17 +478,15 @@ Exchangeability and consistency have not been assessed; so we are not discussing
 
 ---
 
-:::{.notes}
 More precisely written:
 $$ 
-E[Y|A=a,M=m] = \mu(a,m) = \bigg\{
+\E{Y|A=a,M=m} = \mu(a,m) = \bigg\{
 \begin{matrix} 
-\beta_0 + \beta_M m +\beta_A a, & \text{for} m\in {0,1} \\ 
-\text{undefined}, & \text{for} m \notin {0,1}
+\beta_0 + \beta_M m +\beta_A a, & \text{for } m\in \set{0,1} \\ 
+\text{undefined}, & \text{for } m \notin \set{0,1}
 \end{matrix}
 $$
-The model is undefined for $m\neq \{0,1\}$, so the derivative with respect to $m$ doesn't exist.
-:::
+The model is undefined for $m \notin \set{0,1}$, so the derivative with respect to $m$ doesn't exist.
 
 ---
 
@@ -522,15 +519,21 @@ $$
 $\beta_0 = ?$
 :::
 
-:::{.solution}
-$\beta_0$ is the mean birthweight for a female with gestational age 0 weeks.
+---
 
+:::{.solution}
 $$
 \begin{aligned}
-E[Y|0,0] &= \beta_0 + \beta_M 0 + \beta_A 0\\
+\E{Y|0,0} &= \beta_0 + \beta_M 0 + \beta_A 0\\
 &= \beta_0
+\\ \beta_0 &= \E{Y|0,0}
 \end{aligned}
 $$
+
+::: notes
+$\beta_0$ is the mean birthweight for a female with gestational age 0 weeks.
+:::
+
 :::
 
 ### Interactions {.smaller}
@@ -793,13 +796,16 @@ $$
 
 #### Compare coefficient interpretations
 
-:::{.notes .smaller}
-  $\mu(a,s)$    | $\beta_0 + \beta_M m + \beta_A a$ | $\beta_0 + \beta_M m + \beta_A a + \beta_{AM} ma$
+:::{#tbl-compare-coef-interps}
+  $\mu(a,s)$    | $\beta_0 + \beta_M m + \beta_A a$ | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
 ----------------|------------------------------------|---------------------------------------------------
   $\beta_0$     | $E[Y\mid a,1] - E[Y\mid a,0]$      | $E[Y\mid A=0,1] - E[Y\mid A=0,0]$
   $\beta_A$     | $E[Y\mid a+1,m] - E[Y\mid a,m]$    | $E[Y\mid a+1,0] - E[Y\mid a,0]$
   $\beta_M$     | $E[Y\mid a,1] - E[Y\mid a,0]$      | $E[Y\mid A=0,1] - E[Y\mid A=0,0]$
   $\beta_{AM}$  |                                    | $\begin{aligned}(&E[Y\mid a+1,1] - E[Y\mid a,1])\\ &- (E[Y\mid a+1,0] - E[Y\mid a,0])\end{aligned}$
+
+Coefficient interpretations, by model structure
+
 :::
 
 ### Stratified regression {.smaller}
