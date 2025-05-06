@@ -445,14 +445,13 @@ What is the interpretation of $\beta_A$ in [Model @eq-lm-parallel]?
 ---
 
 :::{.solution}
-$\beta_A$ is the slope of mean birthweight (with respect to gestational age), holding sex constant:
 
 $$
 \begin{aligned}
-\frac{d}{da}\mu(a,m) &= \frac{d}{da}(\beta_0 + \beta_M m + \beta_A a)\\
-&= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M m + \frac{d}{da}\beta_A a\right)\\
-&= (0 + 0 + \beta_A) \\ 
-&= \beta_A
+\frac{d}{da}\mu(a,m) &= \frac{d}{da}(\beta_0 + \beta_M m + \red{\beta_A} a)\\
+&= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M m + \frac{d}{da}\red{\beta_A} a\right)\\
+&= (0 + 0 + \red{\beta_A}) \\ 
+&= \red{\beta_A}
 \end{aligned}
 $$
 
@@ -466,8 +465,6 @@ $$\beta_A = \frac{d}{da}\mu(a,m)$$
 $\beta_A$ is the slope of mean birthweight with respect to gestational age, adjusting for sex.
 
 Or we can plug in the definition of slope:
-
-$\beta_A$ is the difference in mean birthweight per one-unit difference in gestational age, adjusting for sex:
 :::
 $$\beta_A = E[Y|m,a+1] - E[Y|m,a]$$
 
@@ -524,9 +521,10 @@ $\beta_0 = ?$
 :::{.solution}
 $$
 \begin{aligned}
-\E{Y|0,0} &= \beta_0 + \beta_M 0 + \beta_A 0\\
+\E{Y|0,0} &= \mu(0,0)\\
+&= \beta_0 + \beta_M 0 + \beta_A 0\\
 &= \beta_0
-\\ \beta_0 &= \E{Y|0,0}
+\\ \beta_0 &= \E{Y|0,0} = \mu(0,0)
 \end{aligned}
 $$
 
@@ -757,20 +755,55 @@ That's how the lines in the graph ended up non-parallel.
 ---
 
 #### Coefficient Interpretation
+::: {#exr-male-coef-intxn-model}
+What is the interpretation of $\beta_{M}$?
+:::
 
+::: {.solution}
+
+\
+
+Mean birthweight among males with gestational age 0 weeks:
+$$
+\ba
+\mu(0,1) &= \E{Y|A = 0,M = 1}\\
+&= \b_0 + \red{\b_M} \cdot 1 + \b_A \cdot 0 + \b_{AM}\cdot 1 \cdot 0\\
+&= \b_0 + \red{\b_M}
+\ea
+$$
+Mean birthweight among females with gestational age 0 weeks:
+$$
+\ba
+\mu(0,0) &= \E{Y|A = 0,M = 0}\\
+&= \b_0 + \red{\b_M} \cdot 0 + \b_A \cdot 0 + \b_{AM}\cdot 0 \cdot 0\\
+&= \b_0
+\ea
+$$
+
+$\beta_{M} = \mu(0,1) - \mu(0,0)$ is the difference in mean birthweight between males with gestational age 0 weeks and females with gestational age 0 weeks.
+:::
 
 ::: {#exr-interaction-coef}
 What is the interpretation of $\beta_{AM}$?
 :::
 
 ::: {.solution}
-$\beta_{AM}$ is the difference in slope of mean birthweight with respect to gestational age between males and females.
+
+\
 
 Slope among males:
 $$
 \begin{aligned}
- E[Y|a+1,1] - E[Y|a,1] = &\beta_0 + \beta_M 1 + \beta_A(a+1) + \beta_{AM}1(a+1)\\ 
-  &- (\beta_0 + \beta_M 1 + \beta_A(a) + \beta_{AM}1(a))\\
+\deriv{a}\mu(a,1) &= \deriv{a}\left(\beta_0 + \beta_M\cdot1 + \beta_A\cdot a + \red{\beta_{AM}}\cdot 1 \cdot a\right)\\
+&= \deriv{a}\left(\beta_0 + \beta_M + \beta_A\cdot a + \red{\beta_{AM}} \cdot a\right)\\
+&= \beta_A + \red{\beta_{AM}}
+\end{aligned}
+$$
+or
+$$
+\begin{aligned}
+ E[Y|a+1,1] - E[Y|a,1] = &\beta_0 + \beta_M 1 + \beta_A(a+1) + \red{\beta_{AM}}1(a+1)\\ 
+  &- (\beta_0 + \beta_M 1 + \beta_A(a) + \red{\beta_{AM}}1(a))\\
  = &\beta_A + \beta_{AM}
  \end{aligned}
 $$
@@ -778,8 +811,16 @@ $$
 Slope among females:
 $$
 \begin{aligned}
- E[Y|a+1,0] - E[Y|a,0] = &\beta_0 + \beta_M0 + \beta_A(a+1) + \beta_{AM}0(a+1) \\
- &- (\beta_0 + \beta_M 0 + \beta_A(a) + \beta_{AM}0(a))\\
+\deriv{a}\mu(a,0) &= \deriv{a}\left(\beta_0 + \beta_M\cdot0 + \beta_A\cdot a + \red{\beta_{AM}}\cdot 0 \cdot a\right)\\
+&= \deriv{a}\left(\beta_0 + \beta_A\cdot a\right)\\
+&= \beta_A \\
+\end{aligned}
+$$
+or
+$$
+\begin{aligned}
+ E[Y|a+1,0] - E[Y|a,0] = &\beta_0 + \beta_M0 + \beta_A(a+1) + \red{\beta_{AM}}0(a+1) \\
+ &- (\beta_0 + \beta_M 0 + \beta_A(a) + \red{\beta_{AM}}0(a))\\
  = &\beta_0 + \beta_A(a+1) - (\beta_0 + \beta_A(a))\\
  = &\beta_A 
 \end{aligned}
@@ -788,10 +829,18 @@ $$
 Difference in slopes:
 $$
 \begin{aligned}
- (E[Y|a+1,1] - E[Y|a,1]) - (E[Y|a+1,0] - E[Y|a,0]) &= \beta_A + \beta_{AM} - \beta_A\\
- &= \beta_{AM}
+ \deriv{a}\mu(a,1) - \deriv{a}\mu(a,0) &= \beta_A + \red{\beta_{AM}} - \beta_A\\
+ &= \red{\beta_{AM}}
 \end{aligned}
 $$
+or
+$$
+\begin{aligned}
+ (E[Y|a+1,1] - E[Y|a,1]) - (E[Y|a+1,0] - E[Y|a,0]) &= \beta_A + \red{\beta_{AM}} - \beta_A\\
+ &= \red{\beta_{AM}}
+\end{aligned}
+$$
+$\beta_{AM}$ is the difference in slope of mean birthweight with respect to gestational age between males and females.
 :::
 
 #### Compare coefficient interpretations
@@ -800,9 +849,9 @@ $$
   $\mu(a,s)$    | $\beta_0 + \beta_M m + \beta_A a$ | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
 ----------------|------------------------------------|---------------------------------------------------
   $\beta_0$     | $E[Y\mid a,1] - E[Y\mid a,0]$      | $E[Y\mid A=0,1] - E[Y\mid A=0,0]$
-  $\beta_A$     | $E[Y\mid a+1,m] - E[Y\mid a,m]$    | $E[Y\mid a+1,0] - E[Y\mid a,0]$
+  $\beta_A$     | $\deriv{a}\mu(a,m)$                | $\deriv{a}\mu(a,0)$
   $\beta_M$     | $E[Y\mid a,1] - E[Y\mid a,0]$      | $E[Y\mid A=0,1] - E[Y\mid A=0,0]$
-  $\beta_{AM}$  |                                    | $\begin{aligned}(&E[Y\mid a+1,1] - E[Y\mid a,1])\\ &- (E[Y\mid a+1,0] - E[Y\mid a,0])\end{aligned}$
+  $\beta_{AM}$  |                                    | $\deriv{a}\mu(a,1) - \deriv{a}\mu(a,0)$
 
 Coefficient interpretations, by model structure
 
