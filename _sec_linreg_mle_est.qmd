@@ -1,0 +1,224 @@
+{{< include macros.qmd >}}
+
+### Likelihood, log-likelihood, and score functions for linear regression {.smaller}
+
+:::{.notes}
+
+In EPI 203 and [our review of MLEs](intro-MLEs.qmd#sec-intro-MLEs),
+we learned how to fit outcome-only models of the form $p(X=x|\theta)$
+to iid data $\vx = (x_1,…,x_n)$ using maximum likelihood estimation.
+
+Now, we apply the same procedure to linear regression models:
+
+:::
+
+$$
+\ba
+\Lik_i &= p(Y_i=y_i|\vX_i = \vx_i)
+\\
+&= (2\pi\ss)^{-1/2} \expf{-\frac{1}{2\ss}\eps_i^2}
+\ea
+$$
+
+$$\eps_i = y_i - \mu_i$$
+
+$$\mu_i = \mu(x_i) = x_i \cdot \beta$$
+$$
+\ba
+\Lik(\vy|\mat x, \vb, \sigma^2) &= \p(\vY =\vy| \mX = \mx)
+\\
+&= \prod_{i=1}^n \Lik_i
+\ea
+$$ {#eq-linreg-lik}
+
+$$
+\ell(\vec y|\mat x,\beta, \sigma^2)
+= -\frac{n}{2}\log{\sigma^2} -
+\frac{1}{2\sigma^2}\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2
+$$ {#eq-linreg-loglik}
+
+$$
+\ell'_{\vb}(\vec y|\mat x, \vb, \sigma^2)
+= -
+\frac{1}{2\sigma^2}\deriv{\vb}
+\paren{\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2}
+$$ {#eq-linreg-score}
+
+---
+
+::: notes
+Let's switch to matrix-vector notation:
+:::
+
+$$
+\sum_{i=1}^n (y_i - \vx_i\' \vb)^2
+= (\vy - \mX\vb) \cdot (\vy - \mX\vb)
+$$
+
+---
+
+So
+
+$$
+\begin{aligned}
+(\vy - \mX\vb)'(\vy - \mX\vb)
+&= (\vy' - \vb'X')(\vy - \mX\vb)
+\\ &= \vy'\vy - \vb'X'\vy - \vy'\mX\vb +\vb'\mX'\mX\beta
+\\ &= \vy'\vy - 2\vy'\mX\beta +\beta'\mX'\mX\beta
+\end{aligned}
+$$
+
+### Deriving the linear regression score function
+
+::: notes
+We will use some results from [vector calculus](math-prereqs.qmd#sec-vector-calculus):
+:::
+
+$$
+\begin{aligned}
+\deriv{\beta}\paren{\sum_{i=1}^n (y_i - x_i' \beta)^2}
+&= \deriv{\beta}(\vy - X\beta)'(\vy - X\beta)
+\\ &= \deriv{\beta} (y'y - 2y'X\beta +\beta'\mX'\mX\beta)
+\\ &= (- 2X'y +2\mX'\mX\beta)
+\\ &= - 2X'(y - X\beta)
+\\ &= - 2X'(y - \Expp[y])
+\\ &= - 2X' \err(y)
+\end{aligned}
+$${#eq-scorefun-linreg}
+
+---
+
+So if $\score(\beta,\sigma^2) = 0$, then
+
+$$
+\begin{aligned}
+0 &= (- 2X'y +2\mX'\mX\beta)\\
+2X'y &= 2\mX'\mX\beta\\
+X'y &= \mX'\mX\beta\\
+(\mX'\mX)^{-1}X'y &= \beta
+\end{aligned}
+$$
+
+---
+
+The Hessian (second derivative matrix) is:
+
+$$
+\ba
+\ell_{\beta, \beta'} ''(\beta, \sigma^2;\vy, \mathbf X)
+&= -\frac{1}{2\sigma^2}\mX'\mX
+\ea
+$$
+
+$\ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)$  is negative definite at $\beta = (\mX'\mX)^{-1}X'y$, so $\hat \beta_{ML} = (\mX'\mX)^{-1}X'y$ is the MLE for $\beta$.
+
+---
+
+Similarly (not shown):
+
+$$
+\hat\sigma^2_{ML} = \frac{1}{n} (Y-X\hat\beta)'(Y-X\hat\beta)
+$$
+
+And
+
+$$
+\begin{aligned}
+\mathcal I_{\beta} &= E[-\ell_{\beta, \beta'} ''(Y|X,\beta, \sigma^2)]\\
+&= \frac{1}{\sigma^2}\mX'\mX
+\end{aligned}
+$$
+
+---
+
+So:
+
+$$
+Var(\hat \beta) \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (\mX'\mX)^{-1}
+$$
+
+and
+
+$$
+\hat\beta \dot \sim N(\beta, \mathcal I_{\beta}^{-1})
+$$
+
+:::{.notes}
+
+These are all results you have hopefully seen before.
+
+:::
+
+---
+
+In the Gaussian linear regression case, we also have exact results:
+
+$$
+\frac{\hat\beta_j}{\hse{\hat\beta_j}} \dist t_{n-p}
+$$
+
+---
+
+In model [-@eq-BW-lm-interact] above, $\heinf(\beta)$ is:
+
+:::{#tbl-vcov}
+
+```{r}
+#| code-fold: show
+bw_lm2 |> vcov()
+```
+
+Covariance matrix of $\hvb$ for `birthweight` model [-@eq-BW-lm-interact] (with interaction term)
+
+:::
+
+---
+
+If we take the square roots of the diagonals, we get the standard errors listed in the model output:
+
+```{r}
+bw_lm2 |>
+  vcov() |>
+  diag() |>
+  sqrt()
+```
+
+```{r}
+#| label: tbl-mod-intx
+#| tbl-cap: "Estimated model for `birthweight` data with interaction term"
+bw_lm2 |>
+  parameters() |>
+  print_md()
+```
+
+So we can do confidence intervals, hypothesis tests, and p-values exactly as in the one-variable case we looked at previously.
+
+### Residual Standard Deviation
+
+::: notes
+$\hs$ represents an *estimate* of the *Residual Standard Deviation* parameter, $\s$.
+We can extract $\hs$ from the fitted model, using the `sigma()` function:
+:::
+
+```{r}
+#| code-fold: show
+sigma(bw_lm2)
+```
+
+---
+
+#### $\s$ is NOT "Residual standard error"
+
+::: notes
+In the `summary.lm()` output, this estimate is labeled as `"Residual standard error"`:
+:::
+
+```{r}
+#| code-fold: show
+summary(bw_lm2)
+```
+
+::: notes
+However, this is a misnomer: see note in `?stats::sigma`
+:::
+
