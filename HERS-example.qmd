@@ -4,10 +4,7 @@
 
 Now, we're going to analyze some real-world data using a Gaussian model, and then we're going to do a simulation to examine the properties of maximum likelihood estimation for that Gaussian model.
 
-Here we look at the "heart and estrogen/progestin study" (HERS), a clinical 
-trial of hormone therapy for prevention of recurrent heart attacks and 
-death among 2,763 post-menopausal women with existing coronary heart disease 
-(CHD) (Hulley et al. 1998).
+{{< include _sec_hers_intro.qmd >}}
 
 We are going to model the distribution of fasting glucose among non-diabetics who don't exercise.
 
@@ -27,7 +24,7 @@ hers <- haven::read_dta(
 ```{r}
 #| include: false
 library(haven)
-hers <- read_stata("Data/hersdata.dta")
+hers <- read_stata(fs::path_package("rme", "extdata/hersdata.dta"))
 ```
 
 ```{r}
@@ -186,7 +183,15 @@ ggplot() +
 
 Recall from @sec-covariance-matrix that 
 the asymptotic standard error of ${\widehat{\mu}}_{ML}$ is
-$\widehat{\text{SE}}\paren{{\widehat{\mu}}} = \sqrt{\left[\left(\hat{\mathcal{I}}\left(\widehat{\mu}_{ML}\right)\right)^{-1}\right]} = \frac{\hat{\sigma}}{\sqrt{n}}$
+
+$$
+\ba
+\widehat{\text{SE}}\paren{{\widehat{\mu}}} &= 
+\sqrt{\sb{\paren{\hat{\mathcal{I}}\paren{\widehat{\mu}_{ML}}}^{-1}}} 
+\\ 
+&= \frac{\hat{\sigma}}{\sqrt{n}}
+\ea
+$$
 
 
 ```{r}
@@ -475,3 +480,7 @@ and so does our estimate of $SE(\hat\mu)$, $\hat{SE}(\hat\mu)$.
 The confidence intervals captured the true value even more often than they were supposed to, and the hypothesis test always rejected the null hypothesis.
 
 I wonder what would happen with a different sample size, a different true $\mu$ value, or a different $\sigma^2$ value...
+
+## likelihood graphs
+
+{{< include three-d-likelihood-graph.qmd >}}

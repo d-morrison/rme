@@ -18,6 +18,8 @@ and the available R utility functions for working with pull requests.
   - Decompose long derivations into smaller lemmas.
   - When manipulating part of a larger expression, isolate that part in a lemma.
   
+- Add [slide breaks](https://quarto.org/docs/presentations/revealjs/#creating-slides) between exercises/theorems and solutions/proofs  
+  
 
 ## Fixing typos
 
