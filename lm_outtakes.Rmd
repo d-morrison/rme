@@ -1,0 +1,130 @@
+---
+title: "lm_outtakes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{lm_outtakes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+
+Let $Y$ represent birthweight (measured in grams), $X_1$ represent sex ($X_1 = 1$ if female, $X_1 = 0$ if male), and let $X_2$ represent gestational age at birth (measured in weeks).
+
+
+Previously, we learned how to fit outcome-only models of the form $p(X=x|\theta)$ to iid data $\mathbf x = (x_1,…,x_n)$ using maximum likelihood estimation:
+
+$\mathcal L(\mathbf x|\theta) = p(X_1 = x_1, …,X_n =x_n|\theta) = \prod_{i=1}^n p(X=x_i|\theta)$
+
+$\mathcal l(x|\theta) = \log \mathcal L(x|\theta)$
+
+$\hat \theta_{ML} = \arg \max_\theta l(x|θ)$
+
+We learned how to quantify our uncertainty about these maximum likelihood estimates; with sufficient sample size, $\hat \theta_{ML}$ has the approximate distribution:
+
+$$
+\hat\theta_{ML} \dot \sim N(\theta,\mathcal I(\theta)^{-1})
+$$
+
+For models in the "exponential family" of distributions, which includes the Gaussian, Poisson, Bernoulli, Binomial, Exponential, and Gamma distributions, $\mathcal I(\theta) = \text -E[\mathcal l''(X|\theta)]$, so we estimated $\mathcal I(\theta)$ using either $\mathcal I(\hat \theta_{ML})$ or $\mathcal l''(\mathbf x |\hat \theta_{ML})$.
+
+Then an asymptotic approximation of a 95% confidence interval for $\theta_k$ is
+
+$$\hat \theta_{ML} \pm z_{0.975} \times \left[\left(\hat{\mathcal I}(\hat \theta_{ML})\right)^{-1}\right]_{kk}$$
+
+where $z_\beta$ the $\beta$ quantile of the standard Gaussian distribution.
+
+Now, we consider cases where we have two variables of interest, $\mathbf X = (X_1, …, X_n)$ and $\mathbf Y = (Y_1, …, Y_n)$.
+
+still has mutually independent observations $Y_i$ but no longer identically distributed. Instead, the $Y_i$s only share a common distributional family, but with varying parameters.
+
+$$
+$\mathcal L(\mathbf y|\theta) = p(Y_1 = y_1, …,Y_n =y_n|\theta) = \prod_{i=1}^n p(Y=y_i|\theta)
+$$
+
+## Outcome is conditionally Gaussian
+
+For individuals with the same covariates, outcome has a Gaussian distribution
+
+$$p(y | x) = (2\pi\sigma^2)^{-1/2} \exp\left\{\frac{1}{2} \left(\frac{y-\mu(x)}{\sigma}\right)^2\right\}$$
+
+$$p(y | x) \sim \text{Gaussian}(\mu(x), \sigma^2)$$
+
+::: aside
+-   Capital letters ("$X$"): random variables
+-   Lowercase letters ("$x$"): observed data
+-   $P(X=x)$: Probability mass; shorthand: $P(x) \equiv P(X=x)$
+-   $p(X=x)$: Probability density; shorthand: $p(x) \equiv p(X=x)$
+-   Note: $p(x) = \frac{d}{dx} P(x)$
+:::
+
+## Mean depends on covariates $X$
+
+Variance doesn't depend on covariates (typically)
+
+## Straight-line regression
+
+Simplest linear regression model
+
+$$E[Y|x] = \beta_0 +\beta_1 x$$
+
+$$\beta_0 \equiv E[Y|X=0]$$
+
+$$\beta_1 = ?$$
+
+## Interpreting $\beta_1$
+
+$$E[Y|x] = \beta_0 +\beta_1 x$$
+
+$$E[Y|1] = \beta_0 +\beta_1 \cdot 1$$
+
+$$E[Y|2] = \beta_0 +\beta_1 c\dot 2$$
+
+$$E[Y|2] - E[Y|1] = (\beta_0 +\beta_1 2) - (\beta_0 +\beta_1 1)$$ $$ = \beta_0 +\beta_1 2 - \beta_0 - \beta_1 1)$$ $$ = \beta_1 2 - \beta_1 1)$$ $$ = \beta_1 (2-1))$$ $$ = \beta_1 (1))$$ $$ = \beta_1$$
+
+So if $E[Y|x] = \beta_0 +\beta_1 x$, then $\beta_1 = E[Y|2] - E[Y|1]$. But also, $\beta_1 = E[Y|3] - E[Y|2]$.
+
+In fact, $$\beta_1 = E[Y|X=x+1] - E[Y|X=x]$$
+
+In words, $\beta$ is the difference in the mean of $Y$ for two observations with a 1 unit difference in $X$.
+
+```{r, fig.height = 4}
+library(ggplot2)
+library(plotly)
+
+lm1 = lm(
+  body_mass_g ~ bill_length_mm, 
+  data = palmerpenguins::penguins
+)
+
+ggpenguins <- qplot(bill_length_mm , body_mass_g, 
+                    data = palmerpenguins::penguins, color = sex) +
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth") +
+  facet_wrap(~species, nrow = 2)
+
+
+
+ggplotly(ggpenguins)
+```
+
+```{r}
+n = 10000
+x = rnorm(n)
+slope = .01
+y = rnorm(n, mean = .01*x, sd = 1)
+lm1 = lm(y~x)
+plot(y~x)
+abline(0, slope)
+summary(lm1)
+confint(lm1)
+```
