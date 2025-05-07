@@ -471,7 +471,7 @@ $\beta_A$ is the slope of mean birthweight with respect to gestational age, adju
 
 Or we can plug in the definition of slope:
 :::
-$$\beta_A = E[Y|m,a+1] - E[Y|m,a]$$
+$$\beta_A = E[Y|M = m, A = a+1] - E[Y|M = m, A = a]$$
 
 
 :::{.notes}
@@ -502,21 +502,26 @@ The model is undefined for $m \notin \set{0,1}$, so the derivative with respect 
 
 $$
 \begin{aligned}
-E[Y|a,1] &= \beta_0 + \beta_M 1 + \beta_A a \\
-& = \beta_0 + \beta_M + \beta_A a \\
-E[Y|a,0] &= \beta_0 + \beta_M 0 + \beta_A a \\
+E[Y|A = a, M = 1] &= \beta_0 + \red{\beta_M} 1 + \beta_A a \\
+& = \beta_0 + \red{\beta_M} + \beta_A a \\
+E[Y|A = a, M = 0] &= \beta_0 + \red{\beta_M} 0 + \beta_A a \\
 & = \beta_0 + \beta_A a
 \end{aligned}
 $$
 So: 
 $$
 \begin{aligned}
-E[Y|a,1] - E[Y|a,0] &= (\beta_0 + \beta_M + \beta_A a) - (\beta_0 + \beta_A a) \\
-&= \beta_M
+E[Y|A = a,M = 1] - E[Y|A = a,M = 0] &= (\beta_0 + \red{\beta_M} + \beta_A a) - (\beta_0 + \beta_A a) \\
+&= \red{\beta_M}
 \end{aligned}
 $$
 Therefore:
-$$ \beta_M = E[Y|a,1] - E[Y|a,0] $$
+$$ 
+\ba
+\beta_M &= E[Y|A = a,M = 1] - E[Y|A = a,M = 0]\\
+& =\mu(a,1) - \mu(a,0)\\
+\ea
+$$
 
 In words: $\beta_M$ is the difference in mean birthweight between males and females adjusting for age.
 :::
@@ -532,10 +537,10 @@ $\beta_0 = ?$
 :::{.solution}
 $$
 \begin{aligned}
-\E{Y|0,0} &= \mu(0,0)\\
-&= \beta_0 + \beta_M 0 + \beta_A 0\\
-&= \beta_0
-\\ \beta_0 &= \E{Y|0,0} = \mu(0,0)
+\E{Y|A = 0,M = 0} &= \mu(0,0)\\
+&= \red{\beta_0} + \beta_M 0 + \beta_A 0\\
+&= \red{\beta_0}\\ 
+\red{\beta_0} &= \E{Y|A = 0, M = 0} = \mu(0,0)
 \end{aligned}
 $$
 
@@ -792,7 +797,13 @@ $$
 \ea
 $$
 
-$\beta_{M} = \mu(0,1) - \mu(0,0)$ is the difference in mean birthweight between males with gestational age 0 weeks and females with gestational age 0 weeks.
+$$
+\ba 
+\beta_{M} &= \mu(0,1) - \mu(0,0) \\
+&= \E{Y|A = 0,M = 1} - \E{Y|A = 0,M = 0}
+\ea
+$$ 
+$\b_M$ is the difference in mean birthweight between males with gestational age 0 weeks and females with gestational age 0 weeks.
 :::
 
 ---
@@ -819,7 +830,7 @@ $$
 \begin{aligned}
  E[Y|a+1,1] - E[Y|a,1] = &\beta_0 + \beta_M 1 + \beta_A(a+1) + \red{\beta_{AM}}1(a+1)\\ 
   &- (\beta_0 + \beta_M 1 + \beta_A(a) + \red{\beta_{AM}}1(a))\\
- = &\beta_A + \beta_{AM}
+ = &\beta_A + \red{\beta_{AM}}
  \end{aligned}
 $$
 
@@ -855,13 +866,25 @@ $$
  &= \red{\beta_{AM}}
 \end{aligned}
 $$
+
+Therefore
+$$
+\ba
+\b_{AM} = &\deriv{a}\mu(a,1) - \deriv{a}\mu(a,0)\\
+= &(E[Y|A = a+1,M = 1] - E[Y|A = a,M = 1])\\
+&- (E[Y|A = a+1,M = 0] - E[Y|A = a,M = 0])
+\ea
+$$
+
 $\beta_{AM}$ is the difference in slope of mean birthweight with respect to gestational age between males and females.
 :::
+
+--- 
 
 #### Compare coefficient interpretations
 
 :::{#tbl-compare-coef-interps}
-  $\mu(a,s)$    | $\beta_0 + \beta_M m + \beta_A a$ | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
+  $\mu(a,s)$    | $\beta_0 + \beta_M m + \beta_A a$  | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
 ----------------|------------------------------------|---------------------------------------------------
   $\beta_0$     | $E[Y\mid a,1] - E[Y\mid a,0]$      | $E[Y\mid A=0,1] - E[Y\mid A=0,0]$
   $\beta_A$     | $\deriv{a}\mu(a,m)$                | $\deriv{a}\mu(a,0)$
