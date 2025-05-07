@@ -190,7 +190,7 @@ distribution varies with gestational age and sex:
 $$
 \ba
 Y|M,A &\siid N(\mu(M,A), \sigma^2)\\
-\mu(a,m) &= \beta_0 + \beta_M m + \beta_A a
+\mu(m,a) &= \beta_0 + \beta_M m + \beta_A a
 \ea
 $$ {#eq-lm-parallel}
 
@@ -418,12 +418,12 @@ That's why the lines are parallel.
 :::{.notes}
 Recall [Model @eq-lm-parallel]:
 :::
-$$ E[Y|A=a, M=m] = \mu(a,m) = \beta_0 + \beta_M m + \beta_A a $$
+$$ E[Y|M=m,A=a] = \mu(m,a) = \beta_0 + \beta_M m + \beta_A a $$
 
 Slope (of the mean with respect to age) for males:
 $$
 \begin{aligned}
-\frac{d}{da}\mu(a,1) &= \frac{d}{da}(\beta_0 + \beta_M 1 + \beta_A a)\\
+\frac{d}{da}\mu(1,a) &= \frac{d}{da}(\beta_0 + \beta_M 1 + \beta_A a)\\
 &= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M 1 + \frac{d}{da}\beta_A a\right)\\
 &= (0 + 0 + \beta_A) \\ 
 &= \beta_A
@@ -434,7 +434,7 @@ Slope for females:
 
 $$
 \begin{aligned}
-\frac{d}{da}\mu(a,0) &= \frac{d}{da}(\beta_0 + \beta_M 0 + \beta_A a)\\
+\frac{d}{da}\mu(0,a) &= \frac{d}{da}(\beta_0 + \beta_M 0 + \beta_A a)\\
 &= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M 0 + \frac{d}{da}\beta_A a\right)\\
 &= (0 + 0 + \beta_A) \\ 
 &= \beta_A
@@ -453,7 +453,7 @@ What is the interpretation of $\beta_A$ in [Model @eq-lm-parallel]?
 
 $$
 \begin{aligned}
-\frac{d}{da}\mu(a,m) &= \frac{d}{da}(\beta_0 + \beta_M m + \red{\beta_A} a)\\
+\frac{d}{da}\mu(m,a) &= \frac{d}{da}(\beta_0 + \beta_M m + \red{\beta_A} a)\\
 &= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M m + \frac{d}{da}\red{\beta_A} a\right)\\
 &= (0 + 0 + \red{\beta_A}) \\ 
 &= \red{\beta_A}
@@ -462,7 +462,7 @@ $$
 
 Conclusion:
 
-$$\beta_A = \frac{d}{da}\mu(a,m)$$
+$$\beta_A = \frac{d}{da}\mu(m,a)$$
 :::
 
 
@@ -491,7 +491,7 @@ What is the interpretation of $\b_M$ in [Model @eq-lm-parallel]?
 :::{.notes}
 More precisely written:
 $$ 
-\E{Y|A=a,M=m} = \mu(a,m) = \bigg\{
+\E{Y|M=m,A=a} = \mu(m,a) = \bigg\{
 \begin{matrix} 
 \beta_0 + \beta_M m +\beta_A a, & \text{for } m\in \set{0,1} \\ 
 \text{undefined}, & \text{for } m \notin \set{0,1}
@@ -502,23 +502,23 @@ The model is undefined for $m \notin \set{0,1}$, so the derivative with respect 
 
 $$
 \begin{aligned}
-E[Y|A = a, M = 1] &= \beta_0 + \red{\beta_M} 1 + \beta_A a \\
+E[Y|M = 1,A = a] &= \beta_0 + \red{\beta_M} 1 + \beta_A a \\
 & = \beta_0 + \red{\beta_M} + \beta_A a \\
-E[Y|A = a, M = 0] &= \beta_0 + \red{\beta_M} 0 + \beta_A a \\
+E[Y|M = 0,A = a] &= \beta_0 + \red{\beta_M} 0 + \beta_A a \\
 & = \beta_0 + \beta_A a
 \end{aligned}
 $$
 So: 
 $$
 \begin{aligned}
-E[Y|A = a,M = 1] - E[Y|A = a,M = 0] &= (\beta_0 + \red{\beta_M} + \beta_A a) - (\beta_0 + \beta_A a) \\
+E[Y|M = 1,A = a] - E[Y|M = 0,A = a] &= (\beta_0 + \red{\beta_M} + \beta_A a) - (\beta_0 + \beta_A a) \\
 &= \red{\beta_M}
 \end{aligned}
 $$
 Therefore:
 $$ 
 \ba
-\beta_M &= E[Y|A = a,M = 1] - E[Y|A = a,M = 0]\\
+\beta_M &= E[Y|M = 1,A = a] - E[Y|M = 0,A = a]\\
 & =\mu(a,1) - \mu(a,0)\\
 \ea
 $$
@@ -537,10 +537,10 @@ $\beta_0 = ?$
 :::{.solution}
 $$
 \begin{aligned}
-\E{Y|A = 0,M = 0} &= \mu(0,0)\\
+\E{Y|M = 0,A = 0} &= \mu(0,0)\\
 &= \red{\beta_0} + \beta_M 0 + \beta_A 0\\
 &= \red{\beta_0}\\ 
-\red{\beta_0} &= \E{Y|A = 0, M = 0} = \mu(0,0)
+\red{\beta_0} &= \E{Y|M = 0,A = 0} = \mu(0,0)
 \end{aligned}
 $$
 
@@ -559,7 +559,7 @@ Then we need to allow an "interaction" between  age $A$ and sex $S$:
 :::
 
 $$
-E[Y|A=a, S=s] = \beta_0 + \beta_A a+ \beta_M m + \beta_{AM} (a \cdot m)
+E[Y|S=s,A=a] = \beta_0 + \beta_A a+ \beta_M m + \beta_{AM} (a \cdot m)
 $$ {#eq-BW-lm-interact}
 
 ::: notes
@@ -616,7 +616,7 @@ Now we can see that the lines aren't parallel.
 Here's another way we could rewrite this model (by collecting terms involving $S$):
 
 $$
-E[Y|A, M] = \beta_0 + \beta_M M+ (\beta_A + \beta_{AM} M) A
+E[Y|M,A] = \beta_0 + \beta_M M+ (\beta_A + \beta_{AM} M) A
 $$
 
 ::: notes
@@ -783,7 +783,7 @@ What is the interpretation of $\beta_{M}$ in [Model @eq-BW-lm-interact]?
 Mean birthweight among males with gestational age 0 weeks:
 $$
 \ba
-\mu(0,1) &= \E{Y|A = 0,M = 1}\\
+\mu(1,0) &= \E{Y|M = 1,A = 0}\\
 &= \b_0 + \red{\b_M} \cdot 1 + \b_A \cdot 0 + \b_{AM}\cdot 1 \cdot 0\\
 &= \b_0 + \red{\b_M}
 \ea
@@ -791,7 +791,7 @@ $$
 Mean birthweight among females with gestational age 0 weeks:
 $$
 \ba
-\mu(0,0) &= \E{Y|A = 0,M = 0}\\
+\mu(0,0) &= \E{Y|M = 0,A = 0}\\
 &= \b_0 + \red{\b_M} \cdot 0 + \b_A \cdot 0 + \b_{AM}\cdot 0 \cdot 0\\
 &= \b_0
 \ea
@@ -799,8 +799,8 @@ $$
 
 $$
 \ba 
-\beta_{M} &= \mu(0,1) - \mu(0,0) \\
-&= \E{Y|A = 0,M = 1} - \E{Y|A = 0,M = 0}
+\beta_{M} &= \mu(1,0) - \mu(0,0) \\
+&= \E{Y|M = 1,A = 0} - \E{Y|M = 0,A = 0}
 \ea
 $$ 
 $\b_M$ is the difference in mean birthweight between males with gestational age 0 weeks and females with gestational age 0 weeks.
@@ -820,7 +820,7 @@ What is the interpretation of $\beta_{AM}$ in [Model @eq-BW-lm-interact]?
 Slope among males:
 $$
 \begin{aligned}
-\deriv{a}\mu(a,1) &= \deriv{a}\left(\beta_0 + \beta_M\cdot1 + \beta_A\cdot a + \red{\beta_{AM}}\cdot 1 \cdot a\right)\\
+\deriv{a}\mu(1,a) &= \deriv{a}\left(\beta_0 + \beta_M\cdot1 + \beta_A\cdot a + \red{\beta_{AM}}\cdot 1 \cdot a\right)\\
 &= \deriv{a}\left(\beta_0 + \beta_M + \beta_A\cdot a + \red{\beta_{AM}} \cdot a\right)\\
 &= \beta_A + \red{\beta_{AM}}
 \end{aligned}
@@ -828,7 +828,7 @@ $$
 or
 $$
 \begin{aligned}
- E[Y|a+1,1] - E[Y|a,1] = &\beta_0 + \beta_M 1 + \beta_A(a+1) + \red{\beta_{AM}}1(a+1)\\ 
+ E[Y|1,a+1] - E[Y|1,a] = &\beta_0 + \beta_M 1 + \beta_A(a+1) + \red{\beta_{AM}}1(a+1)\\ 
   &- (\beta_0 + \beta_M 1 + \beta_A(a) + \red{\beta_{AM}}1(a))\\
  = &\beta_A + \red{\beta_{AM}}
  \end{aligned}
@@ -837,7 +837,7 @@ $$
 Slope among females:
 $$
 \begin{aligned}
-\deriv{a}\mu(a,0) &= \deriv{a}\left(\beta_0 + \beta_M\cdot0 + \beta_A\cdot a + \red{\beta_{AM}}\cdot 0 \cdot a\right)\\
+\deriv{a}\mu(0,a) &= \deriv{a}\left(\beta_0 + \beta_M\cdot0 + \beta_A\cdot a + \red{\beta_{AM}}\cdot 0 \cdot a\right)\\
 &= \deriv{a}\left(\beta_0 + \beta_A\cdot a\right)\\
 &= \beta_A \\
 \end{aligned}
@@ -845,7 +845,7 @@ $$
 or
 $$
 \begin{aligned}
- E[Y|a+1,0] - E[Y|a,0] = &\beta_0 + \beta_M0 + \beta_A(a+1) + \red{\beta_{AM}}0(a+1) \\
+ E[Y|0,a+1] - E[Y|0,a] = &\beta_0 + \beta_M0 + \beta_A(a+1) + \red{\beta_{AM}}0(a+1) \\
  &- (\beta_0 + \beta_M 0 + \beta_A(a) + \red{\beta_{AM}}0(a))\\
  = &\beta_0 + \beta_A(a+1) - (\beta_0 + \beta_A(a))\\
  = &\beta_A 
@@ -855,14 +855,14 @@ $$
 Difference in slopes:
 $$
 \begin{aligned}
- \deriv{a}\mu(a,1) - \deriv{a}\mu(a,0) &= \beta_A + \red{\beta_{AM}} - \beta_A\\
+ \deriv{a}\mu(1,a) - \deriv{a}\mu(0,a) &= \beta_A + \red{\beta_{AM}} - \beta_A\\
  &= \red{\beta_{AM}}
 \end{aligned}
 $$
 or
 $$
 \begin{aligned}
- (E[Y|a+1,1] - E[Y|a,1]) - (E[Y|a+1,0] - E[Y|a,0]) &= \beta_A + \red{\beta_{AM}} - \beta_A\\
+ (E[Y|1,a+1] - E[Y|1,a]) - (E[Y|0,a+1] - E[Y|0,a]) &= \beta_A + \red{\beta_{AM}} - \beta_A\\
  &= \red{\beta_{AM}}
 \end{aligned}
 $$
@@ -870,9 +870,9 @@ $$
 Therefore
 $$
 \ba
-\b_{AM} = &\deriv{a}\mu(a,1) - \deriv{a}\mu(a,0)\\
-= &(E[Y|A = a+1,M = 1] - E[Y|A = a,M = 1])\\
-&- (E[Y|A = a+1,M = 0] - E[Y|A = a,M = 0])
+\b_{AM} = &\deriv{a}\mu(1,a) - \deriv{a}\mu(0,a)\\
+= &(E[Y|M = 1,A = a+1] - E[Y|M = 1,A = a])\\
+&- (E[Y|M = 0,A = a+1] - E[Y|M = 0,A = a])
 \ea
 $$
 
@@ -884,12 +884,12 @@ $\beta_{AM}$ is the difference in slope of mean birthweight with respect to gest
 #### Compare coefficient interpretations
 
 :::{#tbl-compare-coef-interps}
-  $\mu(a,s)$    | $\beta_0 + \beta_M m + \beta_A a$  | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
+  $\mu(s,a)$    | $\beta_0 + \beta_M m + \beta_A a$  | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
 ----------------|------------------------------------|---------------------------------------------------
-  $\beta_0$     | $E[Y\mid a,1] - E[Y\mid a,0]$      | $E[Y\mid A=0,1] - E[Y\mid A=0,0]$
-  $\beta_A$     | $\deriv{a}\mu(a,m)$                | $\deriv{a}\mu(a,0)$
-  $\beta_M$     | $E[Y\mid a,1] - E[Y\mid a,0]$      | $E[Y\mid A=0,1] - E[Y\mid A=0,0]$
-  $\beta_{AM}$  |                                    | $\deriv{a}\mu(a,1) - \deriv{a}\mu(a,0)$
+  $\beta_0$     | $E[Y\mid 1,a] - E[Y\mid 0,a]$      | $E[Y\mid 1,0] - E[Y\mid 0,0]$
+  $\beta_A$     | $\deriv{a}\mu(m,a)$                | $\deriv{a}\mu(0,a)$
+  $\beta_M$     | $E[Y\mid 1,a] - E[Y\mid 0,a]$      | $E[Y\mid 1,0] - E[Y\mid 0,0]$
+  $\beta_{AM}$  |                                    | $\deriv{a}\mu(1,a) - \deriv{a}\mu(0,a)$
 
 Coefficient interpretations, by model structure
 
