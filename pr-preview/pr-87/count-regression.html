@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.30">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>4&nbsp; Models for Count Outcomes – Regression Models for Epidemiology</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./intro-multilevel-models.html" rel="next">
+<link href="./logistic-regression.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-2b3e328b71be8d25427581baeb23079b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-1bc3b17e7a2c2828f435aa750fb76336.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-bae15c786f24dee8f76a9e45e7a759f7.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-1bc3b17e7a2c2828f435aa750fb76336.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script async="" src="https://www.googletagmanager.com/gtag/js?id=G-W625DGE908"></script><script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-W625DGE908', { 'anonymize_ip': true});
+</script><script type="application/json" class="js-hypothesis-config">
+{
+  "theme": "clean",
+  "openSidebar": false,
+  "enableExperimentalNewNoteButton": true
+}
+</script><script async="" src="https://hypothes.is/embed.js"></script><script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script><link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script><link rel="stylesheet" href="custom.scss">
+</head>
+<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./glms.html">Generalized Linear Models</a></li><li class="breadcrumb-item"><a href="./count-regression.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Models for Count Outcomes</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Regression Models for Epidemiology</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/d-morrison/rme" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="./Regression-Models-for-Epidemiology.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Intro-to-GLMs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./glms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generalized Linear Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Linear-models-overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Linear (Gaussian) Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./logistic-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Models for Binary Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./count-regression.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Models for Count Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-multilevel-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Introduction to multi-level models for correlated data</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./time-to-event-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time to Event Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-to-survival-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Introduction to Survival Analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./proportional-hazards-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Proportional Hazards Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parametric-survival-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Parametric survival models</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendices-are-prereqs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Overview of Appendices</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./math-prereqs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Mathematics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Probability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-MLEs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">F</span>&nbsp; <span class="chapter-title">Introduction to Maximum Likelihood Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">G</span>&nbsp; <span class="chapter-title">Introduction to Bayesian inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./common-mistakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">H</span>&nbsp; <span class="chapter-title">Common Mistakes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./notation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">I</span>&nbsp; <span class="chapter-title">Notation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-to-R.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">J</span>&nbsp; <span class="chapter-title">Statistical computing in R</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./CONTRIBUTING.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">K</span>&nbsp; <span class="chapter-title">Contributing to <code>rme</code></span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li>
+<a href="#acknowledgements" id="toc-acknowledgements" class="nav-link active" data-scroll-target="#acknowledgements">Acknowledgements</a>
+  <ul class="collapse">
+<li><a href="#configuring-r" id="toc-configuring-r" class="nav-link" data-scroll-target="#configuring-r">Configuring R</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction"><span class="header-section-number">4.1</span> Introduction</a>
+  <ul class="collapse">
+<li><a href="#rate-ratios" id="toc-rate-ratios" class="nav-link" data-scroll-target="#rate-ratios"><span class="header-section-number">4.1.1</span> Rate ratios</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#inference-for-count-regression-models" id="toc-inference-for-count-regression-models" class="nav-link" data-scroll-target="#inference-for-count-regression-models"><span class="header-section-number">4.2</span> Inference for count regression models</a>
+  <ul class="collapse">
+<li><a href="#confidence-intervals-for-regression-coefficients-and-rate-ratios" id="toc-confidence-intervals-for-regression-coefficients-and-rate-ratios" class="nav-link" data-scroll-target="#confidence-intervals-for-regression-coefficients-and-rate-ratios"><span class="header-section-number">4.2.1</span> Confidence intervals for regression coefficients and rate ratios</a></li>
+  <li><a href="#hypothesis-tests-for-regression-coefficients" id="toc-hypothesis-tests-for-regression-coefficients" class="nav-link" data-scroll-target="#hypothesis-tests-for-regression-coefficients"><span class="header-section-number">4.2.2</span> Hypothesis tests for regression coefficients</a></li>
+  <li><a href="#comparing-nested-models" id="toc-comparing-nested-models" class="nav-link" data-scroll-target="#comparing-nested-models"><span class="header-section-number">4.2.3</span> Comparing nested models</a></li>
+  </ul>
+</li>
+  <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction"><span class="header-section-number">4.3</span> Prediction</a></li>
+  <li>
+<a href="#diagnostics" id="toc-diagnostics" class="nav-link" data-scroll-target="#diagnostics"><span class="header-section-number">4.4</span> Diagnostics</a>
+  <ul class="collapse">
+<li><a href="#residuals" id="toc-residuals" class="nav-link" data-scroll-target="#residuals"><span class="header-section-number">4.4.1</span> Residuals</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#zero-inflation" id="toc-zero-inflation" class="nav-link" data-scroll-target="#zero-inflation"><span class="header-section-number">4.5</span> Zero-inflation</a>
+  <ul class="collapse">
+<li><a href="#models-for-zero-inflated-counts" id="toc-models-for-zero-inflated-counts" class="nav-link" data-scroll-target="#models-for-zero-inflated-counts"><span class="header-section-number">4.5.1</span> Models for zero-inflated counts</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#over-dispersion" id="toc-over-dispersion" class="nav-link" data-scroll-target="#over-dispersion"><span class="header-section-number">4.6</span> Over-dispersion</a>
+  <ul class="collapse">
+<li><a href="#negative-binomial-models" id="toc-negative-binomial-models" class="nav-link" data-scroll-target="#negative-binomial-models"><span class="header-section-number">4.6.1</span> Negative binomial models</a></li>
+  <li><a href="#quasipoisson" id="toc-quasipoisson" class="nav-link" data-scroll-target="#quasipoisson"><span class="header-section-number">4.6.2</span> Quasipoisson</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#example-needle-sharing" id="toc-example-needle-sharing" class="nav-link" data-scroll-target="#example-needle-sharing"><span class="header-section-number">4.7</span> Example: needle-sharing</a>
+  <ul class="collapse">
+<li><a href="#models" id="toc-models" class="nav-link" data-scroll-target="#models"><span class="header-section-number">4.7.1</span> models</a></li>
+  </ul>
+</li>
+  <li><a href="#more-on-count-regression" id="toc-more-on-count-regression" class="nav-link" data-scroll-target="#more-on-count-regression"><span class="header-section-number">4.8</span> More on count regression</a></li>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/d-morrison/rme/edit/main/count-regression.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/d-morrison/rme/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./glms.html">Generalized Linear Models</a></li><li class="breadcrumb-item"><a href="./count-regression.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Models for Count Outcomes</span></a></li></ol></nav><div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">
+<span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Models for Count Outcomes</span>
+</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+<p class="subtitle lead">Poisson regression and variations</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Last modified: 2025-05-07: 0:00:08 (AM)</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header><hr>
+<section id="acknowledgements" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="acknowledgements">Acknowledgements</h2>
+<p>This content is adapted from:</p>
+<ul>
+<li>
+<span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span>, Chapter 9</li>
+<li>
+<span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="references.html#ref-vittinghoff2e" role="doc-biblioref">2012</a>)</span>, Chapter 8</li>
+</ul>
+<hr>
+<!-- ::: {.content-hidden when-format="revealjs"} --><hr>
+<section id="configuring-r" class="level3 unnumbered"><h3 class="unnumbered anchored" data-anchor-id="configuring-r">Configuring R</h3>
+<p>Functions from these packages will be used throughout this document:</p>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://conflicted.r-lib.org/">conflicted</a></span><span class="op">)</span> <span class="co"># check for conflicting function definitions</span></span>
+<span><span class="co"># library(printr) # inserts help-file output into markdown output</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/rmarkdown">rmarkdown</a></span><span class="op">)</span> <span class="co"># Convert R Markdown documents into a variety of formats.</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rapporter.github.io/pander/">pander</a></span><span class="op">)</span> <span class="co"># format tables for markdown</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span> <span class="co"># graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jonocarroll/ggeasy">ggeasy</a></span><span class="op">)</span> <span class="co"># help with graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span> <span class="co"># help with graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span> <span class="co"># manipulate data</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span> <span class="co"># `tibble`s extend `data.frame`s</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org">magrittr</a></span><span class="op">)</span> <span class="co"># `%&gt;%` and other additional piping tools</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://haven.tidyverse.org">haven</a></span><span class="op">)</span> <span class="co"># import Stata files</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://yihui.org/knitr/">knitr</a></span><span class="op">)</span> <span class="co"># format R output for markdown</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span> <span class="co"># Tools to help to create tidy data</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://plotly-r.com">plotly</a></span><span class="op">)</span> <span class="co"># interactive graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">dobson</span><span class="op">)</span> <span class="co"># datasets from Dobson and Barnett 2018</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/parameters/">parameters</a></span><span class="op">)</span> <span class="co"># format model output tables for markdown</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://haven.tidyverse.org">haven</a></span><span class="op">)</span> <span class="co"># import Stata files</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://www.stefanom.io/latex2exp/">latex2exp</a></span><span class="op">)</span> <span class="co"># use LaTeX in R code (for figures and tables)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://fs.r-lib.org">fs</a></span><span class="op">)</span> <span class="co"># filesystem path manipulations</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival">survival</a></span><span class="op">)</span> <span class="co"># survival analysis</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rpkgs.datanovia.com/survminer/index.html">survminer</a></span><span class="op">)</span> <span class="co"># survival analysis graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">KMsurv</span><span class="op">)</span> <span class="co"># datasets from Klein and Moeschberger</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/parameters/">parameters</a></span><span class="op">)</span> <span class="co"># format model output tables for</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/webshot2/">webshot2</a></span><span class="op">)</span> <span class="co"># convert interactive content to static for pdf</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://forcats.tidyverse.org/">forcats</a></span><span class="op">)</span> <span class="co"># functions for categorical variables ("factors")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org">stringr</a></span><span class="op">)</span> <span class="co"># functions for dealing with strings</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span> <span class="co"># functions for dealing with dates and times</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Here are some R settings I use in this document:</p>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span>list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># delete any data that's already loaded into R</span></span>
+<span></span>
+<span><span class="fu"><a href="https://conflicted.r-lib.org/reference/conflicts_prefer.html">conflicts_prefer</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">)</span></span>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html">theme_set</a></span><span class="op">(</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>        <span class="co"># ggplot2::labs(col = "") +</span></span>
+<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span></span>
+<span>      legend.position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
+<span>      text <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">12</span>, family <span class="op">=</span> <span class="st">"serif"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/knitr/man/opts_chunk.html">opts_chunk</a></span><span class="op">$</span><span class="fu">set</span><span class="op">(</span>message <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span><span class="st">'digits'</span> <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/panderOptions.html">panderOptions</a></span><span class="op">(</span><span class="st">"big.mark"</span>, <span class="st">","</span><span class="op">)</span></span>
+<span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/panderOptions.html">panderOptions</a></span><span class="op">(</span><span class="st">"table.emphasize.rownames"</span>, <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/panderOptions.html">panderOptions</a></span><span class="op">(</span><span class="st">"table.split.table"</span>, <span class="cn">Inf</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://conflicted.r-lib.org/reference/conflicts_prefer.html">conflicts_prefer</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">)</span> <span class="co"># use the `filter()` function from dplyr() by default</span></span>
+<span><span class="va">legend_text_size</span> <span class="op">=</span> <span class="fl">9</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<!-- ::: -->
+<style>
+.quarto-figure-center > figure {
+text-align: center;
+}
+</style></section></section><section id="introduction" class="level2" data-number="4.1"><h2 data-number="4.1" class="anchored" data-anchor-id="introduction">
+<span class="header-section-number">4.1</span> Introduction</h2>
+<div class="notes">
+<p>This chapter presents models for <a href="./probability.html#sec-count-vars">count data</a> outcomes. With covariates, the event rate <span class="math inline">\(\lambda\)</span> becomes a function of the covariates <span class="math inline">\(\tilde{X}= (X_1, \dots,X_n)\)</span>. Typically, count data models use a <span class="math inline">\(\text{log}\left\{\right\}\)</span> link function, and thus an <span class="math inline">\(\text{exp}\left\{\right\}\)</span> inverse-link function. That is:</p>
+</div>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbb{E}[Y | \tilde{X}= \tilde{x}, T = t] &amp;= \mu(\tilde{x},t)
+\\ \mu(\tilde{x},t) &amp;= \lambda(\tilde{x})\cdot t
+\\ \lambda(\tilde{x}) &amp;= \text{exp}\left\{\eta(\tilde{x})\right\}
+\\ \eta(\tilde{x}) &amp;= \tilde{x}'\tilde \beta = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p
+\end{aligned}
+\]</span></p>
+<p>Therefore, <span class="math display">\[
+\begin{aligned}
+\text{log}\left\{\mathbb{E}[Y | \tilde{X}= \tilde{x},T=t]\right\}
+&amp;= \text{log}\left\{\mu(\tilde{x})\right\}\\
+&amp;=\text{log}\left\{\lambda(\tilde{x}) \cdot t\right\}\\
+&amp;=\text{log}\left\{\lambda(\tilde{x})\right\} + \text{log}\left\{t\right\}\\
+&amp;=\text{log}\left\{\text{exp}\left\{\eta(\tilde{x})\right\}\right\} + \text{log}\left\{t\right\}\\
+&amp;=\eta(\tilde{x}) + \text{log}\left\{t\right\}\\
+&amp;=\tilde{x}'\tilde\beta + \text{log}\left\{t\right\}\\
+&amp;=(\beta_0 +\beta_1 x_1+\dots + \beta_p x_p) + \text{log}\left\{t\right\}\\
+\end{aligned}
+\]</span></p>
+<p>In contrast with the other covariates (represented by <span class="math inline">\(\tilde{X}\)</span>), <span class="math inline">\(T\)</span> enters this expression with a <span class="math inline">\(\text{log}\left\{\right\}\)</span> transformation and without a corresponding <span class="math inline">\(\beta\)</span> coefficient.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Terms that enter the linear component of a model without a coefficient, such as <span class="math inline">\(\text{log}\left\{t\right\}\)</span> here, are called <strong>offsets</strong>.</p>
+</div>
+</div>
+<section id="rate-ratios" class="level3 smaller" data-number="4.1.1"><h3 class="smaller anchored" data-number="4.1.1" data-anchor-id="rate-ratios">
+<span class="header-section-number">4.1.1</span> Rate ratios</h3>
+<div class="notes">
+<p>Differences on the log-rate scale become ratios on the rate scale, because</p>
+</div>
+<p><span class="math display">\[\text{exp}\left\{a-b\right\} = \frac{\text{exp}\left\{a\right\}}{\text{exp}\left\{b\right\}}\]</span></p>
+<p>(recall from <a href="./math-prereqs.html#cor-exp-sum">Algebra 2</a>)</p>
+<p>Therefore, according to this model, <strong>differences of <span class="math inline">\(\delta\)</span> in covariate <span class="math inline">\(x_j\)</span> correspond to rate ratios of <span class="math inline">\(\text{exp}\left\{\beta_j \cdot \delta\right\}\)</span></strong>.</p>
+<p>That is, letting <span class="math inline">\(\tilde{X}_{-j}\)</span> denote vector <span class="math inline">\(\tilde{X}\)</span> with element <span class="math inline">\(j\)</span> removed:</p>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;{
+\left\{
+    \text{log}\left\{\mathbb{E}[Y |{\color{red}{X_j = a}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]\right\}
+    \atop
+    {-\text{log}\left\{\mathbb{E}[Y |{\color{red}{X_j = b}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]\right\}}
+    \right\}
+}\\
+&amp;=
+{\left\{
+\text{log}\left\{t\right\} + \beta_0 + \beta_1 x_1 + ... + {\color{red}{\beta_j (a)}} + ...+\beta_p x_p
+\atop
+{-\text{log}\left\{t\right\} + \beta_0 + \beta_1 x_1 + ... + {\color{red}{\beta_j (b)}} + ...+\beta_p x_p}
+\right\}}\\
+&amp;= \color{red}{\beta_j(a-b)}
+\end{aligned}
+\]</span></p>
+<p>And accordingly,</p>
+<p><span class="math display">\[
+\begin{aligned}
+\frac
+{\mathbb{E}[Y |{\color{red}{X_j = a}}, \tilde{X}_{-j} = \tilde{x}_{-j}, T = t]
+}
+{
+\mathbb{E}[Y |{\color{red}{X_j = b}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]
+}
+=
+\text{exp}\left\{{\color{red}{\beta_j(a-b)}}\right\}
+\end{aligned}
+\]</span></p>
+</section></section><section id="inference-for-count-regression-models" class="level2" data-number="4.2"><h2 data-number="4.2" class="anchored" data-anchor-id="inference-for-count-regression-models">
+<span class="header-section-number">4.2</span> Inference for count regression models</h2>
+<section id="confidence-intervals-for-regression-coefficients-and-rate-ratios" class="level3" data-number="4.2.1"><h3 data-number="4.2.1" class="anchored" data-anchor-id="confidence-intervals-for-regression-coefficients-and-rate-ratios">
+<span class="header-section-number">4.2.1</span> Confidence intervals for regression coefficients and rate ratios</h3>
+<p>As usual:</p>
+<p><span class="math display">\[
+\beta \in \left[\hat \beta{\color{red}\pm} z_{1 - \frac{\alpha}{2}}\cdot \hat{\text{se}}\left(\hat \beta\right)\right]
+\]</span></p>
+<p>Rate ratios: exponentiate CI endpoints</p>
+<p><span class="math display">\[
+\text{exp}\left\{\beta\right\} \in \left[\text{exp}\left\{\hat \beta{\color{red}\pm} z_{1 - \frac{\alpha}{2}}\cdot \hat{\text{se}}\left(\hat \beta\right)\right\} \right]
+\]</span></p>
+</section><section id="hypothesis-tests-for-regression-coefficients" class="level3" data-number="4.2.2"><h3 data-number="4.2.2" class="anchored" data-anchor-id="hypothesis-tests-for-regression-coefficients">
+<span class="header-section-number">4.2.2</span> Hypothesis tests for regression coefficients</h3>
+<p><span class="math display">\[
+t = \frac{\hat \beta - \beta_0}{\hat{\text{se}}\left(\hat \beta\right)}
+\]</span></p>
+<p>Compare <span class="math inline">\(t\)</span> or <span class="math inline">\(|t|\)</span> to the tails of the standard Gaussian distribution, according to the null hypothesis.</p>
+</section><section id="comparing-nested-models" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="comparing-nested-models">
+<span class="header-section-number">4.2.3</span> Comparing nested models</h3>
+<p>log(likelihood ratio) tests, as usual.</p>
+</section></section><section id="prediction" class="level2" data-number="4.3"><h2 data-number="4.3" class="anchored" data-anchor-id="prediction">
+<span class="header-section-number">4.3</span> Prediction</h2>
+<p><span class="math display">\[
+\begin{aligned}
+\hat y
+&amp;\stackrel{\text{def}}{=}\hat{\mathbb{E}}[Y|\tilde{X}= \tilde{x},T=t]\\
+&amp;=\hat\mu(\tilde{x}, t)\\
+&amp;=\hat\lambda(\tilde{x}) \cdot t\\
+&amp;=\text{exp}\left\{\hat\eta(\tilde{x})\right\} \cdot t\\
+&amp;=\text{exp}\left\{\tilde{x}'\hat{\boldsymbol{\beta}}\right\} \cdot t
+\end{aligned}
+\]</span></p>
+</section><section id="diagnostics" class="level2" data-number="4.4"><h2 data-number="4.4" class="anchored" data-anchor-id="diagnostics">
+<span class="header-section-number">4.4</span> Diagnostics</h2>
+<section id="residuals" class="level3" data-number="4.4.1"><h3 data-number="4.4.1" class="anchored" data-anchor-id="residuals">
+<span class="header-section-number">4.4.1</span> Residuals</h3>
+<section id="observation-residuals" class="level4"><h4 class="anchored" data-anchor-id="observation-residuals">Observation residuals</h4>
+<p><span class="math display">\[e \stackrel{\text{def}}{=}y - \hat y\]</span></p>
+</section><section id="pearson-residuals" class="level4"><h4 class="anchored" data-anchor-id="pearson-residuals">Pearson residuals</h4>
+<p><span class="math display">\[r = \frac{e}{\hat{\text{se}}\left(e\right)} \approx \frac{e}{\sqrt{\hat y}}\]</span></p>
+</section><section id="standardized-pearson-residuals" class="level4"><h4 class="anchored" data-anchor-id="standardized-pearson-residuals">Standardized Pearson residuals</h4>
+<p><span class="math display">\[r_p = \frac{r}{\sqrt{1-h}}\]</span> where <span class="math inline">\(h\)</span> is the “leverage” (which we will continue to leave undefined).</p>
+</section><section id="deviance-residuals" class="level4"><h4 class="anchored" data-anchor-id="deviance-residuals">Deviance residuals</h4>
+<p><span class="math display">\[
+d_k = \text{sign}(y - \hat y)\left\{\sqrt{2[\ell_{\text{full}}(y) - \ell(\hat\beta; y)]}\right\}
+\]</span></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\text{sign}(x) \stackrel{\text{def}}{=}\frac{x}{|x|}\]</span> In other words:</p>
+<ul>
+<li>
+<span class="math inline">\(\text{sign}(x) = -1\)</span> if <span class="math inline">\(x &lt; 0\)</span>
+</li>
+<li>
+<span class="math inline">\(\text{sign}(x) = 0\)</span> if <span class="math inline">\(x = 0\)</span>
+</li>
+<li>
+<span class="math inline">\(\text{sign}(x) = 1\)</span> if <span class="math inline">\(x &gt; 0\)</span>
+</li>
+</ul>
+</div>
+</div>
+</section></section></section><section id="zero-inflation" class="level2" data-number="4.5"><h2 data-number="4.5" class="anchored" data-anchor-id="zero-inflation">
+<span class="header-section-number">4.5</span> Zero-inflation</h2>
+<section id="models-for-zero-inflated-counts" class="level3" data-number="4.5.1"><h3 data-number="4.5.1" class="anchored" data-anchor-id="models-for-zero-inflated-counts">
+<span class="header-section-number">4.5.1</span> Models for zero-inflated counts</h3>
+<p>We assume a latent (unobserved) binary variable, <span class="math inline">\(Z\)</span>, which we model using logistic regression:</p>
+<p><span class="math display">\[P(Z=1|X=x) = \pi(x) = \text{expit}(\gamma_0 + \gamma_1 x_1 +...)\]</span></p>
+<p>According to this model, if <span class="math inline">\(Z=1\)</span>, then <span class="math inline">\(Y\)</span> will always be zero, regardless of <span class="math inline">\(X\)</span> and <span class="math inline">\(T\)</span>:</p>
+<p><span class="math display">\[P(Y=0|Z=1,X=x,T=t) = 1\]</span></p>
+<p>Otherwise (if <span class="math inline">\(Z=0\)</span>), <span class="math inline">\(Y\)</span> will have a Poisson distribution, conditional on <span class="math inline">\(X\)</span> and <span class="math inline">\(T\)</span>, as above.</p>
+<p>Even though we never observe <span class="math inline">\(Z\)</span>, we can estimate the parameters <span class="math inline">\(\gamma_0\)</span>-<span class="math inline">\(\gamma_p\)</span>, via maximum likelihood:</p>
+<p><span class="math display">\[
+\begin{aligned}
+P(Y=y|X=x,T=t) &amp;= P(Y=y,Z=1|...) + P(Y=y,Z=0|...)
+\end{aligned}
+\]</span> (by the Law of Total Probability)</p>
+<p>where <span class="math display">\[
+\begin{aligned}
+P(Y=y,Z=z|...)
+&amp;= P(Y=y|Z=z,...)P(Z=z|...)
+\end{aligned}
+\]</span></p>
+<hr>
+<div id="exr-zinf-pmf" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 4.1</strong></span> Expand <span class="math inline">\(P(Y=0|X=x,T=t)\)</span>, <span class="math inline">\(P(Y=1|X=x,T=t)\)</span> and <span class="math inline">\(P(Y=y|X=x,T=t)\)</span> into expressions involving <span class="math inline">\(P(Z=1|X=x,T=t)\)</span> and <span class="math inline">\(P(Y=y|Z=0,X=x,T=t)\)</span>.</p>
+</div>
+<hr>
+<div id="exr-zinf-moments" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 4.2</strong></span> Derive the expected value and variance of <span class="math inline">\(Y\)</span>, conditional on <span class="math inline">\(X\)</span> and <span class="math inline">\(T\)</span>, as functions of <span class="math inline">\(P(Z=1|X=x,T=t)\)</span> and <span class="math inline">\(\mathbb{E}[Y|Z=0,X=x,T=t]\)</span>.</p>
+</div>
+</section></section><section id="over-dispersion" class="level2" data-number="4.6"><h2 data-number="4.6" class="anchored" data-anchor-id="over-dispersion">
+<span class="header-section-number">4.6</span> Over-dispersion</h2>
+<hr>
+<div class="notes">
+<p>The Poisson distribution model <strong>forces</strong> the variance to equal the mean. In practice, many count distributions will have a variance substantially larger than the mean (or occasionally, smaller).</p>
+</div>
+<div id="def-overdispersion" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition 4.1 (Overdispersion)</strong></span> A random variable <span class="math inline">\(X\)</span> is <strong>overdispersed</strong> relative to a model <span class="math inline">\(\text{p}(X=x)\)</span> if if its empirical variance in a dataset is larger than the value is predicted by the fitted model <span class="math inline">\(\hat{\text{p}}(X=x)\)</span>.</p>
+</div>
+<div class="notes">
+<p>c.f. <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span> §3.2.1, 7.7, 9.8; <span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="references.html#ref-vittinghoff2e" role="doc-biblioref">2012</a>)</span> §8.1.5; and <a href="https://en.wikipedia.org/wiki/Overdispersion" class="uri">https://en.wikipedia.org/wiki/Overdispersion</a>.</p>
+<p>When we encounter overdispersion, we can try to reduce the residual variance by adding more covariates.</p>
+</div>
+<section id="negative-binomial-models" class="level3" data-number="4.6.1"><h3 data-number="4.6.1" class="anchored" data-anchor-id="negative-binomial-models">
+<span class="header-section-number">4.6.1</span> Negative binomial models</h3>
+<p>There are alternatives to the Poisson model. Most notably, the <a href="./probability.html#sec-nb-dist">negative binomial model</a>.</p>
+<p>We can still model <span class="math inline">\(\mu\)</span> as a function of <span class="math inline">\(X\)</span> and <span class="math inline">\(T\)</span> as before, and we can combine this model with zero-inflation (as the conditional distribution for the non-zero component).</p>
+</section><section id="quasipoisson" class="level3" data-number="4.6.2"><h3 data-number="4.6.2" class="anchored" data-anchor-id="quasipoisson">
+<span class="header-section-number">4.6.2</span> Quasipoisson</h3>
+<p>An alternative to Negative binomial is the “quasipoisson” distribution. I’ve never used it, but it seems to be a method-of-moments type approach rather than maximum likelihood. It models the variance as <span class="math inline">\(\text{Var}\left(Y\right) = \mu\theta\)</span>, and estimates <span class="math inline">\(\theta\)</span> accordingly.</p>
+<p>See <code><a href="https://rdrr.io/r/stats/family.html">?quasipoisson</a></code> in R for more.</p>
+</section></section><section id="example-needle-sharing" class="level2" data-number="4.7"><h2 data-number="4.7" class="anchored" data-anchor-id="example-needle-sharing">
+<span class="header-section-number">4.7</span> Example: needle-sharing</h2>
+<p>(adapted from <span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="references.html#ref-vittinghoff2e" role="doc-biblioref">2012</a>)</span>, §8)</p>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://haven.tidyverse.org">haven</a></span><span class="op">)</span></span>
+<span><span class="va">needles</span> <span class="op">=</span> </span>
+<span>  <span class="st">"inst/extdata/needle_sharing.dta"</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://haven.tidyverse.org/reference/read_dta.html">read_dta</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>    hivstat <span class="op">=</span></span>
+<span>      <span class="va">hivstat</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_match.html">case_match</a></span><span class="op">(</span></span>
+<span>        <span class="fl">1</span> <span class="op">~</span> <span class="st">"HIV+"</span>,</span>
+<span>        <span class="fl">0</span> <span class="op">~</span> <span class="st">"HIV-"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span>ref <span class="op">=</span> <span class="st">"HIV-"</span><span class="op">)</span>,</span>
+<span>    polydrug <span class="op">=</span></span>
+<span>      <span class="va">polydrug</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_match.html">case_match</a></span><span class="op">(</span></span>
+<span>        <span class="fl">1</span> <span class="op">~</span> <span class="st">"multiple drugs used"</span>,</span>
+<span>        <span class="fl">0</span> <span class="op">~</span> <span class="st">"one drug used"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span>ref <span class="op">=</span> <span class="st">"one drug used"</span><span class="op">)</span>,</span>
+<span>    homeless <span class="op">=</span> </span>
+<span>      <span class="va">homeless</span> <span class="op">|&gt;</span> </span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_match.html">case_match</a></span><span class="op">(</span></span>
+<span>        <span class="fl">1</span> <span class="op">~</span> <span class="st">"homeless"</span>, </span>
+<span>        <span class="fl">0</span> <span class="op">~</span> <span class="st">"not homeless"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span>ref <span class="op">=</span> <span class="st">"not homeless"</span><span class="op">)</span>,</span>
+<span>    sex <span class="op">=</span> <span class="va">sex</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span>ref <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">needles</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div id="tbl-needle-data" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-needle-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.1: Needle-sharing data
+</figcaption><div aria-describedby="tbl-needle-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["id"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["sex"],"name":[2],"type":["fct"],"align":["left"]},{"label":["ethn"],"name":[3],"type":["chr"],"align":["left"]},{"label":["age"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["dprsn_dx"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["sexabuse"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["shared_syr"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["hivstat"],"name":[8],"type":["fct"],"align":["left"]},{"label":["hplsns"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["nivdu"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["shsyryn"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["sqrtnivd"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["logshsyr"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["polydrug"],"name":[14],"type":["fct"],"align":["left"]},{"label":["sqrtninj"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["homeless"],"name":[16],"type":["fct"],"align":["left"]},{"label":["shsyr"],"name":[17],"type":["dbl"],"align":["right"]}],"data":[{"1":"2104","2":"M","3":"White","4":"47","5":"5","6":"0","7":"1","8":"HIV-","9":"6","10":"90","11":"1","12":"9.48683","13":"0.000000","14":"one drug used","15":"9.48683","16":"not homeless","17":"1"},{"1":"2009","2":"M","3":"White","4":"39","5":"1","6":"0","7":"1","8":"HIV+","9":"2","10":"4","11":"1","12":"2.00000","13":"0.000000","14":"one drug used","15":"2.00000","16":"homeless","17":"1"},{"1":"2032","2":"M","3":"White","4":"52","5":"1","6":"0","7":"1","8":"HIV-","9":"18","10":"90","11":"1","12":"9.48683","13":"0.000000","14":"one drug used","15":"9.48683","16":"not homeless","17":"1"},{"1":"2063","2":"M","3":"AA","4":"47","5":"1","6":"1","7":"1","8":"HIV-","9":"1","10":"120","11":"1","12":"10.95445","13":"0.000000","14":"one drug used","15":"10.95445","16":"homeless","17":"1"},{"1":"2059","2":"M","3":"Hispanic","4":"32","5":"1","6":"0","7":"2","8":"HIV-","9":"12","10":"120","11":"1","12":"10.95445","13":"0.693147","14":"multiple drugs used","15":"10.95445","16":"homeless","17":"2"},{"1":"2077","2":"M","3":"Hispanic","4":"54","5":"1","6":"0","7":"2","8":"HIV-","9":"10","10":"120","11":"1","12":"10.95445","13":"0.693147","14":"one drug used","15":"10.95445","16":"homeless","17":"2"},{"1":"2042","2":"F","3":"White","4":"32","5":"5","6":"0","7":"2","8":"HIV-","9":"8","10":"15","11":"1","12":"3.87298","13":"0.693147","14":"one drug used","15":"3.87298","16":"not homeless","17":"2"},{"1":"2017","2":"M","3":"White","4":"26","5":"5","6":"0","7":"2","8":"HIV-","9":"11","10":"120","11":"1","12":"10.95445","13":"0.693147","14":"multiple drugs used","15":"10.95445","16":"homeless","17":"2"},{"1":"2119","2":"M","3":"White","4":"54","5":"1","6":"0","7":"3","8":"HIV-","9":"2","10":"90","11":"1","12":"9.48683","13":"1.098612","14":"one drug used","15":"9.48683","16":"not homeless","17":"3"},{"1":"2085","2":"F","3":"White","4":"19","5":"5","6":"0","7":"3","8":"HIV-","9":"7","10":"90","11":"1","12":"9.48683","13":"1.098612","14":"one drug used","15":"9.48683","16":"not homeless","17":"3"},{"1":"2089","2":"M","3":"White","4":"33","5":"5","6":"0","7":"4","8":"HIV+","9":"20","10":"4","11":"1","12":"2.00000","13":"1.386294","14":"one drug used","15":"2.00000","16":"homeless","17":"4"},{"1":"2120","2":"M","3":"White","4":"22","5":"1","6":"0","7":"4","8":"NA","9":"8","10":"100","11":"1","12":"10.00000","13":"1.386294","14":"one drug used","15":"10.00000","16":"not homeless","17":"4"},{"1":"2084","2":"M","3":"White","4":"45","5":"1","6":"0","7":"5","8":"HIV-","9":"8","10":"50","11":"1","12":"7.07107","13":"1.609438","14":"one drug used","15":"7.07107","16":"homeless","17":"5"},{"1":"2112","2":"M","3":"AA","4":"39","5":"1","6":"0","7":"5","8":"HIV-","9":"3","10":"60","11":"1","12":"7.74597","13":"1.609438","14":"one drug used","15":"7.74597","16":"not homeless","17":"5"},{"1":"2016","2":"M","3":"White","4":"40","5":"1","6":"0","7":"6","8":"HIV-","9":"10","10":"120","11":"1","12":"10.95445","13":"1.791759","14":"one drug used","15":"10.95445","16":"homeless","17":"6"},{"1":"2060","2":"M","3":"AA","4":"21","5":"1","6":"1","7":"6","8":"NA","9":"13","10":"24","11":"1","12":"4.89898","13":"1.791759","14":"one drug used","15":"4.89898","16":"homeless","17":"6"},{"1":"2111","2":"M","3":"White & Hispa","4":"29","5":"1","6":"0","7":"7","8":"HIV-","9":"11","10":"90","11":"1","12":"9.48683","13":"1.945910","14":"one drug used","15":"9.48683","16":"homeless","17":"7"},{"1":"2078","2":"M","3":"White","4":"31","5":"5","6":"0","7":"8","8":"HIV-","9":"19","10":"30","11":"1","12":"5.47723","13":"2.079442","14":"one drug used","15":"5.47723","16":"homeless","17":"8"},{"1":"2054","2":"M","3":"Hispanic","4":"44","5":"1","6":"0","7":"8","8":"HIV-","9":"1","10":"20","11":"1","12":"4.47214","13":"2.079442","14":"multiple drugs used","15":"4.47214","16":"homeless","17":"8"},{"1":"2129","2":"M","3":"White","4":"46","5":"NA","6":"0","7":"10","8":"HIV-","9":"6","10":"200","11":"1","12":"14.14214","13":"2.302585","14":"one drug used","15":"14.14214","16":"not homeless","17":"10"},{"1":"2092","2":"M","3":"AA","4":"39","5":"1","6":"1","7":"10","8":"HIV-","9":"6","10":"90","11":"1","12":"9.48683","13":"2.302585","14":"one drug used","15":"9.48683","16":"homeless","17":"10"},{"1":"2083","2":"F","3":"White","4":"22","5":"5","6":"0","7":"30","8":"HIV-","9":"13","10":"90","11":"1","12":"9.48683","13":"3.401197","14":"one drug used","15":"9.48683","16":"not homeless","17":"30"},{"1":"2007","2":"F","3":"Hispanic","4":"47","5":"5","6":"1","7":"30","8":"NA","9":"14","10":"60","11":"1","12":"7.74597","13":"3.401197","14":"one drug used","15":"7.74597","16":"not homeless","17":"30"},{"1":"2101","2":"M","3":"Hispanic","4":"36","5":"1","6":"0","7":"45","8":"NA","9":"7","10":"45","11":"1","12":"6.70820","13":"3.806663","14":"one drug used","15":"6.70820","16":"homeless","17":"45"},{"1":"2039","2":"F","3":"White","4":"40","5":"1","6":"0","7":"50","8":"HIV-","9":"5","10":"140","11":"1","12":"11.83216","13":"3.912023","14":"one drug used","15":"11.83216","16":"homeless","17":"50"},{"1":"2040","2":"M","3":"AA","4":"49","5":"1","6":"0","7":"60","8":"HIV-","9":"0","10":"60","11":"1","12":"7.74597","13":"4.094345","14":"one drug used","15":"7.74597","16":"homeless","17":"60"},{"1":"2086","2":"M","3":"White","4":"33","5":"1","6":"0","7":"60","8":"NA","9":"4","10":"300","11":"1","12":"17.32051","13":"4.094345","14":"one drug used","15":"17.32051","16":"homeless","17":"60"},{"1":"2030","2":"M","3":"White","4":"43","5":"5","6":"0","7":"0","8":"NA","9":"5","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2122","2":"F","3":"AA","4":"38","5":"5","6":"1","7":"0","8":"HIV-","9":"2","10":"2","11":"0","12":"1.41421","13":"NA","14":"multiple drugs used","15":"1.41421","16":"not homeless","17":"NA"},{"1":"2044","2":"M","3":"AA","4":"49","5":"5","6":"0","7":"0","8":"NA","9":"0","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2066","2":"M","3":"Hispanic","4":"36","5":"1","6":"0","7":"0","8":"HIV-","9":"3","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2053","2":"M","3":"AA","4":"42","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"4","11":"0","12":"2.00000","13":"NA","14":"one drug used","15":"2.00000","16":"not homeless","17":"NA"},{"1":"2038","2":"M","3":"White","4":"35","5":"1","6":"0","7":"0","8":"HIV-","9":"2","10":"20","11":"0","12":"4.47214","13":"NA","14":"one drug used","15":"4.47214","16":"homeless","17":"NA"},{"1":"2070","2":"M","3":"White","4":"30","5":"1","6":"0","7":"0","8":"HIV-","9":"2","10":"120","11":"0","12":"10.95445","13":"NA","14":"multiple drugs used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2003","2":"M","3":"White","4":"54","5":"5","6":"0","7":"NA","8":"NA","9":"19","10":"90","11":"1","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2050","2":"M","3":"AA","4":"41","5":"5","6":"0","7":"0","8":"HIV-","9":"3","10":"15","11":"0","12":"3.87298","13":"NA","14":"multiple drugs used","15":"3.87298","16":"homeless","17":"NA"},{"1":"2052","2":"M","3":"White","4":"36","5":"1","6":"0","7":"0","8":"HIV-","9":"15","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2100","2":"F","3":"White","4":"30","5":"5","6":"1","7":"0","8":"HIV-","9":"13","10":"240","11":"0","12":"15.49193","13":"NA","14":"multiple drugs used","15":"15.49193","16":"homeless","17":"NA"},{"1":"2110","2":"Trans","3":"White","4":"37","5":"1","6":"0","7":"0","8":"HIV+","9":"15","10":"81","11":"0","12":"9.00000","13":"NA","14":"one drug used","15":"9.00000","16":"not homeless","17":"NA"},{"1":"2046","2":"M","3":"White","4":"22","5":"1","6":"NA","7":"0","8":"HIV-","9":"8","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"NA","17":"NA"},{"1":"2048","2":"F","3":"AA","4":"43","5":"1","6":"0","7":"0","8":"HIV-","9":"3","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2095","2":"M","3":"White","4":"45","5":"1","6":"0","7":"0","8":"HIV-","9":"7","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2081","2":"F","3":"AA","4":"49","5":"1","6":"0","7":"0","8":"HIV-","9":"3","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2021","2":"M","3":"Hispanic","4":"35","5":"1","6":"0","7":"0","8":"NA","9":"0","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"not homeless","17":"NA"},{"1":"2051","2":"M","3":"White","4":"41","5":"1","6":"1","7":"0","8":"HIV-","9":"10","10":"24","11":"0","12":"4.89898","13":"NA","14":"one drug used","15":"4.89898","16":"homeless","17":"NA"},{"1":"2029","2":"M","3":"White","4":"27","5":"1","6":"0","7":"0","8":"HIV-","9":"2","10":"120","11":"0","12":"10.95445","13":"NA","14":"multiple drugs used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2023","2":"M","3":"AA","4":"51","5":"1","6":"0","7":"0","8":"HIV-","9":"8","10":"150","11":"0","12":"12.24745","13":"NA","14":"one drug used","15":"12.24745","16":"homeless","17":"NA"},{"1":"2123","2":"M","3":"AA","4":"51","5":"5","6":"0","7":"0","8":"HIV-","9":"0","10":"180","11":"0","12":"13.41641","13":"NA","14":"multiple drugs used","15":"13.41641","16":"not homeless","17":"NA"},{"1":"2117","2":"M","3":"White","4":"24","5":"1","6":"1","7":"0","8":"HIV+","9":"1","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2072","2":"M","3":"AA","4":"46","5":"5","6":"0","7":"0","8":"HIV-","9":"0","10":"8","11":"0","12":"2.82843","13":"NA","14":"one drug used","15":"2.82843","16":"not homeless","17":"NA"},{"1":"2005","2":"M","3":"White","4":"53","5":"5","6":"NA","7":"NA","8":"NA","9":"17","10":"12","11":"1","12":"3.46410","13":"NA","14":"one drug used","15":"3.46410","16":"NA","17":"NA"},{"1":"2074","2":"F","3":"Filipino","4":"39","5":"1","6":"0","7":"0","8":"HIV-","9":"11","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2109","2":"M","3":"AA","4":"43","5":"1","6":"0","7":"0","8":"HIV-","9":"9","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"not homeless","17":"NA"},{"1":"2057","2":"F","3":"AA","4":"41","5":"1","6":"1","7":"0","8":"HIV-","9":"4","10":"4","11":"0","12":"2.00000","13":"NA","14":"one drug used","15":"2.00000","16":"not homeless","17":"NA"},{"1":"2102","2":"M","3":"White","4":"35","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2035","2":"F","3":"White","4":"43","5":"1","6":"0","7":"0","8":"HIV-","9":"20","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2064","2":"M","3":"White","4":"52","5":"5","6":"0","7":"0","8":"HIV-","9":"18","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2091","2":"M","3":"White","4":"28","5":"1","6":"0","7":"0","8":"HIV-","9":"0","10":"14","11":"0","12":"3.74166","13":"NA","14":"one drug used","15":"3.74166","16":"not homeless","17":"NA"},{"1":"2024","2":"F","3":"White","4":"31","5":"5","6":"0","7":"0","8":"HIV-","9":"13","10":"2","11":"0","12":"1.41421","13":"NA","14":"one drug used","15":"1.41421","16":"homeless","17":"NA"},{"1":"2098","2":"M","3":"White","4":"48","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"9","11":"0","12":"3.00000","13":"NA","14":"one drug used","15":"3.00000","16":"not homeless","17":"NA"},{"1":"2061","2":"M","3":"White","4":"52","5":"1","6":"0","7":"0","8":"HIV-","9":"7","10":"30","11":"0","12":"5.47723","13":"NA","14":"one drug used","15":"5.47723","16":"not homeless","17":"NA"},{"1":"2058","2":"F","3":"AA","4":"53","5":"1","6":"0","7":"0","8":"HIV-","9":"2","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2103","2":"M","3":"White","4":"38","5":"1","6":"0","7":"0","8":"HIV-","9":"12","10":"81","11":"0","12":"9.00000","13":"NA","14":"one drug used","15":"9.00000","16":"homeless","17":"NA"},{"1":"2107","2":"M","3":"White","4":"33","5":"1","6":"0","7":"0","8":"HIV-","9":"5","10":"290","11":"0","12":"17.02939","13":"NA","14":"one drug used","15":"17.02939","16":"homeless","17":"NA"},{"1":"2026","2":"F","3":"AA","4":"49","5":"1","6":"0","7":"0","8":"HIV-","9":"14","10":"60","11":"0","12":"7.74597","13":"NA","14":"multiple drugs used","15":"7.74597","16":"homeless","17":"NA"},{"1":"2041","2":"M","3":"AA","4":"54","5":"5","6":"0","7":"0","8":"NA","9":"5","10":"30","11":"0","12":"5.47723","13":"NA","14":"one drug used","15":"5.47723","16":"not homeless","17":"NA"},{"1":"2056","2":"M","3":"White","4":"25","5":"1","6":"0","7":"0","8":"HIV-","9":"2","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2049","2":"F","3":"White","4":"44","5":"5","6":"1","7":"0","8":"HIV-","9":"17","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2080","2":"M","3":"White","4":"53","5":"1","6":"0","7":"0","8":"HIV-","9":"12","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"homeless","17":"NA"},{"1":"2108","2":"M","3":"White","4":"37","5":"1","6":"0","7":"0","8":"HIV-","9":"4","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"homeless","17":"NA"},{"1":"2010","2":"M","3":"Hispanic","4":"34","5":"5","6":"0","7":"0","8":"NA","9":"9","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"not homeless","17":"NA"},{"1":"2013","2":"M","3":"White","4":"41","5":"5","6":"1","7":"0","8":"HIV-","9":"19","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2008","2":"M","3":"AA","4":"53","5":"1","6":"0","7":"0","8":"HIV-","9":"0","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"not homeless","17":"NA"},{"1":"2105","2":"M","3":"AA","4":"33","5":"1","6":"0","7":"0","8":"HIV+","9":"10","10":"90","11":"0","12":"9.48683","13":"NA","14":"multiple drugs used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2096","2":"M","3":"Indian","4":"46","5":"5","6":"0","7":"0","8":"HIV-","9":"6","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"not homeless","17":"NA"},{"1":"2055","2":"M","3":"Hispanic","4":"42","5":"1","6":"0","7":"0","8":"HIV-","9":"5","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2065","2":"M","3":"AA","4":"32","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"24","11":"0","12":"4.89898","13":"NA","14":"one drug used","15":"4.89898","16":"not homeless","17":"NA"},{"1":"2124","2":"F","3":"White","4":"41","5":"1","6":"0","7":"0","8":"HIV-","9":"3","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2011","2":"M","3":"AA","4":"49","5":"1","6":"0","7":"0","8":"HIV-","9":"2","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2027","2":"F","3":"AA","4":"47","5":"5","6":"0","7":"0","8":"HIV+","9":"4","10":"28","11":"0","12":"5.29150","13":"NA","14":"one drug used","15":"5.29150","16":"homeless","17":"NA"},{"1":"2001","2":"M","3":"AA","4":"47","5":"1","6":"NA","7":"0","8":"HIV-","9":"2","10":"300","11":"0","12":"17.32051","13":"NA","14":"one drug used","15":"17.32051","16":"NA","17":"NA"},{"1":"2073","2":"M","3":"Filipino","4":"49","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2004","2":"F","3":"White","4":"40","5":"5","6":"1","7":"NA","8":"NA","9":"4","10":"90","11":"1","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2020","2":"M","3":"White","4":"36","5":"1","6":"0","7":"0","8":"HIV-","9":"5","10":"150","11":"0","12":"12.24745","13":"NA","14":"multiple drugs used","15":"12.24745","16":"homeless","17":"NA"},{"1":"2022","2":"M","3":"White","4":"49","5":"1","6":"0","7":"0","8":"HIV-","9":"3","10":"8","11":"0","12":"2.82843","13":"NA","14":"multiple drugs used","15":"2.82843","16":"not homeless","17":"NA"},{"1":"2045","2":"M","3":"White","4":"26","5":"1","6":"0","7":"0","8":"HIV-","9":"6","10":"87","11":"0","12":"9.32738","13":"NA","14":"one drug used","15":"9.32738","16":"homeless","17":"NA"},{"1":"2067","2":"M","3":"White","4":"52","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"7","11":"0","12":"2.64575","13":"NA","14":"one drug used","15":"2.64575","16":"not homeless","17":"NA"},{"1":"2015","2":"F","3":"White","4":"39","5":"5","6":"0","7":"0","8":"HIV-","9":"6","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2031","2":"M","3":"AA","4":"54","5":"1","6":"0","7":"0","8":"HIV+","9":"1","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2014","2":"M","3":"White","4":"52","5":"5","6":"0","7":"0","8":"HIV-","9":"4","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2106","2":"F","3":"Indian & White","4":"38","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"112","11":"0","12":"10.58300","13":"NA","14":"multiple drugs used","15":"10.58300","16":"not homeless","17":"NA"},{"1":"2034","2":"M","3":"AA","4":"44","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"84","11":"0","12":"9.16515","13":"NA","14":"one drug used","15":"9.16515","16":"not homeless","17":"NA"},{"1":"2028","2":"F","3":"White","4":"36","5":"5","6":"0","7":"0","8":"HIV-","9":"5","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"not homeless","17":"NA"},{"1":"2082","2":"M","3":"White","4":"49","5":"1","6":"1","7":"0","8":"HIV-","9":"19","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2006","2":"M","3":"Asian","4":"38","5":"5","6":"0","7":"NA","8":"NA","9":"3","10":"40","11":"1","12":"6.32456","13":"NA","14":"one drug used","15":"6.32456","16":"not homeless","17":"NA"},{"1":"2075","2":"F","3":"AA","4":"41","5":"1","6":"0","7":"0","8":"HIV-","9":"7","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2090","2":"F","3":"White","4":"47","5":"1","6":"0","7":"0","8":"HIV-","9":"6","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2068","2":"M","3":"White","4":"29","5":"1","6":"0","7":"0","8":"HIV-","9":"0","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2121","2":"M","3":"White","4":"54","5":"1","6":"0","7":"0","8":"HIV-","9":"14","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2036","2":"F","3":"AA","4":"47","5":"1","6":"0","7":"0","8":"HIV-","9":"4","10":"92","11":"0","12":"9.59166","13":"NA","14":"multiple drugs used","15":"9.59166","16":"not homeless","17":"NA"},{"1":"2033","2":"M","3":"White","4":"53","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"},{"1":"2094","2":"M","3":"White","4":"44","5":"5","6":"1","7":"0","8":"HIV-","9":"8","10":"81","11":"0","12":"9.00000","13":"NA","14":"multiple drugs used","15":"9.00000","16":"homeless","17":"NA"},{"1":"2087","2":"M","3":"White","4":"41","5":"1","6":"0","7":"0","8":"HIV-","9":"0","10":"180","11":"0","12":"13.41641","13":"NA","14":"one drug used","15":"13.41641","16":"homeless","17":"NA"},{"1":"2126","2":"M","3":"White","4":"29","5":"1","6":"1","7":"0","8":"HIV-","9":"2","10":"240","11":"0","12":"15.49193","13":"NA","14":"one drug used","15":"15.49193","16":"homeless","17":"NA"},{"1":"2128","2":"F","3":"White","4":"41","5":"NA","6":"1","7":"0","8":"HIV-","9":"7","10":"5","11":"0","12":"2.23607","13":"NA","14":"one drug used","15":"2.23607","16":"not homeless","17":"NA"},{"1":"2118","2":"M","3":"AA","4":"47","5":"1","6":"0","7":"0","8":"HIV+","9":"6","10":"1","11":"0","12":"1.00000","13":"NA","14":"one drug used","15":"1.00000","16":"homeless","17":"NA"},{"1":"2125","2":"M","3":"White","4":"37","5":"5","6":"0","7":"0","8":"HIV-","9":"5","10":"20","11":"0","12":"4.47214","13":"NA","14":"multiple drugs used","15":"4.47214","16":"not homeless","17":"NA"},{"1":"2099","2":"M","3":"White","4":"47","5":"1","6":"0","7":"0","8":"HIV-","9":"7","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2079","2":"F","3":"White","4":"29","5":"5","6":"1","7":"0","8":"HIV-","9":"8","10":"900","11":"0","12":"30.00000","13":"NA","14":"one drug used","15":"30.00000","16":"homeless","17":"NA"},{"1":"2088","2":"F","3":"AA","4":"39","5":"1","6":"0","7":"0","8":"HIV-","9":"3","10":"0","11":"0","12":"0.00000","13":"NA","14":"one drug used","15":"0.00000","16":"not homeless","17":"NA"},{"1":"2114","2":"M","3":"White","4":"35","5":"1","6":"0","7":"0","8":"HIV-","9":"12","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"not homeless","17":"NA"},{"1":"2062","2":"M","3":"AA","4":"45","5":"5","6":"0","7":"0","8":"HIV-","9":"13","10":"12","11":"0","12":"3.46410","13":"NA","14":"one drug used","15":"3.46410","16":"not homeless","17":"NA"},{"1":"2002","2":"M","3":"White","4":"36","5":"5","6":"NA","7":"NA","8":"NA","9":"10","10":"30","11":"1","12":"5.47723","13":"NA","14":"one drug used","15":"5.47723","16":"NA","17":"NA"},{"1":"2097","2":"M","3":"White","4":"53","5":"5","6":"0","7":"0","8":"HIV-","9":"18","10":"NA","11":"0","12":"NA","13":"NA","14":"one drug used","15":"NA","16":"homeless","17":"NA"},{"1":"2037","2":"M","3":"White","4":"23","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"870","11":"0","12":"29.49576","13":"NA","14":"one drug used","15":"29.49576","16":"not homeless","17":"NA"},{"1":"2113","2":"M","3":"White","4":"38","5":"1","6":"0","7":"0","8":"HIV-","9":"6","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2071","2":"M","3":"White","4":"44","5":"1","6":"0","7":"0","8":"HIV-","9":"17","10":"40","11":"0","12":"6.32456","13":"NA","14":"one drug used","15":"6.32456","16":"homeless","17":"NA"},{"1":"2116","2":"M","3":"White","4":"41","5":"1","6":"0","7":"0","8":"HIV-","9":"4","10":"420","11":"0","12":"20.49390","13":"NA","14":"one drug used","15":"20.49390","16":"not homeless","17":"NA"},{"1":"2093","2":"F","3":"AA","4":"41","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"not homeless","17":"NA"},{"1":"2127","2":"M","3":"White","4":"51","5":"5","6":"0","7":"0","8":"HIV-","9":"11","10":"60","11":"0","12":"7.74597","13":"NA","14":"one drug used","15":"7.74597","16":"homeless","17":"NA"},{"1":"2019","2":"M","3":"White","4":"25","5":"1","6":"0","7":"0","8":"HIV-","9":"18","10":"450","11":"0","12":"21.21320","13":"NA","14":"multiple drugs used","15":"21.21320","16":"homeless","17":"NA"},{"1":"2025","2":"F","3":"White","4":"51","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"5","11":"0","12":"2.23607","13":"NA","14":"one drug used","15":"2.23607","16":"homeless","17":"NA"},{"1":"2047","2":"M","3":"White","4":"36","5":"1","6":"0","7":"0","8":"HIV-","9":"3","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2012","2":"M","3":"AA","4":"45","5":"5","6":"0","7":"0","8":"NA","9":"2","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2043","2":"M","3":"AA","4":"54","5":"1","6":"0","7":"0","8":"HIV-","9":"7","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"homeless","17":"NA"},{"1":"2069","2":"M","3":"Hispanic","4":"37","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"120","11":"0","12":"10.95445","13":"NA","14":"multiple drugs used","15":"10.95445","16":"not homeless","17":"NA"},{"1":"2115","2":"M","3":"White","4":"48","5":"1","6":"0","7":"0","8":"HIV-","9":"1","10":"90","11":"0","12":"9.48683","13":"NA","14":"one drug used","15":"9.48683","16":"not homeless","17":"NA"},{"1":"2076","2":"M","3":"AA","4":"45","5":"1","6":"0","7":"0","8":"HIV+","9":"0","10":"120","11":"0","12":"10.95445","13":"NA","14":"one drug used","15":"10.95445","16":"homeless","17":"NA"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<hr>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">needles</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="va">age</span>,</span>
+<span>      y <span class="op">=</span> <span class="va">shared_syr</span>,</span>
+<span>      shape <span class="op">=</span> <span class="va">sex</span>,</span>
+<span>      col <span class="op">=</span> <span class="va">ethn</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span></span>
+<span>    size <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>    alpha <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html">facet_grid</a></span><span class="op">(</span></span>
+<span>    cols <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html">vars</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">polydrug</span><span class="op">)</span>, </span>
+<span>    rows <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html">vars</a></span><span class="op">(</span><span class="va">homeless</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-needles" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-needles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4.1: Rates of needle sharing
+</figcaption><div aria-describedby="fig-needles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="count-regression_files/figure-html/fig-needles-1.png" class="img-fluid figure-img" width="672">
+</div>
+</figure>
+</div>
+</div>
+</div>
+<section id="covariate-counts" class="level4"><h4 class="anchored" data-anchor-id="covariate-counts">Covariate counts</h4>
+<div id="tbl-count-needles" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-count-needles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.2: Counts of observations in <code>needles</code> dataset by sex, unhoused status, and multiple drug use
+</figcaption><div aria-describedby="tbl-count-needles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details open="" class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">needles</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">homeless</span>, <span class="va">polydrug</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     sex             homeless                 polydrug  </span></span>
+<span><span class="co">#&gt;  M    :97   not homeless:63   one drug used      :109  </span></span>
+<span><span class="co">#&gt;  F    :30   homeless    :61   multiple drugs used: 19  </span></span>
+<span><span class="co">#&gt;  Trans: 1   NA's        : 4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</figure>
+</div>
+<hr>
+<p>There’s only one individual with <code>sex = Trans</code>, which unfortunately isn’t enough data to analyze. We will remove that individual:</p>
+<div class="cell">
+<details class="code-fold"><summary>remove singleton observation with sex == Trans</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">needles</span> <span class="op">=</span> <span class="va">needles</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">sex</span> <span class="op">!=</span> <span class="st">"Trans"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<hr></section><section id="models" class="level3 smaller" data-number="4.7.1"><h3 class="smaller anchored" data-number="4.7.1" data-anchor-id="models">
+<span class="header-section-number">4.7.1</span> models</h3>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">glm1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">needles</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/family.html">poisson</a></span>,</span>
+<span>  <span class="va">shared_syr</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">homeless</span><span class="op">*</span><span class="va">polydrug</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/parameters/">parameters</a></span><span class="op">)</span></span>
+<span><span class="va">glm1</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://easystats.github.io/parameters/reference/model_parameters.html">parameters</a></span><span class="op">(</span>exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://easystats.github.io/insight/reference/display.html">print_md</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div id="tbl-needles-pois" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-needles-pois-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.3: Poisson model for needle-sharing data
+</figcaption><div aria-describedby="tbl-needles-pois-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 51%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 13%">
+<col style="width: 6%">
+<col style="width: 7%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">IRR</th>
+<th style="text-align: center;">SE</th>
+<th style="text-align: center;">95% CI</th>
+<th style="text-align: center;">z</th>
+<th style="text-align: center;">p</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">4.52</td>
+<td style="text-align: center;">1.15</td>
+<td style="text-align: center;">(2.74, 7.45)</td>
+<td style="text-align: center;">5.90</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: center;">0.97</td>
+<td style="text-align: center;">5.58e-03</td>
+<td style="text-align: center;">(0.96, 0.98)</td>
+<td style="text-align: center;">-5.41</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sex (F)</td>
+<td style="text-align: center;">1.98</td>
+<td style="text-align: center;">0.23</td>
+<td style="text-align: center;">(1.58, 2.49)</td>
+<td style="text-align: center;">5.88</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">homeless (homeless)</td>
+<td style="text-align: center;">3.58</td>
+<td style="text-align: center;">0.45</td>
+<td style="text-align: center;">(2.79, 4.59)</td>
+<td style="text-align: center;">10.06</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">polydrug (multiple drugs used)</td>
+<td style="text-align: center;">1.45e-07</td>
+<td style="text-align: center;">5.82e-05</td>
+<td style="text-align: center;">(0.00, Inf)</td>
+<td style="text-align: center;">-0.04</td>
+<td style="text-align: center;">0.969</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">homeless (homeless) × polydrug (multiple drugs used)</td>
+<td style="text-align: center;">1.27e+06</td>
+<td style="text-align: center;">5.12e+08</td>
+<td style="text-align: center;">(0.00, Inf)</td>
+<td style="text-align: center;">0.03</td>
+<td style="text-align: center;">0.972</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">glm1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div id="tbl-pois-model-diagnostics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-pois-model-diagnostics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.4: Diagnostics for Poisson model
+</figcaption><div aria-describedby="tbl-pois-model-diagnostics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="count-regression_files/figure-html/tbl-pois-model-diagnostics-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>–</p>
+<div id="tbl-needles-nb" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-needles-nb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.5: Negative binomial model for needle-sharing data
+</figcaption><div aria-describedby="tbl-needles-nb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS</a></span><span class="op">)</span> <span class="co">#need this for glm.nb()</span></span>
+<span><span class="va">glm1.nb</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html">glm.nb</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">needles</span>,</span>
+<span>  <span class="va">shared_syr</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">homeless</span><span class="op">*</span><span class="va">polydrug</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">glm1.nb</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; glm.nb(formula = shared_syr ~ age + sex + homeless * polydrug, </span></span>
+<span><span class="co">#&gt;     data = needles, init.theta = 0.08436295825, link = log)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;                                               Estimate Std. Error z value</span></span>
+<span><span class="co">#&gt; (Intercept)                                   9.91e-01   1.71e+00    0.58</span></span>
+<span><span class="co">#&gt; age                                          -2.76e-02   3.82e-02   -0.72</span></span>
+<span><span class="co">#&gt; sexF                                          1.06e+00   8.07e-01    1.32</span></span>
+<span><span class="co">#&gt; homelesshomeless                              1.65e+00   7.22e-01    2.29</span></span>
+<span><span class="co">#&gt; polydrugmultiple drugs used                  -2.46e+01   3.61e+04    0.00</span></span>
+<span><span class="co">#&gt; homelesshomeless:polydrugmultiple drugs used  2.32e+01   3.61e+04    0.00</span></span>
+<span><span class="co">#&gt;                                              Pr(&gt;|z|)  </span></span>
+<span><span class="co">#&gt; (Intercept)                                     0.563  </span></span>
+<span><span class="co">#&gt; age                                             0.469  </span></span>
+<span><span class="co">#&gt; sexF                                            0.187  </span></span>
+<span><span class="co">#&gt; homelesshomeless                                0.022 *</span></span>
+<span><span class="co">#&gt; polydrugmultiple drugs used                     0.999  </span></span>
+<span><span class="co">#&gt; homelesshomeless:polydrugmultiple drugs used    0.999  </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; (Dispersion parameter for Negative Binomial(0.0844) family taken to be 1)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     Null deviance: 69.193  on 119  degrees of freedom</span></span>
+<span><span class="co">#&gt; Residual deviance: 57.782  on 114  degrees of freedom</span></span>
+<span><span class="co">#&gt;   (7 observations deleted due to missingness)</span></span>
+<span><span class="co">#&gt; AIC: 315.5</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Number of Fisher Scoring iterations: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;               Theta:  0.0844 </span></span>
+<span><span class="co">#&gt;           Std. Err.:  0.0197 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  2 x log-likelihood:  -301.5060</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</figure>
+</div>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">glm1</span><span class="op">)</span><span class="op">)</span>, poisson <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">glm1</span><span class="op">)</span>, nb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">glm1.nb</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div id="tbl-compare-poisson-nb" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-compare-poisson-nb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.6: Poisson versus Negative Binomial Regression coefficient estimates
+</figcaption><div aria-describedby="tbl-compare-poisson-nb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["name"],"name":[1],"type":["chr"],"align":["left"]},{"label":["poisson"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["nb"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"1.5077327","3":"0.9909360"},{"1":"age","2":"-0.0311347","3":"-0.0276299"},{"1":"sexF","2":"0.6842439","3":"1.0647778"},{"1":"homelesshomeless","2":"1.2745965","3":"1.6546505"},{"1":"polydrugmultiple drugs used","2":"-15.7479876","3":"-24.5620744"},{"1":"homelesshomeless:polydrugmultiple drugs used","2":"14.0572316","3":"23.1779051"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<section id="zero-inflation-1" class="level4"><h4 class="anchored" data-anchor-id="zero-inflation-1">zero-inflation</h4>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/glmmTMB/glmmTMB">glmmTMB</a></span><span class="op">)</span></span>
+<span><span class="va">zinf_fit1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html">glmmTMB</a></span><span class="op">(</span></span>
+<span>  family <span class="op">=</span> <span class="st">"poisson"</span>,</span>
+<span>  data  <span class="op">=</span> <span class="va">needles</span>,</span>
+<span>  formula <span class="op">=</span> <span class="va">shared_syr</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">homeless</span><span class="op">*</span><span class="va">polydrug</span>,</span>
+<span>  ziformula <span class="op">=</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">homeless</span> <span class="op">+</span> <span class="va">polydrug</span> <span class="co"># fit won't converge with interaction</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">zinf_fit1</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://easystats.github.io/parameters/reference/model_parameters.html">parameters</a></span><span class="op">(</span>exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://easystats.github.io/insight/reference/display.html">print_md</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div id="tbl-zeroinf-poisson" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-zeroinf-poisson-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.7: Zero-inflated poisson model
+</figcaption><div aria-describedby="tbl-zeroinf-poisson-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<caption># Fixed Effects</caption>
+<colgroup>
+<col style="width: 50%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 13%">
+<col style="width: 10%">
+<col style="width: 7%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">IRR</th>
+<th style="text-align: center;">SE</th>
+<th style="text-align: center;">95% CI</th>
+<th style="text-align: center;">z</th>
+<th style="text-align: center;">p</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">3.16</td>
+<td style="text-align: center;">0.82</td>
+<td style="text-align: center;">(1.90, 5.25)</td>
+<td style="text-align: center;">4.44</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: center;">1.01</td>
+<td style="text-align: center;">5.88e-03</td>
+<td style="text-align: center;">(1.00, 1.02)</td>
+<td style="text-align: center;">1.74</td>
+<td style="text-align: center;">0.081</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sex [F]</td>
+<td style="text-align: center;">3.43</td>
+<td style="text-align: center;">0.44</td>
+<td style="text-align: center;">(2.67, 4.40)</td>
+<td style="text-align: center;">9.68</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">homeless [homeless]</td>
+<td style="text-align: center;">3.44</td>
+<td style="text-align: center;">0.47</td>
+<td style="text-align: center;">(2.63, 4.50)</td>
+<td style="text-align: center;">9.03</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">polydrug [multiple drugs used]</td>
+<td style="text-align: center;">1.85e-09</td>
+<td style="text-align: center;">1.21e-05</td>
+<td style="text-align: center;">(0.00, Inf)</td>
+<td style="text-align: center;">-3.08e-03</td>
+<td style="text-align: center;">0.998</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">homeless [homeless] × polydrug [multiple drugs used]</td>
+<td style="text-align: center;">1.38e+08</td>
+<td style="text-align: center;">9.04e+11</td>
+<td style="text-align: center;">(0.00, Inf)</td>
+<td style="text-align: center;">2.87e-03</td>
+<td style="text-align: center;">0.998</td>
+</tr>
+</tbody>
+</table>
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<caption># Zero-Inflation</caption>
+<colgroup>
+<col style="width: 40%">
+<col style="width: 15%">
+<col style="width: 7%">
+<col style="width: 18%">
+<col style="width: 9%">
+<col style="width: 9%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">Odds Ratio</th>
+<th style="text-align: center;">SE</th>
+<th style="text-align: center;">95% CI</th>
+<th style="text-align: center;">z</th>
+<th style="text-align: center;">p</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">0.49</td>
+<td style="text-align: center;">0.54</td>
+<td style="text-align: center;">(0.06, 4.25)</td>
+<td style="text-align: center;">-0.65</td>
+<td style="text-align: center;">0.514</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: center;">1.05</td>
+<td style="text-align: center;">0.03</td>
+<td style="text-align: center;">(1.00, 1.10)</td>
+<td style="text-align: center;">1.95</td>
+<td style="text-align: center;">0.051</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sex [F]</td>
+<td style="text-align: center;">1.44</td>
+<td style="text-align: center;">0.84</td>
+<td style="text-align: center;">(0.46, 4.50)</td>
+<td style="text-align: center;">0.62</td>
+<td style="text-align: center;">0.533</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">homeless [homeless]</td>
+<td style="text-align: center;">0.68</td>
+<td style="text-align: center;">0.34</td>
+<td style="text-align: center;">(0.26, 1.80)</td>
+<td style="text-align: center;">-0.78</td>
+<td style="text-align: center;">0.436</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">polydrug [multiple drugs used]</td>
+<td style="text-align: center;">1.15</td>
+<td style="text-align: center;">0.91</td>
+<td style="text-align: center;">(0.24, 5.43)</td>
+<td style="text-align: center;">0.18</td>
+<td style="text-align: center;">0.858</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="notes">
+<p>Another R package for zero-inflated models is <a href="https://cran.r-project.org/web/packages/pscl/index.html"><code>pscl</code></a> (<span class="citation" data-cites="pscl08">Zeileis, Kleiber, and Jackman (<a href="references.html#ref-pscl08" role="doc-biblioref">2008</a>)</span>).</p>
+</div>
+</section><section id="zero-inflated-negative-binomial-model" class="level4"><h4 class="anchored" data-anchor-id="zero-inflated-negative-binomial-model">zero-inflated negative binomial model</h4>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/glmmTMB/glmmTMB">glmmTMB</a></span><span class="op">)</span></span>
+<span><span class="va">zinf_fit1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html">glmmTMB</a></span><span class="op">(</span></span>
+<span>  family <span class="op">=</span> <span class="va">nbinom2</span>,</span>
+<span>  data  <span class="op">=</span> <span class="va">needles</span>,</span>
+<span>  formula <span class="op">=</span> <span class="va">shared_syr</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">homeless</span><span class="op">*</span><span class="va">polydrug</span>,</span>
+<span>  ziformula <span class="op">=</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">homeless</span> <span class="op">+</span> <span class="va">polydrug</span> <span class="co"># fit won't converge with interaction</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">zinf_fit1</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://easystats.github.io/parameters/reference/model_parameters.html">parameters</a></span><span class="op">(</span>exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://easystats.github.io/insight/reference/display.html">print_md</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div id="tbl-zeroinf-nb" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-zeroinf-nb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4.8: Zero-inflated negative binomial model
+</figcaption><div aria-describedby="tbl-zeroinf-nb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<caption># Fixed Effects</caption>
+<colgroup>
+<col style="width: 50%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 14%">
+<col style="width: 10%">
+<col style="width: 6%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">IRR</th>
+<th style="text-align: center;">SE</th>
+<th style="text-align: center;">95% CI</th>
+<th style="text-align: center;">z</th>
+<th style="text-align: center;">p</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">1.06</td>
+<td style="text-align: center;">1.48</td>
+<td style="text-align: center;">(0.07, 16.52)</td>
+<td style="text-align: center;">0.04</td>
+<td style="text-align: center;">0.969</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: center;">1.02</td>
+<td style="text-align: center;">0.03</td>
+<td style="text-align: center;">(0.96, 1.08)</td>
+<td style="text-align: center;">0.53</td>
+<td style="text-align: center;">0.599</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sex [F]</td>
+<td style="text-align: center;">6.86</td>
+<td style="text-align: center;">6.36</td>
+<td style="text-align: center;">(1.12, 42.16)</td>
+<td style="text-align: center;">2.08</td>
+<td style="text-align: center;">0.038</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">homeless [homeless]</td>
+<td style="text-align: center;">6.44</td>
+<td style="text-align: center;">4.59</td>
+<td style="text-align: center;">(1.60, 26.01)</td>
+<td style="text-align: center;">2.62</td>
+<td style="text-align: center;">0.009</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">polydrug [multiple drugs used]</td>
+<td style="text-align: center;">8.25e-10</td>
+<td style="text-align: center;">7.07e-06</td>
+<td style="text-align: center;">(0.00, Inf)</td>
+<td style="text-align: center;">-2.44e-03</td>
+<td style="text-align: center;">0.998</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">homeless [homeless] × polydrug [multiple drugs used]</td>
+<td style="text-align: center;">2.36e+08</td>
+<td style="text-align: center;">2.02e+12</td>
+<td style="text-align: center;">(0.00, Inf)</td>
+<td style="text-align: center;">2.25e-03</td>
+<td style="text-align: center;">0.998</td>
+</tr>
+</tbody>
+</table>
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<caption># Zero-Inflation</caption>
+<colgroup>
+<col style="width: 38%">
+<col style="width: 14%">
+<col style="width: 7%">
+<col style="width: 22%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">Odds Ratio</th>
+<th style="text-align: center;">SE</th>
+<th style="text-align: center;">95% CI</th>
+<th style="text-align: center;">z</th>
+<th style="text-align: center;">p</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">0.10</td>
+<td style="text-align: center;">0.20</td>
+<td style="text-align: center;">(1.47e-03, 6.14)</td>
+<td style="text-align: center;">-1.11</td>
+<td style="text-align: center;">0.269</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: center;">1.07</td>
+<td style="text-align: center;">0.04</td>
+<td style="text-align: center;">(0.99, 1.15)</td>
+<td style="text-align: center;">1.78</td>
+<td style="text-align: center;">0.075</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sex [F]</td>
+<td style="text-align: center;">2.72</td>
+<td style="text-align: center;">2.40</td>
+<td style="text-align: center;">(0.48, 15.33)</td>
+<td style="text-align: center;">1.13</td>
+<td style="text-align: center;">0.258</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">homeless [homeless]</td>
+<td style="text-align: center;">1.15</td>
+<td style="text-align: center;">0.86</td>
+<td style="text-align: center;">(0.27, 4.96)</td>
+<td style="text-align: center;">0.19</td>
+<td style="text-align: center;">0.853</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">polydrug [multiple drugs used]</td>
+<td style="text-align: center;">0.75</td>
+<td style="text-align: center;">0.86</td>
+<td style="text-align: center;">(0.08, 7.12)</td>
+<td style="text-align: center;">-0.25</td>
+<td style="text-align: center;">0.799</td>
+</tr>
+</tbody>
+</table>
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<caption># Dispersion</caption>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">Coefficient</th>
+<th style="text-align: center;">95% CI</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">0.44</td>
+<td style="text-align: center;">(0.11, 1.71)</td>
+</tr></tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section></section></section><section id="more-on-count-regression" class="level2" data-number="4.8"><h2 data-number="4.8" class="anchored" data-anchor-id="more-on-count-regression">
+<span class="header-section-number">4.8</span> More on count regression</h2>
+<ul>
+<li><a href="https://bookdown.org/roback/bookdown-BeyondMLR/ch-poissonreg.html" class="uri">https://bookdown.org/roback/bookdown-BeyondMLR/ch-poissonreg.html</a></li>
+</ul>
+
+
+<!-- -->
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-dobson4e" class="csl-entry" role="listitem">
+Dobson, Annette J, and Adrian G Barnett. 2018. <em>An Introduction to Generalized Linear Models</em>. 4th ed. CRC press. <a href="https://doi.org/10.1201/9781315182780">https://doi.org/10.1201/9781315182780</a>.
+</div>
+<div id="ref-vittinghoff2e" class="csl-entry" role="listitem">
+Vittinghoff, Eric, David V Glidden, Stephen C Shiboski, and Charles E McCulloch. 2012. <em>Regression Methods in Biostatistics: Linear, Logistic, Survival, and Repeated Measures Models</em>. 2nd ed. Springer. <a href="https://doi.org/10.1007/978-1-4614-1353-0">https://doi.org/10.1007/978-1-4614-1353-0</a>.
+</div>
+<div id="ref-pscl08" class="csl-entry" role="listitem">
+Zeileis, Achim, Christian Kleiber, and Simon Jackman. 2008. <span>“Regression Models for Count Data in <span>R</span>.”</span> <em>Journal of Statistical Software</em> 27 (8). <a href="https://www.jstatsoft.org/v27/i08/">https://www.jstatsoft.org/v27/i08/</a>.
+</div>
+</div>
+</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./logistic-regression.html" class="pagination-link" aria-label="Models for Binary Outcomes">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Models for Binary Outcomes</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./intro-multilevel-models.html" class="pagination-link" aria-label="Introduction to multi-level models for correlated data">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Introduction to multi-level models for correlated data</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb13" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Poisson regression and variations"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu"># Models for Count Outcomes</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Acknowledgements {.unnumbered}</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>This content is adapted from:</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>@dobson4e, Chapter 9</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>@vittinghoff2e, Chapter 8</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>{{&lt; include shared-config.qmd &gt;}}</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introduction</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>This chapter presents models for </span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">count data</span><span class="co">](probability.qmd#sec-count-vars)</span> outcomes.</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>With covariates,</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>the event rate $\lambda$ </span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>becomes a function of the covariates</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>$\vX = (X_1, \dots,X_n)$.</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>Typically, count data models use</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>a $\log{}$ link function,</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>and thus an $\exp{}$ inverse-link function. </span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>That is:</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>\Expp<span class="co">[</span><span class="ot">Y | \vX = \vx, T = t</span><span class="co">]</span> &amp;= \mu(\vx,t)</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> \mu(\vx,t) &amp;= \lambda(\vx)\cdot t</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> \lambda(\vx) &amp;= \exp{\eta(\vx)}</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> \eta(\vx) &amp;= \vx'\tilde \beta = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>Therefore,</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>\logf{\Expp<span class="co">[</span><span class="ot">Y | \vX = \vx,T=t</span><span class="co">]</span>}</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>&amp;= \logf{\mu(\vx)}<span class="sc">\\</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>&amp;=\logf{\lambda(\vx) \cdot t}<span class="sc">\\</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>&amp;=\logf{\lambda(\vx)} + \log{t}<span class="sc">\\</span></span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>&amp;=\logf{\exp{\eta(\vx)}} + \log{t}<span class="sc">\\</span></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>&amp;=\eta(\vx) + \log{t}<span class="sc">\\</span></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>&amp;=\vx'\tilde\beta + \log{t}<span class="sc">\\</span></span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>&amp;=(\beta_0 +\beta_1 x_1+\dots + \beta_p x_p) + \log{t}<span class="sc">\\</span></span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>In contrast with the other covariates (represented by $\vX$), $T$ enters this expression with a $\log{}$ transformation and without a corresponding $\beta$ coefficient. </span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>:::{.callout-note}</span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>Terms that enter the linear component of a model without a coefficient, such as $\log{t}$ here, are called **offsets**.</span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a><span class="fu">### Rate ratios {.smaller}</span></span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a>Differences on the log-rate scale become ratios on the rate scale, </span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a>because</span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a>$$\exp{a-b} = \frac{\exp{a}}{\exp{b}}$$</span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a>(recall from <span class="co">[</span><span class="ot">Algebra 2</span><span class="co">](math-prereqs.qmd#cor-exp-sum)</span>)</span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a>Therefore, according to this model, </span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a>**differences of $\delta$ in covariate $x_j$ correspond to rate ratios of $\exp{\beta_j \cdot \delta}$**.</span>
+<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a>That is, letting $\vX_{-j}$ denote vector $\vX$ with element $j$ removed: </span>
+<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a>&amp;{</span>
+<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a>\left<span class="sc">\{</span></span>
+<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a>    \log{\Expp<span class="co">[</span><span class="ot">Y |{\color{red}{X_j = a}}, \vX_{-j}=\vx_{-j},T=t</span><span class="co">]</span>}</span>
+<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a>    \atop </span>
+<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a>    {-\log{\Expp<span class="co">[</span><span class="ot">Y |{\color{red}{X_j = b}}, \vX_{-j}=\vx_{-j},T=t</span><span class="co">]</span>}}</span>
+<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a>    \right<span class="sc">\}</span></span>
+<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a>}<span class="sc">\\</span></span>
+<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a>&amp;= </span>
+<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>{\left<span class="sc">\{</span></span>
+<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a>\log{t} + \beta_0 + \beta_1 x_1 + ... + {\color{red}{\beta_j (a)}} + ...+\beta_p x_p </span>
+<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a>\atop </span>
+<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a>{-\log{t} + \beta_0 + \beta_1 x_1 + ... + {\color{red}{\beta_j (b)}} + ...+\beta_p x_p}</span>
+<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a>\right<span class="sc">\}</span>}<span class="sc">\\</span></span>
+<span id="cb13-95"><a href="#cb13-95" aria-hidden="true" tabindex="-1"></a>&amp;= \color{red}{\beta_j(a-b)}</span>
+<span id="cb13-96"><a href="#cb13-96" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb13-97"><a href="#cb13-97" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-98"><a href="#cb13-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-99"><a href="#cb13-99" aria-hidden="true" tabindex="-1"></a>And accordingly,</span>
+<span id="cb13-100"><a href="#cb13-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-101"><a href="#cb13-101" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-102"><a href="#cb13-102" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb13-103"><a href="#cb13-103" aria-hidden="true" tabindex="-1"></a>\frac</span>
+<span id="cb13-104"><a href="#cb13-104" aria-hidden="true" tabindex="-1"></a>{\mathbb{E}<span class="co">[</span><span class="ot">Y |{\color{red}{X_j = a}}, \vX_{-j} = \vx_{-j}, T = t</span><span class="co">]</span></span>
+<span id="cb13-105"><a href="#cb13-105" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-106"><a href="#cb13-106" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb13-107"><a href="#cb13-107" aria-hidden="true" tabindex="-1"></a>\Expp<span class="co">[</span><span class="ot">Y |{\color{red}{X_j = b}}, \vX_{-j}=\vx_{-j},T=t</span><span class="co">]</span></span>
+<span id="cb13-108"><a href="#cb13-108" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-109"><a href="#cb13-109" aria-hidden="true" tabindex="-1"></a>= </span>
+<span id="cb13-110"><a href="#cb13-110" aria-hidden="true" tabindex="-1"></a>\exp{{\color{red}{\beta_j(a-b)}}}</span>
+<span id="cb13-111"><a href="#cb13-111" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb13-112"><a href="#cb13-112" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-113"><a href="#cb13-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-114"><a href="#cb13-114" aria-hidden="true" tabindex="-1"></a><span class="fu">## Inference for count regression models</span></span>
+<span id="cb13-115"><a href="#cb13-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-116"><a href="#cb13-116" aria-hidden="true" tabindex="-1"></a><span class="fu">### Confidence intervals for regression coefficients and rate ratios</span></span>
+<span id="cb13-117"><a href="#cb13-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-118"><a href="#cb13-118" aria-hidden="true" tabindex="-1"></a>As usual:</span>
+<span id="cb13-119"><a href="#cb13-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-120"><a href="#cb13-120" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-121"><a href="#cb13-121" aria-hidden="true" tabindex="-1"></a>\beta \in \left<span class="co">[</span><span class="ot">\ci \right</span><span class="co">]</span></span>
+<span id="cb13-122"><a href="#cb13-122" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-123"><a href="#cb13-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-124"><a href="#cb13-124" aria-hidden="true" tabindex="-1"></a>Rate ratios: exponentiate CI endpoints</span>
+<span id="cb13-125"><a href="#cb13-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-126"><a href="#cb13-126" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-127"><a href="#cb13-127" aria-hidden="true" tabindex="-1"></a>\exp{\beta} \in \left<span class="co">[</span><span class="ot">\exp{\ci} \right</span><span class="co">]</span></span>
+<span id="cb13-128"><a href="#cb13-128" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-129"><a href="#cb13-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-130"><a href="#cb13-130" aria-hidden="true" tabindex="-1"></a><span class="fu">### Hypothesis tests for regression coefficients</span></span>
+<span id="cb13-131"><a href="#cb13-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-132"><a href="#cb13-132" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-133"><a href="#cb13-133" aria-hidden="true" tabindex="-1"></a>t = \frac{\hat \beta - \beta_0}{\hse{\hb}}</span>
+<span id="cb13-134"><a href="#cb13-134" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-135"><a href="#cb13-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-136"><a href="#cb13-136" aria-hidden="true" tabindex="-1"></a>Compare $t$ or $|t|$ to the tails of the standard Gaussian distribution, according to the null hypothesis.</span>
+<span id="cb13-137"><a href="#cb13-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-138"><a href="#cb13-138" aria-hidden="true" tabindex="-1"></a><span class="fu">### Comparing nested models</span></span>
+<span id="cb13-139"><a href="#cb13-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-140"><a href="#cb13-140" aria-hidden="true" tabindex="-1"></a>log(likelihood ratio) tests, as usual.</span>
+<span id="cb13-141"><a href="#cb13-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-142"><a href="#cb13-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## Prediction</span></span>
+<span id="cb13-143"><a href="#cb13-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-144"><a href="#cb13-144" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-145"><a href="#cb13-145" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb13-146"><a href="#cb13-146" aria-hidden="true" tabindex="-1"></a>\hat y </span>
+<span id="cb13-147"><a href="#cb13-147" aria-hidden="true" tabindex="-1"></a>&amp;\eqdef \hat{\Expp}<span class="co">[</span><span class="ot">Y|\vX= \vx,T=t</span><span class="co">]</span><span class="sc">\\</span></span>
+<span id="cb13-148"><a href="#cb13-148" aria-hidden="true" tabindex="-1"></a>&amp;=\hat\mu(\vx, t)<span class="sc">\\</span></span>
+<span id="cb13-149"><a href="#cb13-149" aria-hidden="true" tabindex="-1"></a>&amp;=\hat\lambda(\vx) \cdot t<span class="sc">\\</span></span>
+<span id="cb13-150"><a href="#cb13-150" aria-hidden="true" tabindex="-1"></a>&amp;=\exp{\hat\eta(\vx)} \cdot t<span class="sc">\\</span></span>
+<span id="cb13-151"><a href="#cb13-151" aria-hidden="true" tabindex="-1"></a>&amp;=\exp{\vx'\hat{\boldsymbol{\beta}}} \cdot t</span>
+<span id="cb13-152"><a href="#cb13-152" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb13-153"><a href="#cb13-153" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-154"><a href="#cb13-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-155"><a href="#cb13-155" aria-hidden="true" tabindex="-1"></a><span class="fu">## Diagnostics</span></span>
+<span id="cb13-156"><a href="#cb13-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-157"><a href="#cb13-157" aria-hidden="true" tabindex="-1"></a><span class="fu">### Residuals</span></span>
+<span id="cb13-158"><a href="#cb13-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-159"><a href="#cb13-159" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Observation residuals</span></span>
+<span id="cb13-160"><a href="#cb13-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-161"><a href="#cb13-161" aria-hidden="true" tabindex="-1"></a>$$e \eqdef y - \hat y$$</span>
+<span id="cb13-162"><a href="#cb13-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-163"><a href="#cb13-163" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Pearson residuals</span></span>
+<span id="cb13-164"><a href="#cb13-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-165"><a href="#cb13-165" aria-hidden="true" tabindex="-1"></a>$$r = \frac{e}{\hse{e}} \approx \frac{e}{\sqrt{\hat y}}$$</span>
+<span id="cb13-166"><a href="#cb13-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-167"><a href="#cb13-167" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Standardized Pearson residuals</span></span>
+<span id="cb13-168"><a href="#cb13-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-169"><a href="#cb13-169" aria-hidden="true" tabindex="-1"></a>$$r_p = \frac{r}{\sqrt{1-h}}$$</span>
+<span id="cb13-170"><a href="#cb13-170" aria-hidden="true" tabindex="-1"></a>where $h$ is the "leverage" (which we will continue to leave undefined).</span>
+<span id="cb13-171"><a href="#cb13-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-172"><a href="#cb13-172" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Deviance residuals</span></span>
+<span id="cb13-173"><a href="#cb13-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-174"><a href="#cb13-174" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-175"><a href="#cb13-175" aria-hidden="true" tabindex="-1"></a>d_k = \text{sign}(y - \hat y)\left<span class="sc">\{</span>\sqrt{2<span class="co">[</span><span class="ot">\ell_{\text{full}}(y) - \ell(\hat\beta; y)</span><span class="co">]</span>}\right<span class="sc">\}</span></span>
+<span id="cb13-176"><a href="#cb13-176" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-177"><a href="#cb13-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-178"><a href="#cb13-178" aria-hidden="true" tabindex="-1"></a>:::{.callout-note}</span>
+<span id="cb13-179"><a href="#cb13-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-180"><a href="#cb13-180" aria-hidden="true" tabindex="-1"></a>$$\text{sign}(x) \eqdef \frac{x}{|x|}$$</span>
+<span id="cb13-181"><a href="#cb13-181" aria-hidden="true" tabindex="-1"></a>In other words:</span>
+<span id="cb13-182"><a href="#cb13-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-183"><a href="#cb13-183" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>$\text{sign}(x) = -1$ if $x &lt; 0$</span>
+<span id="cb13-184"><a href="#cb13-184" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>$\text{sign}(x) = 0$ if $x = 0$</span>
+<span id="cb13-185"><a href="#cb13-185" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>$\text{sign}(x) = 1$ if $x &gt; 0$</span>
+<span id="cb13-186"><a href="#cb13-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-187"><a href="#cb13-187" aria-hidden="true" tabindex="-1"></a>::::{.content-hidden}</span>
+<span id="cb13-188"><a href="#cb13-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-191"><a href="#cb13-191" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-192"><a href="#cb13-192" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(sign,<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>), <span class="at">xlab =</span> <span class="st">"x"</span>, <span class="at">ylab =</span> <span class="st">"sign(x)"</span>)</span>
+<span id="cb13-193"><a href="#cb13-193" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb13-194"><a href="#cb13-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-195"><a href="#cb13-195" aria-hidden="true" tabindex="-1"></a>::::</span>
+<span id="cb13-196"><a href="#cb13-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-197"><a href="#cb13-197" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb13-198"><a href="#cb13-198" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-199"><a href="#cb13-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-200"><a href="#cb13-200" aria-hidden="true" tabindex="-1"></a><span class="fu">## Zero-inflation</span></span>
+<span id="cb13-201"><a href="#cb13-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-202"><a href="#cb13-202" aria-hidden="true" tabindex="-1"></a><span class="fu">### Models for zero-inflated counts</span></span>
+<span id="cb13-203"><a href="#cb13-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-204"><a href="#cb13-204" aria-hidden="true" tabindex="-1"></a>We assume a latent (unobserved) binary variable, $Z$, which we model using logistic regression:</span>
+<span id="cb13-205"><a href="#cb13-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-206"><a href="#cb13-206" aria-hidden="true" tabindex="-1"></a>$$P(Z=1|X=x) = \pi(x) = \expit(\gamma_0 + \gamma_1 x_1 +...)$$</span>
+<span id="cb13-207"><a href="#cb13-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-208"><a href="#cb13-208" aria-hidden="true" tabindex="-1"></a>According to this model, if $Z=1$, then $Y$ will always be zero, regardless of $X$ and $T$:</span>
+<span id="cb13-209"><a href="#cb13-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-210"><a href="#cb13-210" aria-hidden="true" tabindex="-1"></a>$$P(Y=0|Z=1,X=x,T=t) = 1$$</span>
+<span id="cb13-211"><a href="#cb13-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-212"><a href="#cb13-212" aria-hidden="true" tabindex="-1"></a>Otherwise (if $Z=0$), $Y$ will have a Poisson distribution, conditional on $X$ and $T$, as above.</span>
+<span id="cb13-213"><a href="#cb13-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-214"><a href="#cb13-214" aria-hidden="true" tabindex="-1"></a>Even though we never observe $Z$, we can estimate the parameters $\gamma_0$-$\gamma_p$, via maximum likelihood:</span>
+<span id="cb13-215"><a href="#cb13-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-216"><a href="#cb13-216" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-217"><a href="#cb13-217" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb13-218"><a href="#cb13-218" aria-hidden="true" tabindex="-1"></a>P(Y=y|X=x,T=t) &amp;= P(Y=y,Z=1|...) + P(Y=y,Z=0|...)</span>
+<span id="cb13-219"><a href="#cb13-219" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb13-220"><a href="#cb13-220" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-221"><a href="#cb13-221" aria-hidden="true" tabindex="-1"></a>(by the Law of Total Probability)</span>
+<span id="cb13-222"><a href="#cb13-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-223"><a href="#cb13-223" aria-hidden="true" tabindex="-1"></a>where </span>
+<span id="cb13-224"><a href="#cb13-224" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-225"><a href="#cb13-225" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb13-226"><a href="#cb13-226" aria-hidden="true" tabindex="-1"></a>P(Y=y,Z=z|...) </span>
+<span id="cb13-227"><a href="#cb13-227" aria-hidden="true" tabindex="-1"></a>&amp;= P(Y=y|Z=z,...)P(Z=z|...)</span>
+<span id="cb13-228"><a href="#cb13-228" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb13-229"><a href="#cb13-229" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb13-230"><a href="#cb13-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-231"><a href="#cb13-231" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-232"><a href="#cb13-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-233"><a href="#cb13-233" aria-hidden="true" tabindex="-1"></a>::: {#exr-zinf-pmf}</span>
+<span id="cb13-234"><a href="#cb13-234" aria-hidden="true" tabindex="-1"></a>Expand $P(Y=0|X=x,T=t)$, $P(Y=1|X=x,T=t)$ and $P(Y=y|X=x,T=t)$ into expressions involving $P(Z=1|X=x,T=t)$ and $P(Y=y|Z=0,X=x,T=t)$.</span>
+<span id="cb13-235"><a href="#cb13-235" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb13-236"><a href="#cb13-236" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-237"><a href="#cb13-237" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-238"><a href="#cb13-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-239"><a href="#cb13-239" aria-hidden="true" tabindex="-1"></a>::: {#exr-zinf-moments}</span>
+<span id="cb13-240"><a href="#cb13-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-241"><a href="#cb13-241" aria-hidden="true" tabindex="-1"></a>Derive the expected value and variance of $Y$, conditional on $X$ and $T$, as functions of $P(Z=1|X=x,T=t)$ and $\Expp<span class="co">[</span><span class="ot">Y|Z=0,X=x,T=t</span><span class="co">]</span>$.</span>
+<span id="cb13-242"><a href="#cb13-242" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb13-243"><a href="#cb13-243" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-244"><a href="#cb13-244" aria-hidden="true" tabindex="-1"></a><span class="fu">## Over-dispersion</span></span>
+<span id="cb13-245"><a href="#cb13-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-246"><a href="#cb13-246" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb13-247"><a href="#cb13-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-248"><a href="#cb13-248" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb13-249"><a href="#cb13-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-250"><a href="#cb13-250" aria-hidden="true" tabindex="-1"></a>The Poisson distribution model **forces** the variance to equal the mean. </span>
+<span id="cb13-251"><a href="#cb13-251" aria-hidden="true" tabindex="-1"></a>In practice, many count distributions will have a variance substantially larger than the mean (or occasionally, smaller).</span>
+<span id="cb13-252"><a href="#cb13-252" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-253"><a href="#cb13-253" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb13-254"><a href="#cb13-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-255"><a href="#cb13-255" aria-hidden="true" tabindex="-1"></a>:::: {#def-overdispersion}</span>
+<span id="cb13-256"><a href="#cb13-256" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Overdispersion</span></span>
+<span id="cb13-257"><a href="#cb13-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-258"><a href="#cb13-258" aria-hidden="true" tabindex="-1"></a>A random variable $X$ is **overdispersed** </span>
+<span id="cb13-259"><a href="#cb13-259" aria-hidden="true" tabindex="-1"></a>relative to a model $\p(X=x)$ if</span>
+<span id="cb13-260"><a href="#cb13-260" aria-hidden="true" tabindex="-1"></a>if its empirical variance in a dataset is larger than </span>
+<span id="cb13-261"><a href="#cb13-261" aria-hidden="true" tabindex="-1"></a>the value is predicted by the fitted model $\hat{\p}(X=x)$.</span>
+<span id="cb13-262"><a href="#cb13-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-263"><a href="#cb13-263" aria-hidden="true" tabindex="-1"></a>::::</span>
+<span id="cb13-264"><a href="#cb13-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-265"><a href="#cb13-265" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb13-266"><a href="#cb13-266" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-267"><a href="#cb13-267" aria-hidden="true" tabindex="-1"></a>c.f. </span>
+<span id="cb13-268"><a href="#cb13-268" aria-hidden="true" tabindex="-1"></a>@dobson4e §3.2.1, 7.7, 9.8; </span>
+<span id="cb13-269"><a href="#cb13-269" aria-hidden="true" tabindex="-1"></a>@vittinghoff2e §8.1.5; </span>
+<span id="cb13-270"><a href="#cb13-270" aria-hidden="true" tabindex="-1"></a>and <span class="ot">&lt;https://en.wikipedia.org/wiki/Overdispersion&gt;</span>.</span>
+<span id="cb13-271"><a href="#cb13-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-272"><a href="#cb13-272" aria-hidden="true" tabindex="-1"></a>When we encounter overdispersion, </span>
+<span id="cb13-273"><a href="#cb13-273" aria-hidden="true" tabindex="-1"></a>we can try to reduce the residual variance </span>
+<span id="cb13-274"><a href="#cb13-274" aria-hidden="true" tabindex="-1"></a>by adding more covariates. </span>
+<span id="cb13-275"><a href="#cb13-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-276"><a href="#cb13-276" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb13-277"><a href="#cb13-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-278"><a href="#cb13-278" aria-hidden="true" tabindex="-1"></a><span class="fu">### Negative binomial models</span></span>
+<span id="cb13-279"><a href="#cb13-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-280"><a href="#cb13-280" aria-hidden="true" tabindex="-1"></a>There are alternatives to the Poisson model.</span>
+<span id="cb13-281"><a href="#cb13-281" aria-hidden="true" tabindex="-1"></a>Most notably, </span>
+<span id="cb13-282"><a href="#cb13-282" aria-hidden="true" tabindex="-1"></a>the <span class="co">[</span><span class="ot">negative binomial model</span><span class="co">](probability.qmd#sec-nb-dist)</span>.</span>
+<span id="cb13-283"><a href="#cb13-283" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-284"><a href="#cb13-284" aria-hidden="true" tabindex="-1"></a>We can still model $\mu$ as a function of $X$ and $T$ as before, </span>
+<span id="cb13-285"><a href="#cb13-285" aria-hidden="true" tabindex="-1"></a>and we can combine this model with zero-inflation </span>
+<span id="cb13-286"><a href="#cb13-286" aria-hidden="true" tabindex="-1"></a>(as the conditional distribution for the non-zero component).</span>
+<span id="cb13-287"><a href="#cb13-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-288"><a href="#cb13-288" aria-hidden="true" tabindex="-1"></a><span class="fu">### Quasipoisson</span></span>
+<span id="cb13-289"><a href="#cb13-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-290"><a href="#cb13-290" aria-hidden="true" tabindex="-1"></a>An alternative to Negative binomial is the "quasipoisson" distribution. I've never used it, but it seems to be a method-of-moments type approach rather than maximum likelihood. It models the variance as $\Var{Y} = \mu\theta$, and estimates $\theta$ accordingly.</span>
+<span id="cb13-291"><a href="#cb13-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-292"><a href="#cb13-292" aria-hidden="true" tabindex="-1"></a>See <span class="in">`?quasipoisson`</span> in R for more.</span>
+<span id="cb13-293"><a href="#cb13-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-294"><a href="#cb13-294" aria-hidden="true" tabindex="-1"></a><span class="fu">## Example: needle-sharing</span></span>
+<span id="cb13-295"><a href="#cb13-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-296"><a href="#cb13-296" aria-hidden="true" tabindex="-1"></a>(adapted from @vittinghoff2e, §8)</span>
+<span id="cb13-297"><a href="#cb13-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-298"><a href="#cb13-298" aria-hidden="true" tabindex="-1"></a>{{&lt; include exr-needle-sharing.qmd &gt;}}</span>
+<span id="cb13-299"><a href="#cb13-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-300"><a href="#cb13-300" aria-hidden="true" tabindex="-1"></a><span class="fu">## More on count regression</span></span>
+<span id="cb13-301"><a href="#cb13-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-302"><a href="#cb13-302" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="ot">&lt;https://bookdown.org/roback/bookdown-BeyondMLR/ch-poissonreg.html&gt;</span></span>
+</code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer"><div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+<li class="nav-item">
+ Copyright 2024, Douglas Ezra Morrison
+  </li>  
+</ul>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/d-morrison/rme/edit/main/count-regression.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/d-morrison/rme/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+</body></html>
