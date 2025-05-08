@@ -1699,10 +1699,12 @@ $$
 $$
 \ba
 \deriv{\beta}\cb{1+\exp{\vx_i'\beta}}
-   &= \exp{\vx_i'\beta} \deriv{\beta}\vx_i'\beta
-\\ &= \vx_i \exp{\vx_i'\beta} 
+&= \deriv{\beta}\exp{\vx_i'\beta}
+\\ &= \exp{\vx_i'\beta} \deriv{\beta}\vx_i'\beta
+\\ &= \vx_i \exp{\vx_i'\beta}
+\\ &= \vx_i \omega_i
 \ea
-$$
+$${#eq-deriv-expit}
 
 So:
 
@@ -1712,6 +1714,7 @@ $$
    &= \frac{1}{1+\exp{\vx_i'\beta}} \exp{\vx_i'\beta} \vx_i
 \\ &= \frac{\exp{\vx_i'\beta}}{1+\exp{\vx_i'\beta}}  \vx_i
 \\ &= \vx_i \expitf{\vx_i'\beta}
+\\ &= \vx_i \pi_i
 \ea
 $$
 
@@ -1722,9 +1725,9 @@ So:
 $$
 \ba
 \llik_i'(\vb) 
-&= \vx_i y_i - \vx_i \expitf{\vx_i'\beta} 
-\\ &= \vx_i (y_i - \expitf{\vx_i'\beta})
+&= \vx_i y_i - \vx_i \pi_i 
 \\ &= \vx_i (y_i - \pi_i)
+\\ &= \vx_i (y_i - \mu_i)
 \\ &= \vx_i (y_i - \Expp[Y_i|\vX_i=\vx_i])
 \\ &= \vx_i \ \err(y_i|\vX_i=\vx_i)
 \ea
@@ -1749,6 +1752,45 @@ $$
 \ea
 $${#eq-logit-score}
 
+---
+
+The Hessian is:
+
+$$
+\llik''(\vb) = \sumin \llik_i''(\vb)
+$${#eq-logit-hessian}
+
+$$
+\ba
+\llik''_i(\vb) &= \deriv{\vb\'}\llik_i''
+\\
+&= \deriv{\vb\'}\vx_i\eps_i
+\\
+&= \vx_i \deriv{\vb\'}\eps_i 
+\ea
+$${#eq-logit-hessian-i}
+
+---
+
+$$
+\ba
+\deriv{\vb\'}\eps_i &= \deriv{\vb\'}(y_i - \mu_i)
+\\
+&= -\deriv{\vb\'}\mu_i
+\ea
+$$
+$$
+\ba
+\deriv{\vb\'}\mu_i &= \deriv{\expitf{\vx_i \cdot \vb}}
+\\ &= \vx_i \omega_i
+\ea
+$$
+
+(using @eq-deriv-expit). Therefore:
+
+$$
+\llik''(\vb) = \sumin \vx_i \vx_i' \omega_i
+$${#eq-logistic-hess}
 ---
 
 Setting $\ell'(\vb; \vy) = 0$ gives us:
