@@ -1438,8 +1438,6 @@ print(chd_plot_logit)
 Here, we fit models for CHD by personality type and age:
 
 ```{r}
-#| label: tbl-model-corner-point
-#| tbl-cap: "CHD model (corner-point parametrization)"
 chd_glm_contrasts <-
   wcgs |>
   glm(
@@ -1447,6 +1445,14 @@ chd_glm_contrasts <-
     "formula" = chd69 == "Yes" ~ dibpat * I(age - 50),
     "family" = binomial(link = "logit")
   )
+
+library(equatiomatic)
+equatiomatic::extract_eq(chd_glm_contrasts)
+```
+
+```{r}
+#| label: tbl-model-corner-point
+#| tbl-cap: "CHD model (corner-point parametrization)"
 
 chd_glm_contrasts |>
   parameters() |>
