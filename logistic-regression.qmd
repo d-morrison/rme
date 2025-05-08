@@ -1435,29 +1435,33 @@ print(chd_plot_logit)
 
 ### Logistic regression models for CHD data {.smaller}
 
-Here, we fit stratified models for CHD by personality type.
+Here, we fit models for CHD by personality type and age:
 
 ```{r}
-#| tbl-cap: "CHD model, stratified parametrization"
-#| label: tbl-chd-strat
-chd_glm_strat <- glm(
-  "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1,
-  "data" = wcgs,
-  "family" = binomial(link = "logit")
-)
+#| label: tbl-model-corner-point
+#| tbl-cap: "CHD model (corner-point parametrization)"
+chd_glm_contrasts <-
+  wcgs |>
+  glm(
+    "data" = _,
+    "formula" = chd69 == "Yes" ~ dibpat * I(age - 50),
+    "family" = binomial(link = "logit")
+  )
 
-chd_glm_strat |>
+chd_glm_contrasts |>
   parameters() |>
   print_md()
 ```
+
+---
 
 We can get the corresponding odds ratios ($e^{\beta}$s) by passing
 `exponentiate = TRUE` to `parameters()`:
 
 ```{r}
 #| tbl-cap: "Odds ratio estimates for CHD model"
-#| label: tbl-chd-glm-strat-OR
-chd_glm_strat |>
+#| label: tbl-chd-glm-contrasts-OR
+chd_glm_contrasts |>
   parameters(exponentiate = TRUE) |>
   print_md()
 ```
@@ -1473,14 +1477,14 @@ log-odds).
 
 ```{r}
 curve_type_A <- function(x) { # nolint: object_name_linter
-  chd_glm_strat |> predict(
+  chd_glm_contrasts |> predict(
     type = "response",
     newdata = tibble(age = x, dibpat = "Type A")
   )
 }
 
 curve_type_B <- function(x) { # nolint: object_name_linter
-  chd_glm_strat |> predict(
+  chd_glm_contrasts |> predict(
     type = "response",
     newdata = tibble(age = x, dibpat = "Type B")
   )
@@ -1543,42 +1547,39 @@ chd_plot_logit_2 <-
 print(chd_plot_logit_2)
 ```
 
-### reference-group and contrast parametrization
+### stratified parametrization
 
-We can also use the corner-point parametrization (with reference groups
-and contrasts):
+We can also use the stratified parametrization:
 
-```{r}
-#| label: tbl-model-corner-point
-#| tbl-cap: "CHD model (corner-point parametrization)"
-chd_glm_contrasts <-
-  wcgs |>
-  glm(
-    "data" = _,
-    "formula" = chd69 == "Yes" ~ dibpat * I(age - 50),
-    "family" = binomial(link = "logit")
-  )
-
-chd_glm_contrasts |>
-  parameters() |>
-  print_md()
-```
-
-::: notes
-Compare with @tbl-chd-glm-strat-OR.
-:::
-
-::: {.content-visible when-format="revealjs"}
 
 ```{r}
-#| tbl-cap: "Odds ratio estimates for CHD model"
-#| label: tbl-chd-glm-strat-OR-v2
+#| tbl-cap: "CHD model, stratified parametrization"
+#| label: tbl-chd-strat
+chd_glm_strat <- glm(
+  "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1,
+  "data" = wcgs,
+  "family" = binomial(link = "logit")
+)
+
 chd_glm_strat |>
   parameters() |>
   print_md()
 ```
 
-:::
+---
+
+Again, we can get the corresponding odds ratios ($e^{\beta}$s) by passing
+`exponentiate = TRUE` to `parameters()`:
+
+```{r}
+#| tbl-cap: "Odds ratio estimates for CHD model"
+#| label: tbl-chd-glm-strat-OR
+chd_glm_strat |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
+```
+
+Compare with @tbl-model-corner-point.
 
 ---
 
@@ -1942,7 +1943,7 @@ For our CHD model, this procedure would be:
 wcgs <-
   wcgs |>
   mutate(
-    pred_probs_glm1 = chd_glm_strat |> fitted(),
+    pred_probs_glm1 = chd_glm_contrasts |> fitted(),
     pred_prob_cats1 = pred_probs_glm1 |>
       cut(
         breaks = seq(0, 1, by = .1),
@@ -1984,7 +1985,7 @@ probabilities:
 wcgs <-
   wcgs |>
   mutate(
-    pred_probs_glm1 = chd_glm_strat |> fitted(),
+    pred_probs_glm1 = chd_glm_contrasts |> fitted(),
     pred_prob_cats1 = pred_probs_glm1 |>
       cut(
         breaks = quantile(pred_probs_glm1, seq(0, 1, by = .1)),
@@ -2074,13 +2075,13 @@ wcgs_grouped <-
     `!chd` = sum(chd69 == "No")
   )
 
-chd_glm_strat_grouped <- glm(
-  "formula" = cbind(chd, `!chd`) ~ dibpat + dibpat:age - 1,
+_grouped <- glm(
+  "formula" = cbind(chd, `!chd`) ~ dibpat*age,
   "data" = wcgs_grouped,
   "family" = binomial(link = "logit")
 )
 
-chd_glm_strat_grouped |>
+chd_glm_contrasts_grouped |>
   parameters() |>
   print_md()
 ```
@@ -2099,9 +2100,9 @@ $\hat\pi(x_k)$:
 wcgs_grouped <-
   wcgs_grouped |>
   mutate(
-    fitted = chd_glm_strat_grouped |> fitted(),
+    fitted = chd_glm_contrasts_grouped |> fitted(),
     fitted_logit = fitted |> logit(),
-    response_resids = chd_glm_strat_grouped |> resid(type = "response")
+    response_resids = chd_glm_contrasts_grouped |> resid(type = "response")
   )
 
 wcgs_response_resid_plot <-
@@ -2186,13 +2187,13 @@ library(ggfortify)
 ::: {.content-visible when-format="pdf"}
 ```{r}
 #| fig-height: 6
-autoplot(chd_glm_strat_grouped, which = 1, ncol = 1) |> print()
+autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
 ```
 :::
 
 ::: {.content-visible when-format="html"}
 ```{r}
-autoplot(chd_glm_strat_grouped, which = 1, ncol = 1) |> print()
+autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
 ```
 :::
 
@@ -2226,18 +2227,9 @@ covariate pattern?
 library(ggfortify)
 ```
 
-::: {.content-visible when-format="html"}
 ```{r}
 autoplot(chd_glm_strat, which = 1, ncol = 1) |> print()
 ```
-:::
-
-::: {.content-visible when-format="pdf"}
-```{r}
-#| fig-height: 6
-autoplot(chd_glm_strat, which = 1, ncol = 1) |> print()
-```
-:::
 
 Meaningless.
 
@@ -2250,9 +2242,9 @@ are, try building them yourself:
 wcgs_grouped <-
   wcgs_grouped |>
   mutate(
-    fitted = chd_glm_strat_grouped |> fitted(),
+    fitted = chd_glm_contrasts_grouped |> fitted(),
     fitted_logit = fitted |> logit(),
-    resids = chd_glm_strat_grouped |> resid(type = "pearson")
+    resids = chd_glm_contrasts_grouped |> resid(type = "pearson")
   )
 
 wcgs_resid_plot1 <-
@@ -2305,7 +2297,7 @@ Under the null hypothesis that the model in question is correct
 (i.e., sufficiently complex), $X^2\ \dot \sim\ \chi^2(N-p)$.
 
 ```{r}
-x_pearson <- chd_glm_strat_grouped |>
+x_pearson <- chd_glm_contrasts_grouped |>
   resid(type = "pearson")
 
 chisq_stat <- sum(x_pearson^2)
@@ -2313,7 +2305,7 @@ chisq_stat <- sum(x_pearson^2)
 pval <- pchisq(
   chisq_stat,
   lower = FALSE,
-  df = length(x_pearson) - length(coef(chd_glm_strat_grouped))
+  df = length(x_pearson) - length(coef(chd_glm_contrasts_grouped))
 )
 ```
 
@@ -2354,7 +2346,7 @@ our `CHD` model:
 #| fig-cap: "Diagnostics for CHD model"
 #| label: fig-chd-model-diagnostics
 
-chd_glm_strat_grouped |>
+chd_glm_contrasts_grouped |>
   autoplot(which = 1:6) |>
   print()
 ```
