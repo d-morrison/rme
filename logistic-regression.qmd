@@ -1867,7 +1867,7 @@ fig1
 
 ```
 
-Likelihood of `beetles` data
+Likelihood of `beetles` data (centered model)
 
 :::
 
@@ -1888,9 +1888,9 @@ llik_beetles0 <- function(beta_0, beta_1) {
     pull(llik) |> 
     sum()
 }
-ests = coef(beetles_glm_grouped)
+
 llik_beetles <- Vectorize(llik_beetles0)
-llik_mat_beetles = outer(beta_0s, beta_1s, llik_beetles)
+llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
 
 fig <- plot_ly(
   type = 'surface',
@@ -2006,6 +2006,61 @@ $$
 &= \sumin \vx_i\eps_i
 \ea
 $${#eq-logit-score}
+
+---
+
+:::{#exr-beetles-score}
+
+Implement and graph the score function for the beetles data
+
+:::
+
+---
+
+:::{#sol-beetles-score}
+
+:::{#fig-beetles-score-centered}
+
+```{r}
+odds_inv <- function(omega) (1 + omega^-1)^-1
+score_beetles0 <- function(beta_0, beta_1) {
+  beetles |> 
+    mutate(
+      eta = beta_0 + beta_1 * dose_c,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      llik = died * log(pi) + survived * log(1-pi),
+      mu = pi * n,
+      score = dose_c * (died - mu)
+    ) |> 
+    pull(score) |> 
+    sum()
+}
+score_beetles <- Vectorize(score_beetles0)
+score_mat_beetles <- outer(beta_0s, beta_1s, score_beetles)
+fig <- plot_ly(
+  type = 'surface',
+  x = ~beta_0s,
+  y = ~beta_1s,
+  z = ~t(score_mat_beetles)) 
+ # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
+fig1 <- fig %>%
+  plotly::layout(
+    scene = list(
+      xaxis = list(nticks = 20),
+      zaxis = list(nticks = 10),
+      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.8)))
+
+fig1
+
+```
+
+score function of `beetles` data (centered model)
+
+:::
+
+:::
 
 ---
 
