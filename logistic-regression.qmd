@@ -1814,7 +1814,12 @@ beetles_glm_grouped_centered <- beetles |>
   glm(formula = cbind(died, survived) ~ dose_c, 
       family = "binomial")
 
-equatiomatic::extract_eq(beetles_glm_grouped_centered)
+beetles_glm_ungrouped_centered <- beetles_long |>
+  mutate(died = outcome) |> 
+  glm(formula = died ~ dose_c, 
+      family = "binomial")
+
+equatiomatic::extract_eq(beetles_glm_ungrouped_centered)
 ```
 
 ---
@@ -2031,7 +2036,8 @@ score_beetles0 <- function(beta_0, beta_1) {
       pi = odds_inv(omega),
       llik = died * log(pi) + survived * log(1-pi),
       mu = pi * n,
-      score = dose_c * (died - mu)
+      epsilon = died - mu,
+      score = dose_c * epsilon
     ) |> 
     pull(score) |> 
     sum()
@@ -2056,7 +2062,7 @@ fig1
 
 ```
 
-score function of `beetles` data (centered model)
+score function of `beetles` data (centered model) for slope term $\beta_1$.
 
 :::
 
