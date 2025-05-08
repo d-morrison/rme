@@ -1781,16 +1781,57 @@ $$
 $$
 $$
 \ba
-\deriv{\vb\'}\mu_i &= \deriv{\expitf{\vx_i \cdot \vb}}
-\\ &= \vx_i \omega_i
+\deriv{\vb\'}\mu_i &= \derivf{\eta_i}{\vb\'} \derivf{\mu_i}{\eta_i}
 \ea
 $$
 
-(using @eq-deriv-expit). Therefore:
+$$\derivf{\eta_i}{\vb\'} = \deriv{\vb\'}{\vx_i \cdot \vb} = \vx_i$$
 
 $$
-\llik''(\vb) = \sumin \vx_i \vx_i' \omega_i
+\ba
+\derivf{\mu_i}{\eta_i} &= \derivf{\omega_i}{\eta_i} \derivf{\mu_i}{\omega_i}
+\ea
+$$
+
+$$
+\ba
+\derivf{\omega_i}{\eta_i} &= \deriv{\eta_i} \expf{\eta_i} 
+\\ &= \expf{\eta_i} 
+\\ &= \omega_i
+\ea
+$$
+
+$$\derivf{\mu_i}{\omega_i} = \frac{1}{(1+\omega_i)^2} = (1-\pi_i)^2$$
+Therefore:
+
+$$
+\ba
+\derivf{\mu_i}{\eta_i} &= (1-\pi_i)^2 \omega_i 
+\\ &= (1-\pi_i)^2 \frac{\pi_i}{1-\pi_i}
+\\ &= \pi_i(1-\pi_i)
+\\ &= \Varf{Y_i|X_i=x_i}
+\ea
+$$
+
+$$
+\ba
+\llik''(\vb) &= -\sumin \vx_i \vx_i' \Varf{Y_i|X_i=x_i}
+\\ &= - \mX\'\matr{D}\mX
+\ea
 $${#eq-logistic-hess}
+
+where $\matr{D} \eqdef \text{diag}(\Varf{Y_i|X_i=x_i})$ 
+is the diagonal matrix whose $i^{th}$ diagonal element is $\Varf{Y_i|X_i=x_i}$.
+
+Compare with linear regression, where:
+
+$$
+\ba
+\llik''(\vb) &= -\sumin \vx_i \vx_i' (\sigma^2)^{-1}
+\\ &= \mX\' \invf{D} \mX
+\ea
+$${#eq-linear-hess}
+
 ---
 
 Setting $\ell'(\vb; \vy) = 0$ gives us:
