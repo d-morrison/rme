@@ -190,7 +190,7 @@ distribution varies with gestational age and sex:
 $$
 \ba
 Y|M,A &\siid N(\mu(M,A), \sigma^2)\\
-\mu(a,m) &= \beta_0 + \beta_M m + \beta_A a
+\mu(m,a) &= \beta_0 + \beta_M m + \beta_A a
 \ea
 $$ {#eq-lm-parallel}
 
@@ -412,6 +412,144 @@ That's why the lines are parallel.
 
 :::
 
+---
+
+#### Coefficient Interpretation
+:::{.notes}
+Recall [Model @eq-lm-parallel]:
+:::
+$$ E[Y|M=m,A=a] = \mu(m,a) = \beta_0 + \beta_M m + \beta_A a $$
+
+Slope (of the mean with respect to age) for males:
+$$
+\begin{aligned}
+\frac{d}{da}\mu(1,a) &= \frac{d}{da}(\beta_0 + \beta_M 1 + \beta_A a)\\
+&= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M 1 + \frac{d}{da}\beta_A a\right)\\
+&= (0 + 0 + \beta_A) \\ 
+&= \beta_A
+\end{aligned}
+$$
+
+Slope for females:
+
+$$
+\begin{aligned}
+\frac{d}{da}\mu(0,a) &= \frac{d}{da}(\beta_0 + \beta_M 0 + \beta_A a)\\
+&= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M 0 + \frac{d}{da}\beta_A a\right)\\
+&= (0 + 0 + \beta_A) \\ 
+&= \beta_A
+\end{aligned}
+$$
+
+---
+
+:::{#exr-interpret-age-slope}
+What is the interpretation of $\beta_A$ in [Model @eq-lm-parallel]?
+:::
+
+---
+
+:::{.solution}
+
+$$
+\begin{aligned}
+\frac{d}{da}\mu(m,a) &= \frac{d}{da}(\beta_0 + \beta_M m + \red{\beta_A} a)\\
+&= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M m + \frac{d}{da}\red{\beta_A} a\right)\\
+&= (0 + 0 + \red{\beta_A}) \\ 
+&= \red{\beta_A}
+\end{aligned}
+$$
+
+Conclusion:
+
+$$\beta_A = \frac{d}{da}\mu(m,a)$$
+:::
+
+
+:::{.notes}
+$\beta_A$ is the slope of mean birthweight with respect to gestational age, adjusting for sex.
+
+Or we can plug in the definition of slope:
+:::
+$$\beta_A = E[Y|M = m, A = a+1] - E[Y|M = m, A = a]$$
+
+
+:::{.notes}
+Exchangeability and consistency have not been assessed; so we are not discussing potential outcomes (causality), only observed outcomes.
+:::
+
+--- 
+
+:::{#exr-beta-m-interpretation}
+What is the interpretation of $\b_M$ in [Model @eq-lm-parallel]?
+:::
+
+---
+
+:::{.solution}
+
+:::{.notes}
+More precisely written:
+$$ 
+\E{Y|M=m,A=a} = \mu(m,a) = \bigg\{
+\begin{matrix} 
+\beta_0 + \beta_M m +\beta_A a, & \text{for } m\in \set{0,1} \\ 
+\text{undefined}, & \text{for } m \notin \set{0,1}
+\end{matrix}
+$$
+The model is undefined for $m \notin \set{0,1}$, so the derivative with respect to $m$ doesn't exist.
+:::
+
+$$
+\begin{aligned}
+E[Y|M = 1,A = a] &= \beta_0 + \red{\beta_M} 1 + \beta_A a \\
+& = \beta_0 + \red{\beta_M} + \beta_A a \\
+E[Y|M = 0,A = a] &= \beta_0 + \red{\beta_M} 0 + \beta_A a \\
+& = \beta_0 + \beta_A a
+\end{aligned}
+$$
+So: 
+$$
+\begin{aligned}
+E[Y|M = 1,A = a] - E[Y|M = 0,A = a] &= (\beta_0 + \red{\beta_M} + \beta_A a) - (\beta_0 + \beta_A a) \\
+&= \red{\beta_M}
+\end{aligned}
+$$
+Therefore:
+$$ 
+\ba
+\beta_M &= E[Y|M = 1,A = a] - E[Y|M = 0,A = a]\\
+& =\mu(1,a) - \mu(0,a)\\
+\ea
+$$
+
+In words: $\beta_M$ is the difference in mean birthweight between males and females adjusting for age.
+:::
+
+---
+
+:::{#exr-interpret-intercept}
+$\beta_0 = ?$
+:::
+
+---
+
+:::{.solution}
+$$
+\begin{aligned}
+\E{Y|M = 0,A = 0} &= \mu(0,0)\\
+&= \red{\beta_0} + \beta_M 0 + \beta_A 0\\
+&= \red{\beta_0}\\ 
+\red{\beta_0} &= \E{Y|M = 0,A = 0} = \mu(0,0)
+\end{aligned}
+$$
+
+::: notes
+$\beta_0$ is the mean birthweight for a female with gestational age 0 weeks.
+:::
+
+:::
+
 ### Interactions {.smaller}
 
 :::{.notes}
@@ -421,7 +559,7 @@ Then we need to allow an "interaction" between  age $A$ and sex $S$:
 :::
 
 $$
-E[Y|A=a, S=s] = \beta_0 + \beta_A a+ \beta_M m + \beta_{AM} (a \cdot m)
+E[Y|S=s,A=a] = \beta_0 + \beta_A a+ \beta_M m + \beta_{AM} (a \cdot m)
 $$ {#eq-BW-lm-interact}
 
 ::: notes
@@ -478,7 +616,7 @@ Now we can see that the lines aren't parallel.
 Here's another way we could rewrite this model (by collecting terms involving $S$):
 
 $$
-E[Y|A, M] = \beta_0 + \beta_M M+ (\beta_A + \beta_{AM} M) A
+E[Y|M,A] = \beta_0 + \beta_M M+ (\beta_A + \beta_{AM} M) A
 $$
 
 ::: notes
@@ -543,7 +681,7 @@ pred_female <- coef(bw_lm2)["(Intercept)"] + coef(bw_lm2)["age"] * 36
 ```
 
 $$
-E[Y|A = 0, X_2 = 36] = 
+E[Y|M = 0, X_2 = 36] = 
 \beta_0 + \beta_M \cdot 0+ \beta_A \cdot 36 + \beta_{AM} \cdot (0 * 36) 
 =  `r pred_female`
 $$ 
@@ -594,7 +732,7 @@ pred_male <-
 
 $$
 \ba
-E[Y|A = 0, X_2 = 36]
+E[Y|M = 1, X_2 = 36]
 &= \beta_0 + \beta_M \cdot 1+ \beta_A \cdot 36 + \beta_{AM} \cdot 1 \cdot 36\\
 &= `r pred_male`
 \ea
@@ -627,6 +765,133 @@ $$
 Note that age now does show up in the difference: in other words, according to this model, the difference in mean birthweights between females and males with the same gestational age can vary by gestational age.
 
 That's how the lines in the graph ended up non-parallel.
+
+:::
+
+---
+
+#### Coefficient Interpretation
+::: {#exr-male-coef-intxn-model}
+What is the interpretation of $\beta_{M}$ in [Model @eq-BW-lm-interact]?
+:::
+
+---
+
+::: {.solution}
+\ 
+
+Mean birthweight among males with gestational age 0 weeks:
+$$
+\ba
+\mu(1,0) &= \E{Y|M = 1,A = 0}\\
+&= \b_0 + \red{\b_M} \cdot 1 + \b_A \cdot 0 + \b_{AM}\cdot 1 \cdot 0\\
+&= \b_0 + \red{\b_M}
+\ea
+$$
+Mean birthweight among females with gestational age 0 weeks:
+$$
+\ba
+\mu(0,0) &= \E{Y|M = 0,A = 0}\\
+&= \b_0 + \red{\b_M} \cdot 0 + \b_A \cdot 0 + \b_{AM}\cdot 0 \cdot 0\\
+&= \b_0
+\ea
+$$
+
+$$
+\ba 
+\beta_{M} &= \mu(1,0) - \mu(0,0) \\
+&= \E{Y|M = 1,A = 0} - \E{Y|M = 0,A = 0}
+\ea
+$$ 
+$\b_M$ is the difference in mean birthweight between males with gestational age 0 weeks and females with gestational age 0 weeks.
+:::
+
+---
+
+::: {#exr-interaction-coef}
+What is the interpretation of $\beta_{AM}$ in [Model @eq-BW-lm-interact]?
+:::
+
+---
+
+::: {.solution}
+\ 
+
+Slope among males:
+$$
+\begin{aligned}
+\deriv{a}\mu(1,a) &= \deriv{a}\left(\beta_0 + \beta_M\cdot1 + \beta_A\cdot a + \red{\beta_{AM}}\cdot 1 \cdot a\right)\\
+&= \deriv{a}\left(\beta_0 + \beta_M + \beta_A\cdot a + \red{\beta_{AM}} \cdot a\right)\\
+&= \beta_A + \red{\beta_{AM}}
+\end{aligned}
+$$
+or
+$$
+\begin{aligned}
+ E[Y|1,a+1] - E[Y|1,a] = &\beta_0 + \beta_M 1 + \beta_A(a+1) + \red{\beta_{AM}}1(a+1)\\ 
+  &- (\beta_0 + \beta_M 1 + \beta_A(a) + \red{\beta_{AM}}1(a))\\
+ = &\beta_A + \red{\beta_{AM}}
+ \end{aligned}
+$$
+
+Slope among females:
+$$
+\begin{aligned}
+\deriv{a}\mu(0,a) &= \deriv{a}\left(\beta_0 + \beta_M\cdot0 + \beta_A\cdot a + \red{\beta_{AM}}\cdot 0 \cdot a\right)\\
+&= \deriv{a}\left(\beta_0 + \beta_A\cdot a\right)\\
+&= \beta_A \\
+\end{aligned}
+$$
+or
+$$
+\begin{aligned}
+ E[Y|0,a+1] - E[Y|0,a] = &\beta_0 + \beta_M0 + \beta_A(a+1) + \red{\beta_{AM}}0(a+1) \\
+ &- (\beta_0 + \beta_M 0 + \beta_A(a) + \red{\beta_{AM}}0(a))\\
+ = &\beta_0 + \beta_A(a+1) - (\beta_0 + \beta_A(a))\\
+ = &\beta_A 
+\end{aligned}
+$$
+
+Difference in slopes:
+$$
+\begin{aligned}
+ \deriv{a}\mu(1,a) - \deriv{a}\mu(0,a) &= \beta_A + \red{\beta_{AM}} - \beta_A\\
+ &= \red{\beta_{AM}}
+\end{aligned}
+$$
+or
+$$
+\begin{aligned}
+ (E[Y|1,a+1] - E[Y|1,a]) - (E[Y|0,a+1] - E[Y|0,a]) &= \beta_A + \red{\beta_{AM}} - \beta_A\\
+ &= \red{\beta_{AM}}
+\end{aligned}
+$$
+
+Therefore
+$$
+\ba
+\b_{AM} = &\deriv{a}\mu(1,a) - \deriv{a}\mu(0,a)\\
+= &(E[Y|M = 1,A = a+1] - E[Y|M = 1,A = a])\\
+&- (E[Y|M = 0,A = a+1] - E[Y|M = 0,A = a])
+\ea
+$$
+
+$\beta_{AM}$ is the difference in slope of mean birthweight with respect to gestational age between males and females.
+:::
+
+--- 
+
+#### Compare coefficient interpretations
+
+:::{#tbl-compare-coef-interps}
+  $\mu(s,a)$    | $\beta_0 + \beta_M m + \beta_A a$  | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
+----------------|------------------------------------|---------------------------------------------------
+  $\beta_0$     | $E[Y\mid 1,a] - E[Y\mid 0,a]$      | $E[Y\mid 1,0] - E[Y\mid 0,0]$
+  $\beta_A$     | $\deriv{a}\mu(m,a)$                | $\deriv{a}\mu(0,a)$
+  $\beta_M$     | $E[Y\mid 1,a] - E[Y\mid 0,a]$      | $E[Y\mid 1,0] - E[Y\mid 0,0]$
+  $\beta_{AM}$  |                                    | $\deriv{a}\mu(1,a) - \deriv{a}\mu(0,a)$
+
+Coefficient interpretations, by model structure
 
 :::
 
