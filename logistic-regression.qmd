@@ -873,17 +873,31 @@ $$\pi(\vec x) = \expit(\vx'\beta)$${#eq-logistic-link}
 
 ### Meet the beetles
 
-:::{#fig-beetles_1a}
+:::{#tbl-beetles-data}
 
 ```{r}
+
 library(glmx)
 
 data(BeetleMortality, package = "glmx")
 beetles <- BeetleMortality |>
   mutate(
     pct = died / n,
-    survived = n - died
+    survived = n - died,
+    dose_c = dose - mean(dose)
   )
+beetles
+```
+
+Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide [@bliss1935beetles]
+
+:::
+
+---
+
+:::{#fig-beetles_1a}
+
+```{r}
 
 plot1 <-
   beetles |>
@@ -898,7 +912,7 @@ plot1 <-
 print(plot1)
 ```
 
-Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
 
 :::
 
@@ -933,7 +947,7 @@ plot2 <-
 plot2 |> print()
 ```
 
-Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
 
 :::
 
@@ -945,7 +959,7 @@ Mortality rates of adult flour beetles after five hours' exposure to gaseous car
 (plot2 + expand_limits(x = c(1.6, 2))) |> print()
 ```
 
-Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
 
 :::
 
@@ -963,7 +977,7 @@ plot3 <- plot2 +
 (plot3 + expand_limits(x = c(1.6, 2))) |> print()
 ```
 
-Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
 
 :::
 
@@ -983,7 +997,8 @@ plot4 <- plot3 + geom_function(fun = f, aes(col = "Logistic regression"))
 plot4 |> print()
 ```
 
-Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide (Bliss 1935)
+Mortality rates of adult flour beetles 
+after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
 
 :::
 
@@ -1639,7 +1654,7 @@ Assume:
 
 ---
 
-#### log-likelihood function
+#### Log-likelihood function
 
 $$
 \ba
@@ -1669,7 +1684,272 @@ $$
 
 ---
 
-#### score function
+:::{#exr-beetles-likelihood}
+Compute and graph the likelihood for the `beetles` data model:
+
+:::{#tbl-beetles-data-recap}
+
+```{r}
+beetles
+```
+
+Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide [@bliss1935beetles]
+
+:::
+
+```{r}
+#| tbl-cap: Fitted model for `beetles` data
+#| label: tbl-beetles-glm-ungrouped
+#| code-fold: show
+beetles_glm_ungrouped |> summary()
+
+```
+
+```{r}
+#| tbl-cap: Parameter estimate covariance matrix for `beetles` data
+#| label: tbl-beetles-glm-ungrouped-vcov
+#| code-fold: show
+
+beetles_glm_ungrouped |> vcov()
+
+```
+
+:::
+
+---
+
+:::{#sol-beetles-likelihood}
+
+:::{#fig-beetles-likelihood}
+
+```{r}
+odds_inv <- function(omega) (1 + omega^-1)^-1
+lik_beetles0 <- function(beta_0, beta_1) {
+  beetles |> 
+    mutate(
+      eta = beta_0 + beta_1 * dose,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      Lik = (pi^died) * (1-pi)^(survived)
+    ) |> 
+    pull(Lik) |> 
+    prod()
+}
+
+lik_beetles <- Vectorize(lik_beetles0)
+
+ranges = confint.default(beetles_glm_grouped)
+
+n_points = 200
+beta_0s = seq(ranges["(Intercept)","2.5 %"], 
+             ranges["(Intercept)","97.5 %"], 
+             length.out = n_points)
+beta_1s = seq(ranges["dose","2.5 %"], 
+             ranges["dose","97.5 %"], 
+             length.out = n_points)
+names(beta_0s) = round(beta_0s, 2)
+names(beta_1s) = round(beta_1s, 2)
+lik_mat_beetles = outer(beta_0s, beta_1s, lik_beetles)
+
+fig <- plot_ly(
+  type = 'surface',
+  x = ~beta_0s,
+  y = ~beta_1s,
+  z = ~t(lik_mat_beetles)) 
+ # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
+fig1 <- fig %>%
+  plotly::layout(
+    scene = list(
+      xaxis = list(nticks = 20),
+      zaxis = list(nticks = 10),
+      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.8)))
+
+fig1
+
+```
+
+Likelihood of `beetles` data
+
+:::
+
+:::
+
+---
+
+:::{#exr-beetles-loglik}
+Compute and graph the log-likelihood for the `beetles` data.
+:::
+
+---
+
+:::{#sol-beetles-loglik}
+
+:::{#fig-beetles-llik}
+```{r}
+odds_inv <- function(omega) (1 + omega^-1)^-1
+llik_beetles0 <- function(beta_0, beta_1) {
+  beetles |> 
+    mutate(
+      eta = beta_0 + beta_1 * dose,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      llik = died * log(pi) + survived * log(1-pi)
+    ) |> 
+    pull(llik) |> 
+    sum()
+}
+
+llik_beetles <- Vectorize(llik_beetles0)
+
+# to check that we implemented it correctly: 
+# ests = coef(beetles_glm_ungrouped)
+# logLik(beetles_glm_ungrouped)
+# llik_beetles(ests[1], ests[2])
+
+llik_mat_beetles = outer(beta_0s, beta_1s, llik_beetles)
+
+fig <- plot_ly(
+  type = 'surface',
+  x = ~beta_0s,
+  y = ~beta_1s,
+  z = ~t(llik_mat_beetles)) 
+ # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
+fig1 <- fig %>%
+  plotly::layout(
+    scene = list(
+      xaxis = list(nticks = 20),
+      zaxis = list(nticks = 10),
+      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.8)))
+
+fig1
+
+```
+
+log-likelihood of `beetles` data
+
+:::
+
+:::
+
+---
+
+Let's center dose:
+
+```{r}
+beetles_glm_grouped_centered <- beetles |>
+  glm(formula = cbind(died, survived) ~ dose_c, 
+      family = "binomial")
+
+beetles_glm_ungrouped_centered <- beetles_long |>
+  mutate(died = outcome) |> 
+  glm(formula = died ~ dose_c, 
+      family = "binomial")
+
+equatiomatic::extract_eq(beetles_glm_ungrouped_centered)
+```
+
+---
+
+:::{#fig-beetles-lik-centered}
+```{r}
+odds_inv <- function(omega) (1 + omega^-1)^-1
+lik_beetles0 <- function(beta_0, beta_1) {
+  beetles |> 
+    mutate(
+      eta = beta_0 + beta_1 * dose_c,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      Lik = (pi^died) * (1-pi)^(survived)
+    ) |> 
+    pull(Lik) |> 
+    prod()
+}
+
+lik_beetles <- Vectorize(lik_beetles0)
+
+ranges = confint.default(beetles_glm_grouped_centered)
+
+n_points = 100
+beta_0s = seq(ranges["(Intercept)","2.5 %"], 
+             ranges["(Intercept)","97.5 %"], 
+             length.out = n_points)
+beta_1s = seq(ranges["dose_c","2.5 %"], 
+             ranges["dose_c","97.5 %"], 
+             length.out = n_points)
+names(beta_0s) = round(beta_0s, 2)
+names(beta_1s) = round(beta_1s, 2)
+lik_mat_beetles = outer(beta_0s, beta_1s, lik_beetles)
+
+fig <- plot_ly(
+  type = 'surface',
+  x = ~beta_0s,
+  y = ~beta_1s,
+  z = ~t(lik_mat_beetles)) 
+ # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
+fig1 <- fig %>%
+  plotly::layout(
+    scene = list(
+      xaxis = list(nticks = 20),
+      zaxis = list(nticks = 10),
+      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.8)))
+
+fig1
+
+```
+
+Likelihood of `beetles` data (centered model)
+
+:::
+
+---
+
+
+:::{#fig-beetles-llik-centered}
+```{r}
+odds_inv <- function(omega) (1 + omega^-1)^-1
+llik_beetles0 <- function(beta_0, beta_1) {
+  beetles |> 
+    mutate(
+      eta = beta_0 + beta_1 * dose_c,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      llik = died * log(pi) + survived * log(1-pi)
+    ) |> 
+    pull(llik) |> 
+    sum()
+}
+
+llik_beetles <- Vectorize(llik_beetles0)
+llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
+
+fig <- plot_ly(
+  type = 'surface',
+  x = ~beta_0s,
+  y = ~beta_1s,
+  z = ~t(llik_mat_beetles)) 
+ # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
+fig1 <- fig %>%
+  plotly::layout(
+    scene = list(
+      xaxis = list(nticks = 20),
+      zaxis = list(nticks = 10),
+      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.8)))
+
+fig1
+
+```
+
+log-likelihood of `beetles` data (centered model)
+
+:::
+
+---
+
+#### Score function
 
 $$
 \ba
@@ -1762,7 +2042,63 @@ $${#eq-logit-score}
 
 ---
 
-The Hessian is:
+:::{#exr-beetles-score}
+
+Implement and graph the score function for the beetles data
+
+:::
+
+---
+
+:::{#sol-beetles-score}
+
+:::{#fig-beetles-score-centered}
+
+```{r}
+odds_inv <- function(omega) (1 + omega^-1)^-1
+score_beetles0 <- function(beta_0, beta_1) {
+  beetles |> 
+    mutate(
+      eta = beta_0 + beta_1 * dose_c,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      llik = died * log(pi) + survived * log(1-pi),
+      mu = pi * n,
+      epsilon = died - mu,
+      score = dose_c * epsilon
+    ) |> 
+    pull(score) |> 
+    sum()
+}
+score_beetles <- Vectorize(score_beetles0)
+score_mat_beetles <- outer(beta_0s, beta_1s, score_beetles)
+fig <- plot_ly(
+  type = 'surface',
+  x = ~beta_0s,
+  y = ~beta_1s,
+  z = ~t(score_mat_beetles)) 
+ # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
+fig1 <- fig %>%
+  plotly::layout(
+    scene = list(
+      xaxis = list(nticks = 20),
+      zaxis = list(nticks = 10),
+      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+      aspectratio = list(x = .9, y = .8, z = 0.8)))
+
+fig1
+
+```
+
+score function of `beetles` data (centered model) for slope term $\beta_1$.
+
+:::
+
+:::
+
+---
+
+#### Hessian function
 
 $$
 \llik''(\vb) = \sumin \llik_i''(\vb)
@@ -1810,6 +2146,9 @@ $$
 $$
 
 $$\derivf{\mu_i}{\omega_i} = \frac{1}{(1+\omega_i)^2} = (1-\pi_i)^2$$
+
+---
+
 Therefore:
 
 $$
@@ -2066,11 +2405,22 @@ better\]
 
 ### Logistic regression residuals only work for grouped data
 
+```{r}
+library(ggfortify)
+chd_glm_contrasts |> autoplot()
+```
+
+
+---
+
+::: notes
+
 Residuals only work if there is more than one observation for most
 covariate patterns.
 
 Here we will create the grouped-data version of our CHD model from the
 WCGS study:
+:::
 
 ```{r}
 wcgs_grouped <-
@@ -2092,6 +2442,12 @@ chd_glm_contrasts_grouped |>
   parameters() |>
   print_md()
 ```
+
+```{r}
+library(ggfortify)
+chd_glm_contrasts_grouped |> autoplot()
+```
+
 
 ### (Response) residuals
 
