@@ -1,30 +1,218 @@
 :::{.notes}
 
-In EPI 203 and [our review of MLEs](intro-MLEs.qmd#sec-intro-MLEs), 
-we learned how to fit outcome-only models of the form $p(X=x|\theta)$ 
+In EPI 203 and [our review of MLEs](intro-MLEs.qmd#sec-intro-MLEs),
+we learned how to fit outcome-only models of the form $p(X=x|\theta)$
 to iid data $\vx = (x_1,…,x_n)$ using maximum likelihood estimation.
 
 Now, we apply the same procedure to linear regression models:
 
 :::
 
+---
+
+### Likelihood
+
 $$
-\Lik(\vy|\mat x, \vb, \sigma^2) = 
-\prod_{i=1}^n (2\pi\sigma^2)^{-1/2} 
-\exp{-\frac{1}{2\sigma^2}\paren{y_i - \paren{\vxi \cdot \vb}}^2}
+\ba
+\Lik_i &\eqdef p(Y_i=y_i|\vX_i = \vx_i)
+\\
+&= (2\pi\ss)^{-1/2} \expf{-\frac{1}{2\ss}\eps_i^2}
+\\
+\eps_i &\eqdef y_i - \mu_i
+\\
+\mu_i &\eqdef \mu(x_i)
+\\
+&= x_i \cdot \beta
+\ea
+$$
+
+---
+
+$$
+\ba
+\Lik &\eqdef \Lik(\vy|\mat x, \vb, \sigma^2) 
+\\
+&\eqdef \p(\vY =\vy| \mX = \mx)
+\\
+&= \prod_{i=1}^n \Lik_i
+\ea
 $$ {#eq-linreg-lik}
 
-$$
-\ell(\vec y|\mat x,\beta, \sigma^2) 
-= -\frac{n}{2}\logf{\sigma^2} - 
-\frac{1}{2\sigma^2}\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2
-$$ {#eq-linreg-loglik}
+---
+
+### Log-likelihood
 
 $$
-\ell'_{\vb}(\vec y|\mat x, \vb, \sigma^2) 
-= - 
+\ba
+\llik_i &\eqdef \logf{\Lik_i}
+\\
+&=  \logf{(2\pi\ss)^{-1/2} \expf{-\frac{1}{2\ss}\eps_i^2}}
+\\
+&=  -\frac{1}{2}\logf{2\pi\ss} -\frac{1}{2\ss}\eps_i^2
+\ea
+$$
+
+---
+
+$$
+\ba
+\ell &\eqdef \ell(\vec y|\mat x,\beta, \sigma^2)
+\\
+&\eqdef \logf{\Lik(\vec y|\mat x,\beta, \sigma^2)}
+\\
+&= \logf{\prodin\Lik_i}
+\\
+&= \sumin\logf{\Lik_i}
+\\
+&= \sumin \llik_i
+\\
+&= \sumin \paren{-\frac{1}{2}\logf{2\pi\ss} -\frac{1}{2\ss}\eps_i^2}
+\\
+&= -\frac{n}{2}\logf{2\pi\sigma^2} -
+\frac{1}{2\sigma^2}\sum_{i=1}^n \eps_i^2
+\\
+&= -\frac{n}{2}\logf{2\pi\sigma^2} -
+\frac{1}{2\sigma^2}\paren{\veps \cdot \veps}
+\\
+&= -\frac{n}{2}\logf{2\pi\sigma^2} -
+\frac{1}{2\sigma^2}\paren{(\vy - \vm) \cdot (\vy - \vm)}
+\\
+&= -\frac{n}{2}\logf{2\pi\sigma^2} -
+\frac{1}{2\sigma^2}\paren{(\vy - \mX\vb) \cdot (\vy - \mX\vb)}
+\\
+&= -\frac{n}{2}\logf{2\pi\sigma^2} -
+\frac{1}{2\sigma^2}\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2
+\ea
+$$ {#eq-linreg-loglik}
+
+### Score function
+
+$$
+\ba
+\mu_i' &\eqdef \deriv{\vb} \mu_i
+\\
+&= \deriv{\vb} \paren{\vx_i \cdot \vb}
+\\
+&= \paren{ \deriv{\vb} \vb} \vx_i
+\\
+&= \id \vx_i 
+\\
+&= \vx_i
+\ea
+$$
+
+---
+
+$$
+\ba
+\eps'_i &\eqdef \deriv{\vb}\eps_i
+\\
+&= \deriv{\vb} (y_i - \mu_i)
+\\
+&=  \deriv{\vb}y_i - \deriv{\vb} \mu_i
+\\
+&=  0 - \vx_i
+\\
+&=  - \vx_i
+\ea
+$$
+
+---
+
+$$
+\ba
+\llik'_i &\eqdef \deriv{\vb}\llik_i
+\\
+&= \deriv{\vb} \paren{-\frac{1}{2}\logf{2\pi\ss} -\frac{1}{2\ss}\eps_i^2}
+\\
+&= \deriv{\vb}\paren{-\frac{1}{2}\logf{2\pi\ss}} - \deriv{\vb}\frac{1}{2\ss}\eps_i^2
+\\
+&= 0 - \frac{1}{2\ss}\deriv{\vb}\eps_i^2
+\\
+&= - \frac{1}{2\ss}2 \paren{\eps_i'} \eps_i
+\\
+&= - \frac{1}{\ss} \paren{- \vx_i \eps_i}
+\\
+&= \frac{1}{\ss} \vx_i \eps_i
+\ea
+$$
+
+---
+
+$$
+\ba
+\ell'_{\vb}
+&\eqdef \deriv{\vb}\ell_{\vb}
+\\
+&= \deriv{\vb} \sumin \llik_i
+\\
+&= \sumin \deriv{\vb} \llik_i
+\\
+&= \sumin \llik_i'
+\\
+&= \sumin\frac{1}{\ss} \vx_i \eps_i
+\\
+&= \frac{1}{\ss} \sumin \vx_i \eps_i
+\\
+&= \frac{1}{\ss} \mX\' \veps
+\ea
+$$
+
+---
+
+### Hessian
+
+$$
+\ba
+\ell_i'' &\eqdef \deriv{\vb\'}\deriv{\vb} \ell_i
+\\
+&= \deriv{\vb\'} \ell_i'
+\\
+&= \deriv{\vb\'} \paren{\frac{1}{\ss} \vx_i \eps_i}
+\\
+&= \frac{1}{\ss} \vx_i \eps_i'\'
+\\
+&= \frac{1}{\ss} \vx_i (-\vx_i\')
+\\
+&= -\frac{1}{\ss} \vx_i \vx_i\'
+\ea
+$$
+
+---
+
+$$
+\ba
+\ell'' &\eqdef \deriv{\vb\'}\deriv{\vb} \ell
+\\
+&= \deriv{\vb\'} \ell'
+\\
+&= \deriv{\vb\'} \sumin \llik_i'
+\\
+&= \sumin \deriv{\vb\'} \llik_i'
+\\
+&= \sumin \llik_i''
+\\
+&= \sumin-\frac{1}{\ss} \vx_i \vx_i\'
+\\
+&= -\frac{1}{\ss} \sumin \vx_i \vx_i\'
+\\
+&= -\frac{1}{\ss} \mX\'\mX
+\ea
+$$
+
+---
+
+### Alternative approach using matrix derivatives
+
+$$
+\ba
+\ell'_{\vb}(\vec y|\mat x, \vb, \sigma^2)
+&\eqdef \deriv{\vb}\ell_{\vb}(\vec y|\mat x, \vb, \sigma^2)
+\\
+&= -
 \frac{1}{2\sigma^2}\deriv{\vb}
 \paren{\sum_{i=1}^n \paren{y_i - \paren{\vxi \cdot \vb}}^2}
+\ea
 $$ {#eq-linreg-score}
 
 ---
@@ -34,7 +222,7 @@ Let's switch to matrix-vector notation:
 :::
 
 $$
-\sum_{i=1}^n (y_i - \vx_i\' \vb)^2 
+\sum_{i=1}^n (y_i - \vx_i\' \vb)^2
 = (\vy - \mX\vb) \cdot (\vy - \mX\vb)
 $$
 
@@ -44,14 +232,14 @@ So
 
 $$
 \begin{aligned}
-(\vy - \mX\vb)'(\vy - \mX\vb) 
+(\vy - \mX\vb)'(\vy - \mX\vb)
 &= (\vy' - \vb'X')(\vy - \mX\vb)
 \\ &= \vy'\vy - \vb'X'\vy - \vy'\mX\vb +\vb'\mX'\mX\beta
 \\ &= \vy'\vy - 2\vy'\mX\beta +\beta'\mX'\mX\beta
 \end{aligned}
 $$
 
-### Deriving the linear regression score function
+---
 
 ::: notes
 We will use some results from [vector calculus](math-prereqs.qmd#sec-vector-calculus):
@@ -59,9 +247,9 @@ We will use some results from [vector calculus](math-prereqs.qmd#sec-vector-calc
 
 $$
 \begin{aligned}
-\deriv{\beta}\paren{\sum_{i=1}^n (y_i - x_i' \beta)^2} 
-&= \deriv{\beta}(\vy - X\beta)'(\vy - X\beta)
-\\ &= \deriv{\beta} (y'y - 2y'X\beta +\beta'\mX'\mX\beta)
+\deriv{\vb}\paren{\sum_{i=1}^n (y_i - x_i' \beta)^2}
+&= \deriv{\vb}(\vy - X\beta)'(\vy - X\beta)
+\\ &= \deriv{\vb} (y'y - 2y'X\beta +\beta'\mX'\mX\beta)
 \\ &= (- 2X'y +2\mX'\mX\beta)
 \\ &= - 2X'(y - X\beta)
 \\ &= - 2X'(y - \Expp[y])
@@ -84,11 +272,13 @@ $$
 
 ---
 
+#### Hessian
+
 The Hessian (second derivative matrix) is:
 
 $$
 \ba
-\ell_{\beta, \beta'} ''(\beta, \sigma^2;\mathbf X,\vy)
+\ell_{\beta, \beta'} ''(\beta, \sigma^2;\vy, \mX)
 &= -\frac{1}{2\sigma^2}\mX'\mX
 \ea
 $$
@@ -124,7 +314,7 @@ and
 
 $$
 \hat\beta \dot \sim N(\beta, \mathcal I_{\beta}^{-1})
-$$ 
+$$
 
 :::{.notes}
 
@@ -138,4 +328,4 @@ In the Gaussian linear regression case, we also have exact results:
 
 $$
 \frac{\hat\beta_j}{\hse{\hat\beta_j}} \dist t_{n-p}
-$$ 
+$$
