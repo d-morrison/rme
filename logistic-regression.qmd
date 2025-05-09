@@ -8,6 +8,11 @@ subtitle: "Logistic regression and variations"
 
 {{< include shared-config.qmd >}}
 
+```{r}
+options(digits = 6)
+```
+
+
 ### Acknowledgements {.unnumbered}
 
 This content is adapted from:
@@ -19,9 +24,23 @@ This content is adapted from:
 
 ## Introduction
 
-### What is logistic regression?
+---
 
+:::{#exr-def-logistic-regression}
+
+What is logistic regression?
+
+:::
+
+---
+
+:::{#sol-def-logistic-regression}
+
+:::{#def-logistic-regression}
 **Logistic regression** is a framework for modeling [binary](probability.qmd#def-binary) outcomes, conditional on one or more *predictors* (a.k.a. *covariates*).
+:::
+
+:::
 
 ---
 
@@ -34,7 +53,7 @@ What are some examples of binary outcomes in the health sciences?
 
 ----
 
-:::: {.solution}
+:::: {#sol-binary-examples}
 
 {{< include binary-outcome-examples.qmd >}}
 
@@ -54,7 +73,7 @@ Write down a mathematical definition of the Bernoulli distribution.
 
 ---
 
-::::{.solution}
+::::{#sol-def-bernoulli}
 
 {{< include def-bernoulli.qmd >}}
 
@@ -68,16 +87,23 @@ Logistic regression differs from linear regression, which uses the Gaussian ("no
 
 ---
 
-:::: {#exr-linear}
+:::: {#exr-examples-linreg}
 
 Recall: what kinds of outcomes is linear regression used for?
 ::::
 
 ---
 
-::: {.solution}
+::: {#sol-examples-linreg}
 
-Linear regression is typically used for numerical outcomes that aren't event counts or waiting times for an event. Examples of outcomes that are often analyzed using linear regression include include weight, height, and income.
+Linear regression is typically used for numerical outcomes that aren't event counts or waiting times for an event. 
+
+Examples of outcomes that are often analyzed using linear regression include:
+
+- weight
+- height
+- income
+- prices
 
 :::
 
@@ -140,7 +166,7 @@ totals <-
 
 tbl_oc_mi <- bind_rows(oc_mi, totals)
 
-tbl_oc_mi
+tbl_oc_mi |> pander::pander()
 ```
 
 Simulated data from study of oral contraceptive use and heart attack risk
@@ -153,12 +179,12 @@ Simulated data from study of oral contraceptive use and heart attack risk
 
 ::::{#exr-probs}
 
-Review: estimate the probabilities of MI for OC users and non-OC users in @exm-oc-mi.
+Estimate the probabilities of MI for OC users and non-OC users in @exm-oc-mi.
 ::::
 
 ----
 
-:::{.solution}
+:::{#sol-compute-probs}
 
 ```{r, include = FALSE}
 #| label: calc-prs
@@ -174,28 +200,53 @@ $$\ph(MI|\neg OC) = \frac{7}{10000} = `r p_MI_nOC`$$
 
 ---
 
-#### Controls
+:::{#exr-def-controls}
 
-::::{.callout-note}
-##### Two meanings of "controls"
+What does the term "controls" mean in the context of study design?
 
-Depending on context, "controls" can mean either individuals who don't experience an *exposure* of interest, or individuals who don't experience an *outcome* of interest.
-
-::::
-
----
-
-:::{#def-cases-retrospective}
-##### cases and controls in retrospective studies
-In *retrospective studies*, participants who experience the outcome of interest are called **cases**, while participants who don't experience that outcome are called **controls**. 
 :::
 
 ---
 
+:::{#sol-def-controls}
+::::{#def-controls}
+##### Two meanings of "controls"
+
+Depending on context, "controls" can mean either:
+
+- individuals who don't experience an *exposure* of interest, 
+- or individuals who don't experience an *outcome* of interest.
+
+::::
+:::
+
+---
+
+:::{#exr-controls-use-cases}
+What types of studies do the two definitions of controls correspond to?
+:::
+
+---
+
+:::{#sol-controls-use-cases}
+:::{#def-cases-retrospective}
+##### cases and controls in retrospective studies
+In *retrospective case-control studies*, 
+participants who experience the outcome of interest are called **cases**, 
+while participants who don't experience that outcome are called **controls**. 
+:::
+
 :::{#def-cases-prospective}
 ##### treatment groups and control groups in prospective studies
-In *prospective studies*, the group of participants who experience the treatment or exposure of interest is called the **treatment group**, while the participants who receive the baseline or comparison treatment  (for example, clinical trial participants who receive a placebo or a standard-of-care treatment rather than an experimental treatment) are called **controls**.
+In *prospective studies*, 
+the group of participants who experience the treatment or exposure of interest 
+is called the **treatment group**, 
+while the participants who receive the baseline or comparison treatment  
+(for example, clinical trial participants who receive a placebo 
+or a standard-of-care treatment rather than an experimental treatment) 
+are called **controls**.
 
+:::
 :::
 
 ## Comparing Probabilities
@@ -238,21 +289,71 @@ $$
 
 ---
 
+:::{#exr-interpret-rr}
+#### interpreting risk differences
+
+How can we interpret the preceding relative risk estimate in prose?
+:::
+
+---
+
+:::{#sol-interpret-rd}
+
+#### interpreting risk differences
+
+"The difference in risk of MI between OC users and non-users was `r rd_OC`."
+
+or
+
+"The difference in risk of MI between OC users and non-users was `r rd_OC*100` 
+[percentage points](https://en.wikipedia.org/wiki/Percentage_point)."
+
+:::
+
+::: notes
+See the note about working with percentages in the [Appendix](notation.qmd#percent-sign).
+:::
+
+---
+
 ### Risk ratios
 
-:::{#def-RR}
-### Relative risk ratios
+:::{#exr-name-RR}
 
-:::: notes
-The **relative risk** of probability $\pi_1$ compared to another probability $\pi_2$, also called the **risk ratio**, **relative risk ratio**, **probability ratio**, or **rate ratio**, is the ratio of those probabilities:
-::::
+If $\pi_1$ and $\pi_2$ are two probabilities, 
+what do we call the following ratio?
 
 $$\rho(\pi_1,\pi_2) = \frac{\pi_1}{\pi_2}$$
 :::
 
 ---
 
-:::{#exm-RR}
+:::{#sol-exr-name-RR}
+
+:::{#def-RR}
+### Relative risk ratios
+
+The ratio of two probabilities $\pi_1$ and $\pi_2$, 
+
+$$\rho(\pi_1,\pi_2) = \frac{\pi_1}{\pi_2}$$
+
+is called the:
+
+- **risk ratio**,
+- **relative risk ratio**,
+- **probability ratio**,
+- or **rate ratio**
+
+of $\pi_1$ compared to $\pi_2$.
+
+:::
+
+:::
+
+
+---
+
+:::{#exr-RR}
 
 :::: notes
 Above, we estimated that:
@@ -262,8 +363,16 @@ $$\ph(MI|OC) = `r 13/5000`$$
 
 $$\ph(MI|\neg OC) = `r 7/10000`$$
 
+Now, estimate the *relative risk* of MI for OC versus non-OC.
+
+:::
+
+---
+
+:::{#sol-exr-RR}
+
 :::: notes
-So we might estimate that the *relative risk* of MI for OC versus non-OC is:
+The *relative risk* of MI for OC versus non-OC is:
 ::::
 
 ```{r}
@@ -280,8 +389,20 @@ $$
 \end{aligned}
 $$
 
+:::
+
+---
+
+:::{#exr-interpret-rr}
+How can we interpret the preceding relative risk estimate in prose?
+:::
+
+---
+
+:::{#sol-interpret-rr}
+
 :::: notes
-We might summarize this result by saying that "the estimated probability of MI among OC users was `r rr` as high as the estimated probability among OC non-users. 
+We might summarize this result by saying that "the estimated probability of MI among OC users was `r rr` [times as high as]{.underline}, or `r rr - 1` [times higher than]{.underline}, the estimated probability among OC non-users. 
 ::::
 
 :::
@@ -335,7 +456,7 @@ Risk differences, risk ratios, and relative risk differences are defined by two 
 $$\delta(\pi_2,\pi_1) = -\delta(\pi_1, \pi_2)$$
 
 $$\rho(\pi_2,\pi_1) = \inv{\rho(\pi_1,\pi_2)}$$
-$$\xi(\pi_2,\pi_1) = \inv{\xi(\pi_2,\pi_1) + 1} - 1$$
+$$\xi(\pi_2,\pi_1) = \inv{\xi(\pi_1,\pi_2) + 1} - 1$$
 
 :::{#exr-change-ref-group}
 
@@ -389,7 +510,7 @@ The **logit function**  of a probability $\pi$ is
 the natural logarithm of the odds function of $\pi$:
 :::
 
-$$\logit(\pi) \eqdef \log{\odds(\pi)}$$
+$$\logit(\pi) \eqdef \logf{\odds(\pi)}$$
 
 :::
 
@@ -426,7 +547,7 @@ print(logit_plot)
 
 :::{#thm-logit-function}
 
-$$\logit(\pi) = \log{\frac{\pi}{1-\pi}}$${#eq-logit}
+$$\logit(\pi) = \logf{\frac{\pi}{1-\pi}}$${#eq-logit}
 
 :::
 
@@ -462,7 +583,7 @@ $$
 \ba
 \logit'(\pi)
    &= \deriv{\pi}\logit(\pi)
-\\ &= \deriv{\pi}\log{\odds(\pi)}
+\\ &= \deriv{\pi}\logf{\odds(\pi)}
 \\ &= \frac{\odds'(\pi)}{\odds(\pi)}
 \\ &= \odds'(\pi) \frac{1}{\odds(\pi)}
 \\ &= \frac{1}{\sqf{1-\pi}}\frac{1-\pi}{\pi}
@@ -635,7 +756,7 @@ $$
 \xleftarrow[\exp{\logodds}]{}
 }
 {
-\xrightarrow{\log{\odds}}
+\xrightarrow{\logf{\odds}}
 }
 }^{\logit(\pi)}
 }_{\expit(\logodds)}
@@ -660,7 +781,7 @@ $$
 \xleftarrow[\exp{\logodds}]{}
 }
 {
-\xrightarrow{\log{\odds}}
+\xrightarrow{\logf{\odds}}
 }
 }_{\expit(\logodds)}
 }^{\logit(\pi)}
@@ -691,10 +812,10 @@ $$
 \P(Y=y) &= \pi^y (1-\pi)^{1-y}\\
 \mathbf y  &= (y_1, ..., y_n)\\
 \Lik(\pi;\mathbf y) &= \pi^{\sum y_i} (1-\pi)^{n - \sum y_i}\\
-\ell(\pi, \mathbf y) &= \left({\sum y_i}\right) \log{\pi} + \left(n - \sum y_i\right) \log{1-\pi}\\
-&= \left({\sum y_i}\right) \left(\log{\pi} - \log{1-\pi}\right) + n \cdot \log{1-\pi}\\
-&= \left({\sum y_i}\right) \log{\frac{\pi}{ 1-\pi}} + n \cdot \log{1-\pi}
-\\ &= \left({\sum y_i}\right) \logit(\pi) + n \cdot \log{1-\pi}
+\ell(\pi, \mathbf y) &= \left({\sum y_i}\right) \logf{\pi} + \left(n - \sum y_i\right) \logf{1-\pi}\\
+&= \left({\sum y_i}\right) \left(\logf{\pi} - \logf{1-\pi}\right) + n \cdot \logf{1-\pi}\\
+&= \left({\sum y_i}\right) \logf{\frac{\pi}{ 1-\pi}} + n \cdot \logf{1-\pi}
+\\ &= \left({\sum y_i}\right) \logit(\pi) + n \cdot \logf{1-\pi}
 \end{aligned}
 $$
 
@@ -714,8 +835,8 @@ $$\Lik_i(\pi_i) = \P(Y_i=y_i)$$
 $$
 \ba
 \ell_i(\pi_i) 
-   &= \log{\Lik_i(\pi_i)}
-\\ &= y_i \log{\pi_i} + (1-y_i) \log{1-\pi_i}
+   &= \logf{\Lik_i(\pi_i)}
+\\ &= y_i \logf{\pi_i} + (1-y_i) \logf{1-\pi_i}
 \ea
 $$
 
@@ -880,6 +1001,14 @@ function)
 
 ---
 
+{{< include _sec_logistic_slope_mean.qmd >}}
+
+---
+
+{{< include _sec_derivs_MLE.qmd >}}
+
+---
+
 ### Logistic regression in R
 
 ```{r}
@@ -988,6 +1117,17 @@ Let's use the data from the Western Collaborative Group Study (WCGS)
 epidemiological study designed to investigate the association between
 the "type A" behavior pattern and coronary heart disease (CHD)".
 
+---
+
+:::{#exr-def-type-A}
+
+What is "type A" behavior?
+
+:::
+
+---
+
+:::{#sol-def-type-A}
 *From Wikipedia, "Type A and Type B personality theory":*
 
 "The hypothesis describes Type A individuals as outgoing, ambitious,
@@ -999,6 +1139,7 @@ Type A. Type B personalities, by definition, are noted to live at lower
 stress levels. They typically work steadily and may enjoy achievement,
 although they have a greater tendency to disregard physical or mental
 stress when they do not achieve."
+:::
 
 ---
 
@@ -1036,7 +1177,7 @@ socio-demographic characteristics:
 -   weight
 -   blood pressure
 -   electrocardiogram
--   corneal arcus;
+-   corneal arcus
 
 ---
 
@@ -1097,7 +1238,7 @@ here::here() |>
 ```{r}
 #| label: tbl-wcgs
 #| tbl-cap: "`wcgs` data"
-wcgs |> head()
+wcgs
 ```
 
 
@@ -1149,18 +1290,29 @@ wcgs <- wcgs |>
 
 ### What's in the data {.smaller}
 
-Here's a table of the data:
+::: notes
+@tbl-wcgs-demos summarizes the data.
+:::
 
-```{r, results = "asis"}
+:::{#tbl-wcgs-demos}
+
+```{r}
+library(gtsummary)
 wcgs |>
-  select(-c(id, uni, t1)) |>
-  tableby(chd69 ~ ., data = _) |>
-  summary(
-    pfootnote = TRUE,
-    title =
-      "Baseline characteristics by CHD status at end of follow-up"
-  )
+  select(-all_of(c("id", "uni", "t1"))) |>
+  gtsummary::tbl_summary(
+    by = "chd69", 
+    missing_text = "Missing"
+  ) |> 
+  add_p() |> 
+  gtsummary::add_overall() |> 
+  gtsummary::bold_labels()
+  
 ```
+
+Baseline characteristics by CHD status at end of follow-up
+
+:::
 
 ### Data by age and personality type
 
@@ -1283,29 +1435,40 @@ print(chd_plot_logit)
 
 ### Logistic regression models for CHD data {.smaller}
 
-Here, we fit stratified models for CHD by personality type.
+Here, we fit models for CHD by personality type and age:
 
 ```{r}
-#| tbl-cap: "CHD model, stratified parametrization"
-#| label: tbl-chd-strat
-chd_glm_strat <- glm(
-  "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1,
-  "data" = wcgs,
-  "family" = binomial(link = "logit")
-)
+#| results: asis
+chd_glm_contrasts <-
+  wcgs |>
+  glm(
+    "data" = _,
+    "formula" = chd69 == "Yes" ~ dibpat * age,
+    "family" = binomial(link = "logit")
+  )
 
-chd_glm_strat |>
+library(equatiomatic)
+equatiomatic::extract_eq(chd_glm_contrasts)
+```
+
+```{r}
+#| label: tbl-model-corner-point
+#| tbl-cap: "CHD model (corner-point parametrization)"
+
+chd_glm_contrasts |>
   parameters() |>
   print_md()
 ```
+
+---
 
 We can get the corresponding odds ratios ($e^{\beta}$s) by passing
 `exponentiate = TRUE` to `parameters()`:
 
 ```{r}
 #| tbl-cap: "Odds ratio estimates for CHD model"
-#| label: tbl-chd-glm-strat-OR
-chd_glm_strat |>
+#| label: tbl-chd-glm-contrasts-OR
+chd_glm_contrasts |>
   parameters(exponentiate = TRUE) |>
   print_md()
 ```
@@ -1321,14 +1484,14 @@ log-odds).
 
 ```{r}
 curve_type_A <- function(x) { # nolint: object_name_linter
-  chd_glm_strat |> predict(
+  chd_glm_contrasts |> predict(
     type = "response",
     newdata = tibble(age = x, dibpat = "Type A")
   )
 }
 
 curve_type_B <- function(x) { # nolint: object_name_linter
-  chd_glm_strat |> predict(
+  chd_glm_contrasts |> predict(
     type = "response",
     newdata = tibble(age = x, dibpat = "Type B")
   )
@@ -1391,42 +1554,39 @@ chd_plot_logit_2 <-
 print(chd_plot_logit_2)
 ```
 
-### reference-group and contrast parametrization
+### stratified parametrization
 
-We can also use the corner-point parametrization (with reference groups
-and contrasts):
+We can also use the stratified parametrization:
 
-```{r}
-#| label: tbl-model-corner-point
-#| tbl-cap: "CHD model (corner-point parametrization)"
-chd_glm_contrasts <-
-  wcgs |>
-  glm(
-    "data" = _,
-    "formula" = chd69 == "Yes" ~ dibpat * I(age - 50),
-    "family" = binomial(link = "logit")
-  )
-
-chd_glm_contrasts |>
-  parameters() |>
-  print_md()
-```
-
-::: notes
-Compare with @tbl-chd-glm-strat-OR.
-:::
-
-::: {.content-visible when-format="revealjs"}
 
 ```{r}
-#| tbl-cap: "Odds ratio estimates for CHD model"
-#| label: tbl-chd-glm-strat-OR-v2
+#| tbl-cap: "CHD model, stratified parametrization"
+#| label: tbl-chd-strat
+chd_glm_strat <- glm(
+  "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1,
+  "data" = wcgs,
+  "family" = binomial(link = "logit")
+)
+
 chd_glm_strat |>
   parameters() |>
   print_md()
 ```
 
-:::
+---
+
+Again, we can get the corresponding odds ratios ($e^{\beta}$s) by passing
+`exponentiate = TRUE` to `parameters()`:
+
+```{r}
+#| tbl-cap: "Odds ratio estimates for CHD model"
+#| label: tbl-chd-glm-strat-OR
+chd_glm_strat |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
+```
+
+Compare with @tbl-model-corner-point.
 
 ---
 
@@ -1484,7 +1644,7 @@ Assume:
 $$
 \ba
 \ell(\vb, \vy) 
-   &= \log{\Lik(\vb, \vec y) }
+   &= \logf{\Lik(\vb, \vec y) }
 \\ &= \sumin \red{\ell_i}(\pi(\vx_i))
 \ea
 $$ {#eq-loglik-bernoulli-iid}
@@ -1494,15 +1654,15 @@ $$ {#eq-loglik-bernoulli-iid}
 $$
 \ba
 \red{\ell_i}(\pi)
-   &= y_i \log{\pi} + (1 - y_i) \log{1-\pi}
-\\ &= y_i \log{\pi} + (1 \cd \log{1-\pi} - y_i \cd \log{1-\pi})
-\\ &= y_i \log{\pi} + (\log{1-\pi} - y_i \log{1-\pi})
-\\ &= y_i \log{\pi} + \log{1-\pi} - y_i \log{\blue{1-\pi}}
-\\ &= y_i \log{\pi} - y_i \log{\blue{1-\pi}} + \log{1-\pi}
-\\ &= (y_i \log{\pi} - y_i \log{\blue{1-\pi}}) + \log{1-\pi}
-\\ &= y_i (\log{\red{\pi}} - \log{\blue{1-\pi}}) + \log{1-\pi}
-\\ &= y_i \paren{\log{\frac{\red{\pi}}{\blue{1-\pi}}}} + \log{1-\pi}
-\\ &= y_i (\logit(\pi)) + \log{1-\pi}
+   &= y_i \logf{\pi} + (1 - y_i) \logf{1-\pi}
+\\ &= y_i \logf{\pi} + (1 \cd \logf{1-\pi} - y_i \cd \logf{1-\pi})
+\\ &= y_i \logf{\pi} + (\logf{1-\pi} - y_i \logf{1-\pi})
+\\ &= y_i \logf{\pi} + \logf{1-\pi} - y_i \logf{\blue{1-\pi}}
+\\ &= y_i \logf{\pi} - y_i \logf{\blue{1-\pi}} + \logf{1-\pi}
+\\ &= (y_i \logf{\pi} - y_i \logf{\blue{1-\pi}}) + \logf{1-\pi}
+\\ &= y_i (\logf{\red{\pi}} - \logf{\blue{1-\pi}}) + \logf{1-\pi}
+\\ &= y_i \paren{\logf{\frac{\red{\pi}}{\blue{1-\pi}}}} + \logf{1-\pi}
+\\ &= y_i (\logit(\pi)) + \logf{1-\pi}
 \ea
 $$
 
@@ -1526,12 +1686,12 @@ $$
 $$
 \ba
 \ell_i'(\vb) 
-   &= \deriv{\vb} y_i \paren{\logitf{\pi_i}} + \log{1-\pi_i}
-\\ &= \deriv{\vb}\cb{y_i \paren{\vx_i'\vb} + \log{1-\pi_i}}
-\\ &= \cb{y_i \deriv{\vb}\paren{\vx_i'\vb} + \deriv{\vb}\log{1-\pi_i}}
-\\ &= \cb{\vx_i y_i + \deriv{\vb}\log{1-\expit(\vx_i'\vb)}}
-\\ &= \cb{\vx_i y_i + \deriv{\vb}\log{\inv{1+\exp{\vx_i'\vb}}}}
-\\ &= \cb{\vx_i y_i - \deriv{\vb}\log{1+\exp{\vx_i'\vb}}}
+   &= \deriv{\vb} y_i \paren{\logitf{\pi_i}} + \logf{1-\pi_i}
+\\ &= \deriv{\vb}\cb{y_i \paren{\vx_i'\vb} + \logf{1-\pi_i}}
+\\ &= \cb{y_i \deriv{\vb}\paren{\vx_i'\vb} + \deriv{\vb}\logf{1-\pi_i}}
+\\ &= \cb{\vx_i y_i + \deriv{\vb}\logf{1-\expit(\vx_i'\vb)}}
+\\ &= \cb{\vx_i y_i + \deriv{\vb}\logf{\inv{1+\exp{\vx_i'\vb}}}}
+\\ &= \cb{\vx_i y_i - \deriv{\vb}\logf{1+\exp{\vx_i'\vb}}}
 \ea
 $$
 
@@ -1540,26 +1700,29 @@ $$
 Now we need to apply the [chain rule](math-prereqs.qmd#thm-chain-rule):
 
 $$
-\deriv{\beta}\log{1+\exp{\vx_i'\beta}} = 
+\deriv{\beta}\logf{1+\exp{\vx_i'\beta}} = 
 \frac{1}{1+\exp{\vx_i'\beta}} \deriv{\beta}\cb{1+\exp{\vx_i'\beta}}
 $$
 
 $$
 \ba
 \deriv{\beta}\cb{1+\exp{\vx_i'\beta}}
-   &= \exp{\vx_i'\beta} \deriv{\beta}\vx_i'\beta
-\\ &= \vx_i \exp{\vx_i'\beta} 
+&= \deriv{\beta}\exp{\vx_i'\beta}
+\\ &= \exp{\vx_i'\beta} \deriv{\beta}\vx_i'\beta
+\\ &= \vx_i \exp{\vx_i'\beta}
+\\ &= \vx_i \omega_i
 \ea
-$$
+$${#eq-deriv-expit}
 
 So:
 
 $$
 \ba
-\deriv{\beta}\log{1+\exp{\vx_i'\beta}} 
+\deriv{\beta}\logf{1+\exp{\vx_i'\beta}} 
    &= \frac{1}{1+\exp{\vx_i'\beta}} \exp{\vx_i'\beta} \vx_i
 \\ &= \frac{\exp{\vx_i'\beta}}{1+\exp{\vx_i'\beta}}  \vx_i
 \\ &= \vx_i \expitf{\vx_i'\beta}
+\\ &= \vx_i \pi_i
 \ea
 $$
 
@@ -1570,9 +1733,9 @@ So:
 $$
 \ba
 \llik_i'(\vb) 
-&= \vx_i y_i - \vx_i \expitf{\vx_i'\beta} 
-\\ &= \vx_i (y_i - \expitf{\vx_i'\beta})
+&= \vx_i y_i - \vx_i \pi_i 
 \\ &= \vx_i (y_i - \pi_i)
+\\ &= \vx_i (y_i - \mu_i)
 \\ &= \vx_i (y_i - \Expp[Y_i|\vX_i=\vx_i])
 \\ &= \vx_i \ \err(y_i|\vX_i=\vx_i)
 \ea
@@ -1588,8 +1751,96 @@ This last expression is essentially the same as we found in [linear regression](
 Putting the pieces of $\llik'(\vb)$ back together, we have:
 
 $$
-\llik'(\vb) = \sumin \cb{\vx_i(y_i - \expitf{\vx_i'\beta}) }
+\ba
+\llik'(\vb) &= \sumin \cb{\vx_i(y_i - \expitf{\vx_i'\beta}) }
+\\
+&= \sumin \vx_i(y_i - \pi_i)
+\\
+&= \sumin \vx_i\eps_i
+\ea
+$${#eq-logit-score}
+
+---
+
+The Hessian is:
+
 $$
+\llik''(\vb) = \sumin \llik_i''(\vb)
+$${#eq-logit-hessian}
+
+$$
+\ba
+\llik''_i(\vb) &= \deriv{\vb\'}\llik_i''
+\\
+&= \deriv{\vb\'}\vx_i\eps_i
+\\
+&= \vx_i \deriv{\vb\'}\eps_i 
+\ea
+$${#eq-logit-hessian-i}
+
+---
+
+$$
+\ba
+\deriv{\vb\'}\eps_i &= \deriv{\vb\'}(y_i - \mu_i)
+\\
+&= -\deriv{\vb\'}\mu_i
+\ea
+$$
+$$
+\ba
+\deriv{\vb\'}\mu_i &= \derivf{\eta_i}{\vb\'} \derivf{\mu_i}{\eta_i}
+\ea
+$$
+
+$$\derivf{\eta_i}{\vb\'} = \deriv{\vb\'}{\vx_i \cdot \vb} = \vx_i$$
+
+$$
+\ba
+\derivf{\mu_i}{\eta_i} &= \derivf{\omega_i}{\eta_i} \derivf{\mu_i}{\omega_i}
+\ea
+$$
+
+$$
+\ba
+\derivf{\omega_i}{\eta_i} &= \deriv{\eta_i} \expf{\eta_i} 
+\\ &= \expf{\eta_i} 
+\\ &= \omega_i
+\ea
+$$
+
+$$\derivf{\mu_i}{\omega_i} = \frac{1}{(1+\omega_i)^2} = (1-\pi_i)^2$$
+Therefore:
+
+$$
+\ba
+\derivf{\mu_i}{\eta_i} &= (1-\pi_i)^2 \omega_i 
+\\ &= (1-\pi_i)^2 \frac{\pi_i}{1-\pi_i}
+\\ &= \pi_i(1-\pi_i)
+\\ &= \Varf{Y_i|X_i=x_i}
+\ea
+$$
+
+$$
+\ba
+\llik''(\vb) &= -\sumin \vx_i \vx_i' \Varf{Y_i|X_i=x_i}
+\\ &= - \mX\'\matr{D}\mX
+\ea
+$${#eq-logistic-hess}
+
+where $\matr{D} \eqdef \text{diag}(\Varf{Y_i|X_i=x_i})$ 
+is the diagonal matrix whose $i^{th}$ diagonal element is $\Varf{Y_i|X_i=x_i}$.
+
+Compare with linear regression, where:
+
+$$
+\ba
+\llik''(\vb) &= -\sumin \vx_i \vx_i' (\sigma^2)^{-1}
+\\ &= -\mX\' \matr{D}^{-1} \mX
+\ea
+$${#eq-linear-hess}
+
+---
 
 Setting $\ell'(\vb; \vy) = 0$ gives us:
 
@@ -1625,7 +1876,7 @@ log-likelihood). You can see some information about this process like so:
 ```{r}
 #| label: out-glm-fitting-process
 #| code-fold: false
-options(digits = 8)
+
 temp <-
   wcgs |>
   glm(
@@ -1699,7 +1950,7 @@ For our CHD model, this procedure would be:
 wcgs <-
   wcgs |>
   mutate(
-    pred_probs_glm1 = chd_glm_strat |> fitted(),
+    pred_probs_glm1 = chd_glm_contrasts |> fitted(),
     pred_prob_cats1 = pred_probs_glm1 |>
       cut(
         breaks = seq(0, 1, by = .1),
@@ -1741,7 +1992,7 @@ probabilities:
 wcgs <-
   wcgs |>
   mutate(
-    pred_probs_glm1 = chd_glm_strat |> fitted(),
+    pred_probs_glm1 = chd_glm_contrasts |> fitted(),
     pred_prob_cats1 = pred_probs_glm1 |>
       cut(
         breaks = quantile(pred_probs_glm1, seq(0, 1, by = .1)),
@@ -1831,13 +2082,13 @@ wcgs_grouped <-
     `!chd` = sum(chd69 == "No")
   )
 
-chd_glm_strat_grouped <- glm(
-  "formula" = cbind(chd, `!chd`) ~ dibpat + dibpat:age - 1,
+chd_glm_contrasts_grouped <- glm(
+  "formula" = cbind(chd, `!chd`) ~ dibpat*age,
   "data" = wcgs_grouped,
   "family" = binomial(link = "logit")
 )
 
-chd_glm_strat_grouped |>
+chd_glm_contrasts_grouped |>
   parameters() |>
   print_md()
 ```
@@ -1856,9 +2107,9 @@ $\hat\pi(x_k)$:
 wcgs_grouped <-
   wcgs_grouped |>
   mutate(
-    fitted = chd_glm_strat_grouped |> fitted(),
+    fitted = chd_glm_contrasts_grouped |> fitted(),
     fitted_logit = fitted |> logit(),
-    response_resids = chd_glm_strat_grouped |> resid(type = "response")
+    response_resids = chd_glm_contrasts_grouped |> resid(type = "response")
   )
 
 wcgs_response_resid_plot <-
@@ -1943,13 +2194,13 @@ library(ggfortify)
 ::: {.content-visible when-format="pdf"}
 ```{r}
 #| fig-height: 6
-autoplot(chd_glm_strat_grouped, which = 1, ncol = 1) |> print()
+autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
 ```
 :::
 
 ::: {.content-visible when-format="html"}
 ```{r}
-autoplot(chd_glm_strat_grouped, which = 1, ncol = 1) |> print()
+autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
 ```
 :::
 
@@ -1983,18 +2234,9 @@ covariate pattern?
 library(ggfortify)
 ```
 
-::: {.content-visible when-format="html"}
 ```{r}
 autoplot(chd_glm_strat, which = 1, ncol = 1) |> print()
 ```
-:::
-
-::: {.content-visible when-format="pdf"}
-```{r}
-#| fig-height: 6
-autoplot(chd_glm_strat, which = 1, ncol = 1) |> print()
-```
-:::
 
 Meaningless.
 
@@ -2007,9 +2249,9 @@ are, try building them yourself:
 wcgs_grouped <-
   wcgs_grouped |>
   mutate(
-    fitted = chd_glm_strat_grouped |> fitted(),
+    fitted = chd_glm_contrasts_grouped |> fitted(),
     fitted_logit = fitted |> logit(),
-    resids = chd_glm_strat_grouped |> resid(type = "pearson")
+    resids = chd_glm_contrasts_grouped |> resid(type = "pearson")
   )
 
 wcgs_resid_plot1 <-
@@ -2062,7 +2304,7 @@ Under the null hypothesis that the model in question is correct
 (i.e., sufficiently complex), $X^2\ \dot \sim\ \chi^2(N-p)$.
 
 ```{r}
-x_pearson <- chd_glm_strat_grouped |>
+x_pearson <- chd_glm_contrasts_grouped |>
   resid(type = "pearson")
 
 chisq_stat <- sum(x_pearson^2)
@@ -2070,7 +2312,7 @@ chisq_stat <- sum(x_pearson^2)
 pval <- pchisq(
   chisq_stat,
   lower = FALSE,
-  df = length(x_pearson) - length(coef(chd_glm_strat_grouped))
+  df = length(x_pearson) - length(coef(chd_glm_contrasts_grouped))
 )
 ```
 
@@ -2111,7 +2353,7 @@ our `CHD` model:
 #| fig-cap: "Diagnostics for CHD model"
 #| label: fig-chd-model-diagnostics
 
-chd_glm_strat_grouped |>
+chd_glm_contrasts_grouped |>
   autoplot(which = 1:6) |>
   print()
 ```
@@ -2122,6 +2364,8 @@ Things look pretty good here. The QQ plot is still usable; with large
 samples; the residuals should be approximately Gaussian.
 
 :::
+
+---
 
 #### Beetles
 
