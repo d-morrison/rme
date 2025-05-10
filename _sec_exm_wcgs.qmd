@@ -217,6 +217,8 @@ the event rates for each combination of age:
 
 ```{r}
 #| label: "event rates by age"
+library(dplyr)
+odds <- function(pi) pi/(1-pi)
 chd_grouped_data <-
   wcgs |>
   summarize(
@@ -279,6 +281,7 @@ print(chd_plot_probs)
 #| label: fig-chd-odds-scale
 #| fig-cap: "CHD rates by age group, odds spacing"
 
+odds_inv <- function(omega) omega/(1+omega)
 trans_odds <- trans_new(
   name = "odds",
   transform = odds,
@@ -306,6 +309,8 @@ print(chd_plot_odds)
 #| label: fig-chd_plot_logit
 #| fig-cap: "CHD data (logit-scale)"
 
+logit <- function(pi) log(odds(pi))
+expit <- function(eta) odds_inv(exp(eta))
 trans_logit <- trans_new(
   name = "logit",
   transform = logit,
@@ -330,9 +335,22 @@ print(chd_plot_logit)
 
 ### Logistic regression models for CHD data {.smaller}
 
-Here, we fit models for CHD by personality type and age:
+For the `wgcs` dataset, let's consider a **logistic regression model** for the outcome of
+Coronary Heart Disease ($Y$; `chd` in computer output):
+
+- $Y = 1$ if an individual developed CHD by the end of the study;
+- $Y = 0$ if they have not developed CHD by the end of the study.
+
+Let's include two covariates, plus their interaction:
+
+* $A$: age at study enrollment (`age`, recorded in years)
+* $P$: personality type (`dibpat`):
+  - $P = 1$ represents "Type A personality",
+  - $P = 0$ represents "Type B personality".
+* $PA$: the interaction of personality type and age (`type:dibpat`)
 
 ```{r}
+#| label: eq-wcgs-model1
 #| results: asis
 chd_glm_contrasts <-
   wcgs |>
@@ -346,6 +364,16 @@ library(equatiomatic)
 equatiomatic::extract_eq(chd_glm_contrasts)
 ```
 
+{{< include _sec_wcgs_model_graphs.qmd >}}
+
+### Interpreting the model parameters
+
+{{< include _exm_wcgs_coef_interp.qmd >}}
+
+### Interpreting the model parameter estimates
+
+@tbl-model-corner-point shows the fitted model.
+
 ```{r}
 #| label: tbl-model-corner-point
 #| tbl-cap: "CHD model (corner-point parametrization)"
@@ -357,8 +385,8 @@ chd_glm_contrasts |>
 
 ---
 
-We can get the corresponding odds ratios ($e^{\beta}$s) by passing
-`exponentiate = TRUE` to `parameters()`:
+We can get the corresponding odds ratio estimates ($e^{\hat{\beta}}$s) 
+by passing `exponentiate = TRUE` to `parameters()`:
 
 ```{r}
 #| tbl-cap: "Odds ratio estimates for CHD model"
@@ -368,101 +396,25 @@ chd_glm_contrasts |>
   print_md()
 ```
 
-### Models superimposed on data
 
-We can graph our fitted models on each scale (probability, odds,
-log-odds).
+### Stratified parametrization
 
----
-
-#### probability scale
+We could instead use a stratified parametrization:
 
 ```{r}
-curve_type_A <- function(x) { # nolint: object_name_linter
-  chd_glm_contrasts |> predict(
-    type = "response",
-    newdata = tibble(age = x, dibpat = "Type A")
-  )
-}
-
-curve_type_B <- function(x) { # nolint: object_name_linter
-  chd_glm_contrasts |> predict(
-    type = "response",
-    newdata = tibble(age = x, dibpat = "Type B")
-  )
-}
-
-chd_plot_probs_2 <-
-  chd_plot_probs +
-  geom_function(
-    fun = curve_type_A,
-    aes(col = "Type A")
-  ) +
-  geom_function(
-    fun = curve_type_B,
-    aes(col = "Type B")
-  )
-print(chd_plot_probs_2)
-```
-
----
-
-:::{fig-fitted-odds-chd}
-
-```{r}
-
-chd_plot_odds_2 <-
-  chd_plot_odds +
-  geom_function(
-    fun = curve_type_A,
-    aes(col = "Type A")
-  ) +
-  geom_function(
-    fun = curve_type_B,
-    aes(col = "Type B")
-  )
-print(chd_plot_odds_2)
-```
-
-odds scale
-
-:::
-
----
-
-#### log-odds (logit) scale
-
-```{r}
-#| label: fig-fitted-log-odds
-
-chd_plot_logit_2 <-
-  chd_plot_logit +
-  geom_function(
-    fun = curve_type_A,
-    aes(col = "Type A")
-  ) +
-  geom_function(
-    fun = curve_type_B,
-    aes(col = "Type B")
-  )
-
-print(chd_plot_logit_2)
-```
-
-### stratified parametrization
-
-We can also use the stratified parametrization:
-
-
-```{r}
-#| tbl-cap: "CHD model, stratified parametrization"
-#| label: tbl-chd-strat
+#| results: asis
+#| label: eq-wcgs-strat-model
 chd_glm_strat <- glm(
   "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1,
   "data" = wcgs,
   "family" = binomial(link = "logit")
 )
+equatiomatic::extract_eq(chd_glm_strat)
+```
 
+```{r}
+#| tbl-cap: "CHD model, stratified parametrization"
+#| label: tbl-chd-strat
 chd_glm_strat |>
   parameters() |>
   print_md()

@@ -18,25 +18,43 @@ WCGS study:
 :::
 
 ```{r}
+#| results: asis
 wcgs_grouped <-
   wcgs |>
   summarize(
     .by = c(dibpat, age),
     n = n(),
     chd = sum(chd69 == "Yes"),
-    `!chd` = sum(chd69 == "No")
-  )
+    no_chd = sum(chd69 == "No")
+  ) |> 
+  mutate(p_chd = chd/n)
 
 chd_glm_contrasts_grouped <- glm(
-  "formula" = cbind(chd, `!chd`) ~ dibpat*age,
+  "formula" = cbind(chd, no_chd) ~ dibpat*age,
   "data" = wcgs_grouped,
   "family" = binomial(link = "logit")
 )
+chd_glm_contrasts_grouped |> equatiomatic::extract_eq()
+```
+
+```{r}
+#| label: tbl-chd-model-wcgs-grouped-data
+#| tbl-cap: "CHD model with grouped `wcgs` data"
 
 chd_glm_contrasts_grouped |>
   parameters() |>
   print_md()
 ```
+
+```{r}
+#| fig-cap: "CHD model with grouped `wcgs` data"
+#| label: fig-wcgs-model-grouped-data
+chd_glm_contrasts_grouped |> 
+  sjPlot::plot_model(type = "pred", terms = c("age", "dibpat")) + 
+  geom_point(data = wcgs_grouped |> mutate(group_col = dibpat), 
+             aes(x = age, y = p_chd))
+```
+
 
 ```{r}
 library(ggfortify)
