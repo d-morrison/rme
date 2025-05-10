@@ -119,33 +119,7 @@ Likelihood of `beetles` data
 
 ### Log-likelihood function
 
-$$
-\ba
-\ell(\vb, \vy)
-   &= \logf{\Lik(\vb, \vec y) }
-\\ &= \sumin \red{\ell_i}(\pi(\vx_i))
-\ea
-$$ {#eq-loglik-bernoulli-iid}
-
----
-
-$$
-\ba
-\red{\ell_i}(\pi_i)
-   &= y_i \logf{\pi_i} + (1 - y_i) \logf{1-\pi_i}
-\\ &= y_i \logf{\pi_i} + (1 \cd \logf{1-\pi_i} - y_i \cd \logf{1-\pi_i})
-\\ &= y_i \logf{\pi_i} + (\logf{1-\pi_i} - y_i \logf{1-\pi_i})
-\\ &= y_i \logf{\pi_i} + \logf{1-\pi_i} - y_i \logf{\blue{1-\pi_i}}
-\\ &= y_i \logf{\pi_i} - y_i \logf{\blue{1-\pi_i}} + \logf{1-\pi_i}
-\\ &= (y_i \logf{\pi_i} - y_i \logf{\blue{1-\pi_i}}) + \logf{1-\pi_i}
-\\ &= y_i (\logf{\red{\pi_i}} - \logf{\blue{1-\pi_i}}) + \logf{1-\pi_i}
-\\ &= y_i \paren{\logf{\frac{\red{\pi_i}}{\blue{1-\pi_i}}}} + \logf{1-\pi_i}
-\\ &= y_i (\logit(\pi_i)) + \logf{1-\pi_i}
-\\ &= y_i (\eta_i) + \logf{1-\pi_i}
-\\ &= y_i (\vx_i \cdot \vb) + \logf{1-\pi_i}
-\ea
-$$
-
+{{< include _sec_derive_logistic_loglik.qmd >}}
 
 ---
 
@@ -327,85 +301,7 @@ score function of `beetles` data (centered model) for slope term $\beta_1$.
 
 ### Hessian function
 
-$$
-\llik''(\vb) = \sumin \llik_i''(\vb)
-$${#eq-logit-hessian}
-
-$$
-\ba
-\llik''_i(\vb) &= \deriv{\vb\'}\llik_i''
-\\
-&= \deriv{\vb\'}\vx_i\eps_i
-\\
-&= \vx_i \deriv{\vb\'}\eps_i
-\ea
-$${#eq-logit-hessian-i}
-
----
-
-$$
-\ba
-\deriv{\vb\'}\eps_i &= \deriv{\vb\'}(y_i - \mu_i)
-\\
-&= -\deriv{\vb\'}\mu_i
-\ea
-$$
-$$
-\ba
-\deriv{\vb\'}\mu_i &= \derivf{\eta_i}{\vb\'} \derivf{\mu_i}{\eta_i}
-\ea
-$$
-
-$$\derivf{\eta_i}{\vb\'} = \deriv{\vb\'}{\vx_i \cdot \vb} = \vx_i$$
-
-$$
-\ba
-\derivf{\mu_i}{\eta_i} &= \derivf{\omega_i}{\eta_i} \derivf{\mu_i}{\omega_i}
-\ea
-$$
-
-$$
-\ba
-\derivf{\omega_i}{\eta_i} &= \deriv{\eta_i} \expf{\eta_i}
-\\ &= \expf{\eta_i}
-\\ &= \omega_i
-\ea
-$$
-
-$$\derivf{\mu_i}{\omega_i} = \frac{1}{(1+\omega_i)^2} = (1-\pi_i)^2$$
-
----
-
-Therefore:
-
-$$
-\ba
-\derivf{\mu_i}{\eta_i} &= (1-\pi_i)^2 \omega_i
-\\ &= (1-\pi_i)^2 \frac{\pi_i}{1-\pi_i}
-\\ &= \pi_i(1-\pi_i)
-\\ &= \Varf{Y_i|X_i=x_i}
-\ea
-$$
-
-$$
-\ba
-\llik''(\vb) &= -\sumin \vx_i \vx_i' \Varf{Y_i|X_i=x_i}
-\\ &= - \mX\'\matr{D}\mX
-\ea
-$${#eq-logistic-hess}
-
-where $\matr{D} \eqdef \text{diag}(\Varf{Y_i|X_i=x_i})$
-is the diagonal matrix whose $i^{th}$ diagonal element is $\Varf{Y_i|X_i=x_i}$.
-
-Compare with linear regression, where:
-
-$$
-\ba
-\llik''(\vb) &= -\sumin \vx_i \vx_i' (\sigma^2)^{-1}
-\\ &= -\mX\' \matr{D}^{-1} \mX
-\ea
-$${#eq-linear-hess}
-
+{{< include _sec_derive_logistic_hessian.qmd >}}
 ---
 
 Setting $\ell'(\vb; \vy) = 0$ gives us:
