@@ -1,3 +1,4 @@
+{{< include macros.qmd >}}
 
 ### Model
 
@@ -74,7 +75,7 @@ beetles_glm <-
   )
 ranges <- confint.default(beetles_glm)
 
-n_points <- 200
+n_points <- 100
 beta_0s <- seq(ranges["(Intercept)", "2.5 %"],
   ranges["(Intercept)", "97.5 %"],
   length.out = n_points
@@ -87,15 +88,14 @@ names(beta_0s) <- round(beta_0s, 2)
 names(beta_1s) <- round(beta_1s, 2)
 lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
 graph_3d <- function(x, y, z) {
-  fig <- plotly::plot_ly(
+  plotly::plot_ly(
     type = "surface",
     x = ~x,
     y = ~y,
     z = ~ t(z)
-  )
+  ) |> 
   # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly 
   # for explanation of why transpose `t()` is needed
-  fig1 <- fig %>%
     plotly::layout(
       scene = list(
         xaxis = list(nticks = 20),
@@ -106,7 +106,7 @@ graph_3d <- function(x, y, z) {
     )
 }
 
-graph_3d(beta_0s, beta_1s, lik_mat_beetles)
+graph_3d(beta_0s, beta_1s, lik_mat_beetles) |> print()
 ```
 
 Likelihood of `beetles` data
