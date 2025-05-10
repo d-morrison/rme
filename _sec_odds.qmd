@@ -1,3 +1,4 @@
+{{< include macros.qmd >}}
 
 ### Odds and probabilities
 
@@ -14,9 +15,33 @@ $$\odds(A) \eqdef \frac{\Pr(A)}{\Pr(\neg A)}$$
 
 ---
 
+:::{#lem-p-neg}
+
+If the probability of an outcome $A$ is $\Pr(A)=\pi$,
+then the probability that $A$ does not occur is:
+
+$$\Pr(\neg A)= 1 - \pi$$
+
+:::
+
+---
+
+::: proof
+
+$$
+\ba
+\Pr(\neg A) &= 1 - \Pr(A)
+\\ &= 1 - \pi
+\ea
+$$
+
+:::
+
+---
+
 :::{#thm-prob-to-odds}
 If the probability of an outcome $A$ is $\Pr(A)=\pi$,
-then the corresponding odds of $A$ is:
+then the corresponding odds of $A$, $\omega(A)$, is:
 
 $$\oddsf{\pi} = \frac{\pi}{1-\pi}$$ {#eq-odds-probs}
 
@@ -25,16 +50,12 @@ $$\oddsf{\pi} = \frac{\pi}{1-\pi}$$ {#eq-odds-probs}
 ---
 
 :::{.proof}
-$$
-\ba
-\Pr(\neg A) &= 1 - \Pr(A)
-\\ &= 1 - \pi
-\ea
-$$
+
+Using @def-odds and @lem-p-neg:
 
 $$
 \ba
-\tf \odds(A) &\eqdef \frac{\Pr(A)}{\Pr(\neg A)}
+\odds(A) &\eqdef \frac{\Pr(A)}{\Pr(\neg A)}
 \\ &= \frac{\pi}{1-\pi}
 \ea
 $$
@@ -204,14 +225,17 @@ Same answer as in @exm-odds!
 
 :::{#thm-odds-simplified}
 
-#### Simplified expression for odds function
+#### Simplified expressions for odds function
 
 ::: notes
-An equivalent expression for the odds function is
+Two equivalent expressions for the odds function are:
 :::
 
 $$
-\oddsf{\pi} = \invf{\invf{\pi}-1)}
+\ba
+\oddsf{\pi} &= \frac{1}{\pi^{-1}-1}
+\\ &= \invf{\pi^{-1}-1}
+\ea
 $$ {#eq-odds-reduced}
 
 :::
@@ -219,7 +243,30 @@ $$ {#eq-odds-reduced}
 ---
 
 :::{#exr-odds2}
-Prove that @eq-odds-reduced is equivalent to @def-odds.
+Prove @thm-odds-simplified.
+:::
+
+---
+
+:::{#sol-odds2}
+Starting from @eq-odds-probs:
+
+$$
+\ba
+\oddsf{\pi} &= \frac{\pi}{1-\pi}
+\\
+&= \frac{\pi}{1-\pi}\frac{\pi^{-1}}{\pi^{-1}}
+\\
+&= \frac{\pi\pi^{-1}}{(1-\pi)\pi^{-1}}
+\\
+&= \frac{1}{(\pi^{-1}-\pi\pi^{-1})}
+\\
+&= \frac{1}{(\pi^{-1}-1)}
+\\
+&= \invf{\pi^{-1}-1}
+\ea
+$$
+
 :::
 
 ---
@@ -412,6 +459,14 @@ Prove that @eq-inv-odds-reduced is equivalent to @def-inv-odds.
 
 ---
 
+:::{#sol-inv-odds2}
+
+Analogous to @sol-odds2.
+
+:::
+
+---
+
 
 :::{#lem-one-minus-odds-inv}
 #### One minus inverse-odds
@@ -437,7 +492,7 @@ $$
 
 ---
 
-:::{#thm-inverse-odds-nonevent}
+:::{#lem-inverse-odds-nonevent}
 
 If $\odds$ is the odds of event $A$,
 then the probability that $A$ does not occur is:
@@ -450,7 +505,7 @@ $$\Pr(\neg A) = \frac{1}{1+\odds}$$
 ::: proof
 
 :::: notes
-Use @lem-one-minus-odds-inv:
+Use @lem-p-neg and @lem-one-minus-odds-inv:
 ::::
 
 $$
@@ -465,7 +520,25 @@ $$
 
 ---
 
-:::{#thm-deriv-invodds}
+:::{#lem-inverse-odds-nonevent2}
+
+If $\odds$ is the odds of event $A$,
+then the probability that $A$ does not occur is:
+
+$$1-\pi = \frac{1}{1+\odds}$$
+:::
+
+---
+
+::: proof
+
+Combine @lem-inverse-odds-nonevent and @lem-p-neg.
+
+:::
+
+---
+
+:::{#lem-deriv-invodds}
 
 ##### Derivative of inverse odds function
 $$\doddsinvf{\odds} = \frac{1}{\sqf{1+\odds}}$$
@@ -501,6 +574,29 @@ $$
 :::{#cor-deriv-invodds}
 
 $$\doddsinvf{\odds} = \sqf{1 - \oddsinvf{\odds}}$$
+:::
+
+---
+
+:::{#cor-deriv-invodds-pi-scale}
+
+$$\doddsinvf{\odds} = (1-\pi)^2$$
+
+:::
+
+---
+
+::: proof
+
+Combining @cor-deriv-invodds and @lem-deriv-invodds:
+
+$$
+\ba
+\doddsinvf{\odds} &= \sqf{\frac{1}{1+\omega}}
+\\
+&= (1-\pi)^2
+\ea
+$$
 :::
 
 ---
@@ -678,7 +774,7 @@ Confirm that the result is the same as in @exm-OR.
 :::{#tbl-oc-mi2}
 
 ```{r}
-tbl_oc_mi |> pander()
+tbl_oc_mi |> pander::pander()
 ```
 
 Simulated data from study of oral contraceptive use and heart attack risk
