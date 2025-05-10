@@ -54,6 +54,14 @@ Mortality rates of adult flour beetles after five hours’ exposure to gaseous c
 #| tbl-cap: Fitted model for `beetles` data
 #| label: tbl-beetles-glm-ungrouped
 #| code-fold: show
+
+beetles_glm_ungrouped <-
+  beetles_long |>
+  glm(
+    formula = outcome ~ dose,
+    family = "binomial"
+  )
+
 beetles_glm_ungrouped |> summary()
 
 ```
@@ -540,8 +548,8 @@ $$\sumin \cb{\vx_i(y_i - \expitf{\vx_i'\beta}) } = 0$$ {#eq-score-logistic}
 
 ::: notes
 
-In general, the estimating equation $\ell'(\vb; \vy) = 0$ cannot
-be solved analytically.
+In general, the estimating equation $\ell'(\vb; \vy) = 0$ 
+cannot be solved analytically.
 
 Instead, we can use the [Newton-Raphson method](intro-MLEs.qmd#sec-newton-raphson):
 
@@ -555,9 +563,10 @@ $$
 
 ::: notes
 
-We make an iterative series of
-guesses, and each guess helps us make the next guess better (i.e., higher
-log-likelihood). You can see some information about this process like so:
+We make an iterative series of guesses, 
+and each guess helps us make the next guess better 
+(i.e., higher log-likelihood). 
+You can see some information about this process like so:
 
 :::
 
@@ -566,20 +575,21 @@ log-likelihood). You can see some information about this process like so:
 #| code-fold: false
 
 temp <-
-  wcgs |>
+  beetles_long |>
   glm(
     control = glm.control(trace = TRUE),
-    data = _,
-    formula = chd69 == "Yes" ~ dibpat * age,
-    family = binomial(link = "logit")
+    formula = outcome ~ dose,
+    family = "binomial"
   )
+
 ```
 
 ::: notes
 
 After each iteration of the fitting procedure, the deviance
-($2(\ell_{\text{full}} - \ell(\hat\beta))$ ) is printed. You can see
-that the algorithm took six iterations to converge to a solution where
+($2(\ell_{\text{full}} - \ell(\hat\beta))$ ) is printed. 
+You can see that 
+the algorithm took 5 iterations to converge to a solution where
 the likelihood wasn't changing much anymore.
 
 :::

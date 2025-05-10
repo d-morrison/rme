@@ -1,0 +1,130 @@
+## Objections to reporting odds ratios
+
+{{< include _sec_OR_objections.qmd >}}
+
+## Other link functions for Bernoulli outcomes
+
+If you want risk ratios, you can sometimes get them by changing the link
+function:
+
+```{r}
+data(anthers, package = "dobson")
+anthers_sum <- aggregate(
+  anthers[c("n", "y")],
+  by = anthers[c("storage")], FUN = sum
+)
+
+anthers_glm_log <- glm(
+  formula = cbind(y, n - y) ~ storage,
+  data = anthers_sum,
+  family = binomial(link = "log")
+)
+
+anthers_glm_log |>
+  parameters() |>
+  print_md()
+```
+
+---
+
+Now $\exp{\beta}$ gives us risk ratios instead of odds ratios:
+
+```{r}
+anthers_glm_log |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
+```
+
+---
+
+Let's compare this model with a logistic model:
+
+```{r}
+anthers_glm_logit <- glm(
+  formula = cbind(y, n - y) ~ storage,
+  data = anthers_sum,
+  family = binomial(link = "logit")
+)
+
+anthers_glm_logit |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
+```
+
+\[to add: fitted plots on each outcome scale\]
+
+---
+
+When I try to use `link ="log"` in practice, I often get errors about
+not finding good starting values for the estimation procedure.
+This is likely because the model is producing fitted probabilities greater than
+1.
+
+When this happens, you can try to fit Poisson regression models instead
+(we will see those soon!).
+But then the outcome distribution isn't quite
+right, and you won't get warnings about fitted probabilities greater
+than 1.
+In my opinion, the Poisson model for binary outcomes is
+confusing and not very appealing.
+
+### WCGS: link functions
+
+```{r}
+wcgs_glm_logit_link <- chd_grouped_data |>
+  mutate(type = relevel(dibpat, ref = "Type B")) |>
+  glm(
+    "formula" = cbind(x, `n - x`) ~ dibpat * age,
+    "data" = _,
+    "family" = binomial(link = "logit")
+  )
+
+wcgs_glm_identity_link <-
+  chd_grouped_data |>
+  mutate(type = relevel(dibpat, ref = "Type B")) |>
+  glm(
+    "formula" = cbind(x, `n - x`) ~ dibpat * age,
+    "data" = _,
+    "family" = binomial(link = "identity")
+  )
+wcgs_glm_identity_link |>
+  coef() |>
+  pander()
+```
+
+```{r}
+#| label: fig-diagnostics-glm1
+#| fig-cap: "Residuals vs Fitted plot for `wcgs` models"
+#| layout-ncol: 2
+#| fig-subcap:
+#| - "Logistic link"
+#| - "Identity link"
+
+library(ggfortify)
+wcgs_glm_logit_link |> autoplot(which = c(1), ncol = 1) + facet_wrap(~dibpat)
+wcgs_glm_identity_link |> autoplot(which = c(1), ncol = 1) + facet_wrap(~dibpat)
+```
+
+```{r}
+#| label: fig-diagnostics-beetles
+#| fig-cap: "Residuals vs Fitted plot for `BeetleMortality` models"
+#| layout-ncol: 2
+#| fig-subcap:
+#| - "Logistic link"
+#| - "Identity link"
+
+beetles_lm <-
+  beetles_long |>
+  lm(formula = died ~ dose)
+
+beetles <-
+  beetles |> mutate(
+    resid_logit = beetles_glm_grouped |> resid(type = "response")
+  )
+beetles_glm_grouped |> autoplot(which = c(1), ncol = 1)
+beetles_lm |> autoplot(which = c(1), ncol = 1)
+```
+
+## Quasibinomial
+
+See [Hua Zhou](https://hua-zhou.github.io/)'s [lecture notes](https://ucla-biostat-200c-2020spring.github.io/slides/04-binomial/binomial.html#:~:text=0.05%20%27.%27%200.1%20%27%20%27%201-,Quasi%2Dbinomial,-Another%20way%20to)
