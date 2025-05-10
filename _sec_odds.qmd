@@ -8,9 +8,24 @@ In logistic regression, we will make use of a mathematically-convenient transfor
 
 :::{#def-odds}
 #### Odds
-The **odds** of an outcome $A$, which we will represent using $\odds$ ("omega"), is the probability that the outcome occurs, divided by the probability that it doesn't occur:
+The **odds** of an outcome $A$, 
+which we will represent using $\odds$ ("omega"), 
+is the probability that the outcome occurs, 
+divided by the probability that it doesn't occur:
 
 $$\odds(A) \eqdef \frac{\Pr(A)}{\Pr(\neg A)}$$
+:::
+
+---
+
+:::{#lem-p-neg0}
+$$\Pr(\neg A) &= 1 - \Pr(A)$$
+:::
+
+---
+
+::: proof
+Left to readers for now; use law of total probability and algebra.
 :::
 
 ---
@@ -28,6 +43,8 @@ $$\Pr(\neg A)= 1 - \pi$$
 
 ::: proof
 
+Using @lem-p-neg0:
+
 $$
 \ba
 \Pr(\neg A) &= 1 - \Pr(A)
@@ -39,11 +56,21 @@ $$
 
 ---
 
+:::{#def-odds-fn}
+
+The odds function, $\oddsf(\pi)$, is defined as:
+
+$$\oddsf{\pi} \eqdef \frac{\pi}{1-\pi}$$ {#eq-odds-probs}
+
+:::
+
+---
+
 :::{#thm-prob-to-odds}
-If the probability of an outcome $A$ is $\Pr(A)=\pi$,
+If the probability of an outcome $A$ is $\Pr(A)=\pi(A)$,
 then the corresponding odds of $A$, $\omega(A)$, is:
 
-$$\oddsf{\pi} = \frac{\pi}{1-\pi}$$ {#eq-odds-probs}
+$$\omega(A) = \oddsf{\pi(A)}$$
 
 :::
 
@@ -57,6 +84,7 @@ $$
 \ba
 \odds(A) &\eqdef \frac{\Pr(A)}{\Pr(\neg A)}
 \\ &= \frac{\pi}{1-\pi}
+\\ &= \oddsf{\pi(A)}
 \ea
 $$
 
@@ -395,13 +423,26 @@ $$\invoddsf{\odds} \eqdef \frac{\odds}{1 + \odds}$$
 converts odds into their corresponding probabilities (@fig-inv-odds).
 :::
 
-::: notes
+---
+
 The inverse-odds function takes an odds as input and produces a probability as output. Its domain of inputs is $[0,\infty)$ and its range of outputs is $[0,1]$.
 
 I haven't seen anyone give the inverse-odds function a concise name; maybe $\text{prob}()$ or $\text{probs}()$ or $\text{risk}()$?
+
+---
+
+:::{#lem-invodds-pi}
+
+If $\pi$ is the probability of an event 
+and $\omega$ is the corresponding odds of that events,
+then:
+
+$$\pi = \invoddsf{\odds}$$
+
 :::
 
 ---
+
 
 ```{r}
 #| label: fig-inv-odds
@@ -508,7 +549,7 @@ $$\Pr(\neg A) = \frac{1}{1+\odds}$$
 ::: proof
 
 :::: notes
-Use @lem-p-neg and @lem-one-minus-odds-inv:
+Use @lem-p-neg0 and @lem-one-minus-odds-inv:
 ::::
 
 $$
@@ -591,7 +632,7 @@ $$\doddsinvf{\odds} = (1-\pi)^2$$
 
 ::: proof
 
-Combining @cor-deriv-invodds and @lem-deriv-invodds:
+Combining @lem-inverse-odds-nonevent2 and @lem-deriv-invodds:
 
 $$
 \ba
