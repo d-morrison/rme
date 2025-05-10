@@ -7,35 +7,7 @@ Assume:
 - $\pi(\vx) = \expitf{\eta(\vx)}$
 - $\eta(\vx) = \vx \cdot \vb$
 
-### Log-likelihood function
-
-$$
-\ba
-\ell(\vb, \vy)
-   &= \logf{\Lik(\vb, \vec y) }
-\\ &= \sumin \red{\ell_i}(\pi(\vx_i))
-\ea
-$$ {#eq-loglik-bernoulli-iid}
-
----
-
-$$
-\ba
-\red{\ell_i}(\pi)
-   &= y_i \logf{\pi} + (1 - y_i) \logf{1-\pi}
-\\ &= y_i \logf{\pi} + (1 \cd \logf{1-\pi} - y_i \cd \logf{1-\pi})
-\\ &= y_i \logf{\pi} + (\logf{1-\pi} - y_i \logf{1-\pi})
-\\ &= y_i \logf{\pi} + \logf{1-\pi} - y_i \logf{\blue{1-\pi}}
-\\ &= y_i \logf{\pi} - y_i \logf{\blue{1-\pi}} + \logf{1-\pi}
-\\ &= (y_i \logf{\pi} - y_i \logf{\blue{1-\pi}}) + \logf{1-\pi}
-\\ &= y_i (\logf{\red{\pi}} - \logf{\blue{1-\pi}}) + \logf{1-\pi}
-\\ &= y_i \paren{\logf{\frac{\red{\pi}}{\blue{1-\pi}}}} + \logf{1-\pi}
-\\ &= y_i (\logit(\pi)) + \logf{1-\pi}
-\ea
-$$
-
-
----
+### Likelihood function
 
 :::{#exr-beetles-likelihood}
 Compute and graph the likelihood for the `beetles` data model:
@@ -43,37 +15,30 @@ Compute and graph the likelihood for the `beetles` data model:
 :::{#tbl-beetles-data-recap}
 
 ```{r}
+#| label: load-beetles-data
+library(glmx)
+library(dplyr)
+data(BeetleMortality)
+beetles <- BeetleMortality |>
+  mutate(
+    pct = died/n,
+    survived = n - died
+  )
+beetles_long <-
+  beetles |>
+  reframe(
+    .by = everything(),
+    outcome = c(
+      rep(1, times = died),
+      rep(0, times = survived)
+    )
+  )
 beetles
 ```
 
 Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide [@bliss1935beetles]
 
 :::
-
-```{r}
-#| tbl-cap: Fitted model for `beetles` data
-#| label: tbl-beetles-glm-ungrouped
-#| code-fold: show
-
-beetles_glm_ungrouped <-
-  beetles_long |>
-  glm(
-    formula = outcome ~ dose,
-    family = "binomial"
-  )
-
-beetles_glm_ungrouped |> summary()
-
-```
-
-```{r}
-#| tbl-cap: Parameter estimate covariance matrix for `beetles` data
-#| label: tbl-beetles-glm-ungrouped-vcov
-#| code-fold: show
-
-beetles_glm_ungrouped |> vcov()
-
-```
 
 :::
 
@@ -84,6 +49,7 @@ beetles_glm_ungrouped |> vcov()
 :::{#fig-beetles-likelihood}
 
 ```{r}
+#| label: beetles-likelihood-plot
 odds_inv <- function(omega) (1 + omega^-1)^-1
 lik_beetles0 <- function(beta_0, beta_1) {
   beetles |>
@@ -99,7 +65,13 @@ lik_beetles0 <- function(beta_0, beta_1) {
 
 lik_beetles <- Vectorize(lik_beetles0)
 
-ranges = confint.default(beetles_glm_grouped)
+beetles_glm <-
+  beetles |>
+  glm(
+    formula = cbind(died, survived) ~ dose,
+    family = "binomial"
+  )
+ranges = confint.default(beetles_glm)
 
 n_points = 200
 beta_0s = seq(ranges["(Intercept)","2.5 %"],
@@ -111,8 +83,8 @@ beta_1s = seq(ranges["dose","2.5 %"],
 names(beta_0s) = round(beta_0s, 2)
 names(beta_1s) = round(beta_1s, 2)
 lik_mat_beetles = outer(beta_0s, beta_1s, lik_beetles)
-
-fig <- plot_ly(
+library(plotly)
+fig <- plotly::plot_ly(
   type = 'surface',
   x = ~beta_0s,
   y = ~beta_1s,
@@ -138,6 +110,38 @@ Likelihood of `beetles` data
 
 ---
 
+### Log-likelihood function
+
+$$
+\ba
+\ell(\vb, \vy)
+   &= \logf{\Lik(\vb, \vec y) }
+\\ &= \sumin \red{\ell_i}(\pi(\vx_i))
+\ea
+$$ {#eq-loglik-bernoulli-iid}
+
+---
+
+$$
+\ba
+\red{\ell_i}(\pi_i)
+   &= y_i \logf{\pi_i} + (1 - y_i) \logf{1-\pi_i}
+\\ &= y_i \logf{\pi_i} + (1 \cd \logf{1-\pi_i} - y_i \cd \logf{1-\pi_i})
+\\ &= y_i \logf{\pi_i} + (\logf{1-\pi_i} - y_i \logf{1-\pi_i})
+\\ &= y_i \logf{\pi_i} + \logf{1-\pi_i} - y_i \logf{\blue{1-\pi_i}}
+\\ &= y_i \logf{\pi_i} - y_i \logf{\blue{1-\pi_i}} + \logf{1-\pi_i}
+\\ &= (y_i \logf{\pi_i} - y_i \logf{\blue{1-\pi_i}}) + \logf{1-\pi_i}
+\\ &= y_i (\logf{\red{\pi_i}} - \logf{\blue{1-\pi_i}}) + \logf{1-\pi_i}
+\\ &= y_i \paren{\logf{\frac{\red{\pi_i}}{\blue{1-\pi_i}}}} + \logf{1-\pi_i}
+\\ &= y_i (\logit(\pi_i)) + \logf{1-\pi_i}
+\\ &= y_i (\eta_i) + \logf{1-\pi_i}
+\\ &= y_i (\vx_i \cdot \vb) + \logf{1-\pi_i}
+\ea
+$$
+
+
+---
+
 :::{#exr-beetles-loglik}
 Compute and graph the log-likelihood for the `beetles` data.
 :::
@@ -148,14 +152,13 @@ Compute and graph the log-likelihood for the `beetles` data.
 
 :::{#fig-beetles-llik}
 ```{r}
+#| label: beetles-llik-fig1
 odds_inv <- function(omega) (1 + omega^-1)^-1
 llik_beetles0 <- function(beta_0, beta_1) {
   beetles |>
     mutate(
       eta = beta_0 + beta_1 * dose,
-      omega = exp(eta),
-      pi = odds_inv(omega),
-      llik = died * log(pi) + survived * log(1-pi)
+      llik = died * eta + log(1 - pi)
     ) |>
     pull(llik) |>
     sum()
@@ -199,6 +202,7 @@ log-likelihood of `beetles` data
 Let's center dose:
 
 ```{r}
+#| label: beetles-center-dose
 beetles_glm_grouped_centered <- beetles |>
   glm(formula = cbind(died, survived) ~ dose_c,
       family = "binomial")
@@ -215,6 +219,7 @@ equatiomatic::extract_eq(beetles_glm_ungrouped_centered)
 
 :::{#fig-beetles-lik-centered}
 ```{r}
+#| label: beetles-lik-centered-fig
 odds_inv <- function(omega) (1 + omega^-1)^-1
 lik_beetles0 <- function(beta_0, beta_1) {
   beetles |>
@@ -270,6 +275,7 @@ Likelihood of `beetles` data (centered model)
 
 :::{#fig-beetles-llik-centered}
 ```{r}
+#| label: beetles-llik-centered-fig
 odds_inv <- function(omega) (1 + omega^-1)^-1
 llik_beetles0 <- function(beta_0, beta_1) {
   beetles |>
@@ -325,11 +331,11 @@ $$
 $$
 \ba
 \ell_i'(\vb)
-   &= \deriv{\vb} y_i \paren{\logitf{\pi_i}} + \logf{1-\pi_i}
-\\ &= \deriv{\vb}\cb{y_i \paren{\vx_i'\vb} + \logf{1-\pi_i}}
-\\ &= \cb{y_i \deriv{\vb}\paren{\vx_i'\vb} + \deriv{\vb}\logf{1-\pi_i}}
-\\ &= \cb{\vx_i y_i + \deriv{\vb}\logf{1-\expit(\vx_i'\vb)}}
-\\ &= \cb{\vx_i y_i + \deriv{\vb}\logf{\inv{1+\exp{\vx_i'\vb}}}}
+   &= \deriv{\vb} y_i \eta_i + \logf{1-\pi_i}
+\\ &= \deriv{\vb}\cb{y_i \eta_i + \logf{1-\pi_i}}
+\\ &= \cb{\deriv{\vb}y_i\eta_i + \deriv{\vb}\logf{1-\pi_i}}
+\\ &= \cb{\paren{\deriv{\vb}\eta_i}y_i + \deriv{\vb}\logf{1-\expit(\vx_i'\vb)}}
+\\ &= \cb{\paren{\deriv{\vb}\vx_i \cdot \vb}y_i + \deriv{\vb}\logf{\inv{1+\exp{\vx_i'\vb}}}}
 \\ &= \cb{\vx_i y_i - \blue{\deriv{\vb}\logf{1+\exp{\vx_i'\vb}}}}
 \ea
 $$
@@ -347,9 +353,9 @@ $$
 \ba
 \red{\deriv{\beta}\cb{1+\exp{\vx_i'\beta}}}
 &= \deriv{\beta}\exp{\vx_i'\beta}
-\\ &= \exp{\vx_i'\beta} \deriv{\beta}\vx_i'\beta
+\\ &= \paren{\deriv{\beta}\vx_i'\beta} \exp{\vx_i'\beta} 
 \\ &= \vx_i \exp{\vx_i'\beta}
-\\ &= \vx_i \omega_i
+\\ &= \red{\vx_i \omega_i}
 \ea
 $${#eq-deriv-expit}
 
@@ -357,11 +363,11 @@ So:
 
 $$
 \ba
-\deriv{\beta}\logf{1+\exp{\vx_i'\beta}}
-   &= \frac{1}{1+\exp{\vx_i'\beta}} \exp{\vx_i'\beta} \vx_i
-\\ &= \frac{\exp{\vx_i'\beta}}{1+\exp{\vx_i'\beta}}  \vx_i
+\blue{\deriv{\beta}\logf{1+\exp{\vx_i'\beta}}}
+   &= \red{\vx_i \omega_i} \frac{1}{1+\exp{\vx_i'\beta}} 
+\\ &= \frac{\red{\vx_i \omega_i}}{1+\exp{\vx_i'\beta}}  \vx_i
 \\ &= \vx_i \expitf{\vx_i'\beta}
-\\ &= \vx_i \pi_i
+\\ &= \blue{\vx_i \pi_i}
 \ea
 $$
 
@@ -372,7 +378,7 @@ So:
 $$
 \ba
 \llik_i'(\vb)
-&= \vx_i y_i - \vx_i \pi_i
+&= \vx_i y_i - \blue{\vx_i \pi_i}
 \\ &= \vx_i (y_i - \pi_i)
 \\ &= \vx_i (y_i - \mu_i)
 \\ &= \vx_i (y_i - \Expp[Y_i|\vX_i=\vx_i])
@@ -414,6 +420,7 @@ Implement and graph the score function for the beetles data
 :::{#fig-beetles-score-centered}
 
 ```{r}
+#| label: score-beetles-centered
 odds_inv <- function(omega) (1 + omega^-1)^-1
 score_beetles0 <- function(beta_0, beta_1) {
   beetles |>
@@ -574,7 +581,7 @@ You can see some information about this process like so:
 #| label: out-glm-fitting-process
 #| code-fold: false
 
-temp <-
+beetles_glm_ungrouped <-
   beetles_long |>
   glm(
     control = glm.control(trace = TRUE),
@@ -593,3 +600,26 @@ the algorithm took 5 iterations to converge to a solution where
 the likelihood wasn't changing much anymore.
 
 :::
+
+---
+
+@tbl-beetles-glm-ungrouped and @tbl-beetles-glm-ungrouped-vcov show 
+the fitted model and the covariance matrix of the estimates, respectively.
+
+```{r}
+#| tbl-cap: Fitted model for `beetles` data
+#| label: tbl-beetles-glm-ungrouped
+#| code-fold: show
+
+beetles_glm_ungrouped |> summary()
+
+```
+
+```{r}
+#| tbl-cap: Parameter estimate covariance matrix for `beetles` data
+#| label: tbl-beetles-glm-ungrouped-vcov
+#| code-fold: show
+
+beetles_glm_ungrouped |> vcov()
+
+```
