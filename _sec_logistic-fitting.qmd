@@ -59,7 +59,7 @@ lik_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose,
       omega = exp(eta),
       pi = odds_inv(omega),
-      Lik = (pi^died) * (1 - pi)^(survived)
+      Lik = pi^died * (1 - pi)^survived
     ) |>
     pull(Lik) |>
     prod()
@@ -75,7 +75,7 @@ beetles_glm <-
   )
 ranges <- confint.default(beetles_glm)
 
-n_points <- 100
+n_points <- 250
 beta_0s <- seq(ranges["(Intercept)", "2.5 %"],
   ranges["(Intercept)", "97.5 %"],
   length.out = n_points
@@ -106,7 +106,7 @@ graph_3d <- function(x, y, z) {
     )
 }
 
-graph_3d(beta_0s, beta_1s, lik_mat_beetles) |> print()
+graph_3d(beta_0s, beta_1s, lik_mat_beetles)
 ```
 
 Likelihood of `beetles` data
@@ -167,7 +167,7 @@ llik_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose,
       omega = exp(eta),
       pi = odds_inv(omega), # need for next line:
-      llik = died * eta + log(1 - pi)
+      llik = died*eta + n*log(1 - pi)
     ) |>
     pull(llik) |>
     sum()
@@ -196,6 +196,7 @@ Let's center dose:
 
 ```{r}
 #| label: beetles-center-dose
+#| results: asis
 beetles_glm_grouped_centered <- beetles |>
   glm(
     formula = cbind(died, survived) ~ dose_c,
@@ -266,7 +267,7 @@ llik_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose_c,
       omega = exp(eta),
       pi = odds_inv(omega),
-      llik = died * eta + log(1 - pi)
+      llik = died * eta + n*log(1 - pi)
     ) |>
     pull(llik) |>
     sum()
@@ -395,7 +396,6 @@ score_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose_c,
       omega = exp(eta),
       pi = odds_inv(omega),
-      llik = died * log(pi) + survived * log(1 - pi),
       mu = pi * n,
       epsilon = died - mu,
       score = dose_c * epsilon
