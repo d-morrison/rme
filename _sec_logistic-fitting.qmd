@@ -1,5 +1,10 @@
 {{< include macros.qmd >}}
 
+```{r}
+run_graph = TRUE
+```
+
+
 ### Model
 
 Assume:
@@ -104,8 +109,10 @@ graph_3d <- function(x, y, z) {
       )
     )
 }
-lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
-graph_3d(beta_0s, beta_1s, lik_mat_beetles)
+if (run_graph) {
+  lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
+  graph_3d(beta_0s, beta_1s, lik_mat_beetles)
+}
 ```
 
 Likelihood of `beetles` data
@@ -153,8 +160,10 @@ llik_beetles <- Vectorize(llik_beetles0)
 # logLik(beetles_glm_ungrouped)
 # llik_beetles(ests[1], ests[2])
 
-llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
-graph_3d(beta_0s, beta_1s, llik_mat_beetles)
+if (run_graph) {
+  llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
+  graph_3d(beta_0s, beta_1s, llik_mat_beetles)
+}
 ```
 
 log-likelihood of `beetles` data
@@ -168,7 +177,6 @@ log-likelihood of `beetles` data
 Let's center dose:
 
 ```{r}
-#| label: beetles-center-dose
 #| results: asis
 beetles_glm_grouped_centered <- beetles |>
   glm(
@@ -219,8 +227,10 @@ beta_1s <- seq(ranges["dose_c", "2.5 %"],
 )
 names(beta_0s) <- round(beta_0s, 2)
 names(beta_1s) <- round(beta_1s, 2)
-lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
-graph_3d(beta_0s, beta_1s, lik_mat_beetles)
+if (run_graph) {
+  lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
+  graph_3d(beta_0s, beta_1s, lik_mat_beetles)
+}
 ```
 
 Likelihood of `beetles` data (centered model)
@@ -246,8 +256,11 @@ llik_beetles0 <- function(beta_0, beta_1) {
 }
 
 llik_beetles <- Vectorize(llik_beetles0)
-llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
-graph_3d(beta_0s, beta_1s, llik_mat_beetles)
+
+if (run_graph) {
+  llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
+  graph_3d(beta_0s, beta_1s, llik_mat_beetles)
+}
 ```
 
 log-likelihood of `beetles` data (centered model)
@@ -287,8 +300,10 @@ score_beetles0 <- function(beta_0, beta_1) {
     sum()
 }
 score_beetles <- Vectorize(score_beetles0)
-score_mat_beetles <- outer(beta_0s, beta_1s, score_beetles)
-graph_3d(beta_0s, beta_1s, score_mat_beetles)
+if (run_graph) {
+  score_mat_beetles <- outer(beta_0s, beta_1s, score_beetles)
+  graph_3d(beta_0s, beta_1s, score_mat_beetles)
+}
 ```
 
 score function of `beetles` data (centered model) for slope term $\beta_1$.
