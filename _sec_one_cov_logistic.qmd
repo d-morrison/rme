@@ -1,3 +1,4 @@
+{{< include macros.qmd >}}
 
 ::: notes
 
@@ -10,54 +11,72 @@ defined by oral contraceptive use.
 
 :::
 
-### Binary outcomes models - one group, no covariates {.smaller}
+### Independent binary outcomes - general  {.smaller}
 
-$$
-\begin{aligned}
-\P(Y=1) &= \pi\\
-\P(Y=0) &= 1-\pi\\
-\P(Y=y) &= \pi^y (1-\pi)^{1-y}\\
-\mathbf y  &= (y_1, ..., y_n)\\
-\Lik(\pi;\mathbf y) &= \pi^{\sum y_i} (1-\pi)^{n - \sum y_i}\\
-\ell(\pi, \mathbf y) &= \left({\sum y_i}\right) \logf{\pi} + \left(n - \sum y_i\right) \logf{1-\pi}\\
-&= \left({\sum y_i}\right) \left(\logf{\pi} - \logf{1-\pi}\right) + n \cdot \logf{1-\pi}\\
-&= \left({\sum y_i}\right) \logf{\frac{\pi}{ 1-\pi}} + n \cdot \logf{1-\pi}
-\\ &= \left({\sum y_i}\right) \logit(\pi) + n \cdot \logf{1-\pi}
-\end{aligned}
-$$
+For a data set of mutually independent binary outcomes $\vy  = (y_1, ..., y_n)$:
 
-### Binary outcomes - general  {.smaller}
+:::{#exr-bernoulli-likelihood-general}
+
+Write the likelihood of the data set.
+
+:::
+
+---
+
+:::{#sol-bernoulli-likelihood-general}
 
 $$
 \ba
-\P(Y_i=1) &= \pi_i
-\\ \P(Y_i=0) &= 1-\pi_i
+\red{\pi_i} &\eqdef \P(Y_i=1)
+\\ \P(Y_i=0) &= 1-\red{\pi_i}
+\\
+\P(Y_i=y_i) &= \P(Y_i=1)^{y_i} \P(Y_i=0)^{1-y_i}
+\\
+&= (\pi_i)^{y_i} (1-\pi_i)^{1-y_i}
+\\
+\red{\Lik_i(\pi_i)} &\eqdef \P(Y_i=y_i)
+\\
+\Lik(\vec \pi) &\eqdef \P(\dsvn{Y}{y})
+\\
+&= \prodin \P(Y_i=y_i)
+\\
+&= \prodin \red{\Lik_i(\pi_i)}
+\\
+&= \prodin (\pi_i)^{y_i} (1-\pi_i)^{1-y_i}
 \ea
 $$
 
-$$\P(Y_i=y_i) = (\pi_i)^y_i (1-\pi_i)^{1-y_i}$$
+:::
 
-$$\Lik_i(\pi_i) = \P(Y_i=y_i)$$
+---
 
+:::{#exr-bernoulli-loglik-general}
+
+Write the log-likelihood of the data set.
+
+:::
+
+---
+
+:::{#sol-bernoulli-loglik-general}
 $$
 \ba
-\ell_i(\pi_i)
-   &= \logf{\Lik_i(\pi_i)}
+\llik(\vpi) &\eqdef \logf{\Lik(\vpi)}
+\\
+&= \logf{\prodin \Lik_i(\pi_i)}
+\\
+&= \sumin \logf{\Lik_i(\pi_i)}
+\\
+&= \sumin \ell_i(\pi_i)
+\\
+\ell_i(\pi_i) &\eqdef \logf{\Lik_i(\pi_i)}
 \\ &= y_i \logf{\pi_i} + (1-y_i) \logf{1-\pi_i}
 \ea
 $$
 
+:::
+
 ---
-
-For $\iid$ data $\vec y  = (y_1, ..., y_n)$:
-
-$$
-\ba
-\Lik(\pi;\vec y) &= \P(\dsvn{Y}{y})
-\\ &= \prod_{i=1}^n \P(Y_i=y_i)
-\\ &= \prod_{i=1}^n \Lik_i(\pi_i)
-\ea
-$$
 
 ### Modeling $\pi_i$ as a function of $X_i$
 
@@ -85,7 +104,7 @@ $$\pi(\vec x) = \expit(\vx'\beta)$${#eq-logistic-link}
 ```{r}
 
 library(glmx)
-
+library(dplyr)
 data(BeetleMortality, package = "glmx")
 beetles <- BeetleMortality |>
   mutate(
@@ -105,7 +124,7 @@ Mortality rates of adult flour beetles after five hours’ exposure to gaseous c
 :::{#fig-beetles_1a}
 
 ```{r}
-
+library(ggplot2)
 plot1 <-
   beetles |>
   ggplot(aes(x = dose, y = pct)) +
@@ -233,7 +252,10 @@ function)
 
 ### Logistic regression in R
 
+:::{#tbl-beetles-model-grouped}
+
 ```{r}
+#| label: beetles-model-grouped-
 beetles_glm_grouped <-
   beetles |>
   glm(
@@ -247,11 +269,16 @@ beetles_glm_grouped |>
   print_md()
 ```
 
+logistic regression model for beetles data with grouped (binomial) data
+
+:::
+
 ---
 
 Fitted values:
 
 ```{r}
+#| label: beetles-model-fitted-values
 fitted.values(beetles_glm_grouped)
 predict(beetles_glm_grouped, type = "response")
 predict(beetles_glm_grouped, type = "link")
@@ -275,6 +302,7 @@ beetles_long
 :::{#tbl-beetles-model-ungrouped}
 
 ```{r}
+#| label: beetles-ungrouped-param-ests
 beetles_glm_ungrouped <-
   beetles_long |>
   glm(
@@ -291,21 +319,8 @@ logistic regression model for beetles data with individual Bernoulli data
 
 :::
 
-::: notes
-Here's the previous version again:
-:::
+Compare with @tbl-beetles-model-grouped.
 
-:::{#tbl-beetles-model-grouped}
-
-```{r}
-beetles_glm_grouped |>
-  parameters() |>
-  print_md()
-```
-
-logistic regression model for beetles data with grouped (binomial) data
-
-:::
 
 ---
 

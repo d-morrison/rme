@@ -1,0 +1,81 @@
+
+### Models superimposed on data
+
+We can graph our fitted models on each scale (probability, odds,
+log-odds).
+
+---
+
+#### probability scale
+
+```{r}
+curve_type_A <- function(x) { # nolint: object_name_linter
+  chd_glm_contrasts |> predict(
+    type = "response",
+    newdata = tibble(age = x, dibpat = "Type A")
+  )
+}
+
+curve_type_B <- function(x) { # nolint: object_name_linter
+  chd_glm_contrasts |> predict(
+    type = "response",
+    newdata = tibble(age = x, dibpat = "Type B")
+  )
+}
+
+chd_plot_probs_2 <-
+  chd_plot_probs +
+  geom_function(
+    fun = curve_type_A,
+    aes(col = "Type A")
+  ) +
+  geom_function(
+    fun = curve_type_B,
+    aes(col = "Type B")
+  )
+print(chd_plot_probs_2)
+```
+
+---
+
+:::{fig-fitted-odds-chd}
+
+```{r}
+
+chd_plot_odds_2 <-
+  chd_plot_odds +
+  geom_function(
+    fun = curve_type_A,
+    aes(col = "Type A")
+  ) +
+  geom_function(
+    fun = curve_type_B,
+    aes(col = "Type B")
+  )
+print(chd_plot_odds_2)
+```
+
+odds scale
+
+:::
+
+---
+
+#### log-odds (logit) scale
+
+```{r}
+#| label: fig-fitted-log-odds
+
+chd_plot_logit_2 <-
+  chd_plot_logit +
+  geom_function(
+    fun = curve_type_A,
+    aes(col = "Type A")
+  ) +
+  geom_function(
+    fun = curve_type_B,
+    aes(col = "Type B")
+  )
+
+print(chd_plot_logit_2)
+```

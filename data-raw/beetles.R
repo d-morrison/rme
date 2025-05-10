@@ -1,5 +1,5 @@
 library(glmx)
-beetles = BeetleMortality |>
+beetles <- BeetleMortality |>
   mutate(
     pct = died/n,
     survived = n - died

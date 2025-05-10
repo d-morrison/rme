@@ -1,6 +1,26 @@
 ### Logistic regression residuals only work for grouped data
 
 ```{r}
+#| fig-cap: "Residual diagnostics for WCGS model with individual-level observations"
+#| label: fig-resid-dx-wcgs-ungrouped
+library(haven)
+url <- paste0(
+  # I'm breaking up the url into two chunks for readability
+  "https://regression.ucsf.edu/sites/g/files/",
+  "tkssra6706/f/wysiwyg/home/data/wcgs.dta"
+)
+library(here) # provides the `here()` function
+library(fs) # provides the `path()` function
+here::here() |>
+  fs::path("Data/wcgs.rda") |>
+  load()
+chd_glm_contrasts <-
+  wcgs |>
+  glm(
+    "data" = _,
+    "formula" = chd69 == "Yes" ~ dibpat * age,
+    "family" = binomial(link = "logit")
+  )
 library(ggfortify)
 chd_glm_contrasts |> autoplot()
 ```
@@ -18,25 +38,45 @@ WCGS study:
 :::
 
 ```{r}
+#| results: asis
+library(dplyr)
 wcgs_grouped <-
   wcgs |>
   summarize(
     .by = c(dibpat, age),
     n = n(),
     chd = sum(chd69 == "Yes"),
-    `!chd` = sum(chd69 == "No")
-  )
+    no_chd = sum(chd69 == "No")
+  ) |> 
+  mutate(p_chd = chd/n)
 
 chd_glm_contrasts_grouped <- glm(
-  "formula" = cbind(chd, `!chd`) ~ dibpat*age,
+  "formula" = cbind(chd, no_chd) ~ dibpat*age,
   "data" = wcgs_grouped,
   "family" = binomial(link = "logit")
 )
+# chd_glm_contrasts_grouped |> equatiomatic::extract_eq()
+```
 
+```{r}
+#| label: tbl-chd-model-wcgs-grouped-data
+#| tbl-cap: "CHD model with grouped `wcgs` data"
+
+library(parameters)
 chd_glm_contrasts_grouped |>
   parameters() |>
   print_md()
 ```
+
+```{r}
+#| fig-cap: "CHD model with grouped `wcgs` data"
+#| label: fig-wcgs-model-grouped-data
+chd_glm_contrasts_grouped |> 
+  sjPlot::plot_model(type = "pred", terms = c("age", "dibpat")) + 
+  geom_point(data = wcgs_grouped |> mutate(group_col = dibpat), 
+             aes(x = age, y = p_chd))
+```
+
 
 ```{r}
 library(ggfortify)
@@ -55,6 +95,8 @@ $\hat\pi(x_k)$:
 
 ```{r}
 #| code-fold: show
+odds <- function(pi) pi/(1-pi)
+logit <- function(pi) log(odds(pi))
 wcgs_grouped <-
   wcgs_grouped |>
   mutate(
@@ -93,18 +135,12 @@ wcgs_response_resid_plot <-
 hard to use with `geom_smooth`, and hard to match exactly with
 `stats::loess`; see https://support.bioconductor.org/p/2323/.\]
 
-::: {.content-visible when-format="pdf"}
 ```{r}
 #| fig-height: 6
+#| label: fig-wcgs-resid-manual
+#| fig-cap: "residuals plot for `wcgs` model"
 wcgs_response_resid_plot |> print()
 ```
-:::
-
-::: {.content-visible when-format="html"}
-```{r}
-wcgs_response_resid_plot |> ggplotly()
-```
-:::
 
 We can see a slight fan-shape here: observations on the right have
 larger variance (as expected since $var(\bar y) = \pi(1-\pi)/n$ is
@@ -142,18 +178,11 @@ WCGS data (graphed against the fitted values on the logit scale):
 library(ggfortify)
 ```
 
-::: {.content-visible when-format="pdf"}
+
 ```{r}
 #| fig-height: 6
 autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
 ```
-:::
-
-::: {.content-visible when-format="html"}
-```{r}
-autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
-```
-:::
 
 The fan-shape is gone, and these residuals don't show any obvious signs
 of model fit issues.
@@ -163,18 +192,23 @@ of model fit issues.
 If we create the same plot for the `beetles` model, we see some strong
 evidence of a lack of fit:
 
-::: {.content-visible when-format="html"}
 ```{r}
+library(glmx)
+library(dplyr)
+data(BeetleMortality)
+beetles <- BeetleMortality |>
+  mutate(
+    pct = died / n,
+    survived = n - died,
+    dose_c = dose - mean(dose)
+  )
+beetles_glm_grouped <- beetles |>
+  glm(
+    formula = cbind(died, survived) ~ dose,
+    family = "binomial"
+  )
 autoplot(beetles_glm_grouped, which = 1, ncol = 1) |> print()
 ```
-:::
-
-::: {.content-visible when-format="pdf"}
-```{r}
-#| fig-height: 6
-autoplot(beetles_glm_grouped, which = 1, ncol = 1) |> print()
-```
-:::
 
 #### Pearson residuals with individual (ungrouped) data
 
@@ -186,6 +220,12 @@ library(ggfortify)
 ```
 
 ```{r}
+chd_glm_strat <- glm(
+  "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1,
+  "data" = wcgs,
+  "family" = binomial(link = "logit")
+)
+
 autoplot(chd_glm_strat, which = 1, ncol = 1) |> print()
 ```
 
@@ -233,18 +273,11 @@ wcgs_resid_plot1 <-
 # see https://support.bioconductor.org/p/2323/
 ```
 
-::: {.content-visible when-format="pdf"}
 ```{r}
 #| fig-height: 6
 wcgs_resid_plot1 |> print()
 ```
-:::
 
-::: {.content-visible when-format="html"}
-```{r}
-wcgs_resid_plot1 |> ggplotly()
-```
-:::
 
 ### Pearson chi-squared goodness of fit test
 
