@@ -21,7 +21,7 @@ library(dplyr)
 data(BeetleMortality)
 beetles <- BeetleMortality |>
   mutate(
-    pct = died/n,
+    pct = died / n,
     survived = n - died
   )
 beetles_long <-
@@ -57,7 +57,7 @@ lik_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose,
       omega = exp(eta),
       pi = odds_inv(omega),
-      Lik = (pi^died) * (1-pi)^(survived)
+      Lik = (pi^died) * (1 - pi)^(survived)
     ) |>
     pull(Lik) |>
     prod()
@@ -71,35 +71,41 @@ beetles_glm <-
     formula = cbind(died, survived) ~ dose,
     family = "binomial"
   )
-ranges = confint.default(beetles_glm)
+ranges <- confint.default(beetles_glm)
 
-n_points = 200
-beta_0s = seq(ranges["(Intercept)","2.5 %"],
-             ranges["(Intercept)","97.5 %"],
-             length.out = n_points)
-beta_1s = seq(ranges["dose","2.5 %"],
-             ranges["dose","97.5 %"],
-             length.out = n_points)
-names(beta_0s) = round(beta_0s, 2)
-names(beta_1s) = round(beta_1s, 2)
-lik_mat_beetles = outer(beta_0s, beta_1s, lik_beetles)
-library(plotly)
-fig <- plotly::plot_ly(
-  type = 'surface',
-  x = ~beta_0s,
-  y = ~beta_1s,
-  z = ~t(lik_mat_beetles))
- # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
-fig1 <- fig %>%
-  plotly::layout(
-    scene = list(
-      xaxis = list(nticks = 20),
-      zaxis = list(nticks = 10),
-      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-      aspectratio = list(x = .9, y = .8, z = 0.8)))
+n_points <- 200
+beta_0s <- seq(ranges["(Intercept)", "2.5 %"],
+  ranges["(Intercept)", "97.5 %"],
+  length.out = n_points
+)
+beta_1s <- seq(ranges["dose", "2.5 %"],
+  ranges["dose", "97.5 %"],
+  length.out = n_points
+)
+names(beta_0s) <- round(beta_0s, 2)
+names(beta_1s) <- round(beta_1s, 2)
+lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
+graph_3d <- function(x, y, z) {
+  fig <- plotly::plot_ly(
+    type = "surface",
+    x = ~x,
+    y = ~y,
+    z = ~ t(z)
+  )
+  # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly 
+  # for explanation of why transpose `t()` is needed
+  fig1 <- fig %>%
+    plotly::layout(
+      scene = list(
+        xaxis = list(nticks = 20),
+        zaxis = list(nticks = 10),
+        # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
+        aspectratio = list(x = .9, y = .8, z = 0.8)
+      )
+    )
+}
 
-fig1
-
+graph_3d(beta_0s, beta_1s, lik_mat_beetles)
 ```
 
 Likelihood of `beetles` data
@@ -158,6 +164,8 @@ llik_beetles0 <- function(beta_0, beta_1) {
   beetles |>
     mutate(
       eta = beta_0 + beta_1 * dose,
+      omega = exp(eta),
+      pi = odds_inv(omega), # need for next line:
       llik = died * eta + log(1 - pi)
     ) |>
     pull(llik) |>
@@ -171,24 +179,8 @@ llik_beetles <- Vectorize(llik_beetles0)
 # logLik(beetles_glm_ungrouped)
 # llik_beetles(ests[1], ests[2])
 
-llik_mat_beetles = outer(beta_0s, beta_1s, llik_beetles)
-
-fig <- plot_ly(
-  type = 'surface',
-  x = ~beta_0s,
-  y = ~beta_1s,
-  z = ~t(llik_mat_beetles))
- # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
-fig1 <- fig %>%
-  plotly::layout(
-    scene = list(
-      xaxis = list(nticks = 20),
-      zaxis = list(nticks = 10),
-      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-      aspectratio = list(x = .9, y = .8, z = 0.8)))
-
-fig1
-
+llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
+graph_3d(beta_0s, beta_1s, llik_mat_beetles)
 ```
 
 log-likelihood of `beetles` data
@@ -204,13 +196,17 @@ Let's center dose:
 ```{r}
 #| label: beetles-center-dose
 beetles_glm_grouped_centered <- beetles |>
-  glm(formula = cbind(died, survived) ~ dose_c,
-      family = "binomial")
+  glm(
+    formula = cbind(died, survived) ~ dose_c,
+    family = "binomial"
+  )
 
 beetles_glm_ungrouped_centered <- beetles_long |>
   mutate(died = outcome) |>
-  glm(formula = died ~ dose_c,
-      family = "binomial")
+  glm(
+    formula = died ~ dose_c,
+    family = "binomial"
+  )
 
 equatiomatic::extract_eq(beetles_glm_ungrouped_centered)
 ```
@@ -227,7 +223,7 @@ lik_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose_c,
       omega = exp(eta),
       pi = odds_inv(omega),
-      Lik = (pi^died) * (1-pi)^(survived)
+      Lik = (pi^died) * (1 - pi)^(survived)
     ) |>
     pull(Lik) |>
     prod()
@@ -235,35 +231,21 @@ lik_beetles0 <- function(beta_0, beta_1) {
 
 lik_beetles <- Vectorize(lik_beetles0)
 
-ranges = confint.default(beetles_glm_grouped_centered)
+ranges <- confint.default(beetles_glm_grouped_centered)
 
-n_points = 100
-beta_0s = seq(ranges["(Intercept)","2.5 %"],
-             ranges["(Intercept)","97.5 %"],
-             length.out = n_points)
-beta_1s = seq(ranges["dose_c","2.5 %"],
-             ranges["dose_c","97.5 %"],
-             length.out = n_points)
-names(beta_0s) = round(beta_0s, 2)
-names(beta_1s) = round(beta_1s, 2)
-lik_mat_beetles = outer(beta_0s, beta_1s, lik_beetles)
-
-fig <- plot_ly(
-  type = 'surface',
-  x = ~beta_0s,
-  y = ~beta_1s,
-  z = ~t(lik_mat_beetles))
- # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
-fig1 <- fig %>%
-  plotly::layout(
-    scene = list(
-      xaxis = list(nticks = 20),
-      zaxis = list(nticks = 10),
-      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-      aspectratio = list(x = .9, y = .8, z = 0.8)))
-
-fig1
-
+n_points <- 100
+beta_0s <- seq(ranges["(Intercept)", "2.5 %"],
+  ranges["(Intercept)", "97.5 %"],
+  length.out = n_points
+)
+beta_1s <- seq(ranges["dose_c", "2.5 %"],
+  ranges["dose_c", "97.5 %"],
+  length.out = n_points
+)
+names(beta_0s) <- round(beta_0s, 2)
+names(beta_1s) <- round(beta_1s, 2)
+lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
+graph_3d(beta_0s, beta_1s, lik_mat_beetles)
 ```
 
 Likelihood of `beetles` data (centered model)
@@ -283,7 +265,7 @@ llik_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose_c,
       omega = exp(eta),
       pi = odds_inv(omega),
-      llik = died * log(pi) + survived * log(1-pi)
+      llik = died * eta + log(1 - pi)
     ) |>
     pull(llik) |>
     sum()
@@ -291,23 +273,7 @@ llik_beetles0 <- function(beta_0, beta_1) {
 
 llik_beetles <- Vectorize(llik_beetles0)
 llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
-
-fig <- plot_ly(
-  type = 'surface',
-  x = ~beta_0s,
-  y = ~beta_1s,
-  z = ~t(llik_mat_beetles))
- # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
-fig1 <- fig %>%
-  plotly::layout(
-    scene = list(
-      xaxis = list(nticks = 20),
-      zaxis = list(nticks = 10),
-      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-      aspectratio = list(x = .9, y = .8, z = 0.8)))
-
-fig1
-
+graph_3d(beta_0s, beta_1s, llik_mat_beetles)
 ```
 
 log-likelihood of `beetles` data (centered model)
@@ -428,7 +394,7 @@ score_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose_c,
       omega = exp(eta),
       pi = odds_inv(omega),
-      llik = died * log(pi) + survived * log(1-pi),
+      llik = died * log(pi) + survived * log(1 - pi),
       mu = pi * n,
       epsilon = died - mu,
       score = dose_c * epsilon
@@ -438,22 +404,7 @@ score_beetles0 <- function(beta_0, beta_1) {
 }
 score_beetles <- Vectorize(score_beetles0)
 score_mat_beetles <- outer(beta_0s, beta_1s, score_beetles)
-fig <- plot_ly(
-  type = 'surface',
-  x = ~beta_0s,
-  y = ~beta_1s,
-  z = ~t(score_mat_beetles))
- # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
-fig1 <- fig %>%
-  plotly::layout(
-    scene = list(
-      xaxis = list(nticks = 20),
-      zaxis = list(nticks = 10),
-      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-      aspectratio = list(x = .9, y = .8, z = 0.8)))
-
-fig1
-
+graph_3d(beta_0s, beta_1s, score_mat_beetles)
 ```
 
 score function of `beetles` data (centered model) for slope term $\beta_1$.
@@ -588,7 +539,6 @@ beetles_glm_ungrouped <-
     formula = outcome ~ dose,
     family = "binomial"
   )
-
 ```
 
 ::: notes
@@ -612,7 +562,6 @@ the fitted model and the covariance matrix of the estimates, respectively.
 #| code-fold: show
 
 beetles_glm_ungrouped |> summary()
-
 ```
 
 ```{r}
@@ -621,5 +570,4 @@ beetles_glm_ungrouped |> summary()
 #| code-fold: show
 
 beetles_glm_ungrouped |> vcov()
-
 ```
