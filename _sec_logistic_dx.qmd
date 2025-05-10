@@ -1,0 +1,337 @@
+### Logistic regression residuals only work for grouped data
+
+```{r}
+library(ggfortify)
+chd_glm_contrasts |> autoplot()
+```
+
+
+---
+
+::: notes
+
+Residuals only work if there is more than one observation for most
+covariate patterns.
+
+Here we will create the grouped-data version of our CHD model from the
+WCGS study:
+:::
+
+```{r}
+wcgs_grouped <-
+  wcgs |>
+  summarize(
+    .by = c(dibpat, age),
+    n = n(),
+    chd = sum(chd69 == "Yes"),
+    `!chd` = sum(chd69 == "No")
+  )
+
+chd_glm_contrasts_grouped <- glm(
+  "formula" = cbind(chd, `!chd`) ~ dibpat*age,
+  "data" = wcgs_grouped,
+  "family" = binomial(link = "logit")
+)
+
+chd_glm_contrasts_grouped |>
+  parameters() |>
+  print_md()
+```
+
+```{r}
+library(ggfortify)
+chd_glm_contrasts_grouped |> autoplot()
+```
+
+
+### (Response) residuals
+
+$$e_k \eqdef \bar y_k - \hat{\pi}(x_k)$$
+
+($k$ indexes the covariate patterns)
+
+We can graph these residuals $e_k$ against the fitted values
+$\hat\pi(x_k)$:
+
+```{r}
+#| code-fold: show
+wcgs_grouped <-
+  wcgs_grouped |>
+  mutate(
+    fitted = chd_glm_contrasts_grouped |> fitted(),
+    fitted_logit = fitted |> logit(),
+    response_resids = chd_glm_contrasts_grouped |> resid(type = "response")
+  )
+
+wcgs_response_resid_plot <-
+  wcgs_grouped |>
+  ggplot(
+    mapping = aes(
+      x = fitted,
+      y = response_resids
+    )
+  ) +
+  geom_point(
+    aes(col = dibpat)
+  ) +
+  geom_hline(yintercept = 0) +
+  geom_smooth( #<1>
+    se = TRUE, #<1>
+    method.args = list( #<1>
+      span = 2 / 3, #<1>
+      degree = 1, #<1>
+      family = "symmetric", #<1>
+      iterations = 3
+    ), #<1>
+    method = stats::loess
+  ) #<1>
+```
+
+1.  Don't worry about these options for now; I chose them to match
+`autoplot()` as closely as I can. `plot.glm` and `autoplot` use
+`stats::lowess` instead of `stats::loess`; `stats::lowess` is older,
+hard to use with `geom_smooth`, and hard to match exactly with
+`stats::loess`; see https://support.bioconductor.org/p/2323/.\]
+
+::: {.content-visible when-format="pdf"}
+```{r}
+#| fig-height: 6
+wcgs_response_resid_plot |> print()
+```
+:::
+
+::: {.content-visible when-format="html"}
+```{r}
+wcgs_response_resid_plot |> ggplotly()
+```
+:::
+
+We can see a slight fan-shape here: observations on the right have
+larger variance (as expected since $var(\bar y) = \pi(1-\pi)/n$ is
+maximized when $\pi = 0.5$).
+
+### Pearson residuals
+
+The fan-shape in the response residuals plot isn't necessarily a concern
+here, since we haven't made an assumption of constant residual variance,
+as we did for linear regression.
+
+However, we might want to divide by the standard error in order to make
+the graph easier to interpret. Here's one way to do that:
+
+The Pearson (chi-squared) residual for covariate pattern $k$ is: $$
+\begin{aligned}
+X_k &= \frac{\bar y_k - \hat\pi_k}{\sqrt{\hat \pi_k (1-\hat\pi_k)/n_k}}
+\end{aligned}
+$$
+
+where $$
+\begin{aligned}
+\hat\pi_k
+&\eqdef \hat\pi(x_k)\\
+&\eqdef \hat P(Y=1|X=x_k)\\
+&\eqdef \expit(x_i'\hat \beta)\\
+&\eqdef \expit(\hat \beta_0 + \sum_{j=1}^p \hat \beta_j x_{ij})
+\end{aligned}
+$$
+
+Let's take a look at the Pearson residuals for our CHD model from the
+WCGS data (graphed against the fitted values on the logit scale):
+
+```{r}
+library(ggfortify)
+```
+
+::: {.content-visible when-format="pdf"}
+```{r}
+#| fig-height: 6
+autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
+```
+:::
+
+::: {.content-visible when-format="html"}
+```{r}
+autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
+```
+:::
+
+The fan-shape is gone, and these residuals don't show any obvious signs
+of model fit issues.
+
+#### Pearson residuals plot for `beetles` data
+
+If we create the same plot for the `beetles` model, we see some strong
+evidence of a lack of fit:
+
+::: {.content-visible when-format="html"}
+```{r}
+autoplot(beetles_glm_grouped, which = 1, ncol = 1) |> print()
+```
+:::
+
+::: {.content-visible when-format="pdf"}
+```{r}
+#| fig-height: 6
+autoplot(beetles_glm_grouped, which = 1, ncol = 1) |> print()
+```
+:::
+
+#### Pearson residuals with individual (ungrouped) data
+
+What happens if we try to compute residuals without grouping the data by
+covariate pattern?
+
+```{r}
+library(ggfortify)
+```
+
+```{r}
+autoplot(chd_glm_strat, which = 1, ncol = 1) |> print()
+```
+
+Meaningless.
+
+#### Residuals plot by hand (*optional section*)
+
+If you want to check your understanding of what these residual plots
+are, try building them yourself:
+
+```{r}
+wcgs_grouped <-
+  wcgs_grouped |>
+  mutate(
+    fitted = chd_glm_contrasts_grouped |> fitted(),
+    fitted_logit = fitted |> logit(),
+    resids = chd_glm_contrasts_grouped |> resid(type = "pearson")
+  )
+
+wcgs_resid_plot1 <-
+  wcgs_grouped |>
+  ggplot(
+    mapping = aes(
+      x = fitted_logit,
+      y = resids
+    )
+  ) +
+  geom_point(
+    aes(col = dibpat)
+  ) +
+  geom_hline(yintercept = 0) +
+  geom_smooth(
+    se = FALSE,
+    method.args = list(
+      span = 2 / 3,
+      degree = 1,
+      family = "symmetric",
+      iterations = 3,
+      surface = "direct"
+    ),
+    method = stats::loess
+  )
+# plot.glm and autoplot use stats::lowess, which is hard to use with
+# geom_smooth and hard to match exactly;
+# see https://support.bioconductor.org/p/2323/
+```
+
+::: {.content-visible when-format="pdf"}
+```{r}
+#| fig-height: 6
+wcgs_resid_plot1 |> print()
+```
+:::
+
+::: {.content-visible when-format="html"}
+```{r}
+wcgs_resid_plot1 |> ggplotly()
+```
+:::
+
+### Pearson chi-squared goodness of fit test
+
+The Pearson chi-squared goodness of fit statistic is:
+$$X^2 = \sum_{k=1}^m X_k^2$$
+
+Under the null hypothesis that the model in question is correct
+(i.e., sufficiently complex), $X^2\ \dot \sim\ \chi^2(N-p)$.
+
+```{r}
+x_pearson <- chd_glm_contrasts_grouped |>
+  resid(type = "pearson")
+
+chisq_stat <- sum(x_pearson^2)
+
+pval <- pchisq(
+  chisq_stat,
+  lower = FALSE,
+  df = length(x_pearson) - length(coef(chd_glm_contrasts_grouped))
+)
+```
+
+For our CHD model, the p-value for this test is `r pval`; no significant
+evidence of a lack of fit at the 0.05 level.
+
+#### Standardized Pearson residuals
+
+Especially for small data sets, we might want to adjust our residuals
+for leverage (since outliers in $X$ add extra variance to the
+residuals):
+
+$$r_{P_k} = \frac{X_k}{\sqrt{1-h_k}}$$
+
+where $h_k$ is the leverage of $X_k$. The functions `autoplot()` and
+`plot.lm()` use these for some of their graphs.
+
+### Deviance residuals
+
+For large sample sizes, the Pearson and deviance residuals will be
+approximately the same. For small sample sizes, the deviance residuals
+from covariate patterns with small sample sizes can be unreliable (high
+variance).
+
+$$d_k = \text{sign}(y_k - n_k \hat \pi_k)\left\{\sqrt{2[\ell_{\text{full}}(x_k) - \ell(\hat\beta; x_k)]}\right\}$$
+
+#### Standardized deviance residuals
+
+$$r_{D_k} = \frac{d_k}{\sqrt{1-h_k}}$$
+
+### Diagnostic plots
+
+Let's take a look at the full set of `autoplot()` diagnostics now for
+our `CHD` model:
+
+```{r}
+#| fig-height: 6
+#| fig-cap: "Diagnostics for CHD model"
+#| label: fig-chd-model-diagnostics
+
+chd_glm_contrasts_grouped |>
+  autoplot(which = 1:6) |>
+  print()
+```
+
+::: notes
+
+Things look pretty good here. The QQ plot is still usable; with large
+samples; the residuals should be approximately Gaussian.
+
+:::
+
+---
+
+#### Beetles
+
+Let's look at the beetles model diagnostic plots for comparison:
+
+```{r}
+#| fig-height: 6
+#| label: fig-beetles-glm-diag
+#| fig-cap: "Diagnostics for logistic model of `BeetleMortality` data"
+beetles_glm_grouped |>
+  autoplot(which = 1:6) |>
+  print()
+```
+
+
+Hard to tell much from so little data, but there might be some issues
+here.
+

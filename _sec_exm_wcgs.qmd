@@ -1,0 +1,490 @@
+
+### Coronary heart disease (WCGS) study data
+
+::: notes
+Let's use the data from the Western Collaborative Group Study (WCGS)
+(@rosenman1975coronary) to explore multiple logistic regression:
+:::
+
+*From @vittinghoff2e:*
+
+"The **Western Collaborative Group Study (WCGS)** was a large
+epidemiological study designed to investigate the association between
+the "type A" behavior pattern and coronary heart disease (CHD)".
+
+---
+
+:::{#exr-def-type-A}
+
+What is "type A" behavior?
+
+:::
+
+---
+
+:::{#sol-def-type-A}
+*From Wikipedia, "Type A and Type B personality theory":*
+
+"The hypothesis describes Type A individuals as outgoing, ambitious,
+rigidly organized, highly status-conscious, impatient, anxious,
+proactive, and concerned with time management....
+
+The hypothesis describes Type B individuals as a contrast to those of
+Type A. Type B personalities, by definition, are noted to live at lower
+stress levels. They typically work steadily and may enjoy achievement,
+although they have a greater tendency to disregard physical or mental
+stress when they do not achieve."
+:::
+
+---
+
+#### Study design
+
+*from `?faraway::wcgs`:*
+
+3154 healthy young men aged 39-59 from the San Francisco area were
+assessed for their personality type. All were free from coronary heart
+disease at the start of the research. Eight and a half years later
+change in CHD status was recorded.
+
+*Details (from `faraway::wcgs`)*
+
+The WCGS began in 1960 with 3,524 male volunteers who were employed by
+11 California companies. Subjects were 39 to 59 years old and free of
+heart disease as determined by electrocardiogram. After the initial
+screening, the study population dropped to 3,154 and the number of
+companies to 10 because of various exclusions. The cohort comprised both
+blue- and white-collar employees.
+
+---
+
+### Baseline data collection
+
+socio-demographic characteristics:
+
+-   age
+-   education
+-   marital status
+-   income
+-   occupation
+-   physical and physiological including:
+-   height
+-   weight
+-   blood pressure
+-   electrocardiogram
+-   corneal arcus
+
+---
+
+biochemical measurements:
+
+-   cholesterol and lipoprotein fractions;
+-   medical and family history and use of medications;
+
+---
+
+behavioral data:
+
+-   Type A interview,
+-   smoking,
+-   exercise
+-   alcohol use.
+
+---
+
+Later surveys added data on:
+
+* anthropometry
+* triglycerides
+* Jenkins Activity Survey
+* caffeine use
+
+Average follow-up continued for 8.5 years with repeat examinations.
+
+
+### Load the data
+
+Here, I load the data:
+
+```{r}
+#| code-fold: show
+#| eval: false
+
+### load the data directly from a UCSF website:
+library(haven)
+url <- paste0(
+  # I'm breaking up the url into two chunks for readability
+  "https://regression.ucsf.edu/sites/g/files/",
+  "tkssra6706/f/wysiwyg/home/data/wcgs.dta"
+)
+wcgs <- haven::read_dta(url)
+```
+
+```{r}
+#| include: false
+# I presaved the data in my project's `data` folder
+library(here) # provides the `here()` function
+library(fs) # provides the `path()` function
+here::here() |>
+  fs::path("Data/wcgs.rda") |>
+  load()
+```
+
+```{r}
+#| label: tbl-wcgs
+#| tbl-cap: "`wcgs` data"
+wcgs
+```
+
+
+### Data cleaning
+
+::: notes
+Now let's do some data cleaning
+:::
+
+```{r}
+#| code-fold: show
+library(arsenal) # provides `set_labels()`
+library(forcats) # provides `as_factor()`
+library(haven)
+library(plotly)
+wcgs <- wcgs |>
+  mutate(
+    age = age |>
+      arsenal::set_labels("Age (years)"),
+    arcus = arcus |>
+      as.logical() |>
+      arsenal::set_labels("Arcus Senilis"),
+    time169 = time169 |>
+      as.numeric() |>
+      arsenal::set_labels("Observation (follow up) time (days)"),
+    dibpat = dibpat |>
+      as_factor() |>
+      relevel(ref = "Type B") |>
+      arsenal::set_labels("Behavioral Pattern"),
+    typchd69 = typchd69 |>
+      labelled(
+        label = "Type of CHD Event",
+        labels =
+          c(
+            "None" = 0,
+            "infdeath" = 1,
+            "silent" = 2,
+            "angina" = 3
+          )
+      ),
+
+    # turn stata-style labelled variables in to R-style factors:
+    across(
+      where(is.labelled),
+      haven::as_factor
+    )
+  )
+```
+
+### What's in the data {.smaller}
+
+::: notes
+@tbl-wcgs-demos summarizes the data.
+:::
+
+:::{#tbl-wcgs-demos}
+
+```{r}
+library(gtsummary)
+wcgs |>
+  select(-all_of(c("id", "uni", "t1"))) |>
+  gtsummary::tbl_summary(
+    by = "chd69",
+    missing_text = "Missing"
+  ) |>
+  add_p() |>
+  gtsummary::add_overall() |>
+  gtsummary::bold_labels()
+
+```
+
+Baseline characteristics by CHD status at end of follow-up
+
+:::
+
+### Data by age and personality type
+
+For now, we will look at the interaction between age and personality
+type (`dibpat`). To make it easier to visualize the data, we summarize
+the event rates for each combination of age:
+
+```{r}
+#| label: "event rates by age"
+chd_grouped_data <-
+  wcgs |>
+  summarize(
+    .by = c(age, dibpat),
+    n = sum(chd69 %in% c("Yes", "No")),
+    x = sum(chd69 == "Yes")
+  ) |>
+  mutate(
+    `n - x` = n - x,
+    `p(chd)` = (x / n) |>
+      labelled(label = "CHD Event by 1969"),
+    `odds(chd)` = `p(chd)` / (1 - `p(chd)`),
+    `logit(chd)` = log(`odds(chd)`)
+  )
+
+chd_grouped_data
+```
+
+### Graphical exploration
+
+```{r}
+#| label: fig-chd-graph-prob-scale
+#| fig-cap: "CHD rates by age group, probability scale"
+
+library(ggplot2)
+library(ggeasy)
+library(scales)
+chd_plot_probs <-
+  chd_grouped_data |>
+  ggplot(
+    aes(
+      x = age,
+      y = `p(chd)`,
+      col = dibpat
+    )
+  ) +
+  geom_point(aes(size = n), alpha = .7) +
+  scale_size(range = c(1, 4)) +
+  geom_line() +
+  theme_bw() +
+  ylab("P(CHD Event by 1969)") +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+    sec.axis = sec_axis(
+      ~ odds(.),
+      name = "odds(CHD Event by 1969)"
+    )
+  ) +
+  ggeasy::easy_labs() +
+  theme(legend.position = "bottom")
+
+print(chd_plot_probs)
+```
+
+---
+
+#### Odds scale
+
+```{r}
+#| label: fig-chd-odds-scale
+#| fig-cap: "CHD rates by age group, odds spacing"
+
+trans_odds <- trans_new(
+  name = "odds",
+  transform = odds,
+  inverse = odds_inv
+)
+
+chd_plot_odds <- chd_plot_probs +
+  scale_y_continuous(
+    trans = trans_odds, # this line changes the vertical spacing
+    name = chd_plot_probs$labels$y,
+    sec.axis = sec_axis(
+      ~ odds(.),
+      name = "odds(CHD Event by 1969)"
+    )
+  )
+
+print(chd_plot_odds)
+```
+
+---
+
+#### Log-odds (logit) scale
+
+```{r}
+#| label: fig-chd_plot_logit
+#| fig-cap: "CHD data (logit-scale)"
+
+trans_logit <- trans_new(
+  name = "logit",
+  transform = logit,
+  inverse = expit
+)
+
+chd_plot_logit <-
+  chd_plot_probs +
+  scale_y_continuous(
+    trans = trans_logit, # this line changes the vertical spacing
+    name = chd_plot_probs$labels$y,
+    breaks = c(seq(.01, .1, by = .01), .15, .2),
+    minor_breaks = NULL,
+    sec.axis = sec_axis(
+      ~ logit(.),
+      name = "log(odds(CHD Event by 1969))"
+    )
+  )
+
+print(chd_plot_logit)
+```
+
+### Logistic regression models for CHD data {.smaller}
+
+Here, we fit models for CHD by personality type and age:
+
+```{r}
+#| results: asis
+chd_glm_contrasts <-
+  wcgs |>
+  glm(
+    "data" = _,
+    "formula" = chd69 == "Yes" ~ dibpat * age,
+    "family" = binomial(link = "logit")
+  )
+
+library(equatiomatic)
+equatiomatic::extract_eq(chd_glm_contrasts)
+```
+
+```{r}
+#| label: tbl-model-corner-point
+#| tbl-cap: "CHD model (corner-point parametrization)"
+
+chd_glm_contrasts |>
+  parameters() |>
+  print_md()
+```
+
+---
+
+We can get the corresponding odds ratios ($e^{\beta}$s) by passing
+`exponentiate = TRUE` to `parameters()`:
+
+```{r}
+#| tbl-cap: "Odds ratio estimates for CHD model"
+#| label: tbl-chd-glm-contrasts-OR
+chd_glm_contrasts |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
+```
+
+### Models superimposed on data
+
+We can graph our fitted models on each scale (probability, odds,
+log-odds).
+
+---
+
+#### probability scale
+
+```{r}
+curve_type_A <- function(x) { # nolint: object_name_linter
+  chd_glm_contrasts |> predict(
+    type = "response",
+    newdata = tibble(age = x, dibpat = "Type A")
+  )
+}
+
+curve_type_B <- function(x) { # nolint: object_name_linter
+  chd_glm_contrasts |> predict(
+    type = "response",
+    newdata = tibble(age = x, dibpat = "Type B")
+  )
+}
+
+chd_plot_probs_2 <-
+  chd_plot_probs +
+  geom_function(
+    fun = curve_type_A,
+    aes(col = "Type A")
+  ) +
+  geom_function(
+    fun = curve_type_B,
+    aes(col = "Type B")
+  )
+print(chd_plot_probs_2)
+```
+
+---
+
+:::{fig-fitted-odds-chd}
+
+```{r}
+
+chd_plot_odds_2 <-
+  chd_plot_odds +
+  geom_function(
+    fun = curve_type_A,
+    aes(col = "Type A")
+  ) +
+  geom_function(
+    fun = curve_type_B,
+    aes(col = "Type B")
+  )
+print(chd_plot_odds_2)
+```
+
+odds scale
+
+:::
+
+---
+
+#### log-odds (logit) scale
+
+```{r}
+#| label: fig-fitted-log-odds
+
+chd_plot_logit_2 <-
+  chd_plot_logit +
+  geom_function(
+    fun = curve_type_A,
+    aes(col = "Type A")
+  ) +
+  geom_function(
+    fun = curve_type_B,
+    aes(col = "Type B")
+  )
+
+print(chd_plot_logit_2)
+```
+
+### stratified parametrization
+
+We can also use the stratified parametrization:
+
+
+```{r}
+#| tbl-cap: "CHD model, stratified parametrization"
+#| label: tbl-chd-strat
+chd_glm_strat <- glm(
+  "formula" = chd69 == "Yes" ~ dibpat + dibpat:age - 1,
+  "data" = wcgs,
+  "family" = binomial(link = "logit")
+)
+
+chd_glm_strat |>
+  parameters() |>
+  print_md()
+```
+
+---
+
+Again, we can get the corresponding odds ratios ($e^{\beta}$s) by passing
+`exponentiate = TRUE` to `parameters()`:
+
+```{r}
+#| tbl-cap: "Odds ratio estimates for CHD model"
+#| label: tbl-chd-glm-strat-OR
+chd_glm_strat |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
+```
+
+Compare with @tbl-model-corner-point.
+
+---
+
+:::{#exr-strat-to-contrast}
+If I give you model 1, how would you get the coefficients of model 2?
+:::
