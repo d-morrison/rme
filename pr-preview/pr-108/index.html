@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.30">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Ezra Morrison">
+
+<title>Regression Models for Epidemiology</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./Intro-to-GLMs.html" rel="next">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-2b3e328b71be8d25427581baeb23079b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-de070a7b0ab54f8780927367ac907214.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-1bc3b17e7a2c2828f435aa750fb76336.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-bae15c786f24dee8f76a9e45e7a759f7.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-1bc3b17e7a2c2828f435aa750fb76336.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-W625DGE908"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-W625DGE908', { 'anonymize_ip': true});
+</script>
+<script type="application/json" class="js-hypothesis-config">
+{
+  "theme": "clean",
+  "openSidebar": false,
+  "enableExperimentalNewNoteButton": true
+}
+</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+
+
+<link rel="stylesheet" href="custom.scss">
+</head>
+
+<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Preface</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Regression Models for Epidemiology</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/d-morrison/rme" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="./Regression-Models-for-Epidemiology.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Intro-to-GLMs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./glms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generalized Linear Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Linear-models-overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Linear (Gaussian) Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./logistic-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Models for Binary Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./count-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Models for Count Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-multilevel-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Introduction to multi-level models for correlated data</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./time-to-event-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time to Event Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-to-survival-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Introduction to Survival Analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./proportional-hazards-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Proportional Hazards Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parametric-survival-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Parametric survival models</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendices-are-prereqs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Overview of Appendices</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./math-prereqs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Mathematics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Probability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-MLEs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">F</span>&nbsp; <span class="chapter-title">Introduction to Maximum Likelihood Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">G</span>&nbsp; <span class="chapter-title">Introduction to Bayesian inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./common-mistakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">H</span>&nbsp; <span class="chapter-title">Common Mistakes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./notation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">I</span>&nbsp; <span class="chapter-title">Notation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-to-R.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">J</span>&nbsp; <span class="chapter-title">Statistical computing in R</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./CONTRIBUTING.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">K</span>&nbsp; <span class="chapter-title">Contributing to <code>rme</code></span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#preface" id="toc-preface" class="nav-link active" data-scroll-target="#preface">Preface</a>
+  <ul class="collapse">
+  <li><a href="#using-these-lecture-notes" id="toc-using-these-lecture-notes" class="nav-link" data-scroll-target="#using-these-lecture-notes">Using these lecture notes</a>
+  <ul class="collapse">
+  <li><a href="#compiling-chapters-as-lecture-slide-decks" id="toc-compiling-chapters-as-lecture-slide-decks" class="nav-link" data-scroll-target="#compiling-chapters-as-lecture-slide-decks">Compiling chapters as lecture slide decks</a></li>
+  <li><a href="#extracting-latex-commands-from-the-online-version-of-the-notes" id="toc-extracting-latex-commands-from-the-online-version-of-the-notes" class="nav-link" data-scroll-target="#extracting-latex-commands-from-the-online-version-of-the-notes">Extracting LaTeX commands from the online version of the notes</a></li>
+  <li><a href="#dark-mode" id="toc-dark-mode" class="nav-link" data-scroll-target="#dark-mode">Dark Mode</a></li>
+  </ul></li>
+  <li><a href="#other-resources" id="toc-other-resources" class="nav-link" data-scroll-target="#other-resources">Other resources</a></li>
+  <li><a href="#license" id="toc-license" class="nav-link" data-scroll-target="#license">License</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/d-morrison/rme/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/d-morrison/rme/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Regression Models for Epidemiology</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Author</div>
+  <div class="quarto-title-meta-heading">Affiliation</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author"><a href="https://demorrison.ucdavis.edu/">Ezra Morrison</a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Department of Public Health Sciences, School of Medicine, University of California, Davis
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Last modified: 2025-05-12: 16:48:03 (UTC)</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="preface" class="level1 unnumbered">
+<h1 class="unnumbered">Preface</h1>
+<p>This web-book is derived from my lecture slides for Epidemiology 204: “Quantitative Epidemiology III: Statistical Models”, at UC Davis.</p>
+<p>I have drawn these materials from many sources, including but not limited to:</p>
+<ul>
+<li><p><a href="https://dmrocke.ucdavis.edu/">David Rocke</a>’s materials from the <a href="https://dmrocke.ucdavis.edu/Class/EPI204-Spring-2021/EPI204-Spring-2021.html">2021 edition of this course</a></p></li>
+<li><p><a href="https://hua-zhou.github.io/">Hua Zhou</a>’s materials from the <a href="https://ucla-biostat-200c-2020spring.github.io/schedule/schedule.html">2020 edition of Biostat 200C at UCLA</a></p></li>
+<li><p><span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="references.html#ref-vittinghoff2e" role="doc-biblioref">2012</a>)</span></p></li>
+<li><p><span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span></p></li>
+<li><p><span class="citation" data-cites="rms2e">Harrell (<a href="references.html#ref-rms2e" role="doc-biblioref">2015</a>)</span></p></li>
+</ul>
+<section id="using-these-lecture-notes" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="using-these-lecture-notes">Using these lecture notes</h2>
+<p>These lecture notes are available online at <a href="https://d-morrison.github.io/rme/" class="uri">https://d-morrison.github.io/rme/</a>. The online notes are searchable and are currently being iteratively updated<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. A pdf version of the notes is also downloadable from <a href="https://d-morrison.github.io/rme/Regression-Models-for-Epidemiology.pdf" class="uri">https://d-morrison.github.io/rme/Regression-Models-for-Epidemiology.pdf</a>, and the source files are available at <a href="https://github.com/d-morrison/rme" class="uri">https://github.com/d-morrison/rme</a>.</p>
+<section id="compiling-chapters-as-lecture-slide-decks" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="compiling-chapters-as-lecture-slide-decks">Compiling chapters as lecture slide decks</h3>
+<p>Each chapter’s source file can also be compiled as a lecture slide deck, using the <a href="https://github.com/d-morrison/rme/blob/main/_quarto-revealjs.yml"><code>_quarto-revealjs.yml</code></a> <a href="https://quarto.org/docs/projects/profiles.html">Quarto profile</a> included in the <a href="https://github.com/d-morrison/rme">git repository on Github</a>.</p>
+<p>For example, to compile <a href="logistic-regression.html" class="quarto-xref">Chapter&nbsp;<span>3&nbsp; Models for Binary Outcomes</span></a> as a slide deck:</p>
+<ol type="1">
+<li><p><a href="https://quarto.org/docs/get-started/">install quarto</a></p></li>
+<li><p>clone the project repository from <a href="https://github.com/d-morrison/rme">Github</a></p></li>
+<li><p>Install the project dependencies using <code>devtools</code>:</p></li>
+</ol>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(devtools) <span class="co"># install from CRAN if needed</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_deps</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol start="4" type="1">
+<li>Render the chapter using the <code>revealjs</code> profile using the following terminal shell command:</li>
+</ol>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render logistic-regression.qmd <span class="at">--profile</span><span class="op">=</span>revealjs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can also render all the chapters listed in the <a href="https://github.com/d-morrison/rme/blob/main/_quarto-revealjs.yml"><code>_quarto-revealjs.yml</code></a> <a href="https://quarto.org/docs/projects/profiles.html">Quarto profile</a> as slide decks simultaneously:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render <span class="at">--profile</span><span class="op">=</span>revealjs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+</section>
+<section id="extracting-latex-commands-from-the-online-version-of-the-notes" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="extracting-latex-commands-from-the-online-version-of-the-notes">Extracting LaTeX commands from the online version of the notes</h3>
+<p>If you want to extract the LaTeX commands for any math expressions in the online lecture notes, you should be able to right-click and get this pop-up menu:</p>
+<div id="fig-right-click-math" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-right-click-math-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Pop-up menu produced by right-clicking on math in online notes
+</figcaption>
+<div aria-describedby="fig-right-click-math-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/latex-popup-1.png" class="img-fluid figure-img">
+</div>
+</figure>
+</div>
+<p>If you select “TeX commands”, you will get a window with LaTeX code.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<div id="fig-LaTeX-source-code-popup" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-LaTeX-source-code-popup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: LaTeX source code window
+</figcaption>
+<div aria-describedby="fig-LaTeX-source-code-popup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/latex-popup-2.png" class="img-fluid figure-img">
+</div>
+</figure>
+</div>
+<p>You can also grab the TeX commands from the quarto source files on github, but those files use custom macros (defined in <a href="https://github.com/d-morrison/rme/blob/main/macros.qmd" class="uri">https://github.com/d-morrison/rme/blob/main/macros.qmd</a>), so it’s a little harder to reuse code from the source files.</p>
+<hr>
+</section>
+<section id="dark-mode" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="dark-mode">Dark Mode</h3>
+<p>The online notes have two color palette themes: light and dark. You can toggle between them using the oval button near the top-left corner:</p>
+<div id="fig-palette-toggle" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-palette-toggle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Palette toggle
+</figcaption>
+<div aria-describedby="fig-palette-toggle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/dark-mode.png" class="img-fluid figure-img">
+</div>
+</figure>
+</div>
+</section>
+</section>
+<section id="other-resources" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="other-resources">Other resources</h2>
+<p>These notes represent my still-developing perspective on regression models in epidemiology. Many other statisticians and epidemiologists have published their own perspectives, and I encourage you to explore your many options and find ones that resonate with you. I have attempted to cite my sources throughout these notes.</p>
+<p>Here are some additional resources that I’ve come across; I haven’t had time to read some of them thoroughly yet, but they’re all on my to-do list. I’ll add my thoughts on them over time.</p>
+<ul>
+<li><p><span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span> is a classic textbook on GLMs. It was used in UCLA Biostatistics’s MS-level GLMs course (Biostat 200C) when I took it, and it helped me a lot. It is fairly mathematically rigorous and concise, bordering on terse. It covers GLMs in detail, and survival analysis briefly, and it also has helpful chapters on Bayesian methods. I have adapted examples and explanations from it extensively in these notes.</p></li>
+<li><p><span class="citation" data-cites="wakefield2013">Wakefield (<a href="references.html#ref-wakefield2013" role="doc-biblioref">2013</a>)</span> covers GLMs and hierarchical models using both Bayesian and frequentist inference;</p>
+<ul>
+<li>statistics PhD level</li>
+<li>author: UW biostatistics professor <a href="https://www.biostat.washington.edu/people/jon-wakefield">Jon Wakefield</a></li>
+<li>used in <a href="https://donatello-telesca.com/biostatistics-251-">UCLA Biostat 250C</a></li>
+</ul></li>
+<li><p><span class="citation" data-cites="hosmer2013applied">Hosmer, Lemeshow, and Sturdivant (<a href="references.html#ref-hosmer2013applied" role="doc-biblioref">2013</a>)</span> is a classic text on logistic regression. I haven’t read it yet.</p></li>
+<li><p><span class="citation" data-cites="agresti2012categorical">Agresti (<a href="references.html#ref-agresti2012categorical" role="doc-biblioref">2012</a>)</span> is another classic text for GLMs. I haven’t read it yet.</p></li>
+<li><p><span class="citation" data-cites="agresti2018introcat">Agresti (<a href="references.html#ref-agresti2018introcat" role="doc-biblioref">2018</a>)</span> appears to be a more applied version of <span class="citation" data-cites="agresti2012categorical">Agresti (<a href="references.html#ref-agresti2012categorical" role="doc-biblioref">2012</a>)</span>. I haven’t read it yet. There are <a href="https://bcs.wiley.com/he-bcs/Books?action=resource&amp;bcsId=11293&amp;itemId=1119405262&amp;resourceId=44770">extra exercises</a> and other resources available on the <a href="https://bcs.wiley.com/he-bcs/Books?action=index&amp;itemId=1119405262&amp;bcsId=11293">Student Companion Site</a></p></li>
+<li><p><span class="citation" data-cites="agresti2015foundations">Agresti (<a href="references.html#ref-agresti2015foundations" role="doc-biblioref">2015</a>)</span> has “More than 400 exercises for readers to practice and extend the theory, methods, and data analysis”; might be more theoretical?</p></li>
+<li><p><span class="citation" data-cites="agresti2010ordinal">Agresti (<a href="references.html#ref-agresti2010ordinal" role="doc-biblioref">2010</a>)</span> is specifically about ordinal data.</p></li>
+<li><p><span class="citation" data-cites="dunn2018generalized">Dunn and Smyth (<a href="references.html#ref-dunn2018generalized" role="doc-biblioref">2018</a>)</span> is a recent textbook on GLMs. It doesn’t cover time-to-event models, and it doesn’t use the modern <a href="https://tidyverse.org/"><code>tidyverse</code></a> packages (<a href="https://ggplot2.tidyverse.org/"><code>ggplot2</code></a>, <a href="https://dplyr.tidyverse.org/"><code>dplyr</code></a>, etc.), but otherwise it seems great. <span class="citation" data-cites="Edelmann2019">Edelmann (<a href="references.html#ref-Edelmann2019" role="doc-biblioref">2019</a>)</span> reviews this book formally.</p></li>
+<li><p><span class="citation" data-cites="moore2016applied">Moore (<a href="references.html#ref-moore2016applied" role="doc-biblioref">2016</a>)</span> is a recent textbook on survival analysis. It also doesn’t use the <code>tidyverse</code>, but otherwise seems great.</p></li>
+<li><p><span class="citation" data-cites="klein2003survival">Klein and Moeschberger (<a href="references.html#ref-klein2003survival" role="doc-biblioref">2003</a>)</span> is a classic text for survival analysis. I read most of it in grad school, and it was very helpful. Examples and explanations from it are borrowed extensively in the second half of these notes (partially filtered through David Rocke’s course notes.)</p></li>
+<li><p><span class="citation" data-cites="kalbfleisch2011statistical">Kalbfleisch and Prentice (<a href="references.html#ref-kalbfleisch2011statistical" role="doc-biblioref">2011</a>)</span> is another classic survival analysis text; I haven’t read it yet.</p></li>
+<li><p><span class="citation" data-cites="kleinbaum2010logistic">Kleinbaum and Klein (<a href="references.html#ref-kleinbaum2010logistic" role="doc-biblioref">2010</a>)</span> is a mostly applied-level “self-learning” text for logistic regression; I read it cover-to-cover before grad school, and found it very helpful.</p></li>
+<li><p><span class="citation" data-cites="kleinbaum2012survival">Kleinbaum and Klein (<a href="references.html#ref-kleinbaum2012survival" role="doc-biblioref">2012</a>)</span> is the corresponding “self-learning” text for survival analysis; I read it cover-to-cover before grad school, and found it very helpful.</p></li>
+<li><p><span class="citation" data-cites="rms2e">Harrell (<a href="references.html#ref-rms2e" role="doc-biblioref">2015</a>)</span> is another popular textbook. It uses <a href="https://ggplot2.tidyverse.org/"><code>ggplot2</code></a> but not <a href="https://dplyr.tidyverse.org/"><code>dplyr</code></a>, and covers logistic regression and survival analysis (no Poisson or NB models?). An abbreviated but continuously updated version with audio clips is available at <a href="https://hbiostat.org/rmsc/" class="uri">https://hbiostat.org/rmsc/</a>.</p></li>
+<li><p><span class="citation" data-cites="fox2015applied">Fox (<a href="references.html#ref-fox2015applied" role="doc-biblioref">2015</a>)</span> is another standard text. <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p></li>
+<li><p><span class="citation" data-cites="mccullaghnelder">McCullagh and Nelder (<a href="references.html#ref-mccullaghnelder" role="doc-biblioref">1989</a>)</span> is a classic, theoretical textbook on GLMs <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p></li>
+<li><p><span class="citation" data-cites="dalgaardintroductory">Dalgaard (<a href="references.html#ref-dalgaardintroductory" role="doc-biblioref">2008</a>)</span> covers GLMs and survival analysis at an applied level, using base R</p></li>
+<li><p><span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="references.html#ref-vittinghoff2e" role="doc-biblioref">2012</a>)</span> covers GLMs, survival analysis, and causal inference, using Stata. The authors are UCSF professors, and it is used for the core Epi PhD courses there. I read this book nearly cover-to-cover before grad school, and it was hugely helpful for me, both for statistical modeling and for causal inference (I think it provided my first exposure to DAGs).</p></li>
+<li><p><span class="citation" data-cites="mcculloch2008generalized">McCulloch, Searle, and Neuhaus (<a href="references.html#ref-mcculloch2008generalized" role="doc-biblioref">2008</a>)</span> is also by UCSF professors</p></li>
+<li><p><span class="citation" data-cites="faraway2016extending">Faraway (<a href="references.html#ref-faraway2016extending" role="doc-biblioref">2016</a>)</span> has GLMs but not survival analysis</p></li>
+<li><p><span class="citation" data-cites="selvin2001epidemiologic">Selvin (<a href="references.html#ref-selvin2001epidemiologic" role="doc-biblioref">2001</a>)</span> provides worked-out examples of applications for a wide range of statistical analysis techniques. The <a href="https://publichealth.berkeley.edu/people/steve-selvin">Author</a> is a retired UC Berkeley Biostatistics professor; he used it in a graduate-level biostat/epi course.</p></li>
+<li><p><span class="citation" data-cites="jewell2003statistics">Jewell (<a href="references.html#ref-jewell2003statistics" role="doc-biblioref">2003</a>)</span> is by another UC Berkeley <a href="https://publichealth.berkeley.edu/people/nicholas-jewell">professor</a>; it mostly covers logistic regression, with one chapter on survival analysis.</p></li>
+<li><p><a href="https://ucla-biostat-200c-2020spring.github.io/schedule/schedule.html" class="uri">https://ucla-biostat-200c-2020spring.github.io/schedule/schedule.html</a> provides course notes for “Biostat 200C - Methods in Biostatistics C” at UCLA, which is at the Biostatistics MS level.</p></li>
+<li><p><a href="https://online.stat.psu.edu/stat504/book/" class="uri">https://online.stat.psu.edu/stat504/book/</a> provides course notes for “STAT 504 - Analysis of Discrete Data” at Penn State University. It includes logistic regression and Poisson regression, as well as 2-way tables and other related topics, and includes SAS code.</p></li>
+<li><p><span class="citation" data-cites="NahhasIRMPHR">Nahhas (<a href="references.html#ref-NahhasIRMPHR" role="doc-biblioref">2024</a>)</span> is currently in-development</p></li>
+<li><p><span class="citation" data-cites="clayton2013statistical">Clayton and Hills (<a href="references.html#ref-clayton2013statistical" role="doc-biblioref">2013</a>)</span> covers binary regression, count regression, and survival analysis. Haven’t started it yet.</p></li>
+<li><p><a href="https://thomaselove.github.io/2020-432-book/index.html" class="uri">https://thomaselove.github.io/2020-432-book/index.html</a> is another set of lecture notes.</p></li>
+<li><p><span class="citation" data-cites="woodward2013epidemiology">Woodward (<a href="references.html#ref-woodward2013epidemiology" role="doc-biblioref">2013</a>)</span> covers GLMs and survival; haven’t read it yet, but it looks comprehensive.</p></li>
+<li><p><span class="citation" data-cites="roback2021beyond">Roback and Legler (<a href="references.html#ref-roback2021beyond" role="doc-biblioref">2021</a>)</span> is recent and uses the <code>tidyverse</code>; doesn’t appear to cover survival analysis.</p></li>
+<li><p><span class="citation" data-cites="wood2017generalized">Wood (<a href="references.html#ref-wood2017generalized" role="doc-biblioref">2017</a>)</span> is about generalized <em>additive</em> models but includes a detailed summary of GLMs.</p></li>
+<li><p><span class="citation" data-cites="kutoyants2023introduction">Kutoyants (<a href="references.html#ref-kutoyants2023introduction" role="doc-biblioref">2023</a>)</span> appears to be a complete book on Poisson models.</p></li>
+<li><p><span class="citation" data-cites="hardin2007generalized">Hardin and Hilbe (<a href="references.html#ref-hardin2007generalized" role="doc-biblioref">2018</a>)</span> uses Stata.</p></li>
+<li><p><span class="citation" data-cites="andrews2012data">Andrews and Herzberg (<a href="references.html#ref-andrews2012data" role="doc-biblioref">2012</a>)</span> is a classic “learn-by-example” book with many datasets amenable to GLMs</p></li>
+<li><p><span class="citation" data-cites="r4epi">Cannell and Livingston (<a href="references.html#ref-r4epi" role="doc-biblioref">2024</a>)</span> is another open-source, online textbook like this one; it is primarily about statistical programming, but it includes full chapters on <a href="https://www.r4epi.com/linear-regression">linear regression</a>, <a href="https://www.r4epi.com/linear-regression-1">logistic regression</a>, and <a href="https://www.r4epi.com/poisson-regression">Poisson regression</a>. There is currently (2024/06) a placeholder chapter for <a href="https://www.r4epi.com/cox-proportional-hazards-regression">survival analysis</a>.</p></li>
+<li><p><span class="citation" data-cites="gelman2006data">Gelman and Hill (<a href="references.html#ref-gelman2006data" role="doc-biblioref">2007</a>)</span> covers GLMs as well as hierarchical extensions of GLMs. No survival models?</p></li>
+<li><p>In-development new Gelman et al book: <a href="https://bookdown.org/jl5522/MRP-case-studies/" class="uri">https://bookdown.org/jl5522/MRP-case-studies/</a></p></li>
+<li><p><span class="citation" data-cites="statproofbook">Soch (<a href="references.html#ref-statproofbook" role="doc-biblioref">2023</a>)</span> is a collection of proofs for results in probability, statistics, and related computational sciences.</p></li>
+<li><p><span class="citation" data-cites="suarez2017applications">Suárez et al. (<a href="references.html#ref-suarez2017applications" role="doc-biblioref">2017</a>)</span> covers GLMs but not survival analysis</p></li>
+<li><p><span class="citation" data-cites="Greenland2014">Greenland (<a href="references.html#ref-Greenland2014" role="doc-biblioref">2014</a>)</span> is a lengthy chapter from the Handbook of Epidemiology</p></li>
+<li><p><span class="citation" data-cites="me4">Rothman et al. (<a href="references.html#ref-me4" role="doc-biblioref">2021</a>)</span> contains several chapters on regression analyses in epidemiology</p></li>
+<li><p><a href="https://www.biostat.washington.edu/people/ken-rice">Ken Rice</a>’s slides from Stat/Biostat 570 at University of Washington are also useful: <a href="https://drive.google.com/file/d/1VwosGvHtRtKnC7P3ja7RAUawvvudgc9T/view" class="uri">https://drive.google.com/file/d/1VwosGvHtRtKnC7P3ja7RAUawvvudgc9T/view</a></p></li>
+</ul>
+<p>Other similar courses at UC Davis:</p>
+<ul>
+<li>MPM <a href="https://catalog.ucdavis.edu/search/?q=MPM+202">202</a>, <a href="https://catalog.ucdavis.edu/search/?q=MPM+203">203</a>, <a href="https://catalog.ucdavis.edu/search/?q=MPM+204">204</a> “Medical Statistics I-III”</li>
+<li><a href="https://catalog.ucdavis.edu/search/?q=PHR+266">PHR 266/SPH 266</a> “Applied Analytic Epidemiology”
+<ul>
+<li>covers similar content; that course was designed for professional Master’s students (e.g., MPVM, MPH) and does not assume a knowledge of mathematical statistics.</li>
+</ul></li>
+<li><a href="https://catalog.ucdavis.edu/search/?q=PLS+206">PLS 206</a> “Applied Multivariate Modeling in Agricultural &amp; Environmental Sciences”</li>
+<li><a href="https://catalog.ucdavis.edu/search/?q=STA+101">STA 101</a> “Advanced Applied Statistics for the Biological Sciences”</li>
+<li><a href="https://catalog.ucdavis.edu/search/?q=STA+138">STA 138</a> “Analysis of Categorical Data”
+<ul>
+<li>emphasizes methods for analyzing categorical outcomes and predictors (i.e.&nbsp;contingency tables).</li>
+</ul></li>
+<li><a href="https://catalog.ucdavis.edu/search/?q=STA+207">STA 207</a> “Statistical Methods for Research II”</li>
+</ul>
+</section>
+<section id="license" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="license">License</h2>
+<p>This book is licensed to you under <a href="http://creativecommons.org/licenses/by-nc-nd/4.0/">Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License</a>.</p>
+<p>The code samples in this book are licensed under <a href="https://creativecommons.org/publicdomain/zero/1.0/">Creative Commons CC0 1.0 Universal (CC0 1.0)</a>, i.e.&nbsp;public domain.</p>
+
+
+<!-- -->
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-agresti2010ordinal" class="csl-entry" role="listitem">
+Agresti, Alan. 2010. <em>Analysis of Ordinal Categorical Data</em>. Vol. 656. John Wiley &amp; Sons.
+</div>
+<div id="ref-agresti2012categorical" class="csl-entry" role="listitem">
+———. 2012. <em>Categorical Data Analysis</em>. Vol. 792. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/Categorical+Data+Analysis%2C+3rd+Edition-p-9780470463635">https://www.wiley.com/en-us/Categorical+Data+Analysis%2C+3rd+Edition-p-9780470463635</a>.
+</div>
+<div id="ref-agresti2015foundations" class="csl-entry" role="listitem">
+———. 2015. <em>Foundations of Linear and Generalized Linear Models</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/Foundations+of+Linear+and+Generalized+Linear+Models-p-9781118730034">https://www.wiley.com/en-us/Foundations+of+Linear+and+Generalized+Linear+Models-p-9781118730034</a>.
+</div>
+<div id="ref-agresti2018introcat" class="csl-entry" role="listitem">
+———. 2018. <em>An Introduction to Categorical Data Analysis</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/An+Introduction+to+Categorical+Data+Analysis%2C+3rd+Edition-p-9781119405283">https://www.wiley.com/en-us/An+Introduction+to+Categorical+Data+Analysis%2C+3rd+Edition-p-9781119405283</a>.
+</div>
+<div id="ref-andrews2012data" class="csl-entry" role="listitem">
+Andrews, David F, and Agnes M Herzberg. 2012. <em>Data: A Collection of Problems from Many Fields for the Student and Research Worker</em>. Springer Science &amp; Business Media. <a href="https://link.springer.com/book/10.1007/978-1-4612-5098-2">https://link.springer.com/book/10.1007/978-1-4612-5098-2</a>.
+</div>
+<div id="ref-r4epi" class="csl-entry" role="listitem">
+Cannell, Brad, and Melvin Livingston. 2024. <em>R for Epidemiology</em>. Online. <a href="https://www.r4epi.com/">https://www.r4epi.com/</a>.
+</div>
+<div id="ref-clayton2013statistical" class="csl-entry" role="listitem">
+Clayton, David, and Michael Hills. 2013. <em>Statistical Models in Epidemiology</em>. Oxford University Press. <a href="https://global.oup.com/academic/product/statistical-models-in-epidemiology-9780199671182">https://global.oup.com/academic/product/statistical-models-in-epidemiology-9780199671182</a>.
+</div>
+<div id="ref-dalgaardintroductory" class="csl-entry" role="listitem">
+Dalgaard, Peter. 2008. <em>Introductory Statistics with r</em>. New York, NY: Springer New York. <a href="https://link.springer.com/book/10.1007/978-0-387-79054-1">https://link.springer.com/book/10.1007/978-0-387-79054-1</a>.
+</div>
+<div id="ref-dobson4e" class="csl-entry" role="listitem">
+Dobson, Annette J, and Adrian G Barnett. 2018. <em>An Introduction to Generalized Linear Models</em>. 4th ed. CRC press. <a href="https://doi.org/10.1201/9781315182780">https://doi.org/10.1201/9781315182780</a>.
+</div>
+<div id="ref-dunn2018generalized" class="csl-entry" role="listitem">
+Dunn, Peter K, and Gordon K Smyth. 2018. <em>Generalized Linear Models with Examples in <span>R</span></em>. Vol. 53. Springer. <a href="https://link.springer.com/book/10.1007/978-1-4419-0118-7">https://link.springer.com/book/10.1007/978-1-4419-0118-7</a>.
+</div>
+<div id="ref-Edelmann2019" class="csl-entry" role="listitem">
+Edelmann, Dominic. 2019. <span>“Generalized Linear Models with Examples in r. Peter k.dunnand Gordon k.smyth (2018). Berlin, Germany: Springer Science+business Media, Pp. 562 Pages, ISBN: 978‐1‐4419‐0118‐7.”</span> <em>Biometrical Journal</em> 62 (1): 253–53. <a href="https://doi.org/10.1002/bimj.201900264">https://doi.org/10.1002/bimj.201900264</a>.
+</div>
+<div id="ref-faraway2016extending" class="csl-entry" role="listitem">
+Faraway, Julian J. 2016. <em>Extending the Linear Model with r: Generalized Linear, Mixed Effects and Nonparametric Regression Models</em>. 2nd ed. Chapman; Hall/CRC. <a href="https://doi.org/10.1201/9781315382722">https://doi.org/10.1201/9781315382722</a>.
+</div>
+<div id="ref-fox2015applied" class="csl-entry" role="listitem">
+Fox, John. 2015. <em>Applied Regression Analysis and Generalized Linear Models</em>. Sage publications.
+</div>
+<div id="ref-gelman2006data" class="csl-entry" role="listitem">
+Gelman, Andrew, and Jennifer Hill. 2007. <em>Data Analysis Using Regression and Multilevel/Hierarchical Models</em>. Analytical Methods for Social Research. Cambridge, MA: Cambridge University Press.
+</div>
+<div id="ref-Greenland2014" class="csl-entry" role="listitem">
+Greenland, Sander. 2014. <span>“Regression Methods for Epidemiological Analysis.”</span> In <em>Handbook of Epidemiology</em>, edited by Wolfgang Ahrens and Iris Pigeot, 1087–1159. New York, NY: Springer New York. <a href="https://doi.org/10.1007/978-0-387-09834-0_17">https://doi.org/10.1007/978-0-387-09834-0_17</a>.
+</div>
+<div id="ref-hardin2007generalized" class="csl-entry" role="listitem">
+Hardin, James W, and Joseph M Hilbe. 2018. <em>Generalized Linear Models and Extensions</em>. 4th ed. Stata Press.
+</div>
+<div id="ref-rms2e" class="csl-entry" role="listitem">
+Harrell, Frank E. 2015. <em>Regression Modeling Strategies: With Applications to Linear Models, Logistic Regression, and Survival Analysis</em>. 2nd ed. Springer. <a href="https://doi.org/10.1007/978-3-319-19425-7">https://doi.org/10.1007/978-3-319-19425-7</a>.
+</div>
+<div id="ref-hosmer2013applied" class="csl-entry" role="listitem">
+Hosmer, David W, Stanley Lemeshow, and Rodney X Sturdivant. 2013. <em>Applied Logistic Regression</em>. John Wiley &amp; Sons. <a href="https://onlinelibrary.wiley.com/doi/book/10.1002/9781118548387">https://onlinelibrary.wiley.com/doi/book/10.1002/9781118548387</a>.
+</div>
+<div id="ref-jewell2003statistics" class="csl-entry" role="listitem">
+Jewell, Nicholas P. 2003. <em>Statistics for Epidemiology</em>. Oxford, UK: Chapman; Hall/CRC. <a href="https://www.routledge.com/Statistics-for-Epidemiology/Jewell/p/book/9781584884330">https://www.routledge.com/Statistics-for-Epidemiology/Jewell/p/book/9781584884330</a>.
+</div>
+<div id="ref-kalbfleisch2011statistical" class="csl-entry" role="listitem">
+Kalbfleisch, John D, and Ross L Prentice. 2011. <em>The Statistical Analysis of Failure Time Data</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-klein2003survival" class="csl-entry" role="listitem">
+Klein, John P, and Melvin L Moeschberger. 2003. <em>Survival Analysis: Techniques for Censored and Truncated Data</em>. Vol. 1230. Springer. <a href="https://link.springer.com/book/10.1007/b97377">https://link.springer.com/book/10.1007/b97377</a>.
+</div>
+<div id="ref-kleinbaum2010logistic" class="csl-entry" role="listitem">
+Kleinbaum, David G, and Mitchel Klein. 2010. <em>Logistic Regression: A Self-Learning Text</em>. 3rd ed. Springer. <a href="https://link.springer.com/book/10.1007/978-1-4419-1742-3">https://link.springer.com/book/10.1007/978-1-4419-1742-3</a>.
+</div>
+<div id="ref-kleinbaum2012survival" class="csl-entry" role="listitem">
+———. 2012. <em>Survival Analysis: A Self-Learning Text</em>. 3rd ed. Springer. <a href="https://link.springer.com/book/10.1007/978-1-4419-6646-9">https://link.springer.com/book/10.1007/978-1-4419-6646-9</a>.
+</div>
+<div id="ref-kutoyants2023introduction" class="csl-entry" role="listitem">
+Kutoyants, Yury A. 2023. <em>Introduction to the Statistics of Poisson Processes and Applications</em>. Springer Nature. <a href="https://link.springer.com/book/10.1007/978-3-031-37054-0">https://link.springer.com/book/10.1007/978-3-031-37054-0</a>.
+</div>
+<div id="ref-mccullaghnelder" class="csl-entry" role="listitem">
+McCullagh, Peter, and J. A. Nelder. 1989. <em>Generalized Linear Models</em>. 2nd ed. Routledge. <a href="https://www.utstat.toronto.edu/~brunner/oldclass/2201s11/readings/glmbook.pdf">https://www.utstat.toronto.edu/~brunner/oldclass/2201s11/readings/glmbook.pdf</a>.
+</div>
+<div id="ref-mcculloch2008generalized" class="csl-entry" role="listitem">
+McCulloch, Charles E, Searle Shayle R, and John M Neuhaus. 2008. <em>Generalized, Linear, and Mixed Models</em>. 2nd ed. Vol. 651. John Wiley &amp; Sons.
+</div>
+<div id="ref-moore2016applied" class="csl-entry" role="listitem">
+Moore, Dirk F. 2016. <em>Applied Survival Analysis Using <span>R</span></em>. Vol. 473. Springer. <a href="https://doi.org/10.1007/978-3-319-31245-3">https://doi.org/10.1007/978-3-319-31245-3</a>.
+</div>
+<div id="ref-NahhasIRMPHR" class="csl-entry" role="listitem">
+Nahhas, Ramzi W. 2024. <em>Introduction to Regression Methods for Public Health Using <span>R</span></em>. CRC Press. <a href="https://www.bookdown.org/rwnahhas/RMPH/">https://www.bookdown.org/rwnahhas/RMPH/</a>.
+</div>
+<div id="ref-roback2021beyond" class="csl-entry" role="listitem">
+Roback, Paul, and Julie Legler. 2021. <em>Beyond Multiple Linear Regression: Applied Generalized Linear Models and Multilevel Models in r</em>. Chapman; Hall/CRC. <a href="https://bookdown.org/roback/bookdown-BeyondMLR/">https://bookdown.org/roback/bookdown-BeyondMLR/</a>.
+</div>
+<div id="ref-me4" class="csl-entry" role="listitem">
+Rothman, Kenneth J., Timothy L. Lash, Tyler J. VanderWeele, and Sebastien Haneuse. 2021. <em>Modern Epidemiology</em>. Fourth edition. Philadelphia: Wolters Kluwer.
+</div>
+<div id="ref-selvin2001epidemiologic" class="csl-entry" role="listitem">
+Selvin, Steve. 2001. <em>Epidemiologic Analysis: A Case-Oriented Approach</em>. Oxford University Press.
+</div>
+<div id="ref-statproofbook" class="csl-entry" role="listitem">
+Soch, Joram, ed. 2023. <em>The Book of Statistical Proofs</em>. Zenodo. <a href="https://doi.org/10.5281/ZENODO.4305949">https://doi.org/10.5281/ZENODO.4305949</a>.
+</div>
+<div id="ref-suarez2017applications" class="csl-entry" role="listitem">
+Suárez, Erick, Cynthia M Pérez, Roberto Rivera, and Melissa N Martı́nez. 2017. <em>Applications of Regression Models in Epidemiology</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-vittinghoff2e" class="csl-entry" role="listitem">
+Vittinghoff, Eric, David V Glidden, Stephen C Shiboski, and Charles E McCulloch. 2012. <em>Regression Methods in Biostatistics: Linear, Logistic, Survival, and Repeated Measures Models</em>. 2nd ed. Springer. <a href="https://doi.org/10.1007/978-1-4614-1353-0">https://doi.org/10.1007/978-1-4614-1353-0</a>.
+</div>
+<div id="ref-wakefield2013" class="csl-entry" role="listitem">
+Wakefield, Jon. 2013. <em>Bayesian and Frequentist Regression Methods</em>. 1st ed. 2013. Springer Series in Statistics. New York, NY: Springer New York.
+</div>
+<div id="ref-wood2017generalized" class="csl-entry" role="listitem">
+Wood, Simon N. 2017. <em>Generalized Additive Models: An Introduction with r</em>. chapman; hall/CRC.
+</div>
+<div id="ref-woodward2013epidemiology" class="csl-entry" role="listitem">
+Woodward, Mark. 2013. <em>Epidemiology: Study Design and Data Analysis</em>. CRC press. <a href="https://www.routledge.com/Epidemiology-Study-Design-and-Data-Analysis-Third-Edition/Woodward/p/book/9781439839706">https://www.routledge.com/Epidemiology-Study-Design-and-Data-Analysis-Third-Edition/Woodward/p/book/9781439839706</a>.
+</div>
+</div>
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>see the source file repository for recent changes: <a href="https://github.com/d-morrison/rme" class="uri">https://github.com/d-morrison/rme</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a href="https://www.mathjax.org/">MathJax</a> is more or less a dialect of LaTeX<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>I don’t have anything to say about this book, because I haven’t opened it yet, but I’ve heard it’s great!<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>haven’t opened it either<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./Intro-to-GLMs.html" class="pagination-link" aria-label="Introduction">
+        <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb4" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Preface {.unnumbered}</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>This web-book is derived from my lecture slides for Epidemiology 204: "Quantitative Epidemiology III: Statistical Models", at UC Davis.</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>I have drawn these materials from many sources, including but not limited to:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">David Rocke</span><span class="co">](https://dmrocke.ucdavis.edu/)</span>'s materials from the <span class="co">[</span><span class="ot">2021 edition of this course </span><span class="co">](https://dmrocke.ucdavis.edu/Class/EPI204-Spring-2021/EPI204-Spring-2021.html)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Hua Zhou</span><span class="co">](https://hua-zhou.github.io/)</span>'s materials from the <span class="co">[</span><span class="ot">2020 edition of Biostat 200C at UCLA</span><span class="co">](https://ucla-biostat-200c-2020spring.github.io/schedule/schedule.html)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@vittinghoff2e</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@dobson4e</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@rms2e</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## Using these lecture notes {.unnumbered}</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>These lecture notes are available online at <span class="ot">&lt;https://d-morrison.github.io/rme/&gt;</span>.</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>The online notes are searchable and are currently being iteratively updated^<span class="co">[</span><span class="ot">see the source file repository for recent changes: &lt;https://github.com/d-morrison/rme&gt;</span><span class="co">]</span>.</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>A pdf version of the notes is also downloadable from <span class="ot">&lt;https://d-morrison.github.io/rme/Regression-Models-for-Epidemiology.pdf&gt;</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>and the source files are available at <span class="ot">&lt;https://github.com/d-morrison/rme&gt;</span>.</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="fu">### Compiling chapters as lecture slide decks {.unnumbered}</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>Each chapter's source file can also be compiled as a lecture slide deck, using the </span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">`_quarto-revealjs.yml`</span><span class="co">](https://github.com/d-morrison/rme/blob/main/_quarto-revealjs.yml)</span> <span class="co">[</span><span class="ot">Quarto profile</span><span class="co">](https://quarto.org/docs/projects/profiles.html)</span> </span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>included in the <span class="co">[</span><span class="ot">git repository on Github</span><span class="co">](https://github.com/d-morrison/rme)</span>.</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>For example, to compile <span class="co">[</span><span class="ot">Chapter @sec-Bernoulli-models</span><span class="co">]</span> as a slide deck:</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>1) <span class="co">[</span><span class="ot">install quarto</span><span class="co">](https://quarto.org/docs/get-started/)</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>2) clone the project repository from <span class="co">[</span><span class="ot">Github</span><span class="co">](https://github.com/d-morrison/rme)</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>3) Install the project dependencies using <span class="in">`devtools`</span>:</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="in">``` r </span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(devtools) <span class="co"># install from CRAN if needed</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_deps</span>()</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>4) Render the chapter using the <span class="in">`revealjs`</span> profile using the following terminal shell command:</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a><span class="in">``` bash</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render logistic-regression.qmd <span class="at">--profile</span><span class="op">=</span>revealjs</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>You can also render all the chapters listed in the <span class="co">[</span><span class="ot">`_quarto-revealjs.yml`</span><span class="co">](https://github.com/d-morrison/rme/blob/main/_quarto-revealjs.yml)</span> </span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Quarto profile</span><span class="co">](https://quarto.org/docs/projects/profiles.html)</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>as slide decks simultaneously:</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="in">``` bash</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render <span class="at">--profile</span><span class="op">=</span>revealjs</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a><span class="fu">### Extracting LaTeX commands from the online version of the notes {.unnumbered}</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>If you want to extract the LaTeX commands for any math expressions in the online lecture notes, you should be able to right-click and get this pop-up menu:</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="al">![Pop-up menu produced by right-clicking on math in online notes](images/latex-popup-1.png)</span>{#fig-right-click-math}</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>If you select "TeX commands", you will get a window with LaTeX code.^[<span class="co">[</span><span class="ot">MathJax</span><span class="co">](https://www.mathjax.org/)</span> is more or less a dialect of LaTeX]</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a><span class="al">![LaTeX source code window](images/latex-popup-2.png)</span>{#fig-LaTeX-source-code-popup}</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>You can also grab the TeX commands from the quarto source files on github, but those files use custom macros (defined in <span class="ot">&lt;https://github.com/d-morrison/rme/blob/main/macros.qmd&gt;</span>), so it's a little harder to reuse code from the source files.</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a><span class="fu">### Dark Mode {.unnumbered}</span></span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>The online notes have two color palette themes: light and dark.</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>You can toggle between them using the oval button near the top-left corner:</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a><span class="al">![Palette toggle](images/dark-mode.png)</span>{#fig-palette-toggle}</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a><span class="fu">## Other resources {.unnumbered}</span></span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>These notes represent my still-developing perspective on regression models in epidemiology. </span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>Many other statisticians and epidemiologists have published their own perspectives, </span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>and I encourage you to explore your many options and find ones that resonate with you. </span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>I have attempted to cite my sources throughout these notes. </span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>Here are some additional resources that I've come across; </span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>I haven't had time to read some of them</span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a>thoroughly yet, but they're all on my to-do list. </span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>I'll add my thoughts on them over time.</span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>{{&lt; include other-resources.qmd &gt;}}</span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a><span class="fu">## License {.unnumbered}</span></span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>This book is licensed to you under <span class="co">[</span><span class="ot">Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License</span><span class="co">](http://creativecommons.org/licenses/by-nc-nd/4.0/)</span>.</span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>The code samples in this book are licensed under <span class="co">[</span><span class="ot">Creative Commons CC0 1.0 Universal (CC0 1.0)</span><span class="co">](https://creativecommons.org/publicdomain/zero/1.0/)</span>, i.e. public domain.</span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Douglas Ezra Morrison
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/d-morrison/rme/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/d-morrison/rme/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
