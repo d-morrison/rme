@@ -78,17 +78,17 @@ beetles_glm <-
     formula = cbind(died, survived) ~ dose,
     family = "binomial"
   )
-ranges <- confint.default(beetles_glm)
+ranges <- beetles_glm |> confint.default(level = 0.8)
 
 n_points <- 250
 beta_0s <- seq(
-  ranges["(Intercept)", "2.5 %"],
-  ranges["(Intercept)", "97.5 %"],
+  ranges["(Intercept)", 1],
+  ranges["(Intercept)", 2],
   length.out = n_points
 )
 beta_1s <- seq(
-  ranges["dose", "2.5 %"],
-  ranges["dose", "97.5 %"],
+  ranges["dose", 1],
+  ranges["dose", 2],
   length.out = n_points
 )
 names(beta_0s) <- round(beta_0s, 2)
@@ -212,17 +212,17 @@ lik_beetles0 <- function(beta_0, beta_1) {
 
 lik_beetles <- Vectorize(lik_beetles0)
 
-ranges <- confint.default(beetles_glm_grouped_centered)
+ranges <- beetles_glm_grouped_centered |> confint.default(level = .8)
 
 n_points <- 100
 beta_0s <- seq(
-  ranges["(Intercept)", "2.5 %"],
-  ranges["(Intercept)", "97.5 %"],
+  ranges["(Intercept)", 1],
+  ranges["(Intercept)", 2],
   length.out = n_points
 )
 beta_1s <- seq(
-  ranges["dose_c", "2.5 %"],
-  ranges["dose_c", "97.5 %"],
+  ranges["dose_c", 1],
+  ranges["dose_c", 2],
   length.out = n_points
 )
 names(beta_0s) <- round(beta_0s, 2)
@@ -332,28 +332,54 @@ if (run_graph) {
   scores_beetles_beta_1 <- outer(beta_0s, beta_1s, score_fn_beetles_beta_1)
   
   plotly::plot_ly(
-    type = "surface",
     x = ~beta_0s,
-    y = ~beta_1s,
-    z = ~ t(scores_beetles_beta_1),
-    name = "score_beta_1",
-    # colorscale = list(c(0, 1), c("blue", "blue")),
-    contours = list(
-      z = list(show = TRUE)),
-    opacity = 0.75
-  ) |>
+    y = ~beta_1s
+  ) |> 
+    plotly::add_markers(
+      type = "scatter",
+      x = coef(beetles_glm_grouped_centered)["(Intercept)"],
+      y = coef(beetles_glm_grouped_centered)["dose_c"],
+      z = 0,
+      marker = list(color = "black"),
+      name = "MLE"
+    ) |>
     plotly::add_surface(
-      z = scores_beetles_beta_0, 
+      z = ~ t(scores_beetles_beta_1),
+      name = "score_beta_1",
+      colorscale = list(c(0, 1), c("red", "green")),
+      showscale = FALSE,
+      contours = list(
+        z = list(
+          show = TRUE,
+          start = -1,
+          end = 1, 
+          size = .1
+        )
+      ),
+      opacity = 0.75
+    ) |>
+    plotly::add_surface(
+      z = ~ t(scores_beetles_beta_0), 
+      colorscale = list(c(0, 1), c("yellow", "blue")),
+      showscale = FALSE,
+      contours = list(
+        z = list(
+          show = TRUE,
+          start = -14,
+          end = 14, 
+          size = 2
+        )
+      ),
       name = "score_beta_0"
     ) |> 
-    hide_guides()
+    plotly::layout(legend = list(orientation = "h"))
 }
-
 
 ```
 
 score functions of `beetles` data (centered model), 
-by parameter ($\beta_0$ and $\beta_1$)
+by parameter ($\beta_0$ and $\beta_1$),
+with MLE marked in black.
 
 :::
 
