@@ -81,37 +81,30 @@ beetles_glm <-
 ranges <- confint.default(beetles_glm)
 
 n_points <- 250
-beta_0s <- seq(ranges["(Intercept)", "2.5 %"],
+beta_0s <- seq(
+  ranges["(Intercept)", "2.5 %"],
   ranges["(Intercept)", "97.5 %"],
   length.out = n_points
 )
-beta_1s <- seq(ranges["dose", "2.5 %"],
+beta_1s <- seq(
+  ranges["dose", "2.5 %"],
   ranges["dose", "97.5 %"],
   length.out = n_points
 )
 names(beta_0s) <- round(beta_0s, 2)
 names(beta_1s) <- round(beta_1s, 2)
-graph_3d <- function(beta_0, beta_1, z) {
-  plotly::plot_ly(
-    type = "surface",
-    x = ~beta_0,
-    y = ~beta_1,
-    z = ~ t(z)
-  ) |> 
-  # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly 
-  # for explanation of why transpose `t()` is needed
-    plotly::layout(
-      scene = list(
-        xaxis = list(nticks = 20),
-        zaxis = list(nticks = 10),
-        # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-        aspectratio = list(x = .9, y = .8, z = 0.8)
-      )
-    )
-}
+
 if (run_graph) {
   lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
-  graph_3d(beta_0s, beta_1s, lik_mat_beetles)
+  plotly::plot_ly(
+    type = "surface",
+    x = ~beta_0s,
+    y = ~beta_1s,
+    z = ~ t(lik_mat_beetles)
+  )
+  # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly 
+  # for explanation of why transpose `t()` is needed
+  
 }
 ```
 
@@ -162,7 +155,12 @@ llik_beetles <- Vectorize(llik_beetles0)
 
 if (run_graph) {
   llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
-  graph_3d(beta_0s, beta_1s, llik_mat_beetles)
+  plotly::plot_ly(
+    type = "surface",
+    x = ~beta_0s,
+    y = ~beta_1s,
+    z = ~ t(llik_mat_beetles)
+  )
 }
 ```
 
@@ -217,11 +215,13 @@ lik_beetles <- Vectorize(lik_beetles0)
 ranges <- confint.default(beetles_glm_grouped_centered)
 
 n_points <- 100
-beta_0s <- seq(ranges["(Intercept)", "2.5 %"],
+beta_0s <- seq(
+  ranges["(Intercept)", "2.5 %"],
   ranges["(Intercept)", "97.5 %"],
   length.out = n_points
 )
-beta_1s <- seq(ranges["dose_c", "2.5 %"],
+beta_1s <- seq(
+  ranges["dose_c", "2.5 %"],
   ranges["dose_c", "97.5 %"],
   length.out = n_points
 )
@@ -229,7 +229,12 @@ names(beta_0s) <- round(beta_0s, 2)
 names(beta_1s) <- round(beta_1s, 2)
 if (run_graph) {
   lik_mat_beetles <- outer(beta_0s, beta_1s, lik_beetles)
-  graph_3d(beta_0s, beta_1s, lik_mat_beetles)
+  plotly::plot_ly(
+    type = "surface",
+    x = ~beta_0s,
+    y = ~beta_1s,
+    z = ~ t(lik_mat_beetles)
+  )
 }
 ```
 
@@ -259,7 +264,12 @@ llik_beetles <- Vectorize(llik_beetles0)
 
 if (run_graph) {
   llik_mat_beetles <- outer(beta_0s, beta_1s, llik_beetles)
-  graph_3d(beta_0s, beta_1s, llik_mat_beetles)
+  plotly::plot_ly(
+    type = "surface",
+    x = ~beta_0s,
+    y = ~beta_1s,
+    z = ~ t(llik_mat_beetles)
+  )
 }
 ```
 
@@ -286,7 +296,23 @@ Implement and graph the score function for the beetles data
 ```{r}
 #| label: score-beetles-centered
 odds_inv <- function(omega) (1 + omega^-1)^-1
-score_beetles0 <- function(beta_0, beta_1) {
+
+score_fn_beetles_beta0_0 <- function(beta_0, beta_1) {
+  beetles |>
+    mutate(
+      eta = beta_0 + beta_1 * dose_c,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      mu = pi * n,
+      epsilon = died - mu,
+      score = epsilon
+    ) |>
+    pull(score) |>
+    sum()
+}
+score_fn_beetles_beta_0 <- Vectorize(score_fn_beetles_beta0_0)
+
+score_fn_beetles_beta1_0 <- function(beta_0, beta_1) {
   beetles |>
     mutate(
       eta = beta_0 + beta_1 * dose_c,
@@ -299,14 +325,35 @@ score_beetles0 <- function(beta_0, beta_1) {
     pull(score) |>
     sum()
 }
-score_beetles <- Vectorize(score_beetles0)
+score_fn_beetles_beta_1 <- Vectorize(score_fn_beetles_beta1_0)
+
 if (run_graph) {
-  score_mat_beetles <- outer(beta_0s, beta_1s, score_beetles)
-  graph_3d(beta_0s, beta_1s, score_mat_beetles)
+  scores_beetles_beta_0 <- outer(beta_0s, beta_1s, score_fn_beetles_beta_0)
+  scores_beetles_beta_1 <- outer(beta_0s, beta_1s, score_fn_beetles_beta_1)
+  
+  plotly::plot_ly(
+    type = "surface",
+    x = ~beta_0s,
+    y = ~beta_1s,
+    z = ~ t(scores_beetles_beta_1),
+    name = "score_beta_1",
+    # colorscale = list(c(0, 1), c("blue", "blue")),
+    contours = list(
+      z = list(show = TRUE)),
+    opacity = 0.75
+  ) |>
+    plotly::add_surface(
+      z = scores_beetles_beta_0, 
+      name = "score_beta_0"
+    ) |> 
+    hide_guides()
 }
+
+
 ```
 
-score function of `beetles` data (centered model) for slope term $\beta_1$.
+score functions of `beetles` data (centered model), 
+by parameter ($\beta_0$ and $\beta_1$)
 
 :::
 
