@@ -47,6 +47,24 @@ Mortality rates of adult flour beetles after five hours’ exposure to gaseous c
 
 :::
 
+```{r}
+beetles_glm <-
+  beetles |>
+  glm(
+    formula = cbind(died, survived) ~ dose,
+    family = "binomial"
+  )
+equatiomatic::extract_eq(beetles_glm)
+```
+
+```{r}
+#| label: tbl-beetles-model-uncentered
+#| tbl-cap: "Fitted logistic regression model for `beetles` data"
+beetles_glm |> 
+  parameters::parameters() |> 
+  parameters::print_md()
+```
+
 :::
 
 ---
@@ -72,12 +90,6 @@ lik_beetles0 <- function(beta_0, beta_1) {
 
 lik_beetles <- Vectorize(lik_beetles0)
 
-beetles_glm <-
-  beetles |>
-  glm(
-    formula = cbind(died, survived) ~ dose,
-    family = "binomial"
-  )
 ranges <- beetles_glm |> confint.default(level = 0.8)
 
 n_points <- 250
@@ -190,6 +202,14 @@ beetles_glm_ungrouped_centered <- beetles_long |>
   )
 
 equatiomatic::extract_eq(beetles_glm_ungrouped_centered)
+```
+
+```{r}
+#| label: tbl-beetles-model-centered
+#| tbl-cap: "Fitted logistic regression model for `beetles` data, with `dose` centered"
+beetles_glm_grouped_centered |> 
+  parameters::parameters() |> 
+  parameters::print_md()
 ```
 
 ---
