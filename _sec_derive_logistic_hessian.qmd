@@ -1,7 +1,7 @@
 {{< include macros.qmd >}}
 
 $$
-\llik''(\vb) = \sumin \llik_i''(\vb)
+\hess(\vb) = \sumin \llik_i''(\vb)
 $${#eq-logit-hessian}
 
 $$
@@ -52,3 +52,109 @@ $$
 \\ &= -\mX\' \matr{D}^{-1} \mX
 \ea
 $${#eq-linear-hess}
+
+---
+
+:::{#exr-hess-logistic}
+
+Determine the elements of the Hessian matrix for logistic regression.
+
+:::
+
+---
+
+:::{#sol-hess-logistic}
+
+The components of the Hessian are:
+
+$$
+\ba
+\hess(\beta) 
+&= \xderiv{\beta\'}{\beta}{\llik}
+\\
+&= \deriv{\beta\'}\score
+\\
+&= \sb{
+\matrix{
+\derivff{\beta_0}{\score}
+& \derivff{\beta_1}{\score}
+& \cdots 
+& \derivf{\score}{\beta_p}
+}
+}
+\\
+&= 
+\sb{
+\matrix{
+\dderivf{\llik}{\beta_0} 
+& \xderivf{\llik}{\beta_0}{\beta_1} 
+& \cdots 
+& \xderivf{\llik}{\beta_0}{\beta_p}
+\\
+\xderivf{\llik}{\beta_1}{\beta_0} 
+& \dderivf{\llik}{\beta_1} 
+& \cdots 
+& \xderivf{\llik}{\beta_0}{\beta_p}
+\\
+\vdots
+& \ddots
+& \ddots
+& \vdots
+\\
+\xderivf{\llik}{\beta_p}{\beta_0} 
+& \xderivf{\llik}{\beta_p}{\beta_1} 
+& \cdots 
+& \dderivf{\llik}{\beta_p} 
+}
+}
+\ea
+$$
+
+---
+
+:::{#exr-hess-beetles}
+
+Determine the Hessian for the `beetles` model.
+
+:::
+
+---
+
+:::{#sol-hess-beetles}
+
+In the `beetles` model, the Hessian is:
+
+$$
+\ba
+\hess(\beta) &=
+\sb{
+\matrix{
+\derivff{\beta_0}{\score}
+& \derivff{\beta_1}{\score}
+}
+}
+\\
+&= 
+\sb{
+\matrix{
+\dderivf{\llik}{\beta_0} 
+& \xderivf{\llik}{\beta_0}{\beta_1} 
+\\
+\xderivf{\llik}{\beta_1}{\beta_0} 
+& \dderivf{\llik}{\beta_1}
+}
+}
+\\
+&= 
+\sb{
+\matrix{
+-\sumin\pi_i(1-\pi_i)
+& -\sumin c_i \pi_i(1-\pi_i)
+\\
+-\sumin c_i \pi_i(1-\pi_i)
+& -\sumin c_i^2 \pi_i(1-\pi_i)
+}
+}
+\ea
+$$
+
