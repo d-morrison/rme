@@ -6,11 +6,11 @@ As usual, by independence, we have:
 
 $$
 \ba
-\brown{\llik'(\vb)}
+\brown{\vec{\llik'}(\vb)}
    &\eqdef \deriv{\vb} \llik(\vb)
 \\ &=      \deriv{\vb} \sumin \llik_i(\vb)
 \\ &=      \sumin \deriv{\vb} \llik_i(\vb)
-\\ &=      \sumin \magenta{\llik'_i(\vb)}
+\\ &=      \sumin \magenta{\vec{\llik'_i}(\vb)}
 \ea
 $$
 :::
@@ -23,7 +23,7 @@ We can apply the [vector chain rule](math-prereqs.qmd#thm-chain-vec) here:
 
 $$
 \ba
-\magenta{\llik_i'(\vb)}
+\magenta{\vec{\llik_i'}(\vb)}
    &= \deriv{\vb} \llik_i(\vb)
 \\ &= \deriv{\vb}\paren{y_i \eta_i + \logf{1-\pi_i}}
 \\ &= \deriv{\vb}y_i\eta_i + \deriv{\vb}\logf{1-\pi_i}
@@ -151,7 +151,6 @@ Now we can combine
 and
 @thm-d_pi_d_beta:
 
-:::{#thm-logistic-score-comp}
 $$
 \ba
 \magenta{\llik_i'(\vb)}
@@ -168,6 +167,9 @@ $$
 \ea
 $$
 
+
+:::{#thm-logistic-score-comp}
+$$\magenta{\llik_i'(\vb)} = \magenta{\vx_i \err_i}$${#eq-score-comp}
 :::
 
 ::: notes
@@ -185,11 +187,79 @@ we have:
 
 $$
 \ba
-\brown{\llik'(\vb)} &= \sumin \magenta{\llik_i'(\vb)}\\
+\brown{\vec{\llik'}(\vb)} &= \sumin \magenta{\llik_i'(\vb)}\\
 &= \brown{\sumin \vx_i\eps_i}
+\\
+&= \brown{\mX\'\veps}
 \ea
 $${#eq-logit-score}
 
 :::
 
 ---
+
+The score function is vector-valued; 
+its components are:
+
+$$
+\derivf{\llik}{\vb} 
+= \pmat{
+\derivf{\llik}{\b_0}
+\\
+\derivf{\llik}{\b_1}
+\\
+\vdots
+\\
+\derivf{\llik}{\b_p}
+}
+= \pmat{
+\sumin 1 \eps_i
+\\
+\sumin x_1 \eps_i
+\\
+\vdots
+\\
+\sumin x_p \eps_i
+}
+= \pmat{
+\v1 \cdot \veps
+\\
+\vx_1 \cdot \veps
+\\
+\vdots
+\\
+\vx_p \cdot \veps}
+$$
+
+Thus, the score equation $\vec{\llik'} = 0$ means that
+for the MLE $\hvb$:
+
+1. the sum of the errors (aka deviations) equals 0:
+
+$$\sumin \eps_i = 0$$
+
+2. the sums of the errors times each covariate also equal 0:
+
+$$\vx_j \cdot \veps = \sumin x_{ij} \eps_i = 0, \forall j \in \set{1:p}$$
+
+---
+
+:::{#exm-score-beetles}
+
+In our model for the `beetles` data, 
+we only have an intercept plus one covariate, gas concentration ($c$):
+$$\vx = (1, c)$$
+
+If $c_i$ is the gas concentration for the beetle in observation $i$, 
+and $\vec{c} = (c_1, c_2, ...c_n)$, then the score equation $\vec{\llik'} = 0$ means that
+for the MLE $\hvb$:
+
+1. the sum of the errors (aka deviations) equals 0:
+
+$$\sumin \eps_i = 0$$
+
+2. the weighted sum of the error times the gas concentrations equals 0:
+
+$$\sumin c_i \eps_i = 0 $$
+
+:::

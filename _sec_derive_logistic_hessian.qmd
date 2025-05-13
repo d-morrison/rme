@@ -1,16 +1,18 @@
 {{< include macros.qmd >}}
 
 $$
-\llik''(\vb) = \sumin \llik_i''(\vb)
+\lime{\hess(\vb)} = \sumin \olive{\hess_i(\vb)}
 $${#eq-logit-hessian}
 
 $$
 \ba
-\llik''_i(\vb) &= \deriv{\vb\'}\llik_i''
+\olive{\hess_i(\vb)} &= \deriv{\vb\'}\scorei
 \\
 &= \deriv{\vb\'}\vx_i\eps_i
 \\
 &= \vx_i \deriv{\vb\'}\eps_i
+\\
+&= \vx_i \violet{\eps_i'}
 \ea
 $${#eq-logit-hessian-i}
 
@@ -20,7 +22,11 @@ Using @thm-d_pi_d_beta:
 
 $$
 \ba
-\deriv{\vb\'}\eps_i &= \deriv{\vb\'}(y_i - \mu_i)
+\violet{\eps'_i} &= \derivff{\vb\'}{\eps_i}
+\\
+&= \deriv{\vb\'}\eps_i 
+\\
+&=\deriv{\vb\'}(y_i - \mu_i)
 \\
 &= \deriv{\vb\'}y_i - \deriv{\vb\'}\mu_i
 \\
@@ -28,27 +34,142 @@ $$
 \\
 &= -\derivf{\mu_i}{\vb\'}
 \\
-&= -\derivf{\pi_i}{\vb\'}
-\\ &= -\vx_i\' \pi_i (1-\pi_i)
-\\ &= - \vx_i\' \Varf{Y_i|X_i=x_i}
+&= -\purple{\derivf{\pi_i}{\vb\'}}
+\\ &= - \pi_i (1-\pi_i) \vx_i\' 
+\\ &= - \Varf{Y_i|X_i=x_i} \vx_i\' 
 \ea
 $$
 
+---
+
+Returning to @eq-logit-hessian-i:
+
 $$
 \ba
-\llik''(\vb) &= -\sumin \vx_i \vx_i' \Varf{Y_i|X_i=x_i}
-\\ &= - \mX\'\matr{D}\mX
+\olive{\hess_i(\vb)} &= \vx_i \violet{\eps_i'}
+\\ &= \olive{-\vx_i \Varf{Y_i|X_i=x_i} \vx_i\'}
+\ea
+$${#eq-logit-hessian-i-2}
+
+---
+
+Returning to @eq-logit-hessian:
+
+$$
+\ba
+\lime{\llik''(\vb)} &= \sumin \olive{\hess_i(\vb)}
+\\ &= \lime{-\sumin \vx_i  \Varf{Y_i|X_i=x_i} \vx_i'}
+\\ &= \lime{- \mX\'\matr{D}\mX}
 \ea
 $${#eq-logistic-hess}
 
 where $\matr{D} \eqdef \text{diag}(\Varf{Y_i|X_i=x_i})$
 is the diagonal matrix whose $i^{th}$ diagonal element is $\Varf{Y_i|X_i=x_i}$.
 
-Compare with linear regression, where:
+Compare with @eq-lm-hess from linear regression:
 
 $$
 \ba
-\llik''(\vb) &= -\sumin \vx_i \vx_i' (\sigma^2)^{-1}
+\llik''(\vb) &= -\frac{1}{\ss}\sumin \vx_i \vx_i' 
 \\ &= -\mX\' \matr{D}^{-1} \mX
 \ea
 $${#eq-linear-hess}
+
+---
+
+:::{#exr-hess-logistic}
+
+Determine the elements of the Hessian matrix for logistic regression.
+
+:::
+
+---
+
+:::{#sol-hess-logistic}
+
+The components of the Hessian are:
+
+$$
+\ba
+\hess(\beta) 
+&= \xderiv{\beta\'}{\beta}{\llik}
+\\
+&= \deriv{\beta\'}\score
+\\
+&= \sbmat{
+\derivff{\beta_0}{\score}
+& \derivff{\beta_1}{\score}
+& \cdots 
+& \derivf{\score}{\beta_p}
+}
+\\
+&= 
+\sbmat{
+\dderivf{\llik}{\beta_0} 
+& \xderivf{\llik}{\beta_0}{\beta_1} 
+& \cdots 
+& \xderivf{\llik}{\beta_0}{\beta_p}
+\\
+\xderivf{\llik}{\beta_1}{\beta_0} 
+& \dderivf{\llik}{\beta_1} 
+& \cdots 
+& \xderivf{\llik}{\beta_0}{\beta_p}
+\\
+\vdots
+& \ddots
+& \ddots
+& \vdots
+\\
+\xderivf{\llik}{\beta_p}{\beta_0} 
+& \xderivf{\llik}{\beta_p}{\beta_1} 
+& \cdots 
+& \dderivf{\llik}{\beta_p} 
+}
+\ea
+$$
+
+:::
+
+---
+
+:::{#exr-hess-beetles}
+
+Determine the Hessian for the `beetles` model.
+
+:::
+
+---
+
+:::{#sol-hess-beetles}
+
+In the `beetles` model, the Hessian is:
+
+$$
+\ba
+\hess(\beta) &=
+\sbmat{
+\derivff{\beta_0}{\score}
+& \derivff{\beta_1}{\score}
+}
+\\
+&= 
+\sbmat{
+\dderivf{\llik}{\beta_0} 
+& \xderivf{\llik}{\beta_0}{\beta_1} 
+\\
+\xderivf{\llik}{\beta_1}{\beta_0} 
+& \dderivf{\llik}{\beta_1}
+}
+\\
+&= 
+\sbmat{
+-\sumin\pi_i(1-\pi_i)
+& -\sumin c_i \pi_i(1-\pi_i)
+\\
+-\sumin c_i \pi_i(1-\pi_i)
+& -\sumin c_i^2 \pi_i(1-\pi_i)
+}
+\ea
+$$
+
+:::
