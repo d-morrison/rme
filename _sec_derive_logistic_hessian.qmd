@@ -1,12 +1,12 @@
 {{< include macros.qmd >}}
 
 $$
-\hess(\vb) = \sumin \llik_i''(\vb)
+\hess(\vb) = \sumin \hess_i(\vb)
 $${#eq-logit-hessian}
 
 $$
 \ba
-\llik''_i(\vb) &= \deriv{\vb\'}\llik_i''
+\hess_i(\vb) &= \deriv{\vb\'}\scorei
 \\
 &= \deriv{\vb\'}\vx_i\eps_i
 \\
@@ -29,14 +29,14 @@ $$
 &= -\derivf{\mu_i}{\vb\'}
 \\
 &= -\derivf{\pi_i}{\vb\'}
-\\ &= -\vx_i\' \pi_i (1-\pi_i)
-\\ &= - \vx_i\' \Varf{Y_i|X_i=x_i}
+\\ &= - \pi_i (1-\pi_i) \vx_i\' 
+\\ &= - \Varf{Y_i|X_i=x_i} \vx_i\' 
 \ea
 $$
 
 $$
 \ba
-\llik''(\vb) &= -\sumin \vx_i \vx_i' \Varf{Y_i|X_i=x_i}
+\llik''(\vb) &= -\sumin \vx_i  \Varf{Y_i|X_i=x_i} \vx_i'
 \\ &= - \mX\'\matr{D}\mX
 \ea
 $${#eq-logistic-hess}
@@ -44,11 +44,11 @@ $${#eq-logistic-hess}
 where $\matr{D} \eqdef \text{diag}(\Varf{Y_i|X_i=x_i})$
 is the diagonal matrix whose $i^{th}$ diagonal element is $\Varf{Y_i|X_i=x_i}$.
 
-Compare with linear regression, where:
+Compare with @eq-lm-hess from linear regression:
 
 $$
 \ba
-\llik''(\vb) &= -\sumin \vx_i \vx_i' (\sigma^2)^{-1}
+\llik''(\vb) &= -\frac{1}{\ss}\sumin \vx_i \vx_i' 
 \\ &= -\mX\' \matr{D}^{-1} \mX
 \ea
 $${#eq-linear-hess}
@@ -74,13 +74,11 @@ $$
 \\
 &= \deriv{\beta\'}\score
 \\
-&= \sb{
-\matrix{
+&= \sbmat{
 \derivff{\beta_0}{\score}
 & \derivff{\beta_1}{\score}
 & \cdots 
 & \derivf{\score}{\beta_p}
-}
 }
 \\
 &= 
