@@ -1,0 +1,134 @@
+:::{.notes}
+Recall [Model @eq-lm-parallel]:
+:::
+$$ E[Y|M=m,A=a] = \mu(m,a) = \beta_0 + \beta_M m + \beta_A a $$
+
+Slope (of the mean with respect to age) for males:
+$$
+\begin{aligned}
+\frac{d}{da}\mu(1,a) &= \frac{d}{da}(\beta_0 + \beta_M 1 + \beta_A a)\\
+&= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M 1 + \frac{d}{da}\beta_A a\right)\\
+&= (0 + 0 + \beta_A) \\
+&= \beta_A
+\end{aligned}
+$$
+
+Slope for females:
+
+$$
+\begin{aligned}
+\frac{d}{da}\mu(0,a) &= \frac{d}{da}(\beta_0 + \beta_M 0 + \beta_A a)\\
+&= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M 0 + \frac{d}{da}\beta_A a\right)\\
+&= (0 + 0 + \beta_A) \\
+&= \beta_A
+\end{aligned}
+$$
+
+---
+
+:::{#exr-interpret-age-slope}
+What is the interpretation of $\beta_A$ in [Model @eq-lm-parallel]?
+:::
+
+---
+
+:::{.solution}
+
+$$
+\begin{aligned}
+\frac{d}{da}\mu(m,a) &= \frac{d}{da}(\beta_0 + \beta_M m + \red{\beta_A} a)\\
+&= \left(\frac{d}{da}\beta_0 + \frac{d}{da}\beta_M m + \frac{d}{da}\red{\beta_A} a\right)\\
+&= (0 + 0 + \red{\beta_A}) \\
+&= \red{\beta_A}
+\end{aligned}
+$$
+
+Conclusion:
+
+$$\beta_A = \frac{d}{da}\mu(m,a)$$
+:::
+
+
+:::{.notes}
+$\beta_A$ is the slope of mean birthweight with respect to gestational age, adjusting for sex.
+
+Or we can plug in the definition of slope:
+:::
+$$\beta_A = E[Y|M = m, A = a+1] - E[Y|M = m, A = a]$$
+
+
+:::{.notes}
+Exchangeability and consistency have not been assessed; so we are not discussing potential outcomes (causality), only observed outcomes.
+:::
+
+---
+
+:::{#exr-beta-m-interpretation}
+What is the interpretation of $\b_M$ in [Model @eq-lm-parallel]?
+:::
+
+---
+
+:::{.solution}
+
+:::{.notes}
+More precisely written:
+$$
+\E{Y|M=m,A=a} = \mu(m,a) = \bigg\{
+\begin{matrix}
+\beta_0 + \beta_M m +\beta_A a, & \text{for } m\in \set{0,1} \\
+\text{undefined}, & \text{for } m \notin \set{0,1}
+\end{matrix}
+$$
+The model is undefined for $m \notin \set{0,1}$, so the derivative with respect to $m$ doesn't exist.
+:::
+
+$$
+\begin{aligned}
+E[Y|M = 1,A = a] &= \beta_0 + \red{\beta_M} 1 + \beta_A a \\
+& = \beta_0 + \red{\beta_M} + \beta_A a \\
+E[Y|M = 0,A = a] &= \beta_0 + \red{\beta_M} 0 + \beta_A a \\
+& = \beta_0 + \beta_A a
+\end{aligned}
+$$
+So:
+$$
+\begin{aligned}
+E[Y|M = 1,A = a] - E[Y|M = 0,A = a] &= (\beta_0 + \red{\beta_M} + \beta_A a) - (\beta_0 + \beta_A a) \\
+&= \red{\beta_M}
+\end{aligned}
+$$
+Therefore:
+$$
+\ba
+\beta_M &= E[Y|M = 1,A = a] - E[Y|M = 0,A = a]\\
+& =\mu(1,a) - \mu(0,a)\\
+\ea
+$$
+
+In words: $\beta_M$ is the difference in mean birthweight between males and females adjusting for age.
+:::
+
+---
+
+:::{#exr-interpret-intercept}
+$\beta_0 = ?$
+:::
+
+---
+
+:::{.solution}
+$$
+\begin{aligned}
+\E{Y|M = 0,A = 0} &= \mu(0,0)\\
+&= \red{\beta_0} + \beta_M 0 + \beta_A 0\\
+&= \red{\beta_0}\\
+\red{\beta_0} &= \E{Y|M = 0,A = 0} = \mu(0,0)
+\end{aligned}
+$$
+
+::: notes
+$\beta_0$ is the mean birthweight for a female with gestational age 0 weeks.
+:::
+
+:::
