@@ -16,67 +16,32 @@ Some material was also taken from @mclachlan2007em and @CaseBerg01.
 
 ### The maximum likelihood estimate
 
-:::{#def-mle}
-
-#### Maximum likelihood estimate
-
-The **maximum likelihood estimate** of a parameter vector $\Theta$, denoted $\hthml$, is the value of $\Theta$ that maximizes the likelihood:
-
-$$
-\hthml \eqdef \arg \max_\Th \Lik(\Th)
-$$ {#eq-mle}
-:::
+{{< include _def_mle.qmd >}}
 
 ### Finding the maximum of a function
 
-Recall from calculus: the maxima of a continuous function $f(x)$ over a range of input values $\rangef{x}$ can be found either:
+Recall from calculus: the maxima of a continuous function $f(x)$ 
+over a range of input values $\rangef{x}$ can be found either:
 
 - at the edges of the range of input values, *OR*:
-- where the function is flat (i.e. where the gradient function $f'(x) = 0$) *AND* the second derivative is negative definite ($f''(x) < 0$).
+- where the function is flat (i.e. where the gradient function $f'(x) = 0$) 
+*AND* the second derivative is negative definite ($f''(x) < 0$).
 
-### Directly maximizing the likelihood function for *iid* data
+### Directly maximizing the likelihood function for independent data
 
-To find the maximizer(s) of the likelihood function, we need to solve $\Lik'(\th) = 0$ for $\theta$. However, even for mutually independent data, we quickly run into a problem:
-
-$$
-\ba
-\Lik'(\th) 
-&= \deriv{\th} \Lik(\th)
-\\ &= \deriv{\th} \prod_{i=1}^n p(X_i=x_i|\theta)
-\ea
-$$ {#eq-deriv-Lik}
-
-The derivative of the likelihood of independent data is the derivative of a product. 
-We will have to perform a massive application of the product rule to evaluate this derivative.
+{{< include _sec_mle_no_log.qmd >}}
 
 ### The log-likelihood function
 
+::: notes
 It is typically easier to work with the log of the likelihood function:
-
-:::{#def-loglik}
-
-#### Log-likelihood
-
-The **log-likelihood** of parameter value $\theta$, for model $\p_{\Theta}(\vX)$ and data $\vX = \vx$, is the natural logarithm of the likelihood^[ <https://en.wikipedia.org/wiki/Does_exactly_what_it_says_on_the_tin>]:
-
-$$\lik(\th) \eqdef \logf{\Lik(\th)}$$
 :::
 
----
-
-:::{#def-loglik}
-
-#### Log-likelihood components
-
-Given a dataset $\vX = \vx$, the **log-likelihood component of observation $X_i=x_i$** is the natural logarithm of the likelihood component:
-
-$$\lik_i(\th) \eqdef \logf{\Lik_i(\th)}$$
-:::
+{{< include _def_loglik.qmd >}}
 
 ---
 
 :::{#thm-mle-use-log}
-####
 
 The likelihood and log-likelihood have the same maximizer:
 
@@ -91,25 +56,7 @@ Left to the reader.
 
 ---
 
-:::{#thm-llik-iid}
-
-#### Log-likelihood of an $\iid$ sample
-
-For $\iid$ data $X_1, ..., X_n$ with shared distribution $\p(X=x)$:
-
-$$\ell(x|\theta) = \sum_{i=1}^n \log{p(X=x_i|\theta)}$$ {#eq-loglik}
-:::
-
-:::{.proof}
-$$
-\ba
-\ell(x|\theta) 
-&\eqdef \log{\Lik(\vec x|\theta)}
-\\&= \log{\prod_{i=1}^n \p(X_i=x_i|\theta)}
-\\&= \sum_{i=1}^n \log{p(X=x_i|\theta)}
-\ea
-$$
-:::
+{{< include _thm_loglik_ind.qmd >}}
 
 ---
 
@@ -145,37 +92,36 @@ $$
 
 The first derivative^[a.k.a. the [gradient](https://en.wikipedia.org/wiki/Gradient)] of the log-likelihood, $\lik'(\th)$, is important enough to have its own name: the *score function*.
 
-:::{#def-score}
-#### Score function
-
-The **score function** of a statistical model $\pr(\vec X=\vec x)$ is the gradient (i.e., first derivative) of the log-likelihood of that model:
-
-$$\lik'(\th) \eqdef \deriv{\th} \lik(\th)$$
-:::
+{{< include _def_score.qmd >}}
 
 ::: notes
 We often
 skip writing the arguments $x$ and/or $\theta)$, so
-$\ell' \eqdef \ell'(\vec x;\theta) \eqdef \ell'(\theta)$.[^1] Some statisticians
-use $U$ or $S$ instead of $\ell'$. I prefer $\ell'$.
+$\ell' \eqdef \ell'(\vec x;\theta) \eqdef \ell'(\theta)$.[^1] 
+Some statisticians
+use $U$ or $S$ instead of $\ell'$. 
+I prefer $\ell'$.
 Why use up extra letters?
 :::
 
 ### Asymptotic distribution of the maximum likelihood estimate
 
 ::: notes
-We learned how to quantify our uncertainty about these maximum likelihood estimates; with sufficient sample size, $\hthml$ has an approximately Gaussian distribution [@newey1994large]:
+We learned how to quantify our uncertainty about these maximum likelihood estimates; 
+with sufficient sample size, 
+$\hthml$ has an approximately Gaussian distribution [@newey1994large]:
 :::
-$$
-\hat\theta_{ML} \dot \sim N(\theta,\mathcal I(\theta)^{-1})
-$$
+
+{{< include _thm_dist_mle.qmd >}}
 
 Recall:
 
-- $\einf(\theta) \eqdef \E{\oinf(\vX;\theta)}$
-- $\oinf(\vX,\theta) \eqdef -\ell''(\vX;\theta)$
+{{< include _def_oinf.qmd >}}
 
-We can estimate $\einf(\th)$ using either $\einf(\hthml)$ or $\oinf(\vec x; \hthml)$.
+{{< include _def_einf.qmd >}}
+
+We can estimate $\einf(\th)$ using 
+either $\einf(\hthml)$ or $\oinf(\vec x; \hthml)$.
 
 So we can estimate the standard error of $\hth_k$ as:
 
@@ -189,22 +135,22 @@ The variance of $\ell'(x,\theta)$,
 ${Cov}\left\{ \ell'(x,\theta) \right\}$, is also very
 important; we call it the "expected information matrix", "Fisher
 information matrix", or just "information matrix", and we represent it
-using the symbol $\einff{I}$ (`\frakturI` in Unicode, `\mathfrak{I}` in LaTeX).
+using the symbol $\einff{I}$ (`\scriptI` in Unicode, `\mathcal{I}` in LaTeX).
 
 $$
 \ba
-\einf 
-\eqdef \einf(\theta) 
-\\ &\eqdef \Covf{\ell'|\theta} 
-\\ &= \Expp[ \ell'{\ell'}\' ] - \Expp[ \ell' ] \ \Expp[ \ell' ]\'
+\einfm 
+\eqdef \einfm(\theta) 
+\\ &\eqdef \Covf{\score|\theta} 
+\\ &= \Expp[ \score{\score}\' ] - \Expp[\score] \ \Expp[\score]\'
 \ea
 $$
 
-The elements of $\mathfrak{I}$ are:
+The elements of $\einfm$ are:
 
 $$
 \ba
-\mathfrak{I}_{ij} 
+\einfm_{ij} 
 &\eqdef \Covf{{\ell'}_{i},{\ell'}_{j}}
 \\ &= \Expp[ \ell_{i}'\ell_{j}' ] - \Expp[ {\ell'}_{i} ] \Expp[ {\ell'}_{j} ]
 \ea
@@ -274,23 +220,31 @@ Moreover, for those distributions (called the "exponential family"), we
 have:
 
 $$
-\mathfrak{I} = -\Exp{\ell''}
-= \Exp{- \ell''}
+\einf = -\Exp{\ell''}
+= \Exp{- \score \score\'}
 $$
 
-(see @dobson4e, §3.17), where
+(see @dobson4e, §3.17).
 
-$$\ell'' \eqdef \deriv{\theta}\ell^{'(x,\theta)^{\top}} = \deriv{\theta}\deriv{\theta^{\top}}\ell(x,\theta)$$
+---
 
-is the $p \times p$ matrix whose elements are:
+{{< include _def_hessian.qmd >}}
 
-$$\ell_{ij}'' \eqdef \deriv{\theta_{i}}\deriv{\theta_{j}}\log{ p\left( X = x \mid \theta \right)}$$
+---
 
-$\ell''$ is called the "Hessian"^[named after mathematician [Otto Hesse](https://en.wikipedia.org/wiki/Otto_Hesse)] of the log-likelihood
-function.
+{{< include _thm_hessian_elements.qmd >}}
 
-Sometimes, we use $I(\theta;x) \eqdef - \ell''$ (note the
-standard-font "I" here). $I(\theta;x)$ is the observed information, precision, or concentration
+---
+
+{{< include _thm_hessian_score.qmd >}}
+
+---
+
+#### Observed information
+
+Sometimes, we use $I(\theta;x) \eqdef - hess$ (note the
+standard-font "I" here). 
+$I(\theta;x)$ is the observed information, precision, or concentration
 matrix (Negative Hessian).
 
 :::{.callout-important}
