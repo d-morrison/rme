@@ -20,38 +20,28 @@ Some material was also taken from @mclachlan2007em and @CaseBerg01.
 
 ### Finding the maximum of a function
 
-Recall from calculus: the maxima of a continuous function $f(x)$ over a range of input values $\rangef{x}$ can be found either:
+Recall from calculus: the maxima of a continuous function $f(x)$ 
+over a range of input values $\rangef{x}$ can be found either:
 
 - at the edges of the range of input values, *OR*:
-- where the function is flat (i.e. where the gradient function $f'(x) = 0$) *AND* the second derivative is negative definite ($f''(x) < 0$).
+- where the function is flat (i.e. where the gradient function $f'(x) = 0$) 
+*AND* the second derivative is negative definite ($f''(x) < 0$).
 
-### Directly maximizing the likelihood function for *iid* data
+### Directly maximizing the likelihood function for independent data
 
-To find the maximizer(s) of the likelihood function, we need to solve $\Lik'(\th) = 0$ for $\theta$. However, even for mutually independent data, we quickly run into a problem:
-
-$$
-\ba
-\Lik'(\th) 
-&= \deriv{\th} \Lik(\th)
-\\ &= \deriv{\th} \prod_{i=1}^n p(X_i=x_i|\theta)
-\ea
-$$ {#eq-deriv-Lik}
-
-The derivative of the likelihood of independent data is the derivative of a product. 
-We will have to perform a massive application of the product rule to evaluate this derivative.
+{{< include _sec_mle_no_log.qmd >}}
 
 ### The log-likelihood function
 
+::: notes
 It is typically easier to work with the log of the likelihood function:
-
----
+:::
 
 {{< include _def_loglik.qmd >}}
 
 ---
 
 :::{#thm-mle-use-log}
-####
 
 The likelihood and log-likelihood have the same maximizer:
 
@@ -66,25 +56,7 @@ Left to the reader.
 
 ---
 
-:::{#thm-llik-iid}
-
-#### Log-likelihood of an $\iid$ sample
-
-For $\iid$ data $X_1, ..., X_n$ with shared distribution $\p(X=x)$:
-
-$$\ell(x|\theta) = \sum_{i=1}^n \log{p(X=x_i|\theta)}$$ {#eq-loglik}
-:::
-
-:::{.proof}
-$$
-\ba
-\ell(x|\theta) 
-&\eqdef \log{\Lik(\vec x|\theta)}
-\\&= \log{\prod_{i=1}^n \p(X_i=x_i|\theta)}
-\\&= \sum_{i=1}^n \log{p(X=x_i|\theta)}
-\ea
-$$
-:::
+{{< include _thm_loglik_ind.qmd >}}
 
 ---
 
@@ -125,26 +97,31 @@ The first derivative^[a.k.a. the [gradient](https://en.wikipedia.org/wiki/Gradie
 ::: notes
 We often
 skip writing the arguments $x$ and/or $\theta)$, so
-$\ell' \eqdef \ell'(\vec x;\theta) \eqdef \ell'(\theta)$.[^1] Some statisticians
-use $U$ or $S$ instead of $\ell'$. I prefer $\ell'$.
+$\ell' \eqdef \ell'(\vec x;\theta) \eqdef \ell'(\theta)$.[^1] 
+Some statisticians
+use $U$ or $S$ instead of $\ell'$. 
+I prefer $\ell'$.
 Why use up extra letters?
 :::
 
 ### Asymptotic distribution of the maximum likelihood estimate
 
 ::: notes
-We learned how to quantify our uncertainty about these maximum likelihood estimates; with sufficient sample size, $\hthml$ has an approximately Gaussian distribution [@newey1994large]:
+We learned how to quantify our uncertainty about these maximum likelihood estimates; 
+with sufficient sample size, 
+$\hthml$ has an approximately Gaussian distribution [@newey1994large]:
 :::
-$$
-\hat\theta_{ML} \dot \sim N(\theta,\mathcal I(\theta)^{-1})
-$$
+
+{{< include _thm_dist_mle.qmd >}}
 
 Recall:
 
-- $\einf(\theta) \eqdef \E{\oinf(\vX;\theta)}$
-- $\oinf(\vX,\theta) \eqdef -\ell''(\vX;\theta)$
+{{< include _def_oinf.qmd >}}
 
-We can estimate $\einf(\th)$ using either $\einf(\hthml)$ or $\oinf(\vec x; \hthml)$.
+{{< include _def_einf.qmd >}}
+
+We can estimate $\einf(\th)$ using 
+either $\einf(\hthml)$ or $\oinf(\vec x; \hthml)$.
 
 So we can estimate the standard error of $\hth_k$ as:
 
@@ -265,7 +242,7 @@ $$
 
 #### Observed information
 
-Sometimes, we use $I(\theta;x) \eqdef - \ell''$ (note the
+Sometimes, we use $I(\theta;x) \eqdef - hess$ (note the
 standard-font "I" here). 
 $I(\theta;x)$ is the observed information, precision, or concentration
 matrix (Negative Hessian).
