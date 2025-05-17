@@ -1,0 +1,92 @@
+:::{#exr-ci-OR}
+Given
+a maximum likelihood estimate $\hb$
+and
+a corresponding estimated covariance matrix 
+$\hS \eqdef \hat{\Covt}(\hb)$, 
+calculate a 95% confidence interval for the odds ratio 
+comparing covariate patterns $\vx$ and $\vxs$, $\ror(\vx,\vxs)$.
+:::
+
+---
+
+:::{#sol-ci-OR}
+By the invariance property of MLEs,
+we can first calculate a 95% confidence interval for the log of the odds ratio,
+$\logf{\ror(\vx,\vxs)} = \difflogodds$,
+and then exponentiate the endpoints of that log-odds-scale confidence interval.
+:::
+
+---
+
+:::{#exr-or-diff-logodds}
+
+Find a 95% confidence interval for the log of the odds ratio,
+$\logf{\ror(\vx,\vxs)} = \difflogodds$
+
+:::
+
+---
+
+:::{#sol-or-diff-logodds}
+
+By @thm-dist-mle,
+a 95% confidence interval for the log of the odds ratio,
+$\logf{\ror(\vx,\vxs)} = \difflogodds$,
+can be constructed as:
+
+$$\Delta{\hat\logodds} \pm 1.96 * \hse{\Delta{\hat\logodds}}$$
+
+:::
+
+---
+
+:::{#exr-se-diff-logodds}
+
+::: notes
+Find an expression for the standard error of
+$\Delta{\hat\logodds} \eqdef \hat{\logodds}(\vx) - \hat{\logodds}(\vxs)$
+in terms of $\hb$ and $\Sigma \eqdef \Covt(\hb)$ (the variance-covariance matrix of $\hb$) .
+:::
+
+$$\HSE{\Delta{\hat\logodds}} = ?$$
+
+:::
+
+---
+
+:::{#sol-se-diff-logodds}
+
+$$\SE{\Delta \hat \logodds} = \sqrt{\Var{\Delta \hat \logodds}}$$
+
+By @lem-diff-logodds and @thm-var-lincom:
+
+$$
+\ba
+\Var{\Delta \hat \logodds}
+&=
+\Var{(\diffvx) \cdot \hb}
+\\
+&= \Var{(\diffvx) \cdot \hb}
+\\
+&= \tp{\diffvx}\Var{\hb}(\diffvx)
+\\
+&= \tp{\diffvx}\Sigma(\diffvx)
+\\
+&= \sumip\sumjp (\diffvx)_i \Sigma_{ij} (\diffvx)_j
+\\
+&= \sumip\sumjp (\Delta x_i) \Sigma_{ij} (\Delta x_j)
+\\
+&= \sumip\sumjp (x_i - x^*_i) \Covt(\hb_i,\hb_j) (x_j - x^*_j)
+\ea
+$$
+
+Therefore, by MLE invariance:
+
+$$\Delta{\hat\logodds} = \tp{\diffvx}\hat{\Sigma}(\diffvx)$$
+
+
+::: notes
+Compare with @sec-se-fitted.
+
+:::

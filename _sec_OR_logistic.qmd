@@ -1,31 +1,91 @@
 {{< include macros.qmd >}}
 
-:::{#thm-logistic-OR}
+:::{#exr-logistic-OR-general}
 
 For the logistic regression model:
 
 - $Y_i|\vX_i \simind \Ber(\pi(\vX_i))$
-- $\pi(\vx) = \expitf{\vx'\vb}$
+- $\logitf{\pi(\vx)} = \logodds(\vx)$
+- $\logodds(\vx) = \vx'\vb$
 
-Consider two covariate patterns, $\vx$ and $\vec{x^*}$.
+Consider two covariate patterns, $\vx$ and $\vxs$,
+representing 
+two individuals 
+or two subpopulations.
 
-The odds ratio comparing these covariate patterns is:
+Find a concise expression for the odds ratio comparing covariate patterns $\vx$ and $\vxs$:
 
-{{< include _eq_OR_delta.qmd >}}
+$$\ror(\vx,\vxs) \eqdef \frac{\odds(\vx)}{\odds(\vxs)}$$
 
 :::
 
 ---
 
-::: proof
+:::{#sol-logistic-OR}
+
 $$
 \ba
-\th(\vx,\vec{x^*})
-&= \frac {\odds(Y=1 | \vX = \vx)} {\odds(Y=1 | \vX = \vec{x^*})}
-\\ &= \frac{\exp{\vx\'\vb}}{\exp{{\vec{x^*}}\' \vb}}
-\\ &= \exp{\vx\'\vb - {\vec{x^*}}\' \vb}
-\\ &= \exp{(\vx\' - {\vec{x^*}}\') \vb}
-\\ &= \exp{{(\vx - \vec{x^*})}\' \vb}
+\ror(\vx,\vxs) 
+&\eqdef \frac{\odds(\vx)}{\odds(\vxs)}
+\\ 
+&= \frac{\expf{\logodds(\vx)}}{\expf{\logodds(\vxs)}}
+\\
+&= \expf{\red{\logodds(\vx) - \logodds(\vxs)}}
 \ea
 $$
+
+Now, let:
+
+$$
+\ba
+\red{\difflogodds} 
+&\eqdef \red{\logodds(\vx) - \logodds(\vxs)}
+\\
+\blue{\diffvx} &\eqdef \blue{\vx - \vxs}
+\ea
+$$
+
+Then:
+
+:::{#lem-diff-logodds}
+
+$$
+\ba
+\red{\difflogodds}
+&\eqdef \red{\logodds(\vx) - \logodds(\vxs)}
+\\
+&= (\vx\cd\vb) - (\vxs\cd\vb)
+\\
+&= (\vx\'\vb) - (\pt{\vxs}\vb)
+\\
+&= (\vx\' - \pt{\vxs})\vb
+\\
+&= (\vx - \vxs)\'\vb
+\\
+&= (\blue{\vx - \vxs})\cdot\vb
+\\
+&= (\blue{\diffvx}) \cdot \vb
+\ea
+$$
+
+:::
+
+So:
+
+:::{#thm-logistic-OR}
+
+The odds ratio comparing covariate patterns $\vx$ and $\vxs$ is:
+
+{{< include _eq_OR_delta.qmd >}}
+
+:::
+
+:::
+
+---
+
+:::{#cor-log-or}
+
+$$\logf {\ror(\vx,\vxs)} = \difflogodds$$
+
 :::

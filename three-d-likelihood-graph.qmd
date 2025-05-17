@@ -148,11 +148,11 @@ loglik_plot = ggplot() +
 
 ```{r}
 
-## Graph the likelihood ranging over both parameters at once (3D graph!):
+## Graph the log-likelihood ranging over both parameters at once:
 
 library(plotly)
 
-n_points = 200
+n_points = 25
 mu = seq(90, 105, length.out = n_points)
 sigma = seq(6, 20, 
             length.out = n_points)
@@ -161,21 +161,12 @@ names(sigma) = round(sigma, 5)
 lliks = outer(mu, sigma, loglik)
 liks = outer(mu, sigma, lik)
 
-fig <- plot_ly(
-  type = 'surface',
+plotly::plot_ly(
+  type = "surface",
   x = ~mu,
   y = ~sigma,
   z = ~t(lliks)) 
  # see https://stackoverflow.com/questions/69472185/correct-use-of-coordinates-to-plot-surface-data-with-plotly for explanation of why transpose `t()` is needed
-fig1 <- fig %>%
-  plotly::layout(
-    scene = list(
-      xaxis = list(nticks = 20),
-      zaxis = list(nticks = 10),
-      # camera = list(eye = list(x = 0, y = -1, z = 0.5)),
-      aspectratio = list(x = .9, y = .8, z = 0.8)))
-
-fig1
 ```
 
 Log-likelihood of `hers` data w.r.t. $\mu$ and $\sigma^2$
