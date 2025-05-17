@@ -1,9 +1,11 @@
+{{< include macros.qmd >}}
+
 :::{#exr-ci-OR}
 Given
 a maximum likelihood estimate $\hb$
 and
 a corresponding estimated covariance matrix 
-$\hS \eqdef \hat{\Covt}(\hb)$, 
+$\hS \eqdef \widehat{\Covt}(\hb)$, 
 calculate a 95% confidence interval for the odds ratio 
 comparing covariate patterns $\vx$ and $\vxs$, $\ror(\vx,\vxs)$.
 :::
@@ -17,9 +19,10 @@ By @thm-dist-mle,
 a 95% confidence interval for $\ror(\vx,\vxs)$
 can be constructed as:
 
-$$\hat\ror \pm 1.96 * \HSE{\hat\ror}$$
-However, $\HSE{\hat\ror}$ would be difficult to compute directly;
-it would require using the [delta method](https://en.wikipedia.org/wiki/Delta_method).
+$$\hat\ror \pm 1.96 * \HSE{\hat\ror}$${#eq-ci-OR-direct}
+However, $\HSE{\hat\ror}$ seems difficult to compute;
+doing so would require using the 
+[delta method](https://en.wikipedia.org/wiki/Delta_method).
 
 Instead, using the invariance property of MLEs,
 we can first calculate a confidence interval for the log of the odds ratio,
@@ -27,7 +30,7 @@ $\logf{\ror(\vx,\vxs)} \in (L,R)$,
 and then exponentiate the endpoints of that log-odds-scale confidence interval:
 :::
 
-$$\ror(\vx,\vxs) \in (e^L, e^R)$$
+$$\ror(\vx,\vxs) \in (e^L, e^R)$${#eq-ci-OR-exp}
 
 :::
 
@@ -48,11 +51,11 @@ From @cor-log-or, we know:
 
 $$\logf{\ror(\vx,\vxs)} = \difflogodds$$
 
-By @thm-dist-mle and MLE invariance,
+By @thm-dist-mle,
 a 95% confidence interval for $\difflogodds$
 can be constructed as:
 
-$$\Delta{\hat\logodds} \pm 1.96 * \HSE{\Delta{\hat\logodds}}$$
+$$\hdifflogodds \pm 1.96 * \blue{\HSE{\hdifflogodds}}$$
 
 :::
 
@@ -61,12 +64,11 @@ $$\Delta{\hat\logodds} \pm 1.96 * \HSE{\Delta{\hat\logodds}}$$
 :::{#exr-se-diff-logodds}
 
 ::: notes
-Find an expression for the standard error of
-$\Delta{\hat\logodds} \eqdef \hat{\logodds}(\vx) - \hat{\logodds}(\vxs)$
-in terms of $\hb$ and $\Sigma \eqdef \Covt(\hb)$ (the variance-covariance matrix of $\hb$) .
+How can we estimate the standard error of
+$\hdifflogodds$?
 :::
 
-$$\HSE{\Delta{\hat\logodds}} = ?$$
+$$\blue{\HSE{\hdifflogodds}} = \blue{?}$$
 
 :::
 
@@ -74,34 +76,67 @@ $$\HSE{\Delta{\hat\logodds}} = ?$$
 
 :::{#sol-se-diff-logodds}
 
-$$\SE{\Delta \hat \logodds} = \sqrt{\Var{\Delta \hat \logodds}}$$
+$$
+\green{\SE{\hdifflogodds}} = 
+\sqrt{\red{\Var{\hdifflogodds}}}
+$${#eq-se-sqrt-var}
 
 By @lem-diff-logodds and @thm-var-lincom:
 
 $$
 \ba
-\Var{\Delta \hat \logodds}
+\red{\Var{\hdifflogodds}}
 &= \Var{(\diffvx) \cdot \hb}
 \\
-&= \tp{\diffvx}\Var{\hb}(\diffvx)
+&= \pt{\diffvx}\Cov{\hb}(\diffvx)
 \\
-&= \tp{\diffvx}\Sigma(\diffvx)
-\\
+&= \red{\pt{\diffvx}\Sigma(\diffvx)}
+\ea
+$${#eq-var-diff-logodds}
+
+where $\Sigma \eqdef \Covt(\hb)$.
+
+---
+
+::: notes
+Expanding @eq-var-diff-logodds out of matrix-vector notation, we have:
+:::
+
+$$
+\ba
+\red{\pt{\diffvx}\Sigma(\diffvx)}
 &= \sumip\sumjp (\diffvx)_i \Sigma_{ij} (\diffvx)_j
 \\
 &= \sumip\sumjp (\Delta x_i) \Sigma_{ij} (\Delta x_j)
 \\
-&= \sumip\sumjp (x_i - x^*_i) \Covt(\hb_i,\hb_j) (x_j - x^*_j)
+&= \red{\sumip\sumjp (x_i - x^*_i) \Covt(\hb_i,\hb_j) (x_j - x^*_j)}
 \ea
 $$
 
-Therefore, by MLE invariance:
+---
 
-$$\Delta{\hat\logodds} = \tp{\diffvx}\hat{\Sigma}(\diffvx)$$
+Combining @eq-var-diff-logodds and MLE invariance:
 
+:::{#thm-est-se-diff-logodds}
+
+#### Estimated variance and standard error of difference in log-odds
+
+$$
+\orange{\hVar{\Delta{\hat\logodds}}} = \orange{\tp{\diffvx}\hat{\Sigma}(\diffvx)}
+$${#eq-est-var-difflogodds}
+
+$$
+\blue{\HSE{\Delta{\hat\logodds}}} = 
+\blue{\sqrt{\tp{\diffvx}\hat{\Sigma}(\diffvx)}}
+$${#eq-est-se-diff-logodds}
+
+:::
 
 ::: notes
-Compare with @sec-se-fitted.
+Note: on the RHS, we have plugged in $\hat{\Sigma}$, 
+our estimate of $\Sigma$.
+
+Compare this result with @sec-se-fitted.
 
 :::
 
