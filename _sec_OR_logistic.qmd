@@ -13,7 +13,7 @@ representing
 two individuals 
 or two subpopulations.
 
-Find a concise expression for the odds ratio comparing these two covariate patterns:
+Find a concise expression for the odds ratio comparing covariate patterns $\vx$ and $\vxs$:
 
 $$\or(\vx,\vxs) \eqdef \frac{\odds(\vx)}{\odds(\vxs)}$$
 
@@ -38,8 +38,21 @@ Now, let:
 
 $$
 \ba
+\red{\difflogodds} 
+&\eqdef \red{\logodds(\vx) - \logodds(\vxs)}
+\\
+\blue{\diffvx} &\eqdef \blue{\vx - \vxs}
+\ea
+$$
+
+Then:
+
+:::{#lem-diff-logodds}
+
+$$
+\ba
 \red{\difflogodds}
- &\eqdef \red{\logodds(\vx) - \logodds(\vxs)}
+&\eqdef \red{\logodds(\vx) - \logodds(\vxs)}
 \\
 &= (\vx\cd\vb) - (\vxs\cd\vb)
 \\
@@ -47,28 +60,15 @@ $$
 \\
 &= (\vx\' - \vxs\')\vb
 \\
-&= (\blue{\vx - \vxs})\'\vb
+&= (\vx - \vxs)\'\vb
+\\
+&= (\blue{\vx - \vxs})\cdot\vb
+\\
+&= (\blue{\diffvx}) \cdot \vb
 \ea
 $$
 
-Now, define:
-
-$$\blue{\diffvx} \eqdef \blue{\vx - \vxs}$$
-
-Then:
-
-$$
-\ba
-\red{\difflogodds}
-&= (\blue{\vx - \vxs})\'\vb
-\\
-&= (\blue{\diffvx})  \'\vb
-\\
-&= (\diffvx) \cdot \vb
-\\
-&= \logodds(\diffvx)
-\ea
-$$
+:::
 
 So:
 
@@ -79,5 +79,97 @@ The odds ratio comparing covariate patterns $\vx$ and $\vxs$ is:
 {{< include _eq_OR_delta.qmd >}}
 
 :::
+
+:::
+
+---
+
+:::{#cor-log-or}
+
+$$\logf {\or(\vx,\vxs)} = \difflogodds$$
+
+:::
+
+---
+
+:::{#exr-ci-OR}
+Given 
+a maximum likelihood estimate $\hb$ 
+and 
+a corresponding estimated covariance matrix $\hS \eqdef \hat{\Covt}(\hb)$, calculate a 95% confidence interval for the odds ratio comparing covariate patterns $\vx$ and $\vxs$, $\or(\vx,\vxs)$.
+:::
+
+---
+
+:::{#sol-ci-OR}
+By the invariance property of MLEs, 
+we can first calculate a 95% confidence interval for the log of the odds ratio, 
+$\logf{\or(\vx,\vxs)} = \difflogodds$,
+and then exponentiate the endpoints of that log-odds-scale confidence interval.
+:::
+
+---
+
+:::{#exr-or-diff-logodds}
+
+Find a 95% confidence interval for the log of the odds ratio, 
+$\logf{\or(\vx,\vxs)} = \difflogodds$
+
+:::
+
+---
+
+:::{#sol-or-diff-logodds}
+
+By @thm-dist-mle,
+a 95% confidence interval for the log of the odds ratio, 
+$\logf{\or(\vx,\vxs)} = \difflogodds$, 
+can be constructed as:
+
+$$\widehat{\difflogodds} \pm 1.96 * \hse{\widehat{\difflogodds}}$$
+
+:::
+
+---
+
+:::{#exr-se-diff-logodds}
+
+::: notes
+Find an expression for the standard error of 
+$\Delta{\hat\logodds} \eqdef \hat{\logodds}(\vx) - \hat{\logodds}(\vxs)$
+in terms of $\hb$ and $\Sigma \eqdef \Covt(\hb)$ (the variance-covariance matrix of $\hb$) .
+:::
+
+$$\hse{\difflogodds} = ?$$
+
+:::
+
+---
+
+:::{#sol-se-diff-logodds}
+
+$$\SE{\Delta \hat \logodds} = \sqrt{\Var{\Delta \hat \logodds}}$$
+
+By @lem-diff-logodds and @thm-var-lincom:
+
+$$
+\ba
+\Var{\Delta \hat \logodds}
+&= 
+\Var{(\diffvx) \cdot \hb}
+\\
+&= \Var{(\diffvx) \cdot \hb}
+\\
+&= \tp{\diffvx}\Var{\hb}(\diffvx)
+\\
+&= \tp{\diffvx}\Sigma(\diffvx)
+\\
+&= \sumip\sumjp (\diffvx)_i \Sigma_{ij} (\diffvx)_j
+\\
+&= \sumip\sumjp (\Delta x_i) \Sigma_{ij} (\Delta x_j)
+\\
+&= \sumip\sumjp (x_i - x^*_i) \Covt(\hb_i,\hb_j) (x_j - x^*_j)
+\ea
+$$
 
 :::
