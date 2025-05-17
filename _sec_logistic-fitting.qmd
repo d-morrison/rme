@@ -82,7 +82,8 @@ lik_beetles0 <- function(beta_0, beta_1) {
       eta = beta_0 + beta_1 * dose,
       omega = exp(eta),
       pi = odds_inv(omega),
-      Lik = pi^died * (1 - pi)^survived
+      Lik = pi^died * (1 - pi)^survived,
+      # llik = died*eta + n*log(1 - pi)
     ) |>
     pull(Lik) |>
     prod()
@@ -99,9 +100,9 @@ lik_beetles <- Vectorize(lik_beetles0)
 ```{r}
 #| label: beetles-likelihood-plot
 
-ranges <- beetles_glm |> confint.default(level = 0.8)
+ranges <- beetles_glm |> confint.default(level = 0.05)
 
-n_points <- 250
+n_points <- 25
 beta_0s <- seq(
   ranges["(Intercept)", 1],
   ranges["(Intercept)", 2],
@@ -129,7 +130,9 @@ if (run_graph) {
 }
 ```
 
-Likelihood of `beetles` data
+**Likelihood of `beetles` data.**
+Bumps on ridge are artifacts of render;
+increase `n_points` to improve render quality.
 
 :::
 
@@ -257,9 +260,9 @@ lik_beetles <- Vectorize(lik_beetles0)
 
 ```{r}
 
-ranges <- beetles_glm_grouped_centered |> confint.default(level = .8)
+ranges <- beetles_glm_grouped_centered |> confint.default(level = .95)
 
-n_points <- 100
+n_points <- 25
 beta_0s <- seq(
   ranges["(Intercept)", 1],
   ranges["(Intercept)", 2],
