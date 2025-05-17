@@ -1,0 +1,104 @@
+
+:::{#def-logit}
+
+#### logit function
+
+::: notes
+The **logit function**  of a probability $\pi$ is
+the natural logarithm of the [odds function](#def-odds) of $\pi$:
+:::
+
+$$\logit(\pi) \eqdef \logf{\odds(\pi)}$$
+
+:::
+
+---
+
+::: notes
+@fig-logit shows the shape of the $\logit()$ function.
+:::
+
+```{r}
+#| code-fold: true
+#| fig-cap: "The logit function"
+#| label: fig-logit
+
+odds <- function(pi) pi / (1 - pi)
+
+logit <- function(p) log(odds(p))
+
+library(ggplot2)
+logit_plot <-
+  ggplot() +
+  geom_function(
+    fun = logit,
+    arrow = arrow(ends = "both")
+  ) +
+  xlim(.001, .999) +
+  ylab("logit(p)") +
+  xlab("p") +
+  theme_bw()
+print(logit_plot)
+```
+
+---
+
+
+---
+
+:::{#exr-prove-eq-logit}
+
+#### Compose the logit function
+
+Mathematically expand the definition of the logit function.
+
+:::
+
+---
+
+:::{#sol-prove-eq-logit}
+#### Compose the logit function
+
+:::{#thm-logit-function}
+#### Expanded expression for logit
+$$\logit(\pi) = \logf{\frac{\pi}{1-\pi}}$${#eq-logit}
+
+:::
+
+::: proof
+Apply @def-logit and then @def-odds (details left to the reader).
+:::
+
+:::
+
+---
+
+:::{#thm-deriv-logit}
+
+#### Derivative of logit function
+
+$$\logit'(\pi) = \frac{1}{(\pi)(1-\pi)}$$
+:::
+
+---
+
+::: proof
+
+Using @cor-d_odds-d_prob:
+
+$$
+\ba
+\logit'(\pi)
+   &= \deriv{\pi}\logit(\pi)
+\\ &= \deriv{\pi}\logf{\odds(\pi)}
+\\ &= \frac{\odds'(\pi)}{\odds(\pi)}
+\\ &= \odds'(\pi) \frac{1}{\odds(\pi)}
+\\ &= \frac{1}{\sqf{1-\pi}}\frac{1-\pi}{\pi}
+\\ &= \frac{1}{(\pi)(1-\pi)}
+\ea
+$$
+
+:::
+
+---
+

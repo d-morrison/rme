@@ -388,228 +388,27 @@ $$
 
 ## Odds and Odds Ratios
 
+### Odds and probabilities
+
 {{< include _sec_odds.qmd >}}
+
+### The inverse odds function
+
+{{< include _sec_invodds.qmd >}}
+
+### Odds ratios
+
+{{< include _sec_odds_ratios.qmd >}}
 
 ## The logit and expit functions
 
 ### The logit function
 
-:::{#def-logit}
-
-#### logit function
-
-::: notes
-The **logit function**  of a probability $\pi$ is
-the natural logarithm of the [odds function](#def-odds) of $\pi$:
-:::
-
-$$\logit(\pi) \eqdef \logf{\odds(\pi)}$$
-
-:::
-
----
-
-::: notes
-@fig-logit shows the shape of the $\logit()$ function.
-:::
-
-```{r}
-#| code-fold: true
-#| fig-cap: "The logit function"
-#| label: fig-logit
-
-odds <- function(pi) pi / (1 - pi)
-
-logit <- function(p) log(odds(p))
-
-library(ggplot2)
-logit_plot <-
-  ggplot() +
-  geom_function(
-    fun = logit,
-    arrow = arrow(ends = "both")
-  ) +
-  xlim(.001, .999) +
-  ylab("logit(p)") +
-  xlab("p") +
-  theme_bw()
-print(logit_plot)
-```
-
----
-
-
----
-
-:::{#exr-prove-eq-logit}
-
-#### Compose the logit function
-
-Mathematically expand the definition of the logit function.
-
-:::
-
----
-
-:::{#sol-prove-eq-logit}
-#### Compose the logit function
-
-:::{#thm-logit-function}
-#### Expanded expression for logit
-$$\logit(\pi) = \logf{\frac{\pi}{1-\pi}}$${#eq-logit}
-
-:::
-
-::: proof
-Apply @def-logit and then @def-odds (details left to the reader).
-:::
-
-:::
-
----
-
-:::{#thm-deriv-logit}
-
-#### Derivative of logit function
-
-$$\logit'(\pi) = \frac{1}{(\pi)(1-\pi)}$$
-:::
-
----
-
-::: proof
-
-Using @cor-d_odds-d_prob:
-
-$$
-\ba
-\logit'(\pi)
-   &= \deriv{\pi}\logit(\pi)
-\\ &= \deriv{\pi}\logf{\odds(\pi)}
-\\ &= \frac{\odds'(\pi)}{\odds(\pi)}
-\\ &= \odds'(\pi) \frac{1}{\odds(\pi)}
-\\ &= \frac{1}{\sqf{1-\pi}}\frac{1-\pi}{\pi}
-\\ &= \frac{1}{(\pi)(1-\pi)}
-\ea
-$$
-
-:::
-
----
+{{< include _sec_logit.qmd >}}
 
 ### The expit function
 
-:::{#def-expit}
-
-#### expit, logistic, inverse-logit
-
-The **expit function** (@fig-expit-plot) of a log-odds $\logodds$, also known as the **inverse-logit function** or **logistic function**, is the inverse-odds of the exponential of $\logodds$:
-
-$$\expit(\logodds) \eqdef \oddsinvf{\expf{\logodds}}$$
-
-:::
-
-```{r}
-#| label: fig-expit-plot
-#| fig-cap: The expit function
-#| code-fold: true
-expit <- function(eta) {
-  exp(eta) / (1 + exp(eta))
-}
-library(ggplot2)
-expit_plot <-
-  ggplot() +
-  geom_function(
-    fun = expit,
-    arrow = arrow(ends = "both")
-  ) +
-  xlim(-8, 8) +
-  ylim(0, 1) +
-  ylab(expression(expit(eta))) +
-  xlab(expression(eta)) +
-  theme_bw()
-print(expit_plot)
-```
-
----
-
-:::{#thm-logit-expit}
-#### logit and expit are each others' inverses
-
-$$\logitf{\expitf{\logodds}} = \logodds$$
-
-$$\expitf{\logitf{\pi}} = \pi$$
-
-:::
-
----
-
-:::{.proof}
-Left to the reader.
-:::
-
----
-
-:::{#thm-expit}
-
-#### Expressions for expit function
-
-$$
-\ba
-\expit(\logodds)
-   &= \frac{\exp{\logodds}}{1+\exp{\logodds}}
-\\ &= \frac{1}{1 + \exp{-\logodds})}
-\\ &= (1 + \exp{-\logodds})^{-1}
-\ea
-$$
-:::
-
----
-
-::: proof
-Apply definitions and @lem-invodds-simplified.
-Details left to the reader.
-:::
-
----
-
-
-:::{#lem-one-minus-expit}
-$$1-\expitf{\logodds} = \inv{1+\exp{\logodds}}$$
-:::
-
----
-
-::: {.proof}
-
-Using @lem-one-minus-odds-inv:
-
-$$
-\ba
-1 - \expitf{\logodds} &= 1 - \oddsinvf{\expf{\logodds}}
-\\ &= \frac{1}{1+\expf{\logodds}}
-\\ &= \inv{1 + \exp{\logodds}}
-\ea
-$$
-:::
-
----
-
-{{< include _sec-d_odds-d_logodds.qmd >}}
-
----
-
-{{< include _sec_d-pi_d-eta.qmd >}}
-
----
-
-:::{#cor-deriv-expit}
-$$\dexpitf{\logodds} = (\expitf{\logodds}) (1 - \expitf{\logodds})$$
-:::
-
-<!-- --- -->
-
-<!-- {{< include _sec_prf_cor-deriv-expit.qmd >}} -->
+{{< include _sec_expit.qmd >}}
 
 ### Diagram of expit and logit {#sec-expit-logit-diagram}
 
