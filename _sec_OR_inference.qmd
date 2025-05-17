@@ -1,3 +1,5 @@
+{{< include macros.qmd >}}
+
 :::{#exr-ci-OR}
 Given
 a maximum likelihood estimate $\hb$
@@ -11,10 +13,24 @@ comparing covariate patterns $\vx$ and $\vxs$, $\ror(\vx,\vxs)$.
 ---
 
 :::{#sol-ci-OR}
-By the invariance property of MLEs,
-we can first calculate a 95% confidence interval for the log of the odds ratio,
-$\logf{\ror(\vx,\vxs)}$,
-and then exponentiate the endpoints of that log-odds-scale confidence interval.
+
+::: notes
+By @thm-dist-mle,
+a 95% confidence interval for $\ror(\vx,\vxs)$
+can be constructed as:
+
+$$\hat\ror \pm 1.96 * \HSE{\hat\ror}$$
+However, $\HSE{\hat\ror}$ will be difficult to compute directly;
+it would require using the [delta method](https://en.wikipedia.org/wiki/Delta_method).
+
+Instead, using the invariance property of MLEs,
+we can first calculate a confidence interval for the log of the odds ratio,
+$\logf{\ror(\vx,\vxs)} \in (L,R)$,
+and then exponentiate the endpoints of that log-odds-scale confidence interval:
+:::
+
+$$\ror(\vx,\vxs) \in (e^L, e^R)$$
+
 :::
 
 ---
@@ -34,11 +50,11 @@ From @cor-log-or, we know:
 
 $$\logf{\ror(\vx,\vxs)} = \difflogodds$$
 
-By @thm-dist-mle,
+By @thm-dist-mle and MLE invariance,
 a 95% confidence interval for $\difflogodds$
 can be constructed as:
 
-$$\Delta{\hat\difflogodds} \pm 1.96 * \hse{\Delta{\hatlogodds}}$$
+$$\Delta{\hat\logodds} \pm 1.96 * \HSE{\Delta{\logodds}}$$
 
 :::
 
