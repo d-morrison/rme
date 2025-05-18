@@ -1,0 +1,112 @@
+{{< include _thm_odds-from-logodds.qmd >}}
+
+---
+
+:::{#cor-prob-from-logodds}
+
+::: notes
+If $\prob$ is the probability of an event $A$,
+$\odds$ is the corresponding odds of $A$,
+and $\logodds$ is the corresponding log-odds of $A$,
+then:
+:::
+
+$$\prob = \frac{\expf{\eta}}{1+\expf{\eta}}$$
+
+:::
+
+---
+
+::: proof
+Apply @thm-odds-to-prob and then @thm-odds-from-logodds.
+:::
+
+---
+
+:::{#def-expit}
+
+#### expit, logistic, inverse-logit
+
+The **expit function** of a log-odds $\logodds$, 
+also known as the **inverse-logit function** or **logistic function**, 
+is the [inverse-odds](#def-inv-odds) of the exponential of $\logodds$:
+
+$$\expit(\logodds) \eqdef \invoddsf{\expf{\logodds}}$$
+
+:::
+
+---
+
+:::{#thm-expit-expressions}
+
+#### Expressions for expit function
+
+$$
+\ba
+\expit(\logodds)
+   &= \frac{\exp{\logodds}}{1+\exp{\logodds}}
+\\ &= \frac{1}{1 + \exp{-\logodds})}
+\\ &= (1 + \exp{-\logodds})^{-1}
+\ea
+$$
+:::
+
+---
+
+::: proof
+Apply definitions and @lem-invodds-simplified.
+Details left to the reader.
+:::
+
+---
+
+:::{#thm-expit-prob-logodds}
+If $\prob$ is the probability of an event $A$,
+$\odds$ is the corresponding odds of $A$,
+and $\logodds$ is the corresponding log-odds of $A$,
+then:
+
+$$\prob = \expitf{\logodds}$$
+
+:::
+
+---
+
+::: proof
+
+Apply @cor-prob-from-logodds and @thm-expit-expressions.
+:::
+
+---
+
+@fig-expit-plot graphs the expit function.
+
+```{r}
+#| label: fig-expit-plot
+#| fig-cap: The expit function
+#| code-fold: true
+expit <- function(eta) {
+  exp(eta) / (1 + exp(eta))
+}
+library(ggplot2)
+expit_plot <-
+  ggplot() +
+  geom_function(
+    fun = expit,
+    arrow = arrow(ends = "both")
+  ) +
+  xlim(-8, 8) +
+  ylim(0, 1) +
+  ylab(expression(expit(eta))) +
+  xlab(expression(eta)) +
+  theme_bw()
+print(expit_plot)
+```
+
+---
+
+{{< include _sec_logit-expit_inverse.qmd >}}
+
+---
+
+{{< include _sec_derivs_expit.qmd >}}
