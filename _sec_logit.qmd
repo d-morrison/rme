@@ -1,0 +1,132 @@
+:::{#def-logodds}
+#### log-odds
+::: notes
+If $\omega$ is the odds of an event $A$,
+then the **log-odds** of $A$,
+which we will represent by $\logodds$ ("eta"),
+is the natural logarithm of the odds of $A$:
+:::
+
+$$\logodds \eqdef \logf{\omega}$${#eq-def-logodds}
+
+:::
+
+---
+
+:::{#thm-logodds-pi}
+
+If $\prob$ is the probability of an event $A$,
+$\odds$ is the corresponding odds of $A$,
+and $\eta$ is the corresponding log-odds of $A$,
+then:
+
+$$\logodds = \logf{\frac{\prob}{1-\prob}}$${#eq-logodds-from-prob}
+
+:::
+
+---
+
+::: proof
+Apply @def-logodds and then @thm-prob-to-odds.
+:::
+
+---
+
+:::{#def-logit-fn}
+
+#### logit function
+
+::: notes
+The **logit function**  of a probability $\prob$ is
+the natural logarithm of the [odds function](#def-odds-fn) of $\prob$:
+:::
+
+$$\logit(\prob) \eqdef \logf{\oddsf{\prob}}$$
+
+::: notes
+
+The **logit function** is a [composite function](https://en.wikipedia.org/wiki/Function_composition).
+
+:::
+
+:::
+
+---
+
+:::{#exr-prove-eq-logit}
+
+#### Compose the logit function
+
+Mathematically expand the definition of the logit function.
+
+:::
+
+---
+
+:::{#sol-prove-eq-logit}
+#### Compose the logit function
+
+:::{#thm-logit-function}
+#### Expanded expression for logit
+$$\logit(\prob) = \logf{\frac{\prob}{1-\prob}}$${#eq-logit}
+
+:::
+
+::: proof
+Apply @def-logit-fn and then @def-odds (details left to the reader).
+:::
+
+:::
+
+---
+
+:::{#cor-logodds-logit}
+If $\prob$ is the probability of an event $A$
+and $\logodds$ is the corresponding log-odds of $A$,
+then:
+
+$$\logodds = \logitf{\prob}$$
+
+:::
+
+---
+
+::: proof
+
+Apply @thm-logodds-pi and @thm-logit-function.
+
+:::
+
+---
+
+::: notes
+@fig-logit shows the shape of the $\logit()$ function.
+:::
+
+```{r}
+#| code-fold: true
+#| fig-cap: "The logit function"
+#| label: fig-logit
+
+odds <- function(pi) pi / (1 - pi)
+
+logit <- function(p) log(odds(p))
+
+library(ggplot2)
+logit_plot <-
+  ggplot() +
+  geom_function(
+    fun = logit,
+    arrow = arrow(ends = "both")
+  ) +
+  xlim(.001, .999) +
+  ylab("logit(p)") +
+  xlab("p") +
+  theme_bw()
+print(logit_plot)
+```
+
+---
+
+{{< include _sec_derivs_logit.qmd >}}
+

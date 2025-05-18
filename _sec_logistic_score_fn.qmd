@@ -17,7 +17,8 @@ $$
 
 ---
 
-We can apply the [vector chain rule](math-prereqs.qmd#thm-chain-vec) here:
+Starting from @lem-logistic-loglik-component, 
+we can apply the vector chain rule (@thm-chain-vec):
 
 :::{#lem-logistic-score-comp}
 
@@ -25,9 +26,9 @@ $$
 \ba
 \magenta{\vec{\llik_i'}(\vb)}
    &= \deriv{\vb} \llik_i(\vb)
-\\ &= \deriv{\vb}\paren{y_i \eta_i + \logf{1-\pi_i}}
-\\ &= \deriv{\vb}y_i\eta_i + \deriv{\vb}\logf{1-\pi_i}
-\\ &= \red{\derivf{\eta_i}{\vb}}y_i - \purple{\derivf{\pi_i}{\vb}}\frac{1}{1-\pi_i}
+\\ &= \deriv{\vb}\paren{y_i \eta_i - \logf{1+\odds_i}}
+\\ &= \deriv{\vb}y_i\eta_i - \deriv{\vb}\logf{1+\odds_i}
+\\ &= \red{\derivf{\eta_i}{\vb}}y_i - \purple{\derivf{\odds_i}{\vb}}\frac{1}{1+\odds_i}
 \ea
 $$
 
@@ -37,6 +38,8 @@ $$
 
 :::{#lem-d_eta_d_vb}
 
+By @thm-deriv-lincom:
+
 $$
 \ba
 \red{\derivf{\eta_i}{\vb}} &= \deriv{\vb}(\vx_i \cdot \vb)
@@ -45,103 +48,24 @@ $$
 \ea
 $${#eq-d_eta_d_vb}
 
+::: notes
+This result is very similar to @lem-d_logodds-d_x, 
+but not quite the same;
+@lem-d_logodds-d_x differentiates by $\vx$,
+whereas @lem-d_eta_d_vb differentiates by $\vb$.
 :::
-
----
-
-To derive $\purple{\derivf{\pi_i}{\vb}}$,
-we can apply the [vector chain rule](math-prereqs.qmd#thm-chain-vec) again:
-
-:::{#lem-d_pi_d_beta}
-
-$$
-\purple{\derivf{\pi}{\vb}} =
- \red{\derivf{\eta}{\vb}}\green{\derivf{\omega}{\eta}} \blue{\derivf{\pi}{\omega}} 
-$$
 
 :::
 
 ---
 
-We found
-$\red{\derivf{\eta}{\vb}} = \red{\vx}$ already in @lem-d_eta_d_vb.
-
-The other two are also quick:
-
-:::{#lem-d_pi-d_omega}
-
-By @cor-deriv-invodds-pi-scale:
-
-$$
-\ba
-\blue{\derivf{\pi}{\omega}} &= \deriv{\omega} \oddst^{-1}(\odds)
-\\
-&= \blue{(1-\pi)^2}
-\ea
-$${#eq-dpi-domega}
-
+::: notes
+To derive $\purple{\derivf{\odds_i}{\vb}}$,
+we can apply the vector chain rule (@thm-chain-vec) again
+along with @thm-d_omega-d_eta and @lem-d_eta_d_vb:
 :::
 
-:::{#lem-d_omega-d_eta}
-
-$$
-\ba
-\green{\derivf{\omega}{\eta}} &=  \deriv{\eta} \exp{\eta}
-\\
-&= \exp{\eta}
-\\
-&= \omega
-\\
-&= \green{\frac{\pi}{1-\pi}}
-\ea
-$${#eq-d_omega-d_eta}
-
-:::
-
----
-
-Let's first combine 
-$\green{\derivf{\omega}{\eta}} \blue{\derivf{\pi}{\omega}} = \orange{\derivf{\pi}{\eta}}$ to get two more results:
-
-:::{#thm-d_pi-d_eta}
-
-$$
-\ba
-\orange{\derivf{\pi}{\eta}} &= \green{\derivf{\omega}{\eta}} \blue{\derivf{\pi}{\omega}}
-\\
-&= \green{\frac{\pi}{1-\pi}}  \blue{(1-\pi)^2}
-\\
-&= \orange{\pi (1-\pi)}
-\ea
-$$
-:::
-
-:::{#cor-d_pi-d_eta-var}
-$$\derivf{\pi}{\eta} = \Varf{Y|X=x}$$
-:::
-
-
----
-
-Combining @lem-d_pi_d_beta, @lem-d_eta_d_vb, and @thm-d_pi-d_eta:
-
-:::{#thm-d_pi_d_beta}
-
-$$
-\ba
-\purple{\derivf{\pi}{\vb}} &=
- \red{\derivf{\eta}{\vb}}\green{\derivf{\omega}{\eta}} \blue{\derivf{\pi}{\omega}} 
-\\
-&=
- \red{\derivf{\eta}{\vb}}\orange{\derivf{\pi}{\eta}}
-\\
-&= \paren{\red{\vx}} \paren{\orange{\pi (1-\pi)}}
-\\
-&= \purple{\vx \pi (1-\pi)}
-\ea
-$$
-
-:::
+{{< include _thm-d_odds_d_beta.qmd >}}
 
 ---
 
@@ -149,14 +73,16 @@ Now we can combine
 @lem-logistic-score-comp,
 @lem-d_eta_d_vb,
 and
-@thm-d_pi_d_beta:
+@thm-d_odds_d_beta:
 
 $$
 \ba
 \magenta{\llik_i'(\vb)}
-&= \red{\derivf{\eta_i}{\vb}}y_i - \purple{\derivf{\pi_i}{\vb}}\frac{1}{1-\pi_i}
+&= \red{\derivf{\eta_i}{\vb}}y_i - \purple{\derivf{\odds_i}{\vb}}\frac{1}{1+\odds_i}
 \\
-&= \red{\vx_i}y_i - \purple{\vx_i \pi_i (1-\pi_i)}\frac{1}{1-\pi_i}
+&= \red{\vx_i}y_i - \red{\vx} \blue{\odds_i}\frac{1}{1+\odds_i}
+\\
+&= \red{\vx_i}y_i - \red{\vx} \frac{\blue{\odds_i}}{1+\odds_i}
 \\
 &= \vx_i y_i - \vx_i \pi_i
 \\ &= \vx_i (y_i - \pi_i)
