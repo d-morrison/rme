@@ -17,7 +17,8 @@ $$
 
 ---
 
-We can apply the vector chain rule (@thm-chain-vec) here:
+Starting from @lem-logistic-loglik-component, 
+we can apply the vector chain rule (@thm-chain-vec):
 
 :::{#lem-logistic-score-comp}
 
@@ -25,9 +26,9 @@ $$
 \ba
 \magenta{\vec{\llik_i'}(\vb)}
    &= \deriv{\vb} \llik_i(\vb)
-\\ &= \deriv{\vb}\paren{y_i \eta_i + \logf{1-\pi_i}}
-\\ &= \deriv{\vb}y_i\eta_i + \deriv{\vb}\logf{1-\pi_i}
-\\ &= \red{\derivf{\eta_i}{\vb}}y_i - \purple{\derivf{\pi_i}{\vb}}\frac{1}{1-\pi_i}
+\\ &= \deriv{\vb}\paren{y_i \eta_i - \logf{1+\odds_i}}
+\\ &= \deriv{\vb}y_i\eta_i - \deriv{\vb}\logf{1+\odds_i}
+\\ &= \red{\derivf{\eta_i}{\vb}}y_i - \purple{\derivf{\odds_i}{\vb}}\frac{1}{1+\odds_i}
 \ea
 $$
 
@@ -58,24 +59,13 @@ whereas @lem-d_eta_d_vb differentiates by $\vb$.
 
 ---
 
-To derive $\purple{\derivf{\pi_i}{\vb}}$,
+::: notes
+To derive $\purple{\derivf{\odds_i}{\vb}}$,
 we can apply the vector chain rule (@thm-chain-vec) again
-along with @thm-d_pi-d_eta and @lem-d_eta_d_vb:
-
-:::{#thm-d_pi_d_beta}
-
-$$
-\ba
-\purple{\derivf{\pi}{\vb}} 
-&= \red{\derivf{\eta}{\vb}} \blue{\derivf{\prob}{\logodds}} 
-\\
-&= \paren{\red{\vx}} \paren{\blue{\pi (1-\pi)}}
-\\
-&= \purple{\vx \pi (1-\pi)}
-\ea
-$$
-
+along with @lem-d_omega-d_eta and @lem-d_eta_d_vb:
 :::
+
+{{< include _thm-d_odds_d_beta.qmd >}}
 
 ---
 
@@ -83,14 +73,16 @@ Now we can combine
 @lem-logistic-score-comp,
 @lem-d_eta_d_vb,
 and
-@thm-d_pi_d_beta:
+@thm-d_odds_d_beta:
 
 $$
 \ba
 \magenta{\llik_i'(\vb)}
-&= \red{\derivf{\eta_i}{\vb}}y_i - \purple{\derivf{\pi_i}{\vb}}\frac{1}{1-\pi_i}
+&= \red{\derivf{\eta_i}{\vb}}y_i - \purple{\derivf{\odds_i}{\vb}}\frac{1}{1+\odds_i}
 \\
-&= \red{\vx_i}y_i - \purple{\vx_i \pi_i (1-\pi_i)}\frac{1}{1-\pi_i}
+&= \red{\vx_i}y_i - \red{\vx} \blue{\odds_i}\frac{1}{1+\odds_i}
+\\
+&= \red{\vx_i}y_i - \red{\vx} \frac{\blue{\odds_i}}{1+\odds_i}
 \\
 &= \vx_i y_i - \vx_i \pi_i
 \\ &= \vx_i (y_i - \pi_i)
