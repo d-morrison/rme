@@ -2,27 +2,30 @@
 
 :::{#exr-logistic-OR-general}
 
-For the logistic regression model:
+#### General formula for odds ratios in logistic regression
+
+Consider the generic logistic regression model:
 
 - $Y_i|\vX_i \simind \Ber(\pi(\vX_i))$
 - $\logitf{\pi(\vx)} = \logodds(\vx)$
 - $\logodds(\vx) = \vx'\vb$
 
-Consider two covariate patterns, $\vx$ and $\vxs$,
+Let $\vx$ and $\vxs$ be two covariate patterns,
 representing 
 two individuals 
 or two subpopulations.
 
-Find a concise expression for the odds ratio comparing covariate patterns $\vx$ and $\vxs$:
+Find a concise formula to compute 
+the odds ratio comparing covariate patterns $\vx$ and $\vxs$:
 
-$$\ror(\vx,\vxs) \eqdef \frac{\odds(\vx)}{\odds(\vxs)}$$
+$$\ror(\vx,\vxs) \eqdef \frac{\odds(\vx)}{\odds(\vxs)}$${#eq-def-ror}
 
 :::
 
 ---
 
 :::{#sol-logistic-OR}
-
+#### General formula for odds ratios in logistic regression
 $$
 \ba
 \ror(\vx,\vxs) 
@@ -34,21 +37,74 @@ $$
 \ea
 $$
 
-Now, let:
+:::
 
-$$
-\ba
-\red{\difflogodds} 
-&\eqdef \red{\logodds(\vx) - \logodds(\vxs)}
-\\
-\blue{\diffvx} &\eqdef \blue{\vx - \vxs}
-\ea
-$$
+---
 
-Then:
+::: notes
+@sol-logistic-OR is more concrete than @eq-def-ror,
+but it doesn't yet completely explain how to compute $\ror(\vx,\vxs)$,
+so let's mark it as a lemma:
+:::
 
-:::{#lem-diff-logodds}
+:::{#lem-logistic-OR}
 
+#### General formula for odds ratios in logistic regression
+
+$$\ror(\vx,\vxs) = \expf{\red{\logodds(\vx) - \logodds(\vxs)}}$${#eq-logistic-ror}
+:::
+
+::: proof
+By @sol-logistic-OR.
+:::
+
+---
+
+:::{#def-difflogodds}
+#### Difference in log-odds
+
+::: notes
+Let $\vx$ and $\vxs$ be two covariate patterns,
+representing 
+two individuals 
+or two subpopulations.
+
+Then we can define the difference in log-odds between $\vx$ and $\vxs$,
+denoted 
+$\difflogodds(\vx, \vxs)$ or 
+$\difflogodds$ for short,
+as:
+
+:::
+
+$$\red{\difflogodds} \eqdef \red{\logodds(\vx) - \logodds(\vxs)}$$
+
+:::
+
+---
+
+:::{#cor-logistic-OR}
+#### Shorthand general formula for odds ratios in logistic regression
+$$\ror(\vx,\vxs) = \expf{\red{\difflogodds}}$${#eq-logistic-ror}
+:::
+
+::: proof
+By @lem-logistic-OR and @def-difflogodds.
+:::
+
+---
+
+:::{#exr-diff-logodds}
+#### Difference in log-odds
+Find a concise expression for 
+the difference in log-odds:
+$$\difflogodds \eqdef \red{\logodds(\vx) - \logodds(\vxs)}$$
+:::
+
+---
+
+:::{#sol-diff-logodds}
+#### Difference in log-odds
 $$
 \ba
 \red{\difflogodds}
@@ -63,14 +119,81 @@ $$
 &= (\vx - \vxs)\'\vb
 \\
 &= (\blue{\vx - \vxs})\cdot\vb
-\\
-&= (\blue{\diffvx}) \cdot \vb
 \ea
 $$
 
 :::
 
-So:
+---
+
+:::{#lem-diff-logodds}
+#### Difference in log-odds
+$$\red{\difflogodds}= (\blue{\vx - \vxs})\cdot\vb$$
+:::
+
+::: proof
+By @sol-diff-logodds.
+:::
+
+---
+
+:::{#def-diff-covs}
+#### Difference in covariate patterns
+
+::: notes
+
+Let $\vx$ and $\vxs$ be two covariate patterns,
+representing 
+two individuals 
+or two subpopulations.
+The difference in covariate patterns, 
+denoted $\diffvx$,
+is defined as:
+
+:::
+
+$$\blue{\diffvx} \eqdef \blue{\vx - \vxs}$$
+:::
+
+---
+
+:::{#cor-diff-logodds}
+#### Difference in log-odds
+$$\red{\difflogodds}= (\blue{\diffvx}) \cdot \vb$$
+
+:::
+
+::: proof
+By @lem-diff-logodds and @def-diff-covs.
+:::
+
+---
+
+:::{#exr-simplify-logistic-OR}
+
+Find an expression for the odds ratio $\ror(\vx,\vxs)$ 
+in terms of $\diffvx$ and $\vb$.
+
+:::
+
+---
+
+::: {#sol-simplify-logistic-OR}
+
+Combine @cor-logistic-OR and @cor-diff-logodds:
+
+$$
+\ba
+\ror(\vx,\vxs) 
+&= \exp{\difflogodds}
+\\
+&= \exp{(\diffvx) \cdot \vb}
+\ea
+$$
+
+:::
+
+---
 
 :::{#thm-logistic-OR}
 
@@ -80,6 +203,8 @@ The odds ratio comparing covariate patterns $\vx$ and $\vxs$ is:
 
 :::
 
+::: proof
+By @sol-simplify-logistic-OR.
 :::
 
 ---
