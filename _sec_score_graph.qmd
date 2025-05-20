@@ -1,0 +1,104 @@
+
+:::{#sol-beetles-score}
+
+```{r}
+#| label: score-beetles-centered
+odds_inv <- function(omega) (1 + omega^-1)^-1
+
+score_fn_beetles_beta0_0 <- function(beta_0, beta_1) {
+  beetles |>
+    mutate(
+      eta = beta_0 + beta_1 * dose_c,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      mu = pi * n,
+      epsilon = died - mu,
+      score = epsilon
+    ) |>
+    pull(score) |>
+    sum()
+}
+score_fn_beetles_beta_0 <- Vectorize(score_fn_beetles_beta0_0)
+
+score_fn_beetles_beta1_0 <- function(beta_0, beta_1) {
+  beetles |>
+    mutate(
+      eta = beta_0 + beta_1 * dose_c,
+      omega = exp(eta),
+      pi = odds_inv(omega),
+      mu = pi * n,
+      epsilon = died - mu,
+      score = dose_c * epsilon
+    ) |>
+    pull(score) |>
+    sum()
+}
+score_fn_beetles_beta_1 <- Vectorize(score_fn_beetles_beta1_0)
+
+```
+
+::: {.content-visible when-format="html"}
+
+::::{#fig-beetles-score-centered}
+
+```{r}
+if (run_graphs) {
+  scores_beetles_beta_0 <- outer(beta_0s, beta_1s, score_fn_beetles_beta_0)
+  scores_beetles_beta_1 <- outer(beta_0s, beta_1s, score_fn_beetles_beta_1)
+
+  plotly::plot_ly(
+    x = ~beta_0s,
+    y = ~beta_1s
+  ) |>
+    plotly::add_markers(
+      type = "scatter",
+      x = coef(beetles_glm_grouped_centered)["(Intercept)"],
+      y = coef(beetles_glm_grouped_centered)["dose_c"],
+      z = 0,
+      marker = list(color = "black"),
+      name = "MLE"
+    ) |>
+    plotly::add_surface(
+      z = ~ t(scores_beetles_beta_1),
+      name = "score_beta_1",
+      colorscale = list(c(0, 1), c("red", "green")),
+      showscale = FALSE,
+      contours = list(
+        z = list(
+          show = TRUE,
+          start = -1,
+          end = 1,
+          size = .1
+        )
+      ),
+      opacity = 0.75
+    ) |>
+    plotly::add_surface(
+      z = ~ t(scores_beetles_beta_0),
+      colorscale = list(c(0, 1), c("yellow", "blue")),
+      showscale = FALSE,
+      contours = list(
+        z = list(
+          show = TRUE,
+          start = -14,
+          end = 14,
+          size = 2
+        )
+      ),
+      opacity = 0.75,
+      name = "score_beta_0"
+    ) |>
+    plotly::layout(legend = list(orientation = "h"))
+}
+
+```
+
+score functions of `beetles` data (centered model),
+by parameter ($\beta_0$ and $\beta_1$),
+with MLE marked in black.
+
+::::
+
+:::
+
+:::

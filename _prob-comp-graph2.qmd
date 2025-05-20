@@ -1,0 +1,55 @@
+```{r}
+RD <- function(p1, p2) p1 - p2
+RR <- function(p1, p2) p1/p2
+odds <- function(p) 1/(1/p-1)
+OR <- function(p1, p2) odds(p1) / odds(p2)
+OR_minus_RR <- function(p1, p2) OR(p1, p2) - RR(p1, p2)
+
+if (run_graphs) {
+  n_ticks <- 201
+  # probs <- c(10^-(3:1), seq(.02, .25, by = .02))
+  # probs <- 10^seq(-4, log10(.99), length.out = n_ticks)
+  probs <- seq(.001, .99, length.out = n_ticks)
+  RD_mat <- outer(probs, probs, RD)
+  RR_mat <- outer(probs, probs, RR)
+  OR_mat <- outer(probs, probs, OR)
+  OR_minus_RR_mat <- outer(probs, probs, OR_minus_RR)
+  OR_minus_RR_mat[OR_minus_RR_mat > 5] = NA
+  opacity = .9
+
+  plotly::plot_ly(
+    x = ~probs,
+    y = ~probs
+  ) |>
+    plotly::add_surface(
+    opacity = .5,
+    colorscale = list(
+      # c(-1, 0, 5), 
+      c("blue", "red")),
+    z = ~ t(OR_minus_RR_mat),
+    showscale = FALSE,
+    name = "OR - RR"
+  ) |>
+    plotly::layout(
+      scene = list(
+        xaxis = list(
+          # type = "log",
+          title = "p1"
+        ),
+        yaxis = list(
+          # type = "log",
+          title = "p2"
+        ),
+        zaxis = list(
+          # type = "log",
+          range = c(),
+          title = "OR - RR"
+        ),
+        camera = list(eye = list(x = -1.25, y = -1.25))
+      )
+    )
+
+
+}
+
+```
