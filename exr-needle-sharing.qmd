@@ -29,6 +29,7 @@ needles =
         0 ~ "not homeless") |>
       factor() |>
       relevel(ref = "not homeless"),
+    ethn = ethn |> factor() |> relevel(ref = "White"),
     sex = sex |> factor() |> relevel(ref = "M"))
 needles
 ```
@@ -99,14 +100,29 @@ glm0 = glm(
 ```{r}
 #| tbl-cap: "Poisson model for needle-sharing data"
 #| label: tbl-needles-pois
-glm1 = glm(
-  data = needles,
-  family = stats::poisson,
-  shared_syr ~ age + sex + homeless*polydrug
-)
+glm1 = 
+  needles |> 
+  glm(
+    family = stats::poisson,
+    formula = shared_syr ~ age + sex + homeless*polydrug
+  )
 
 library(parameters)
 glm1 |> parameters(exponentiate = TRUE) |> 
   print_md()
+```
+
+
+```{r}
+#| tbl-cap: "fitted Poisson model for needle-sharing data"
+#| label: fig-needles-pois
+library(sjPlot)
+glm1 |> 
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "sex", "homeless", "polydrug"),
+    show.data = TRUE
+  ) +
+  theme(legend.position = "bottom")
 ```
 
