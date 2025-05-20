@@ -39,9 +39,37 @@ $$
 \\ \lambda(\vx) &= \exp{\eta(\vx)}
 \\ \eta(\vx) &= \vx'\tilde \beta = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p
 \end{aligned}
-$$
+$${#eq-mean-poisson}
 
-Therefore,
+::: notes
+$T=t$ is called the *exposure magnitude* (@def-exposure) 
+and has a special role in this model.
+:::
+
+---
+
+:::{#exr-analogy-pois-offset-binom}
+Where have we seen a relationship like 
+$$\mu = \lambda \cdot t$$
+before?
+
+---
+
+:::{#sol-analogy-pois-offset-binom}
+The relationship 
+$$\mu = \lambda \cdot t$$
+in count regression models
+is analogous to the relationship 
+$$\mu = n \pi$$
+in Binomial models.
+:::
+
+---
+
+::: notes
+We can also think of $t$ as a special part of the linear component:
+:::
+
 $$
 \begin{aligned}
 \logf{\Expp[Y | \vX = \vx,T=t]}
@@ -55,10 +83,51 @@ $$
 \end{aligned}
 $$
 
-In contrast with the other covariates (represented by $\vX$), $T$ enters this expression with a $\log{}$ transformation and without a corresponding $\beta$ coefficient. 
+::: notes
+In contrast with the other covariates (represented by $\vX$), 
+$t$ enters this expression with a $\log{}$ transformation 
+and without a corresponding $\beta$ coefficient;
+in other words, $t$ is an **offset term** (#def-offset).
+:::
 
-:::{.callout-note}
-Terms that enter the linear component of a model without a coefficient, such as $\log{t}$ here, are called **offsets**.
+---
+
+:::{#exr-eq-mean-poisson}
+What are the units of $\mu$ in @eq-mean-poisson?
+:::
+
+---
+
+:::{#sol-eq-mean-poisson}
+
+$\mu$ is the mean of $Y$, 
+and $Y$ is a count, 
+so $\mu$ is also a count;
+for example: 
+
+- 3.1 cyclones,
+- 10.23 ER visits
+- 15.01 infections
+
+:::
+
+---
+
+:::{#exr-eq-rate-poisson}
+What are the units of $\lambda$ in @eq-mean-poisson?
+:::
+
+---
+
+:::{#sol-eq-rate-poisson}
+$\lambda = \mu/t$,
+so $\lambda$ is a rate of counts per unit of $t$.
+For example:
+
+- 3.1 cyclones *per year*
+- 2.023 ER visits per 10 person-years
+- 15.01 infections per 1000 person-years at risk
+
 :::
 
 ### Rate ratios {.smaller}
@@ -273,8 +342,15 @@ by adding more covariates.
 
 :::
 
+---
+
+{{< include _note_glm-naming.qmd >}}
+
+---
+
 ### Negative binomial models
 
+::: notes
 There are alternatives to the Poisson model.
 Most notably, 
 the [negative binomial model](probability.qmd#sec-nb-dist).
@@ -282,6 +358,7 @@ the [negative binomial model](probability.qmd#sec-nb-dist).
 We can still model $\mu$ as a function of $X$ and $T$ as before, 
 and we can combine this model with zero-inflation 
 (as the conditional distribution for the non-zero component).
+:::
 
 ### Quasipoisson
 
