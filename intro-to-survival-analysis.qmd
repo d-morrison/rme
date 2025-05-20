@@ -336,7 +336,7 @@ In particular, $\{T=t\} \subseteq \{T\geq t\}$, so $p(T=t, T\ge t) = p(T=t)$.
 
 :::{#thm-hazard-dens-surv}
 #### Hazard equals density over survival
-$$h(t)=\frac{f(t)}{S(t)}$$
+$$\haz(t)=\frac{f(t)}{S(t)}$$
 :::
 
 ---
@@ -345,7 +345,7 @@ $$h(t)=\frac{f(t)}{S(t)}$$
 
 $$
 \begin{aligned}
-h(t) &=p(T=t|T\ge t)\\
+\haz(t) &=p(T=t|T\ge t)\\
 &=\frac{p(T=t, T\ge t)}{p(T \ge t)}\\
 &=\frac{p(T=t)}{p(T \ge t)}\\
 &=\frac{f(t)}{S(t)}
@@ -415,7 +415,7 @@ We can also view the hazard function as the derivative of the negative of the lo
 
 #### transform survival to hazard
 
-$$h(t) = \deriv{t}\cb{-\log{S(t)}}$$
+$$\haz(t) = \deriv{t}\cb{-\log{S(t)}}$$
 :::
 
 ---
@@ -423,7 +423,7 @@ $$h(t) = \deriv{t}\cb{-\log{S(t)}}$$
 ::::{.proof}
 $$
 \begin{aligned}
-h(t)
+\haz(t)
 &= \frac{f(t)}{S(t)}\\
 &= \frac{-S'(t)}{S(t)}\\
 &= -\frac{S'(t)}{S(t)}\\
@@ -435,7 +435,7 @@ $$
 
 ### The Cumulative Hazard Function
 
-Since $h(t) = \deriv{t}\cb{-\log{S(t)}}$ (see @thm-h-logS), we also have:
+Since $\haz(t) = \deriv{t}\cb{-\log{S(t)}}$ (see @thm-h-logS), we also have:
 
 :::{#cor-surv-int-haz}
 $$S(t) = \exp{-\int_{u=0}^t h(u)du}$${#eq-surv-int-haz}
@@ -515,13 +515,13 @@ ggplot() +
 #### Diagram:
 
 $$
-h(t) \xrightarrow[]{\int_{u=0}^t h(u)du} H(t) 
+\haz(t) \xrightarrow[]{\int_{u=0}^t h(u)du} H(t) 
 \xrightarrow[]{\exp{-H(t)}} S(t)
 \xrightarrow[]{1-S(t)} F(t)
 $$
 
 $$
-h(t) \xleftarrow[\deriv{t}H(t)]{} H(t) 
+\haz(t) \xleftarrow[\deriv{t}H(t)]{} H(t) 
 \xleftarrow[-\log{S(t)}]{} S(t)
 \xleftarrow[1-F(t)]{} F(t)
 $$
@@ -537,10 +537,10 @@ S(t) &= 1 - F(t)\\
 &= \text{exp}\left\{-H(t)\right\}\\
 S'(t) &= -f(t)\\
 H(t) &= -\text{log}\left\{S(t)\right\}\\
-H'(t) &= h(t)\\
-h(t) &= \frac{f(t)}{S(t)}\\
+H'(t) &= \haz(t)\\
+\haz(t) &= \frac{f(t)}{S(t)}\\
  &= -\deriv{t}\log{S(t)} \\
-f(t) &= h(t)\cdot S(t)\\
+f(t) &= \haz(t)\cdot S(t)\\
 \end{aligned}
 $$
 
@@ -563,7 +563,7 @@ $$
 \deriv{t}\log{S(t)} 
 &= \frac{S'(t)}{S(t)}\\
 &= -\frac{f(t)}{S(t)}\\
-&= -h(t)\\
+&= -\haz(t)\\
 \end{aligned}
 $$
 
@@ -956,7 +956,7 @@ Var(t) &= \lambda^{-2}\\
 F(t) &= 1-\text{e}^{-\lambda x}\\
 S(t)&= \text{e}^{-\lambda x}\\
 \ln(S(t))&=-\lambda x\\
-h(t) &= -\frac{f(t)}{S(t)} = -\frac{\lambda \text{e}^{-\lambda t}}{\text{e}^{-\lambda t}}=\lambda
+\haz(t) &= -\frac{f(t)}{S(t)} = -\frac{\lambda \text{e}^{-\lambda t}}{\text{e}^{-\lambda t}}=\lambda
 \end{aligned}
 $$
 
@@ -1799,7 +1799,7 @@ survdiff(surv ~ group, data = bmt)
 
 $$
 \begin{aligned}
-h(t) 
+\haz(t) 
 &\eqdef   \p(T=t|T\ge t)\\
 &= \frac{\p(T=t)}{\P(T\ge t)}\\
 &= -\deriv{t}\logf{\S(t)}
@@ -1808,8 +1808,8 @@ $$
 
 The **cumulative hazard** (or **integrated hazard**) function is
 
-$$H(t)\eqdef  \int_0^t h(t) dt$$ Since
-$h(t) = -\deriv{t}\text{log}\left\{S(t)\right\}$ as shown above, we
+$$H(t)\eqdef  \int_0^t \haz(t) dt$$ Since
+$\haz(t) = -\deriv{t}\text{log}\left\{S(t)\right\}$ as shown above, we
 have:
 
 $$
