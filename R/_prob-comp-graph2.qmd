@@ -1,5 +1,4 @@
-
-
+```{r}
 RD <- function(p1, p2) p1 - p2
 RR <- function(p1, p2) p1/p2
 odds <- function(p) 1/(1/p-1)
@@ -10,39 +9,27 @@ if (run_graph) {
   n_ticks <- 201
   # probs <- c(10^-(3:1), seq(.02, .25, by = .02))
   # probs <- 10^seq(-4, log10(.99), length.out = n_ticks)
-  probs <- seq(.1, .99, length.out = n_ticks)
+  probs <- seq(.001, .99, length.out = n_ticks)
   RD_mat <- outer(probs, probs, RD)
   RR_mat <- outer(probs, probs, RR)
   OR_mat <- outer(probs, probs, OR)
   OR_minus_RR_mat <- outer(probs, probs, OR_minus_RR)
-  to_erase1 <- outer(probs, probs, `<`)
-  to_erase2 <- abs(log(OR_mat)) > log(3)
-  to_erase3 <- abs(OR_minus_RR_mat) > 10
-  to_erase4 <- abs(RR_mat) > 15
-  to_erase <-
-    to_erase1 |
-    to_erase3 | to_erase4
-  RD_mat[to_erase] = NA
-  RR_mat[to_erase] = NA
-  OR_mat[to_erase] = NA
-  OR_minus_RR_mat[to_erase] = NA
-
+  OR_minus_RR_mat[OR_minus_RR_mat > 5] = NA
   opacity = .9
 
-  plotly::add_surface(
-    opacity = .5,
-    colorscale = list(c(0, 1), c("red", "red")),
-    z = ~ t(OR_minus_RR),
-    showscale = FALSE,
-    name = "risk ratio"
+  plotly::plot_ly(
+    x = ~probs,
+    y = ~probs
   ) |>
     plotly::add_surface(
-      opacity = opacity,
-      colorscale = list(c(0, 1), c("blue", "blue")),
-      z = ~ t(OR_mat),
-      showscale = FALSE,
-      name = "odds ratio"
-    ) |>
+    opacity = .5,
+    colorscale = list(
+      # c(-1, 0, 5), 
+      c("blue", "red")),
+    z = ~ t(OR_minus_RR_mat),
+    showscale = FALSE,
+    name = "OR - RR"
+  ) |>
     plotly::layout(
       scene = list(
         xaxis = list(
@@ -55,7 +42,8 @@ if (run_graph) {
         ),
         zaxis = list(
           # type = "log",
-          title = "comparison"
+          range = c(),
+          title = "OR - RR"
         ),
         camera = list(eye = list(x = -1.25, y = -1.25))
       )
@@ -63,3 +51,5 @@ if (run_graph) {
 
 
 }
+
+```
