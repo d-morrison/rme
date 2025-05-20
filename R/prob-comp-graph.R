@@ -29,52 +29,6 @@ if (run_graph) {
 
   opacity = .9
 
-  plotly::plot_ly(
-    x = ~probs,
-    y = ~probs
-  ) |>
-    plotly::add_surface(
-      z = ~ t(RD_mat),
-      name = "risk difference",
-      showscale = FALSE,
-      opacity = .5,
-      colorscale = list(c(0, 1), c("green", "green"))
-    ) |>
-    plotly::add_surface(
-      opacity = .5,
-      colorscale = list(c(0, 1), c("red", "red")),
-      z = ~ t(RR_mat),
-      showscale = FALSE,
-      name = "risk ratio"
-    ) |>
-    plotly::add_surface(
-      opacity = .5,
-      colorscale = list(c(0, 1), c("blue", "blue")),
-      z = ~ t(OR_mat),
-      showscale = FALSE,
-      name = "odds ratio"
-    ) |>
-    plotly::layout(
-      scene = list(
-        xaxis = list(
-          # type = "log",
-          title = "p1"
-        ),
-        yaxis = list(
-          # type = "log",
-          title = "p2"
-        ),
-        zaxis = list(
-          # type = "log",
-          title = "comparison"
-        ),
-        camera = list(eye = list(x = -1.25, y = -1.25))
-      )
-    )
-
-}
-
-{
   plotly::add_surface(
     opacity = .5,
     colorscale = list(c(0, 1), c("red", "red")),
