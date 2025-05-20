@@ -1,0 +1,111 @@
+
+::: notes
+This chapter presents models for
+[count data](probability.qmd#sec-count-vars) outcomes.
+With covariates,
+the event rate $\lambda$
+becomes a function of the covariates
+$\vX = (X_1, \dots,X_n)$.
+Typically, count data models use
+a $\logf{}$ link function,
+and thus an $\exp{}$ inverse-link function.
+That is:
+:::
+
+$$
+\begin{aligned}
+\Expp[Y | \vX = \vx, T = t] &= \mu(\vx,t)
+\\ \mu(\vx,t) &= \lambda(\vx)\cdot t
+\\ \lambda(\vx) &= \exp{\eta(\vx)}
+\\ \eta(\vx) &= \vx'\tilde \beta = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p
+\end{aligned}
+$${#eq-mean-poisson}
+
+::: notes
+$T=t$ is called the *exposure magnitude* (@def-exposure)
+and has a special role in this model.
+:::
+
+---
+
+:::{#exr-analogy-pois-offset-binom}
+Where have we seen a relationship like
+$$\mu = \lambda \cdot t$$
+before?
+
+---
+
+:::{#sol-analogy-pois-offset-binom}
+The relationship
+$$\mu = \lambda \cdot t$$
+in count regression models
+is analogous to the relationship
+$$\mu = n \pi$$
+in Binomial models.
+:::
+
+---
+
+::: notes
+We can also think of $t$ as a special part of the linear component:
+:::
+
+$$
+\begin{aligned}
+\logf{\Expp[Y | \vX = \vx,T=t]}
+&= \logf{\mu(\vx)}\\
+&=\logf{\lambda(\vx) \cdot t}\\
+&=\logf{\lambda(\vx)} + \log{t}\\
+&=\logf{\exp{\eta(\vx)}} + \log{t}\\
+&=\eta(\vx) + \log{t}\\
+&=\vx'\tilde\beta + \log{t}\\
+&=(\beta_0 +\beta_1 x_1+\dots + \beta_p x_p) + \log{t}\\
+\end{aligned}
+$$
+
+::: notes
+In contrast with the other covariates (represented by $\vX$),
+$t$ enters this expression with a $\log{}$ transformation
+and without a corresponding $\beta$ coefficient;
+in other words, $t$ is an **offset term** (#def-offset).
+:::
+
+---
+
+:::{#exr-eq-mean-poisson}
+What are the units of $\mu$ in @eq-mean-poisson?
+:::
+
+---
+
+:::{#sol-eq-mean-poisson}
+
+$\mu$ is the mean of $Y$,
+and $Y$ is a count,
+so $\mu$ is also a count;
+for example:
+
+- 3.1 cyclones,
+- 10.23 ER visits
+- 15.01 infections
+
+:::
+
+---
+
+:::{#exr-eq-rate-poisson}
+What are the units of $\lambda$ in @eq-mean-poisson?
+:::
+
+---
+
+:::{#sol-eq-rate-poisson}
+$\lambda = \mu/t$,
+so $\lambda$ is a rate of counts per unit of $t$.
+For example:
+
+- 3.1 cyclones *per year*
+- 2.023 ER visits per 10 person-years
+- 15.01 infections per 1000 person-years at risk
+
+:::
