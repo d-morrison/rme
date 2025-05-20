@@ -1,6 +1,4 @@
 ```{r}
-#| tbl-cap: "Needle-sharing data"
-#| label: tbl-needle-data
 library(tidyverse)
 library(haven)
 needles = 
@@ -30,7 +28,40 @@ needles =
       factor() |>
       relevel(ref = "not homeless"),
     ethn = ethn |> factor() |> relevel(ref = "White"),
-    sex = sex |> factor() |> relevel(ref = "M"))
+    sex = sex |> factor() |> relevel(ref = "M")
+  ) |> 
+  labelled::set_variable_labels(
+    "sex" = "sex (reference = Male)",
+    "ethn" = "ethnicity (reference = White)",
+    "shsyryn"  = "shared syringe yes/no (1 = yes, 0 = no)",
+    "logshsyr" = "log(No. of shared needles)",
+    "polydrug" = "how many drugs used?",
+    "sqrtninj" = "sqrt(No. of infections in 30 days)",
+    "homeless" = "Homeless (1 = yes, 0 = no)",
+    "hivstat" = "HIV status (reference = HIV-)"
+  )
+```
+
+:::{#tbl-needles-data-dict}
+
+```{r}
+dict <- tibble(
+  variable = names(needles),
+  description = labelled::get_variable_labels(needles) |> 
+    sapply(function(x) ifelse(is.null(x), "", x)),
+)
+dict |> pander::pander()
+```
+
+Data dictionary for `needles` data
+
+:::
+
+---
+
+```{r}
+#| tbl-cap: "Needle-sharing data"
+#| label: tbl-needle-data
 needles
 ```
 
@@ -45,16 +76,17 @@ needles |>
   ggplot(
     aes(
       x = age,
-      y = shared_syr,
+      y = shsyryn,
       shape = sex,
       col = ethn
     )
   ) + 
   geom_point(
-    size = 3, 
+    aes(size = nivdu), 
     alpha = .5) +
+  scale_size_area(max_size = 4) +
   facet_grid(
-    cols = vars(sex, polydrug), 
+    cols = vars(polydrug), 
     rows = vars(homeless)) +
   theme(legend.position = "bottom")
 ```
@@ -90,20 +122,11 @@ needles = needles |> filter(sex != "Trans")
 ### Model {.smaller}
 
 ```{r}
-#| include: false
-#| label: needles-pois-model-vittinghoff
-glm0 = glm(
-  data = needles,
-  family = stats::poisson,
-  formula = shared_syr ~ homeless
-)
-```
-
-```{r}
 glm1 = 
   needles |> 
+  dplyr::filter(nivdu > 0) |> 
   glm(
-    offset = logshsyr,
+    offset = log(nivdu),
     family = stats::poisson,
     formula = shared_syr ~ age + sex + homeless*polydrug
   )
