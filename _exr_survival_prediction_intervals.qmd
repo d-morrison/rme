@@ -1,0 +1,77 @@
+:::{#exr-compute-surv-pred}
+
+## Construct a prediction interval
+
+```{r}
+#| include: false
+mu = 7
+```
+
+Suppose a cancer patient is predicted to have an expected (mean) lifetime of 
+`r mu` years after diagnosis, and suppose the distribution is exponential.
+
+Construct a 95% prediction interval for survival.
+
+:::
+
+:::{.callout-tip}
+
+Use the quantiles of the exponential distribution.
+
+:::
+
+---
+
+:::{#sol-compute-surv-pred}
+
+If the mean is `r mu` years until death, 
+then the rate parameter $\lambda = 1/`r mu`$ events (deaths) per year.
+
+The 0.025 quantile of the exponential distribution with $\lambda = 1/`r mu`$ is 
+``qexp(p 0.025, rate = 1/`r mu`)`` = `r qexp(0.025, rate = 1/mu)` 
+and the 0.975 quantile is 
+``qexp(p 0.975, rate = 1/`r mu`)`` = `r qexp(0.975, rate = 1/mu)`, 
+so the prediction interval is 
+``qexp(p c(.025, 0.975), rate = 1/`r mu`)`` = (`r qexp(c(.025, 0.975), rate = 1/mu)`).
+:::
+
+---
+
+::: {#exr-graph-prediction-intervals}
+Graph the prediction interval as a function of the mean,
+for Gaussian ($\sigma = 1$), Binomial, Poisson, and Exponential.
+:::
+
+---
+
+::: {#sol-graph-prediction-intervals}
+Left to the reader for now.
+:::
+
+---
+
+:::{#exr-explain-surv-pred}
+## Explain the results
+
+Why do time-to-event models have such wide predictive intervals?
+
+:::
+
+:::{.callout-tip}
+
+Consider the relationship between the mean, variance, and standard deviation of the exponential distribution, and contrast that relationship with the Poisson distribution and the Bernoulli distribution.
+
+:::
+
+---
+
+:::{#sol-explain-surv-pred}
+
+In the exponential distribution, variance is the square of the mean (hence SD is equal to mean); 
+as opposed to Poisson, 
+where variance was equal to the mean 
+(and SD is the square-root of the mean), 
+or the Bernoulli, 
+where the variance is the mean minus the square of the mean (so the SD is smaller than the square-root of the mean).
+
+:::
