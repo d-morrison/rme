@@ -604,7 +604,7 @@ window.Quarto = {
   </ul>
 </li>
   <li>
-<a href="#two-sample-log-rankmantel-haenszel-test" id="toc-two-sample-log-rankmantel-haenszel-test" class="nav-link" data-scroll-target="#two-sample-log-rankmantel-haenszel-test"><span class="header-section-number">6.9</span> Two-sample “log-rank”/“Mantel-Haenszel” test</a>
+<a href="#the-log-rank-test" id="toc-the-log-rank-test" class="nav-link" data-scroll-target="#the-log-rank-test"><span class="header-section-number">6.9</span> The log-rank test</a>
   <ul class="collapse">
 <li><a href="#the-survdiff-function" id="toc-the-survdiff-function" class="nav-link" data-scroll-target="#the-survdiff-function"><span class="header-section-number">6.9.1</span> The <code>survdiff</code> function</a></li>
   <li><a href="#example-survdiff-with-drug6mp-data" id="toc-example-survdiff-with-drug6mp-data" class="nav-link" data-scroll-target="#example-survdiff-with-drug6mp-data"><span class="header-section-number">6.9.2</span> Example: <code>survdiff()</code> with <code>drug6mp</code> data</a></li>
@@ -645,7 +645,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-05-28: 2:26:27 (AM)</p>
+      <p class="date">Last modified: 2025-05-28: 3:00:57 (AM)</p>
     </div>
   </div>
   
@@ -2225,8 +2225,9 @@ Note
 </div>
 </div>
 </div>
-</section></section></section><section id="two-sample-log-rankmantel-haenszel-test" class="level2" data-number="6.9"><h2 data-number="6.9" class="anchored" data-anchor-id="two-sample-log-rankmantel-haenszel-test">
-<span class="header-section-number">6.9</span> Two-sample “log-rank”/“Mantel-Haenszel” test</h2>
+</section></section></section><section id="the-log-rank-test" class="level2" data-number="6.9"><h2 data-number="6.9" class="anchored" data-anchor-id="the-log-rank-test">
+<span class="header-section-number">6.9</span> The log-rank test</h2>
+<p>(a.k.a. the Mantel-Cox test)</p>
 <hr>
 <div id="exr-compare-surv-ests" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise 6.6</strong></span> How do we test the null hypothesis that two or more groups have the same time-to-event distribution?</p>
@@ -2247,8 +2248,9 @@ Note
 </div>
 <p>For <span class="math inline">\(t \in t_1,...,t_n\)</span>: <span class="math display">\[
 \begin{aligned}
-\hat{E}_{t,x}
-&amp;= \frac{\sum_{t_i = t} d_i}{\sum_i\mathbb{1}\left\{t_i \ge t\right\}} \sum_i\mathbb{1}\left\{t_i \ge t \cap X_i=x\right\}
+\hat{\lambda}_t &amp;= \frac{\sum_x m_{x,t}}{\sum_x n_{x,t}}
+\\
+\hat{E}_{t,x} &amp;= \hat{\lambda}_t * n_{x,t}
 \end{aligned}
 \]</span></p>
 <section id="the-survdiff-function" class="level3" data-number="6.9.1"><h3 data-number="6.9.1" class="anchored" data-anchor-id="the-survdiff-function">
@@ -4760,570 +4762,573 @@ Vittinghoff, Eric, David V Glidden, Stephen C Shiboski, and Charles E McCulloch.
 <span id="cb37-1508"><a href="#cb37-1508" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(p, <span class="at">.before =</span> <span class="fu">everything</span>())</span>
 <span id="cb37-1509"><a href="#cb37-1509" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb37-1510"><a href="#cb37-1510" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1511"><a href="#cb37-1511" aria-hidden="true" tabindex="-1"></a><span class="fu">## Two-sample "log-rank"/"Mantel-Haenszel" test</span></span>
+<span id="cb37-1511"><a href="#cb37-1511" aria-hidden="true" tabindex="-1"></a><span class="fu">## The log-rank test</span></span>
 <span id="cb37-1512"><a href="#cb37-1512" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1513"><a href="#cb37-1513" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1513"><a href="#cb37-1513" aria-hidden="true" tabindex="-1"></a>(a.k.a. the Mantel-Cox test)</span>
 <span id="cb37-1514"><a href="#cb37-1514" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1515"><a href="#cb37-1515" aria-hidden="true" tabindex="-1"></a>:::{#exr-compare-surv-ests}</span>
-<span id="cb37-1516"><a href="#cb37-1516" aria-hidden="true" tabindex="-1"></a>How do we test the null hypothesis that two or more groups </span>
-<span id="cb37-1517"><a href="#cb37-1517" aria-hidden="true" tabindex="-1"></a>have the same time-to-event distribution?</span>
-<span id="cb37-1518"><a href="#cb37-1518" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1519"><a href="#cb37-1519" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1520"><a href="#cb37-1520" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1515"><a href="#cb37-1515" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1516"><a href="#cb37-1516" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1517"><a href="#cb37-1517" aria-hidden="true" tabindex="-1"></a>:::{#exr-compare-surv-ests}</span>
+<span id="cb37-1518"><a href="#cb37-1518" aria-hidden="true" tabindex="-1"></a>How do we test the null hypothesis that two or more groups </span>
+<span id="cb37-1519"><a href="#cb37-1519" aria-hidden="true" tabindex="-1"></a>have the same time-to-event distribution?</span>
+<span id="cb37-1520"><a href="#cb37-1520" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb37-1521"><a href="#cb37-1521" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1522"><a href="#cb37-1522" aria-hidden="true" tabindex="-1"></a>:::{#sol-compare-surv-ests}</span>
-<span id="cb37-1523"><a href="#cb37-1523" aria-hidden="true" tabindex="-1"></a>One option is the log-rank test</span>
-<span id="cb37-1524"><a href="#cb37-1524" aria-hidden="true" tabindex="-1"></a>comparing the Kaplan-Meier estimates of the survival functions of those groups.</span>
-<span id="cb37-1525"><a href="#cb37-1525" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1526"><a href="#cb37-1526" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1527"><a href="#cb37-1527" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1522"><a href="#cb37-1522" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1523"><a href="#cb37-1523" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1524"><a href="#cb37-1524" aria-hidden="true" tabindex="-1"></a>:::{#sol-compare-surv-ests}</span>
+<span id="cb37-1525"><a href="#cb37-1525" aria-hidden="true" tabindex="-1"></a>One option is the log-rank test</span>
+<span id="cb37-1526"><a href="#cb37-1526" aria-hidden="true" tabindex="-1"></a>comparing the Kaplan-Meier estimates of the survival functions of those groups.</span>
+<span id="cb37-1527"><a href="#cb37-1527" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb37-1528"><a href="#cb37-1528" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1529"><a href="#cb37-1529" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb37-1530"><a href="#cb37-1530" aria-hidden="true" tabindex="-1"></a>Adapted from @kleinbaum2012survival p68:</span>
-<span id="cb37-1531"><a href="#cb37-1531" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1532"><a href="#cb37-1532" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The log–rank test is a large-sample chi-square test.</span>
+<span id="cb37-1529"><a href="#cb37-1529" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1530"><a href="#cb37-1530" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1531"><a href="#cb37-1531" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb37-1532"><a href="#cb37-1532" aria-hidden="true" tabindex="-1"></a>Adapted from @kleinbaum2012survival p68:</span>
 <span id="cb37-1533"><a href="#cb37-1533" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1534"><a href="#cb37-1534" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The log–rank test uses a test statistic that compares KM curves between groups across all survival times.</span>
+<span id="cb37-1534"><a href="#cb37-1534" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The log–rank test is a large-sample chi-square test.</span>
 <span id="cb37-1535"><a href="#cb37-1535" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1536"><a href="#cb37-1536" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Like many other statistics used in other kinds of chi-square tests, </span>
-<span id="cb37-1537"><a href="#cb37-1537" aria-hidden="true" tabindex="-1"></a>the log–rank statistic makes use of observed</span>
-<span id="cb37-1538"><a href="#cb37-1538" aria-hidden="true" tabindex="-1"></a>versus expected cell counts over categories of</span>
-<span id="cb37-1539"><a href="#cb37-1539" aria-hidden="true" tabindex="-1"></a>outcomes.</span>
-<span id="cb37-1540"><a href="#cb37-1540" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1541"><a href="#cb37-1541" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The categories for the log–rank statistic</span>
-<span id="cb37-1542"><a href="#cb37-1542" aria-hidden="true" tabindex="-1"></a>are defined by each of the ordered failure</span>
-<span id="cb37-1543"><a href="#cb37-1543" aria-hidden="true" tabindex="-1"></a>times for the entire set of data being analyzed.</span>
-<span id="cb37-1544"><a href="#cb37-1544" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1545"><a href="#cb37-1545" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1536"><a href="#cb37-1536" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The log–rank test uses a test statistic that compares KM curves between groups across all survival times.</span>
+<span id="cb37-1537"><a href="#cb37-1537" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1538"><a href="#cb37-1538" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Like many other statistics used in other kinds of chi-square tests, </span>
+<span id="cb37-1539"><a href="#cb37-1539" aria-hidden="true" tabindex="-1"></a>the log–rank statistic makes use of observed</span>
+<span id="cb37-1540"><a href="#cb37-1540" aria-hidden="true" tabindex="-1"></a>versus expected cell counts over categories of</span>
+<span id="cb37-1541"><a href="#cb37-1541" aria-hidden="true" tabindex="-1"></a>outcomes.</span>
+<span id="cb37-1542"><a href="#cb37-1542" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1543"><a href="#cb37-1543" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The categories for the log–rank statistic</span>
+<span id="cb37-1544"><a href="#cb37-1544" aria-hidden="true" tabindex="-1"></a>are defined by each of the ordered failure</span>
+<span id="cb37-1545"><a href="#cb37-1545" aria-hidden="true" tabindex="-1"></a>times for the entire set of data being analyzed.</span>
 <span id="cb37-1546"><a href="#cb37-1546" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1547"><a href="#cb37-1547" aria-hidden="true" tabindex="-1"></a>For $t \in t_1,...,t_n$:</span>
-<span id="cb37-1548"><a href="#cb37-1548" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1549"><a href="#cb37-1549" aria-hidden="true" tabindex="-1"></a>\ba</span>
-<span id="cb37-1550"><a href="#cb37-1550" aria-hidden="true" tabindex="-1"></a>\hat{E}_{t,x} </span>
-<span id="cb37-1551"><a href="#cb37-1551" aria-hidden="true" tabindex="-1"></a>&amp;= \frac{\sum_{t_i = t} d_i}{\sum_i\indiccb{t_i \ge t}} \sum_i\indiccb{t_i \ge t \and X_i=x}</span>
-<span id="cb37-1552"><a href="#cb37-1552" aria-hidden="true" tabindex="-1"></a>\ea</span>
-<span id="cb37-1553"><a href="#cb37-1553" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1554"><a href="#cb37-1554" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1555"><a href="#cb37-1555" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1556"><a href="#cb37-1556" aria-hidden="true" tabindex="-1"></a><span class="fu">### The `survdiff` function</span></span>
+<span id="cb37-1547"><a href="#cb37-1547" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1548"><a href="#cb37-1548" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1549"><a href="#cb37-1549" aria-hidden="true" tabindex="-1"></a>For $t \in t_1,...,t_n$:</span>
+<span id="cb37-1550"><a href="#cb37-1550" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1551"><a href="#cb37-1551" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb37-1552"><a href="#cb37-1552" aria-hidden="true" tabindex="-1"></a>\hat{\haz}_t &amp;= \frac{\sum_x m_{x,t}}{\sum_x n_{x,t}}</span>
+<span id="cb37-1553"><a href="#cb37-1553" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span></span>
+<span id="cb37-1554"><a href="#cb37-1554" aria-hidden="true" tabindex="-1"></a>\hat{E}_{t,x} &amp;= \hat{\haz}_t * n_{x,t}</span>
+<span id="cb37-1555"><a href="#cb37-1555" aria-hidden="true" tabindex="-1"></a>\ea</span>
+<span id="cb37-1556"><a href="#cb37-1556" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb37-1557"><a href="#cb37-1557" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1558"><a href="#cb37-1558" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, printr.help.sections = c("description", "usage")}</span></span>
-<span id="cb37-1559"><a href="#cb37-1559" aria-hidden="true" tabindex="-1"></a>?survdiff</span>
-<span id="cb37-1560"><a href="#cb37-1560" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1561"><a href="#cb37-1561" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1562"><a href="#cb37-1562" aria-hidden="true" tabindex="-1"></a><span class="fu">### Example: `survdiff()` with `drug6mp` data</span></span>
-<span id="cb37-1563"><a href="#cb37-1563" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1564"><a href="#cb37-1564" aria-hidden="true" tabindex="-1"></a>Now we are going to compare the placebo and 6-MP data. We need to</span>
-<span id="cb37-1565"><a href="#cb37-1565" aria-hidden="true" tabindex="-1"></a>reshape the data to make it usable with the standard <span class="in">`survival`</span></span>
-<span id="cb37-1566"><a href="#cb37-1566" aria-hidden="true" tabindex="-1"></a>workflow:</span>
-<span id="cb37-1567"><a href="#cb37-1567" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1570"><a href="#cb37-1570" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1571"><a href="#cb37-1571" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
-<span id="cb37-1572"><a href="#cb37-1572" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb37-1573"><a href="#cb37-1573" aria-hidden="true" tabindex="-1"></a>drug6mp.v4 <span class="ot">&lt;-</span></span>
-<span id="cb37-1574"><a href="#cb37-1574" aria-hidden="true" tabindex="-1"></a>  drug6mp.v3 <span class="sc">|&gt;</span></span>
-<span id="cb37-1575"><a href="#cb37-1575" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(pair, remstat, t1, t2, outcome) <span class="sc">|&gt;</span></span>
-<span id="cb37-1576"><a href="#cb37-1576" aria-hidden="true" tabindex="-1"></a>  <span class="co"># here we are going to change the data from a wide format to long:</span></span>
-<span id="cb37-1577"><a href="#cb37-1577" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb37-1578"><a href="#cb37-1578" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(t1, t2),</span>
-<span id="cb37-1579"><a href="#cb37-1579" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"treatment"</span>,</span>
-<span id="cb37-1580"><a href="#cb37-1580" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"exit_time"</span></span>
-<span id="cb37-1581"><a href="#cb37-1581" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb37-1582"><a href="#cb37-1582" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb37-1583"><a href="#cb37-1583" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> treatment <span class="sc">|&gt;</span></span>
-<span id="cb37-1584"><a href="#cb37-1584" aria-hidden="true" tabindex="-1"></a>      <span class="fu">case_match</span>(</span>
-<span id="cb37-1585"><a href="#cb37-1585" aria-hidden="true" tabindex="-1"></a>        <span class="st">"t1"</span> <span class="sc">~</span> <span class="st">"placebo"</span>,</span>
-<span id="cb37-1586"><a href="#cb37-1586" aria-hidden="true" tabindex="-1"></a>        <span class="st">"t2"</span> <span class="sc">~</span> <span class="st">"6-MP"</span></span>
-<span id="cb37-1587"><a href="#cb37-1587" aria-hidden="true" tabindex="-1"></a>      ),</span>
-<span id="cb37-1588"><a href="#cb37-1588" aria-hidden="true" tabindex="-1"></a>    <span class="at">outcome =</span> <span class="fu">if_else</span>(</span>
-<span id="cb37-1589"><a href="#cb37-1589" aria-hidden="true" tabindex="-1"></a>      treatment <span class="sc">==</span> <span class="st">"placebo"</span>,</span>
-<span id="cb37-1590"><a href="#cb37-1590" aria-hidden="true" tabindex="-1"></a>      <span class="st">"relapsed"</span>,</span>
-<span id="cb37-1591"><a href="#cb37-1591" aria-hidden="true" tabindex="-1"></a>      outcome</span>
-<span id="cb37-1592"><a href="#cb37-1592" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb37-1593"><a href="#cb37-1593" aria-hidden="true" tabindex="-1"></a>    <span class="at">surv =</span> <span class="fu">Surv</span>(</span>
-<span id="cb37-1594"><a href="#cb37-1594" aria-hidden="true" tabindex="-1"></a>      <span class="at">time =</span> exit_time,</span>
-<span id="cb37-1595"><a href="#cb37-1595" aria-hidden="true" tabindex="-1"></a>      <span class="at">event =</span> (outcome <span class="sc">==</span> <span class="st">"relapsed"</span>)</span>
-<span id="cb37-1596"><a href="#cb37-1596" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb37-1597"><a href="#cb37-1597" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb37-1598"><a href="#cb37-1598" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1599"><a href="#cb37-1599" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1600"><a href="#cb37-1600" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1601"><a href="#cb37-1601" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1602"><a href="#cb37-1602" aria-hidden="true" tabindex="-1"></a>Using this long data format, we can fit a Kaplan-Meier curve for each</span>
-<span id="cb37-1603"><a href="#cb37-1603" aria-hidden="true" tabindex="-1"></a>treatment group simultaneously:</span>
+<span id="cb37-1558"><a href="#cb37-1558" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1559"><a href="#cb37-1559" aria-hidden="true" tabindex="-1"></a><span class="fu">### The `survdiff` function</span></span>
+<span id="cb37-1560"><a href="#cb37-1560" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1561"><a href="#cb37-1561" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, printr.help.sections = c("description", "usage")}</span></span>
+<span id="cb37-1562"><a href="#cb37-1562" aria-hidden="true" tabindex="-1"></a>?survdiff</span>
+<span id="cb37-1563"><a href="#cb37-1563" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1564"><a href="#cb37-1564" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1565"><a href="#cb37-1565" aria-hidden="true" tabindex="-1"></a><span class="fu">### Example: `survdiff()` with `drug6mp` data</span></span>
+<span id="cb37-1566"><a href="#cb37-1566" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1567"><a href="#cb37-1567" aria-hidden="true" tabindex="-1"></a>Now we are going to compare the placebo and 6-MP data. We need to</span>
+<span id="cb37-1568"><a href="#cb37-1568" aria-hidden="true" tabindex="-1"></a>reshape the data to make it usable with the standard <span class="in">`survival`</span></span>
+<span id="cb37-1569"><a href="#cb37-1569" aria-hidden="true" tabindex="-1"></a>workflow:</span>
+<span id="cb37-1570"><a href="#cb37-1570" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1573"><a href="#cb37-1573" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1574"><a href="#cb37-1574" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb37-1575"><a href="#cb37-1575" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb37-1576"><a href="#cb37-1576" aria-hidden="true" tabindex="-1"></a>drug6mp.v4 <span class="ot">&lt;-</span></span>
+<span id="cb37-1577"><a href="#cb37-1577" aria-hidden="true" tabindex="-1"></a>  drug6mp.v3 <span class="sc">|&gt;</span></span>
+<span id="cb37-1578"><a href="#cb37-1578" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(pair, remstat, t1, t2, outcome) <span class="sc">|&gt;</span></span>
+<span id="cb37-1579"><a href="#cb37-1579" aria-hidden="true" tabindex="-1"></a>  <span class="co"># here we are going to change the data from a wide format to long:</span></span>
+<span id="cb37-1580"><a href="#cb37-1580" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb37-1581"><a href="#cb37-1581" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(t1, t2),</span>
+<span id="cb37-1582"><a href="#cb37-1582" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"treatment"</span>,</span>
+<span id="cb37-1583"><a href="#cb37-1583" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"exit_time"</span></span>
+<span id="cb37-1584"><a href="#cb37-1584" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb37-1585"><a href="#cb37-1585" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb37-1586"><a href="#cb37-1586" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> treatment <span class="sc">|&gt;</span></span>
+<span id="cb37-1587"><a href="#cb37-1587" aria-hidden="true" tabindex="-1"></a>      <span class="fu">case_match</span>(</span>
+<span id="cb37-1588"><a href="#cb37-1588" aria-hidden="true" tabindex="-1"></a>        <span class="st">"t1"</span> <span class="sc">~</span> <span class="st">"placebo"</span>,</span>
+<span id="cb37-1589"><a href="#cb37-1589" aria-hidden="true" tabindex="-1"></a>        <span class="st">"t2"</span> <span class="sc">~</span> <span class="st">"6-MP"</span></span>
+<span id="cb37-1590"><a href="#cb37-1590" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb37-1591"><a href="#cb37-1591" aria-hidden="true" tabindex="-1"></a>    <span class="at">outcome =</span> <span class="fu">if_else</span>(</span>
+<span id="cb37-1592"><a href="#cb37-1592" aria-hidden="true" tabindex="-1"></a>      treatment <span class="sc">==</span> <span class="st">"placebo"</span>,</span>
+<span id="cb37-1593"><a href="#cb37-1593" aria-hidden="true" tabindex="-1"></a>      <span class="st">"relapsed"</span>,</span>
+<span id="cb37-1594"><a href="#cb37-1594" aria-hidden="true" tabindex="-1"></a>      outcome</span>
+<span id="cb37-1595"><a href="#cb37-1595" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb37-1596"><a href="#cb37-1596" aria-hidden="true" tabindex="-1"></a>    <span class="at">surv =</span> <span class="fu">Surv</span>(</span>
+<span id="cb37-1597"><a href="#cb37-1597" aria-hidden="true" tabindex="-1"></a>      <span class="at">time =</span> exit_time,</span>
+<span id="cb37-1598"><a href="#cb37-1598" aria-hidden="true" tabindex="-1"></a>      <span class="at">event =</span> (outcome <span class="sc">==</span> <span class="st">"relapsed"</span>)</span>
+<span id="cb37-1599"><a href="#cb37-1599" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb37-1600"><a href="#cb37-1600" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb37-1601"><a href="#cb37-1601" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1602"><a href="#cb37-1602" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1603"><a href="#cb37-1603" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb37-1604"><a href="#cb37-1604" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1607"><a href="#cb37-1607" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1608"><a href="#cb37-1608" aria-hidden="true" tabindex="-1"></a>drug6mp.km_model2 <span class="ot">&lt;-</span></span>
-<span id="cb37-1609"><a href="#cb37-1609" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survfit</span>(</span>
-<span id="cb37-1610"><a href="#cb37-1610" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> surv <span class="sc">~</span> treatment,</span>
-<span id="cb37-1611"><a href="#cb37-1611" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> drug6mp.v4</span>
-<span id="cb37-1612"><a href="#cb37-1612" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb37-1613"><a href="#cb37-1613" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1614"><a href="#cb37-1614" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1615"><a href="#cb37-1615" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1616"><a href="#cb37-1616" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1617"><a href="#cb37-1617" aria-hidden="true" tabindex="-1"></a>We can plot the curves in the same graph:</span>
-<span id="cb37-1618"><a href="#cb37-1618" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1621"><a href="#cb37-1621" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1622"><a href="#cb37-1622" aria-hidden="true" tabindex="-1"></a>drug6mp.km_model2 <span class="sc">|&gt;</span> <span class="fu">autoplot</span>()</span>
-<span id="cb37-1623"><a href="#cb37-1623" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1624"><a href="#cb37-1624" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1625"><a href="#cb37-1625" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1626"><a href="#cb37-1626" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1627"><a href="#cb37-1627" aria-hidden="true" tabindex="-1"></a>We can also perform something like a t-test, where the null hypothesis</span>
-<span id="cb37-1628"><a href="#cb37-1628" aria-hidden="true" tabindex="-1"></a>is that the curves are the same:</span>
+<span id="cb37-1605"><a href="#cb37-1605" aria-hidden="true" tabindex="-1"></a>Using this long data format, we can fit a Kaplan-Meier curve for each</span>
+<span id="cb37-1606"><a href="#cb37-1606" aria-hidden="true" tabindex="-1"></a>treatment group simultaneously:</span>
+<span id="cb37-1607"><a href="#cb37-1607" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1610"><a href="#cb37-1610" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1611"><a href="#cb37-1611" aria-hidden="true" tabindex="-1"></a>drug6mp.km_model2 <span class="ot">&lt;-</span></span>
+<span id="cb37-1612"><a href="#cb37-1612" aria-hidden="true" tabindex="-1"></a>  <span class="fu">survfit</span>(</span>
+<span id="cb37-1613"><a href="#cb37-1613" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> surv <span class="sc">~</span> treatment,</span>
+<span id="cb37-1614"><a href="#cb37-1614" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> drug6mp.v4</span>
+<span id="cb37-1615"><a href="#cb37-1615" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb37-1616"><a href="#cb37-1616" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1617"><a href="#cb37-1617" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1618"><a href="#cb37-1618" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1619"><a href="#cb37-1619" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1620"><a href="#cb37-1620" aria-hidden="true" tabindex="-1"></a>We can plot the curves in the same graph:</span>
+<span id="cb37-1621"><a href="#cb37-1621" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1624"><a href="#cb37-1624" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1625"><a href="#cb37-1625" aria-hidden="true" tabindex="-1"></a>drug6mp.km_model2 <span class="sc">|&gt;</span> <span class="fu">autoplot</span>()</span>
+<span id="cb37-1626"><a href="#cb37-1626" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1627"><a href="#cb37-1627" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1628"><a href="#cb37-1628" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb37-1629"><a href="#cb37-1629" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1630"><a href="#cb37-1630" aria-hidden="true" tabindex="-1"></a>:::{#tbl-logrank-6mp}</span>
-<span id="cb37-1633"><a href="#cb37-1633" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1634"><a href="#cb37-1634" aria-hidden="true" tabindex="-1"></a>o_e <span class="ot">&lt;-</span> drug6mp.v4 <span class="sc">|&gt;</span> </span>
-<span id="cb37-1635"><a href="#cb37-1635" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(exit_time) <span class="sc">|&gt;</span> </span>
-<span id="cb37-1636"><a href="#cb37-1636" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb37-1637"><a href="#cb37-1637" aria-hidden="true" tabindex="-1"></a>    <span class="at">.by =</span> treatment,</span>
-<span id="cb37-1638"><a href="#cb37-1638" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_exited =</span> <span class="fu">row_number</span>(),</span>
-<span id="cb37-1639"><a href="#cb37-1639" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_at_risk =</span> <span class="fu">n</span>() <span class="sc">-</span> n_exited <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb37-1640"><a href="#cb37-1640" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb37-1641"><a href="#cb37-1641" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(</span>
-<span id="cb37-1642"><a href="#cb37-1642" aria-hidden="true" tabindex="-1"></a>    <span class="at">.by =</span> <span class="fu">all_of</span>(<span class="fu">c</span>(<span class="st">"exit_time"</span>, <span class="st">"treatment"</span>)),</span>
-<span id="cb37-1643"><a href="#cb37-1643" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_at_risk =</span> <span class="fu">max</span>(n_at_risk),</span>
-<span id="cb37-1644"><a href="#cb37-1644" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_events =</span> <span class="fu">sum</span>(outcome <span class="sc">==</span> <span class="st">"relapsed"</span>)</span>
-<span id="cb37-1645"><a href="#cb37-1645" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb37-1646"><a href="#cb37-1646" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_wider</span>(</span>
-<span id="cb37-1647"><a href="#cb37-1647" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_from =</span> <span class="st">"treatment"</span>,</span>
-<span id="cb37-1648"><a href="#cb37-1648" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_from =</span> <span class="fu">c</span>(n_at_risk, n_events)</span>
-<span id="cb37-1649"><a href="#cb37-1649" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb37-1650"><a href="#cb37-1650" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">fill</span>(</span>
-<span id="cb37-1651"><a href="#cb37-1651" aria-hidden="true" tabindex="-1"></a>    <span class="fu">starts_with</span>(<span class="st">"n_at_risk"</span>),</span>
-<span id="cb37-1652"><a href="#cb37-1652" aria-hidden="true" tabindex="-1"></a>    <span class="at">.direction =</span> <span class="st">"up"</span></span>
-<span id="cb37-1653"><a href="#cb37-1653" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb37-1654"><a href="#cb37-1654" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="st">"n_events_placebo"</span> <span class="ot">=</span> <span class="dv">0</span>,</span>
-<span id="cb37-1655"><a href="#cb37-1655" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"n_events_6-MP"</span> <span class="ot">=</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb37-1656"><a href="#cb37-1656" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb37-1657"><a href="#cb37-1657" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_at_risk =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_at_risk"</span>))),</span>
-<span id="cb37-1658"><a href="#cb37-1658" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_events =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_events"</span>))),</span>
-<span id="cb37-1659"><a href="#cb37-1659" aria-hidden="true" tabindex="-1"></a>    <span class="at">marginal_hazard =</span> n_events <span class="sc">/</span> n_at_risk,</span>
-<span id="cb37-1660"><a href="#cb37-1660" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected_6mp =</span> marginal_hazard <span class="sc">*</span> <span class="st">`</span><span class="at">n_at_risk_6-MP</span><span class="st">`</span>,</span>
-<span id="cb37-1661"><a href="#cb37-1661" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected_plc =</span> marginal_hazard <span class="sc">*</span> n_at_risk_placebo,</span>
-<span id="cb37-1662"><a href="#cb37-1662" aria-hidden="true" tabindex="-1"></a>    <span class="at">diff_6mp =</span> <span class="st">`</span><span class="at">n_events_6-MP</span><span class="st">`</span> <span class="sc">-</span> expected_6mp,</span>
-<span id="cb37-1663"><a href="#cb37-1663" aria-hidden="true" tabindex="-1"></a>    <span class="at">diff_plc =</span> n_events_placebo <span class="sc">-</span> expected_plc</span>
-<span id="cb37-1664"><a href="#cb37-1664" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb37-1665"><a href="#cb37-1665" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n_events <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb37-1666"><a href="#cb37-1666" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1667"><a href="#cb37-1667" aria-hidden="true" tabindex="-1"></a>o_e</span>
-<span id="cb37-1668"><a href="#cb37-1668" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1669"><a href="#cb37-1669" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1670"><a href="#cb37-1670" aria-hidden="true" tabindex="-1"></a>Observed and expected event counts for the 6-MP data, for log-rank test</span>
-<span id="cb37-1671"><a href="#cb37-1671" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1672"><a href="#cb37-1672" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1673"><a href="#cb37-1673" aria-hidden="true" tabindex="-1"></a>:::{#tbl-sum-obs-exp}</span>
-<span id="cb37-1676"><a href="#cb37-1676" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1677"><a href="#cb37-1677" aria-hidden="true" tabindex="-1"></a>o_e_summ <span class="ot">&lt;-</span> o_e <span class="sc">|&gt;</span> </span>
-<span id="cb37-1678"><a href="#cb37-1678" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb37-1679"><a href="#cb37-1679" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"expected"</span>), sum),</span>
-<span id="cb37-1680"><a href="#cb37-1680" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_events_"</span>), sum)</span>
-<span id="cb37-1681"><a href="#cb37-1681" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb37-1682"><a href="#cb37-1682" aria-hidden="true" tabindex="-1"></a>pander<span class="sc">::</span><span class="fu">pander</span>(o_e_summ)</span>
-<span id="cb37-1683"><a href="#cb37-1683" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1684"><a href="#cb37-1684" aria-hidden="true" tabindex="-1"></a>Observed and expected sums for the 6-MP data, for log-rank test</span>
-<span id="cb37-1685"><a href="#cb37-1685" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1686"><a href="#cb37-1686" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1687"><a href="#cb37-1687" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1688"><a href="#cb37-1688" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1689"><a href="#cb37-1689" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1690"><a href="#cb37-1690" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb37-1691"><a href="#cb37-1691" aria-hidden="true" tabindex="-1"></a>The exact variance formula for each of two groups is:</span>
-<span id="cb37-1692"><a href="#cb37-1692" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1693"><a href="#cb37-1693" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1694"><a href="#cb37-1694" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1695"><a href="#cb37-1695" aria-hidden="true" tabindex="-1"></a>\Varf{O_i - E_i} = \sum_j \frac</span>
-<span id="cb37-1696"><a href="#cb37-1696" aria-hidden="true" tabindex="-1"></a>{n_{1j} n_{2j} (m_j) (n_j - m_j)} </span>
-<span id="cb37-1697"><a href="#cb37-1697" aria-hidden="true" tabindex="-1"></a>{(n_j)^2 (n_j - 1)}</span>
-<span id="cb37-1698"><a href="#cb37-1698" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1699"><a href="#cb37-1699" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1700"><a href="#cb37-1700" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb37-1701"><a href="#cb37-1701" aria-hidden="true" tabindex="-1"></a>See @kleinbaum2012survival, Chapter 2 Appendix for the exact variance formula</span>
-<span id="cb37-1702"><a href="#cb37-1702" aria-hidden="true" tabindex="-1"></a>for more than two groups.</span>
-<span id="cb37-1703"><a href="#cb37-1703" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1704"><a href="#cb37-1704" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1705"><a href="#cb37-1705" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1706"><a href="#cb37-1706" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1707"><a href="#cb37-1707" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb37-1708"><a href="#cb37-1708" aria-hidden="true" tabindex="-1"></a>Or we can use an approximate statistic:</span>
-<span id="cb37-1709"><a href="#cb37-1709" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1710"><a href="#cb37-1710" aria-hidden="true" tabindex="-1"></a>$$X^2 \approx \sum_{i = 1}^p \frac{(O_i - E_i)^2}{E_i}$$</span>
-<span id="cb37-1711"><a href="#cb37-1711" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1714"><a href="#cb37-1714" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1715"><a href="#cb37-1715" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(</span>
-<span id="cb37-1716"><a href="#cb37-1716" aria-hidden="true" tabindex="-1"></a>  o_e_summ,</span>
-<span id="cb37-1717"><a href="#cb37-1717" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
-<span id="cb37-1718"><a href="#cb37-1718" aria-hidden="true" tabindex="-1"></a>    <span class="st">"6mp"</span> <span class="ot">=</span> (<span class="st">`</span><span class="at">n_events_6-MP</span><span class="st">`</span> <span class="sc">-</span> expected_6mp)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> expected_6mp,</span>
-<span id="cb37-1719"><a href="#cb37-1719" aria-hidden="true" tabindex="-1"></a>    <span class="st">"placebo"</span> <span class="ot">=</span> (n_events_placebo <span class="sc">-</span> expected_plc)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> expected_plc,</span>
-<span id="cb37-1720"><a href="#cb37-1720" aria-hidden="true" tabindex="-1"></a>    <span class="at">sum =</span> <span class="st">`</span><span class="at">6mp</span><span class="st">`</span> <span class="sc">+</span> placebo</span>
-<span id="cb37-1721"><a href="#cb37-1721" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb37-1722"><a href="#cb37-1722" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
-<span id="cb37-1723"><a href="#cb37-1723" aria-hidden="true" tabindex="-1"></a>  pander<span class="sc">::</span><span class="fu">pander</span>()</span>
-<span id="cb37-1724"><a href="#cb37-1724" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1725"><a href="#cb37-1725" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1726"><a href="#cb37-1726" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1727"><a href="#cb37-1727" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1728"><a href="#cb37-1728" aria-hidden="true" tabindex="-1"></a>R gives us both the exact and approximate results:</span>
-<span id="cb37-1729"><a href="#cb37-1729" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1732"><a href="#cb37-1732" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1733"><a href="#cb37-1733" aria-hidden="true" tabindex="-1"></a><span class="fu">survdiff</span>(</span>
-<span id="cb37-1734"><a href="#cb37-1734" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> treatment,</span>
-<span id="cb37-1735"><a href="#cb37-1735" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> drug6mp.v4</span>
-<span id="cb37-1736"><a href="#cb37-1736" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb37-1737"><a href="#cb37-1737" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1738"><a href="#cb37-1738" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1739"><a href="#cb37-1739" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1740"><a href="#cb37-1740" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1741"><a href="#cb37-1741" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb37-1742"><a href="#cb37-1742" aria-hidden="true" tabindex="-1"></a>By default, <span class="in">`survdiff()`</span> ignores any pairing, </span>
-<span id="cb37-1743"><a href="#cb37-1743" aria-hidden="true" tabindex="-1"></a>but we can use <span class="in">`strata()`</span> to perform something similar to a paired t-test:</span>
-<span id="cb37-1744"><a href="#cb37-1744" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1745"><a href="#cb37-1745" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1748"><a href="#cb37-1748" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1749"><a href="#cb37-1749" aria-hidden="true" tabindex="-1"></a>lrank_test <span class="ot">&lt;-</span> <span class="fu">survdiff</span>(</span>
-<span id="cb37-1750"><a href="#cb37-1750" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> treatment <span class="sc">+</span> <span class="fu">strata</span>(pair),</span>
-<span id="cb37-1751"><a href="#cb37-1751" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> drug6mp.v4</span>
-<span id="cb37-1752"><a href="#cb37-1752" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb37-1753"><a href="#cb37-1753" aria-hidden="true" tabindex="-1"></a>lrank_test</span>
-<span id="cb37-1754"><a href="#cb37-1754" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1755"><a href="#cb37-1755" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1756"><a href="#cb37-1756" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb37-1757"><a href="#cb37-1757" aria-hidden="true" tabindex="-1"></a>Interestingly, accounting for pairing reduces the significance of the</span>
-<span id="cb37-1758"><a href="#cb37-1758" aria-hidden="true" tabindex="-1"></a>difference.</span>
-<span id="cb37-1759"><a href="#cb37-1759" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1760"><a href="#cb37-1760" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1761"><a href="#cb37-1761" aria-hidden="true" tabindex="-1"></a><span class="fu">## Example: Bone Marrow Transplant Data</span></span>
-<span id="cb37-1762"><a href="#cb37-1762" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1763"><a href="#cb37-1763" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1764"><a href="#cb37-1764" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1765"><a href="#cb37-1765" aria-hidden="true" tabindex="-1"></a>Data from @copelan1991treatment</span>
-<span id="cb37-1766"><a href="#cb37-1766" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1767"><a href="#cb37-1767" aria-hidden="true" tabindex="-1"></a><span class="al">![Recovery process from a bone marrow transplant (Fig. 1.1 from @klein2003survival)](images/bone marrow multi-stage model.png)</span>{#fig-bmt-mst}</span>
-<span id="cb37-1768"><a href="#cb37-1768" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1769"><a href="#cb37-1769" aria-hidden="true" tabindex="-1"></a><span class="fu">### Study design</span></span>
-<span id="cb37-1770"><a href="#cb37-1770" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1771"><a href="#cb37-1771" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Treatment {.unnumbered}</span></span>
-<span id="cb37-1772"><a href="#cb37-1772" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1773"><a href="#cb37-1773" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**allogeneic** (from a donor) **bone marrow transplant therapy**</span>
-<span id="cb37-1774"><a href="#cb37-1774" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1775"><a href="#cb37-1775" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Inclusion criteria {.unnumbered}</span></span>
-<span id="cb37-1776"><a href="#cb37-1776" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1777"><a href="#cb37-1777" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**acute myeloid leukemia (AML)**</span>
-<span id="cb37-1778"><a href="#cb37-1778" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**acute lymphoblastic leukemia (ALL).**</span>
+<span id="cb37-1630"><a href="#cb37-1630" aria-hidden="true" tabindex="-1"></a>We can also perform something like a t-test, where the null hypothesis</span>
+<span id="cb37-1631"><a href="#cb37-1631" aria-hidden="true" tabindex="-1"></a>is that the curves are the same:</span>
+<span id="cb37-1632"><a href="#cb37-1632" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1633"><a href="#cb37-1633" aria-hidden="true" tabindex="-1"></a>:::{#tbl-logrank-6mp}</span>
+<span id="cb37-1636"><a href="#cb37-1636" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1637"><a href="#cb37-1637" aria-hidden="true" tabindex="-1"></a>o_e <span class="ot">&lt;-</span> drug6mp.v4 <span class="sc">|&gt;</span> </span>
+<span id="cb37-1638"><a href="#cb37-1638" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(exit_time) <span class="sc">|&gt;</span> </span>
+<span id="cb37-1639"><a href="#cb37-1639" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb37-1640"><a href="#cb37-1640" aria-hidden="true" tabindex="-1"></a>    <span class="at">.by =</span> treatment,</span>
+<span id="cb37-1641"><a href="#cb37-1641" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_exited =</span> <span class="fu">row_number</span>(),</span>
+<span id="cb37-1642"><a href="#cb37-1642" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_at_risk =</span> <span class="fu">n</span>() <span class="sc">-</span> n_exited <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb37-1643"><a href="#cb37-1643" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb37-1644"><a href="#cb37-1644" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(</span>
+<span id="cb37-1645"><a href="#cb37-1645" aria-hidden="true" tabindex="-1"></a>    <span class="at">.by =</span> <span class="fu">all_of</span>(<span class="fu">c</span>(<span class="st">"exit_time"</span>, <span class="st">"treatment"</span>)),</span>
+<span id="cb37-1646"><a href="#cb37-1646" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_at_risk =</span> <span class="fu">max</span>(n_at_risk),</span>
+<span id="cb37-1647"><a href="#cb37-1647" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_events =</span> <span class="fu">sum</span>(outcome <span class="sc">==</span> <span class="st">"relapsed"</span>)</span>
+<span id="cb37-1648"><a href="#cb37-1648" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb37-1649"><a href="#cb37-1649" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">pivot_wider</span>(</span>
+<span id="cb37-1650"><a href="#cb37-1650" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_from =</span> <span class="st">"treatment"</span>,</span>
+<span id="cb37-1651"><a href="#cb37-1651" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_from =</span> <span class="fu">c</span>(n_at_risk, n_events)</span>
+<span id="cb37-1652"><a href="#cb37-1652" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb37-1653"><a href="#cb37-1653" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">fill</span>(</span>
+<span id="cb37-1654"><a href="#cb37-1654" aria-hidden="true" tabindex="-1"></a>    <span class="fu">starts_with</span>(<span class="st">"n_at_risk"</span>),</span>
+<span id="cb37-1655"><a href="#cb37-1655" aria-hidden="true" tabindex="-1"></a>    <span class="at">.direction =</span> <span class="st">"up"</span></span>
+<span id="cb37-1656"><a href="#cb37-1656" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb37-1657"><a href="#cb37-1657" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="st">"n_events_placebo"</span> <span class="ot">=</span> <span class="dv">0</span>,</span>
+<span id="cb37-1658"><a href="#cb37-1658" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"n_events_6-MP"</span> <span class="ot">=</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb37-1659"><a href="#cb37-1659" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb37-1660"><a href="#cb37-1660" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_at_risk =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_at_risk"</span>))),</span>
+<span id="cb37-1661"><a href="#cb37-1661" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_events =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_events"</span>))),</span>
+<span id="cb37-1662"><a href="#cb37-1662" aria-hidden="true" tabindex="-1"></a>    <span class="at">marginal_hazard =</span> n_events <span class="sc">/</span> n_at_risk,</span>
+<span id="cb37-1663"><a href="#cb37-1663" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected_6mp =</span> marginal_hazard <span class="sc">*</span> <span class="st">`</span><span class="at">n_at_risk_6-MP</span><span class="st">`</span>,</span>
+<span id="cb37-1664"><a href="#cb37-1664" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected_plc =</span> marginal_hazard <span class="sc">*</span> n_at_risk_placebo,</span>
+<span id="cb37-1665"><a href="#cb37-1665" aria-hidden="true" tabindex="-1"></a>    <span class="at">diff_6mp =</span> <span class="st">`</span><span class="at">n_events_6-MP</span><span class="st">`</span> <span class="sc">-</span> expected_6mp,</span>
+<span id="cb37-1666"><a href="#cb37-1666" aria-hidden="true" tabindex="-1"></a>    <span class="at">diff_plc =</span> n_events_placebo <span class="sc">-</span> expected_plc</span>
+<span id="cb37-1667"><a href="#cb37-1667" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb37-1668"><a href="#cb37-1668" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n_events <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb37-1669"><a href="#cb37-1669" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1670"><a href="#cb37-1670" aria-hidden="true" tabindex="-1"></a>o_e</span>
+<span id="cb37-1671"><a href="#cb37-1671" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1672"><a href="#cb37-1672" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1673"><a href="#cb37-1673" aria-hidden="true" tabindex="-1"></a>Observed and expected event counts for the 6-MP data, for log-rank test</span>
+<span id="cb37-1674"><a href="#cb37-1674" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1675"><a href="#cb37-1675" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1676"><a href="#cb37-1676" aria-hidden="true" tabindex="-1"></a>:::{#tbl-sum-obs-exp}</span>
+<span id="cb37-1679"><a href="#cb37-1679" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1680"><a href="#cb37-1680" aria-hidden="true" tabindex="-1"></a>o_e_summ <span class="ot">&lt;-</span> o_e <span class="sc">|&gt;</span> </span>
+<span id="cb37-1681"><a href="#cb37-1681" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb37-1682"><a href="#cb37-1682" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"expected"</span>), sum),</span>
+<span id="cb37-1683"><a href="#cb37-1683" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_events_"</span>), sum)</span>
+<span id="cb37-1684"><a href="#cb37-1684" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb37-1685"><a href="#cb37-1685" aria-hidden="true" tabindex="-1"></a>pander<span class="sc">::</span><span class="fu">pander</span>(o_e_summ)</span>
+<span id="cb37-1686"><a href="#cb37-1686" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1687"><a href="#cb37-1687" aria-hidden="true" tabindex="-1"></a>Observed and expected sums for the 6-MP data, for log-rank test</span>
+<span id="cb37-1688"><a href="#cb37-1688" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1689"><a href="#cb37-1689" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1690"><a href="#cb37-1690" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1691"><a href="#cb37-1691" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1692"><a href="#cb37-1692" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1693"><a href="#cb37-1693" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb37-1694"><a href="#cb37-1694" aria-hidden="true" tabindex="-1"></a>The exact variance formula for each of two groups is:</span>
+<span id="cb37-1695"><a href="#cb37-1695" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1696"><a href="#cb37-1696" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1697"><a href="#cb37-1697" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1698"><a href="#cb37-1698" aria-hidden="true" tabindex="-1"></a>\Varf{O_i - E_i} = \sum_j \frac</span>
+<span id="cb37-1699"><a href="#cb37-1699" aria-hidden="true" tabindex="-1"></a>{n_{1j} n_{2j} (m_j) (n_j - m_j)} </span>
+<span id="cb37-1700"><a href="#cb37-1700" aria-hidden="true" tabindex="-1"></a>{(n_j)^2 (n_j - 1)}</span>
+<span id="cb37-1701"><a href="#cb37-1701" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1702"><a href="#cb37-1702" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1703"><a href="#cb37-1703" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb37-1704"><a href="#cb37-1704" aria-hidden="true" tabindex="-1"></a>See @kleinbaum2012survival, Chapter 2 Appendix for the exact variance formula</span>
+<span id="cb37-1705"><a href="#cb37-1705" aria-hidden="true" tabindex="-1"></a>for more than two groups.</span>
+<span id="cb37-1706"><a href="#cb37-1706" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1707"><a href="#cb37-1707" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1708"><a href="#cb37-1708" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1709"><a href="#cb37-1709" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1710"><a href="#cb37-1710" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb37-1711"><a href="#cb37-1711" aria-hidden="true" tabindex="-1"></a>Or we can use an approximate statistic:</span>
+<span id="cb37-1712"><a href="#cb37-1712" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1713"><a href="#cb37-1713" aria-hidden="true" tabindex="-1"></a>$$X^2 \approx \sum_{i = 1}^p \frac{(O_i - E_i)^2}{E_i}$$</span>
+<span id="cb37-1714"><a href="#cb37-1714" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1717"><a href="#cb37-1717" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1718"><a href="#cb37-1718" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(</span>
+<span id="cb37-1719"><a href="#cb37-1719" aria-hidden="true" tabindex="-1"></a>  o_e_summ,</span>
+<span id="cb37-1720"><a href="#cb37-1720" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb37-1721"><a href="#cb37-1721" aria-hidden="true" tabindex="-1"></a>    <span class="st">"6mp"</span> <span class="ot">=</span> (<span class="st">`</span><span class="at">n_events_6-MP</span><span class="st">`</span> <span class="sc">-</span> expected_6mp)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> expected_6mp,</span>
+<span id="cb37-1722"><a href="#cb37-1722" aria-hidden="true" tabindex="-1"></a>    <span class="st">"placebo"</span> <span class="ot">=</span> (n_events_placebo <span class="sc">-</span> expected_plc)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> expected_plc,</span>
+<span id="cb37-1723"><a href="#cb37-1723" aria-hidden="true" tabindex="-1"></a>    <span class="at">sum =</span> <span class="st">`</span><span class="at">6mp</span><span class="st">`</span> <span class="sc">+</span> placebo</span>
+<span id="cb37-1724"><a href="#cb37-1724" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb37-1725"><a href="#cb37-1725" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
+<span id="cb37-1726"><a href="#cb37-1726" aria-hidden="true" tabindex="-1"></a>  pander<span class="sc">::</span><span class="fu">pander</span>()</span>
+<span id="cb37-1727"><a href="#cb37-1727" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1728"><a href="#cb37-1728" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1729"><a href="#cb37-1729" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1730"><a href="#cb37-1730" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1731"><a href="#cb37-1731" aria-hidden="true" tabindex="-1"></a>R gives us both the exact and approximate results:</span>
+<span id="cb37-1732"><a href="#cb37-1732" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1735"><a href="#cb37-1735" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1736"><a href="#cb37-1736" aria-hidden="true" tabindex="-1"></a><span class="fu">survdiff</span>(</span>
+<span id="cb37-1737"><a href="#cb37-1737" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> treatment,</span>
+<span id="cb37-1738"><a href="#cb37-1738" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> drug6mp.v4</span>
+<span id="cb37-1739"><a href="#cb37-1739" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-1740"><a href="#cb37-1740" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1741"><a href="#cb37-1741" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1742"><a href="#cb37-1742" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1743"><a href="#cb37-1743" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1744"><a href="#cb37-1744" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb37-1745"><a href="#cb37-1745" aria-hidden="true" tabindex="-1"></a>By default, <span class="in">`survdiff()`</span> ignores any pairing, </span>
+<span id="cb37-1746"><a href="#cb37-1746" aria-hidden="true" tabindex="-1"></a>but we can use <span class="in">`strata()`</span> to perform something similar to a paired t-test:</span>
+<span id="cb37-1747"><a href="#cb37-1747" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1748"><a href="#cb37-1748" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1751"><a href="#cb37-1751" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1752"><a href="#cb37-1752" aria-hidden="true" tabindex="-1"></a>lrank_test <span class="ot">&lt;-</span> <span class="fu">survdiff</span>(</span>
+<span id="cb37-1753"><a href="#cb37-1753" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> treatment <span class="sc">+</span> <span class="fu">strata</span>(pair),</span>
+<span id="cb37-1754"><a href="#cb37-1754" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> drug6mp.v4</span>
+<span id="cb37-1755"><a href="#cb37-1755" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-1756"><a href="#cb37-1756" aria-hidden="true" tabindex="-1"></a>lrank_test</span>
+<span id="cb37-1757"><a href="#cb37-1757" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1758"><a href="#cb37-1758" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1759"><a href="#cb37-1759" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb37-1760"><a href="#cb37-1760" aria-hidden="true" tabindex="-1"></a>Interestingly, accounting for pairing reduces the significance of the</span>
+<span id="cb37-1761"><a href="#cb37-1761" aria-hidden="true" tabindex="-1"></a>difference.</span>
+<span id="cb37-1762"><a href="#cb37-1762" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1763"><a href="#cb37-1763" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1764"><a href="#cb37-1764" aria-hidden="true" tabindex="-1"></a><span class="fu">## Example: Bone Marrow Transplant Data</span></span>
+<span id="cb37-1765"><a href="#cb37-1765" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1766"><a href="#cb37-1766" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1767"><a href="#cb37-1767" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1768"><a href="#cb37-1768" aria-hidden="true" tabindex="-1"></a>Data from @copelan1991treatment</span>
+<span id="cb37-1769"><a href="#cb37-1769" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1770"><a href="#cb37-1770" aria-hidden="true" tabindex="-1"></a><span class="al">![Recovery process from a bone marrow transplant (Fig. 1.1 from @klein2003survival)](images/bone marrow multi-stage model.png)</span>{#fig-bmt-mst}</span>
+<span id="cb37-1771"><a href="#cb37-1771" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1772"><a href="#cb37-1772" aria-hidden="true" tabindex="-1"></a><span class="fu">### Study design</span></span>
+<span id="cb37-1773"><a href="#cb37-1773" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1774"><a href="#cb37-1774" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Treatment {.unnumbered}</span></span>
+<span id="cb37-1775"><a href="#cb37-1775" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1776"><a href="#cb37-1776" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**allogeneic** (from a donor) **bone marrow transplant therapy**</span>
+<span id="cb37-1777"><a href="#cb37-1777" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1778"><a href="#cb37-1778" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Inclusion criteria {.unnumbered}</span></span>
 <span id="cb37-1779"><a href="#cb37-1779" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1780"><a href="#cb37-1780" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Possible intermediate events {.unnumbered}</span></span>
-<span id="cb37-1781"><a href="#cb37-1781" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1782"><a href="#cb37-1782" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**graft vs. host disease (GVHD)**: an immunological rejection</span>
-<span id="cb37-1783"><a href="#cb37-1783" aria-hidden="true" tabindex="-1"></a>response to the transplant</span>
-<span id="cb37-1784"><a href="#cb37-1784" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**platelet recovery**: a return of platelet count to normal levels.</span>
-<span id="cb37-1785"><a href="#cb37-1785" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1786"><a href="#cb37-1786" aria-hidden="true" tabindex="-1"></a>One or the other, both in either order, or neither may occur.</span>
-<span id="cb37-1787"><a href="#cb37-1787" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1788"><a href="#cb37-1788" aria-hidden="true" tabindex="-1"></a><span class="fu">##### End point events</span></span>
-<span id="cb37-1789"><a href="#cb37-1789" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1790"><a href="#cb37-1790" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>relapse of the disease</span>
-<span id="cb37-1791"><a href="#cb37-1791" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>death</span>
+<span id="cb37-1780"><a href="#cb37-1780" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**acute myeloid leukemia (AML)**</span>
+<span id="cb37-1781"><a href="#cb37-1781" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**acute lymphoblastic leukemia (ALL).**</span>
+<span id="cb37-1782"><a href="#cb37-1782" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1783"><a href="#cb37-1783" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Possible intermediate events {.unnumbered}</span></span>
+<span id="cb37-1784"><a href="#cb37-1784" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1785"><a href="#cb37-1785" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**graft vs. host disease (GVHD)**: an immunological rejection</span>
+<span id="cb37-1786"><a href="#cb37-1786" aria-hidden="true" tabindex="-1"></a>response to the transplant</span>
+<span id="cb37-1787"><a href="#cb37-1787" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**platelet recovery**: a return of platelet count to normal levels.</span>
+<span id="cb37-1788"><a href="#cb37-1788" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1789"><a href="#cb37-1789" aria-hidden="true" tabindex="-1"></a>One or the other, both in either order, or neither may occur.</span>
+<span id="cb37-1790"><a href="#cb37-1790" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1791"><a href="#cb37-1791" aria-hidden="true" tabindex="-1"></a><span class="fu">##### End point events</span></span>
 <span id="cb37-1792"><a href="#cb37-1792" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1793"><a href="#cb37-1793" aria-hidden="true" tabindex="-1"></a>Any or all of these events may be censored.</span>
-<span id="cb37-1794"><a href="#cb37-1794" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1795"><a href="#cb37-1795" aria-hidden="true" tabindex="-1"></a><span class="fu">### `KMsurv::bmt` data in R</span></span>
-<span id="cb37-1796"><a href="#cb37-1796" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1799"><a href="#cb37-1799" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1800"><a href="#cb37-1800" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(KMsurv)</span>
-<span id="cb37-1801"><a href="#cb37-1801" aria-hidden="true" tabindex="-1"></a>?bmt</span>
-<span id="cb37-1802"><a href="#cb37-1802" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1803"><a href="#cb37-1803" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1804"><a href="#cb37-1804" aria-hidden="true" tabindex="-1"></a><span class="fu">### Analysis plan</span></span>
-<span id="cb37-1805"><a href="#cb37-1805" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1806"><a href="#cb37-1806" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>We concentrate for now on disease-free survival (<span class="in">`t2`</span> and <span class="in">`d3`</span>) for</span>
-<span id="cb37-1807"><a href="#cb37-1807" aria-hidden="true" tabindex="-1"></a>the three risk groups, ALL, AML Low Risk, and AML High Risk.</span>
-<span id="cb37-1808"><a href="#cb37-1808" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>We will construct the Kaplan-Meier survival curves, compare them,</span>
-<span id="cb37-1809"><a href="#cb37-1809" aria-hidden="true" tabindex="-1"></a>and test for differences.</span>
-<span id="cb37-1810"><a href="#cb37-1810" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>We will construct the cumulative hazard curves and compare them.</span>
-<span id="cb37-1811"><a href="#cb37-1811" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>We will estimate the hazard functions, interpret, and compare them.</span>
-<span id="cb37-1812"><a href="#cb37-1812" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1813"><a href="#cb37-1813" aria-hidden="true" tabindex="-1"></a><span class="fu">### Survival Function Estimate and Variance</span></span>
-<span id="cb37-1814"><a href="#cb37-1814" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1815"><a href="#cb37-1815" aria-hidden="true" tabindex="-1"></a>$$\hat S(t) = \prod_{t_i &lt; t}\left<span class="co">[</span><span class="ot">1-\frac{d_i}{Y_i}\right</span><span class="co">]</span>$$ where</span>
-<span id="cb37-1816"><a href="#cb37-1816" aria-hidden="true" tabindex="-1"></a>$Y_i$ is the group at risk at time $t_i$.</span>
+<span id="cb37-1793"><a href="#cb37-1793" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>relapse of the disease</span>
+<span id="cb37-1794"><a href="#cb37-1794" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>death</span>
+<span id="cb37-1795"><a href="#cb37-1795" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1796"><a href="#cb37-1796" aria-hidden="true" tabindex="-1"></a>Any or all of these events may be censored.</span>
+<span id="cb37-1797"><a href="#cb37-1797" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1798"><a href="#cb37-1798" aria-hidden="true" tabindex="-1"></a><span class="fu">### `KMsurv::bmt` data in R</span></span>
+<span id="cb37-1799"><a href="#cb37-1799" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1802"><a href="#cb37-1802" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1803"><a href="#cb37-1803" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(KMsurv)</span>
+<span id="cb37-1804"><a href="#cb37-1804" aria-hidden="true" tabindex="-1"></a>?bmt</span>
+<span id="cb37-1805"><a href="#cb37-1805" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1806"><a href="#cb37-1806" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1807"><a href="#cb37-1807" aria-hidden="true" tabindex="-1"></a><span class="fu">### Analysis plan</span></span>
+<span id="cb37-1808"><a href="#cb37-1808" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1809"><a href="#cb37-1809" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>We concentrate for now on disease-free survival (<span class="in">`t2`</span> and <span class="in">`d3`</span>) for</span>
+<span id="cb37-1810"><a href="#cb37-1810" aria-hidden="true" tabindex="-1"></a>the three risk groups, ALL, AML Low Risk, and AML High Risk.</span>
+<span id="cb37-1811"><a href="#cb37-1811" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>We will construct the Kaplan-Meier survival curves, compare them,</span>
+<span id="cb37-1812"><a href="#cb37-1812" aria-hidden="true" tabindex="-1"></a>and test for differences.</span>
+<span id="cb37-1813"><a href="#cb37-1813" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>We will construct the cumulative hazard curves and compare them.</span>
+<span id="cb37-1814"><a href="#cb37-1814" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>We will estimate the hazard functions, interpret, and compare them.</span>
+<span id="cb37-1815"><a href="#cb37-1815" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1816"><a href="#cb37-1816" aria-hidden="true" tabindex="-1"></a><span class="fu">### Survival Function Estimate and Variance</span></span>
 <span id="cb37-1817"><a href="#cb37-1817" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1818"><a href="#cb37-1818" aria-hidden="true" tabindex="-1"></a>The estimated variance of $\hat S(t)$ is:</span>
-<span id="cb37-1819"><a href="#cb37-1819" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1820"><a href="#cb37-1820" aria-hidden="true" tabindex="-1"></a>:::{#thm-greenwood}</span>
-<span id="cb37-1821"><a href="#cb37-1821" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Greenwood's estimator for variance of Kaplan-Meier survival estimator</span></span>
+<span id="cb37-1818"><a href="#cb37-1818" aria-hidden="true" tabindex="-1"></a>$$\hat S(t) = \prod_{t_i &lt; t}\left<span class="co">[</span><span class="ot">1-\frac{d_i}{Y_i}\right</span><span class="co">]</span>$$ where</span>
+<span id="cb37-1819"><a href="#cb37-1819" aria-hidden="true" tabindex="-1"></a>$Y_i$ is the group at risk at time $t_i$.</span>
+<span id="cb37-1820"><a href="#cb37-1820" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1821"><a href="#cb37-1821" aria-hidden="true" tabindex="-1"></a>The estimated variance of $\hat S(t)$ is:</span>
 <span id="cb37-1822"><a href="#cb37-1822" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1823"><a href="#cb37-1823" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1824"><a href="#cb37-1824" aria-hidden="true" tabindex="-1"></a>\varhf{\hat S(t)} = \hat S(t)^2\sum_{t_i &lt;t}\frac{d_i}{Y_i(Y_i-d_i)}</span>
-<span id="cb37-1825"><a href="#cb37-1825" aria-hidden="true" tabindex="-1"></a>$${#eq-var-est-surv}</span>
-<span id="cb37-1826"><a href="#cb37-1826" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1827"><a href="#cb37-1827" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1828"><a href="#cb37-1828" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1829"><a href="#cb37-1829" aria-hidden="true" tabindex="-1"></a>We can use @eq-var-est-surv for confidence intervals for a survival function or a</span>
-<span id="cb37-1830"><a href="#cb37-1830" aria-hidden="true" tabindex="-1"></a>difference of survival functions.</span>
+<span id="cb37-1823"><a href="#cb37-1823" aria-hidden="true" tabindex="-1"></a>:::{#thm-greenwood}</span>
+<span id="cb37-1824"><a href="#cb37-1824" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Greenwood's estimator for variance of Kaplan-Meier survival estimator</span></span>
+<span id="cb37-1825"><a href="#cb37-1825" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1826"><a href="#cb37-1826" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1827"><a href="#cb37-1827" aria-hidden="true" tabindex="-1"></a>\varhf{\hat S(t)} = \hat S(t)^2\sum_{t_i &lt;t}\frac{d_i}{Y_i(Y_i-d_i)}</span>
+<span id="cb37-1828"><a href="#cb37-1828" aria-hidden="true" tabindex="-1"></a>$${#eq-var-est-surv}</span>
+<span id="cb37-1829"><a href="#cb37-1829" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1830"><a href="#cb37-1830" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb37-1831"><a href="#cb37-1831" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1832"><a href="#cb37-1832" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1833"><a href="#cb37-1833" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1834"><a href="#cb37-1834" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Kaplan-Meier survival curves</span></span>
-<span id="cb37-1835"><a href="#cb37-1835" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1838"><a href="#cb37-1838" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1839"><a href="#cb37-1839" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "code to preprocess and model `bmt` data"</span></span>
-<span id="cb37-1840"><a href="#cb37-1840" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(KMsurv)</span>
-<span id="cb37-1841"><a href="#cb37-1841" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
-<span id="cb37-1842"><a href="#cb37-1842" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(bmt)</span>
-<span id="cb37-1843"><a href="#cb37-1843" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1844"><a href="#cb37-1844" aria-hidden="true" tabindex="-1"></a>bmt <span class="ot">&lt;-</span></span>
-<span id="cb37-1845"><a href="#cb37-1845" aria-hidden="true" tabindex="-1"></a>  bmt <span class="sc">|&gt;</span></span>
-<span id="cb37-1846"><a href="#cb37-1846" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
-<span id="cb37-1847"><a href="#cb37-1847" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb37-1848"><a href="#cb37-1848" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span></span>
-<span id="cb37-1849"><a href="#cb37-1849" aria-hidden="true" tabindex="-1"></a>      group <span class="sc">|&gt;</span></span>
-<span id="cb37-1850"><a href="#cb37-1850" aria-hidden="true" tabindex="-1"></a>      <span class="fu">factor</span>(</span>
-<span id="cb37-1851"><a href="#cb37-1851" aria-hidden="true" tabindex="-1"></a>        <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"ALL"</span>, <span class="st">"Low Risk AML"</span>, <span class="st">"High Risk AML"</span>)</span>
-<span id="cb37-1852"><a href="#cb37-1852" aria-hidden="true" tabindex="-1"></a>      ),</span>
-<span id="cb37-1853"><a href="#cb37-1853" aria-hidden="true" tabindex="-1"></a>    <span class="at">surv =</span> <span class="fu">Surv</span>(t2, d3)</span>
-<span id="cb37-1854"><a href="#cb37-1854" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb37-1855"><a href="#cb37-1855" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1856"><a href="#cb37-1856" aria-hidden="true" tabindex="-1"></a>km_model1 <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
-<span id="cb37-1857"><a href="#cb37-1857" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
-<span id="cb37-1858"><a href="#cb37-1858" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> bmt</span>
-<span id="cb37-1859"><a href="#cb37-1859" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb37-1860"><a href="#cb37-1860" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1861"><a href="#cb37-1861" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1862"><a href="#cb37-1862" aria-hidden="true" tabindex="-1"></a><span class="in">```{r "KM survival curves for bmt data"}</span></span>
-<span id="cb37-1863"><a href="#cb37-1863" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Disease-Free Survival by Disease Group"</span></span>
+<span id="cb37-1832"><a href="#cb37-1832" aria-hidden="true" tabindex="-1"></a>We can use @eq-var-est-surv for confidence intervals for a survival function or a</span>
+<span id="cb37-1833"><a href="#cb37-1833" aria-hidden="true" tabindex="-1"></a>difference of survival functions.</span>
+<span id="cb37-1834"><a href="#cb37-1834" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1835"><a href="#cb37-1835" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1836"><a href="#cb37-1836" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1837"><a href="#cb37-1837" aria-hidden="true" tabindex="-1"></a><span class="fu">##### Kaplan-Meier survival curves</span></span>
+<span id="cb37-1838"><a href="#cb37-1838" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1841"><a href="#cb37-1841" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1842"><a href="#cb37-1842" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "code to preprocess and model `bmt` data"</span></span>
+<span id="cb37-1843"><a href="#cb37-1843" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(KMsurv)</span>
+<span id="cb37-1844"><a href="#cb37-1844" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb37-1845"><a href="#cb37-1845" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(bmt)</span>
+<span id="cb37-1846"><a href="#cb37-1846" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1847"><a href="#cb37-1847" aria-hidden="true" tabindex="-1"></a>bmt <span class="ot">&lt;-</span></span>
+<span id="cb37-1848"><a href="#cb37-1848" aria-hidden="true" tabindex="-1"></a>  bmt <span class="sc">|&gt;</span></span>
+<span id="cb37-1849"><a href="#cb37-1849" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb37-1850"><a href="#cb37-1850" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb37-1851"><a href="#cb37-1851" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span></span>
+<span id="cb37-1852"><a href="#cb37-1852" aria-hidden="true" tabindex="-1"></a>      group <span class="sc">|&gt;</span></span>
+<span id="cb37-1853"><a href="#cb37-1853" aria-hidden="true" tabindex="-1"></a>      <span class="fu">factor</span>(</span>
+<span id="cb37-1854"><a href="#cb37-1854" aria-hidden="true" tabindex="-1"></a>        <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"ALL"</span>, <span class="st">"Low Risk AML"</span>, <span class="st">"High Risk AML"</span>)</span>
+<span id="cb37-1855"><a href="#cb37-1855" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb37-1856"><a href="#cb37-1856" aria-hidden="true" tabindex="-1"></a>    <span class="at">surv =</span> <span class="fu">Surv</span>(t2, d3)</span>
+<span id="cb37-1857"><a href="#cb37-1857" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb37-1858"><a href="#cb37-1858" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1859"><a href="#cb37-1859" aria-hidden="true" tabindex="-1"></a>km_model1 <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
+<span id="cb37-1860"><a href="#cb37-1860" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
+<span id="cb37-1861"><a href="#cb37-1861" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> bmt</span>
+<span id="cb37-1862"><a href="#cb37-1862" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-1863"><a href="#cb37-1863" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb37-1864"><a href="#cb37-1864" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1865"><a href="#cb37-1865" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggfortify)</span>
-<span id="cb37-1866"><a href="#cb37-1866" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(</span>
-<span id="cb37-1867"><a href="#cb37-1867" aria-hidden="true" tabindex="-1"></a>  km_model1,</span>
-<span id="cb37-1868"><a href="#cb37-1868" aria-hidden="true" tabindex="-1"></a>  <span class="at">conf.int =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb37-1869"><a href="#cb37-1869" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Pr(disease-free survival)"</span>,</span>
-<span id="cb37-1870"><a href="#cb37-1870" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Time since transplant (days)"</span></span>
-<span id="cb37-1871"><a href="#cb37-1871" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
-<span id="cb37-1872"><a href="#cb37-1872" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb37-1873"><a href="#cb37-1873" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
-<span id="cb37-1874"><a href="#cb37-1874" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1875"><a href="#cb37-1875" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1876"><a href="#cb37-1876" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1877"><a href="#cb37-1877" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1878"><a href="#cb37-1878" aria-hidden="true" tabindex="-1"></a><span class="fu">### Understanding Greenwood's formula (optional)</span></span>
-<span id="cb37-1879"><a href="#cb37-1879" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1880"><a href="#cb37-1880" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb37-1881"><a href="#cb37-1881" aria-hidden="true" tabindex="-1"></a>To see where Greenwood's formula comes from, let $x_i = Y_i - d_i$. We</span>
-<span id="cb37-1882"><a href="#cb37-1882" aria-hidden="true" tabindex="-1"></a>approximate the solution treating each time as independent, with $Y_i$</span>
-<span id="cb37-1883"><a href="#cb37-1883" aria-hidden="true" tabindex="-1"></a>fixed and ignore randomness in times of failure and we treat $x_i$ as</span>
-<span id="cb37-1884"><a href="#cb37-1884" aria-hidden="true" tabindex="-1"></a>independent binomials $\text{Bin}(Y_i,p_i)$. Letting $S(t)$ be the</span>
-<span id="cb37-1885"><a href="#cb37-1885" aria-hidden="true" tabindex="-1"></a>"true" survival function</span>
-<span id="cb37-1886"><a href="#cb37-1886" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-1887"><a href="#cb37-1887" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1888"><a href="#cb37-1888" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1889"><a href="#cb37-1889" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb37-1890"><a href="#cb37-1890" aria-hidden="true" tabindex="-1"></a>\hat S(t) &amp;=\prod_{t_i&lt;t}x_i/Y_i<span class="sc">\\</span></span>
-<span id="cb37-1891"><a href="#cb37-1891" aria-hidden="true" tabindex="-1"></a>S(t)&amp;=\prod_{t_i&lt;t}p_i</span>
-<span id="cb37-1892"><a href="#cb37-1892" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb37-1893"><a href="#cb37-1893" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1894"><a href="#cb37-1894" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1895"><a href="#cb37-1895" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1896"><a href="#cb37-1896" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb37-1897"><a href="#cb37-1897" aria-hidden="true" tabindex="-1"></a>\frac{\hat S(t)}{S(t)} </span>
-<span id="cb37-1898"><a href="#cb37-1898" aria-hidden="true" tabindex="-1"></a>&amp;= \prod_{t_i&lt;t} \frac{x_i}.    {p_iY_i}</span>
-<span id="cb37-1899"><a href="#cb37-1899" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \prod_{t_i&lt;t} \frac{\hat p_i}{p_i}</span>
-<span id="cb37-1900"><a href="#cb37-1900" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \prod_{t_i&lt;t} \paren{1+\frac{\hat p_i-p_i}{p_i}}</span>
-<span id="cb37-1901"><a href="#cb37-1901" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;\approx 1+\sum_{t_i&lt;t} \frac{\hat p_i-p_i}{p_i}</span>
-<span id="cb37-1902"><a href="#cb37-1902" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb37-1903"><a href="#cb37-1903" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1904"><a href="#cb37-1904" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1905"><a href="#cb37-1905" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1906"><a href="#cb37-1906" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1907"><a href="#cb37-1907" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1908"><a href="#cb37-1908" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb37-1909"><a href="#cb37-1909" aria-hidden="true" tabindex="-1"></a>\text{Var}\left(\frac{\hat S(t)}{S(t)}\right) </span>
-<span id="cb37-1910"><a href="#cb37-1910" aria-hidden="true" tabindex="-1"></a>&amp;\approx \text{Var}\left(1+\sum_{t_i&lt;t} \frac{\hat p_i-p_i}{p_i}\right) </span>
-<span id="cb37-1911"><a href="#cb37-1911" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;=\sum_{t_i&lt;t} \frac{1}{p_i^2}\frac{p_i(1-p_i)}{Y_i} </span>
-<span id="cb37-1912"><a href="#cb37-1912" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \sum_{t_i&lt;t} \frac{(1-p_i)}{p_iY_i}</span>
-<span id="cb37-1913"><a href="#cb37-1913" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;\approx\sum_{t_i&lt;t} \frac{(1-x_i/Y_i)}{x_i}</span>
-<span id="cb37-1914"><a href="#cb37-1914" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;=\sum_{t_i&lt;t} \frac{Y_i-x_i}{x_iY_i}</span>
-<span id="cb37-1915"><a href="#cb37-1915" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;=\sum_{t_i&lt;t} \frac{d_i}{Y_i(Y_i-d_i)}</span>
-<span id="cb37-1916"><a href="#cb37-1916" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> \tf \text{Var}\left(\hat S(t)\right)</span>
-<span id="cb37-1917"><a href="#cb37-1917" aria-hidden="true" tabindex="-1"></a>&amp;\approx \hat S(t)^2\sum_{t_i&lt;t} \frac{d_i}{Y_i(Y_i-d_i)}</span>
-<span id="cb37-1918"><a href="#cb37-1918" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb37-1919"><a href="#cb37-1919" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1920"><a href="#cb37-1920" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1921"><a href="#cb37-1921" aria-hidden="true" tabindex="-1"></a><span class="fu">### Test for differences among the disease groups</span></span>
-<span id="cb37-1922"><a href="#cb37-1922" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1923"><a href="#cb37-1923" aria-hidden="true" tabindex="-1"></a>Here we compute a chi-square test for assocation between disease group</span>
-<span id="cb37-1924"><a href="#cb37-1924" aria-hidden="true" tabindex="-1"></a>(<span class="in">`group`</span>) and disease-free survival:</span>
+<span id="cb37-1865"><a href="#cb37-1865" aria-hidden="true" tabindex="-1"></a><span class="in">```{r "KM survival curves for bmt data"}</span></span>
+<span id="cb37-1866"><a href="#cb37-1866" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Disease-Free Survival by Disease Group"</span></span>
+<span id="cb37-1867"><a href="#cb37-1867" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1868"><a href="#cb37-1868" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggfortify)</span>
+<span id="cb37-1869"><a href="#cb37-1869" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(</span>
+<span id="cb37-1870"><a href="#cb37-1870" aria-hidden="true" tabindex="-1"></a>  km_model1,</span>
+<span id="cb37-1871"><a href="#cb37-1871" aria-hidden="true" tabindex="-1"></a>  <span class="at">conf.int =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb37-1872"><a href="#cb37-1872" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Pr(disease-free survival)"</span>,</span>
+<span id="cb37-1873"><a href="#cb37-1873" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Time since transplant (days)"</span></span>
+<span id="cb37-1874"><a href="#cb37-1874" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb37-1875"><a href="#cb37-1875" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb37-1876"><a href="#cb37-1876" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
+<span id="cb37-1877"><a href="#cb37-1877" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1878"><a href="#cb37-1878" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1879"><a href="#cb37-1879" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1880"><a href="#cb37-1880" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1881"><a href="#cb37-1881" aria-hidden="true" tabindex="-1"></a><span class="fu">### Understanding Greenwood's formula (optional)</span></span>
+<span id="cb37-1882"><a href="#cb37-1882" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1883"><a href="#cb37-1883" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb37-1884"><a href="#cb37-1884" aria-hidden="true" tabindex="-1"></a>To see where Greenwood's formula comes from, let $x_i = Y_i - d_i$. We</span>
+<span id="cb37-1885"><a href="#cb37-1885" aria-hidden="true" tabindex="-1"></a>approximate the solution treating each time as independent, with $Y_i$</span>
+<span id="cb37-1886"><a href="#cb37-1886" aria-hidden="true" tabindex="-1"></a>fixed and ignore randomness in times of failure and we treat $x_i$ as</span>
+<span id="cb37-1887"><a href="#cb37-1887" aria-hidden="true" tabindex="-1"></a>independent binomials $\text{Bin}(Y_i,p_i)$. Letting $S(t)$ be the</span>
+<span id="cb37-1888"><a href="#cb37-1888" aria-hidden="true" tabindex="-1"></a>"true" survival function</span>
+<span id="cb37-1889"><a href="#cb37-1889" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-1890"><a href="#cb37-1890" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1891"><a href="#cb37-1891" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1892"><a href="#cb37-1892" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb37-1893"><a href="#cb37-1893" aria-hidden="true" tabindex="-1"></a>\hat S(t) &amp;=\prod_{t_i&lt;t}x_i/Y_i<span class="sc">\\</span></span>
+<span id="cb37-1894"><a href="#cb37-1894" aria-hidden="true" tabindex="-1"></a>S(t)&amp;=\prod_{t_i&lt;t}p_i</span>
+<span id="cb37-1895"><a href="#cb37-1895" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb37-1896"><a href="#cb37-1896" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1897"><a href="#cb37-1897" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1898"><a href="#cb37-1898" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1899"><a href="#cb37-1899" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb37-1900"><a href="#cb37-1900" aria-hidden="true" tabindex="-1"></a>\frac{\hat S(t)}{S(t)} </span>
+<span id="cb37-1901"><a href="#cb37-1901" aria-hidden="true" tabindex="-1"></a>&amp;= \prod_{t_i&lt;t} \frac{x_i}.    {p_iY_i}</span>
+<span id="cb37-1902"><a href="#cb37-1902" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \prod_{t_i&lt;t} \frac{\hat p_i}{p_i}</span>
+<span id="cb37-1903"><a href="#cb37-1903" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \prod_{t_i&lt;t} \paren{1+\frac{\hat p_i-p_i}{p_i}}</span>
+<span id="cb37-1904"><a href="#cb37-1904" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;\approx 1+\sum_{t_i&lt;t} \frac{\hat p_i-p_i}{p_i}</span>
+<span id="cb37-1905"><a href="#cb37-1905" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb37-1906"><a href="#cb37-1906" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1907"><a href="#cb37-1907" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1908"><a href="#cb37-1908" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1909"><a href="#cb37-1909" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1910"><a href="#cb37-1910" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1911"><a href="#cb37-1911" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb37-1912"><a href="#cb37-1912" aria-hidden="true" tabindex="-1"></a>\text{Var}\left(\frac{\hat S(t)}{S(t)}\right) </span>
+<span id="cb37-1913"><a href="#cb37-1913" aria-hidden="true" tabindex="-1"></a>&amp;\approx \text{Var}\left(1+\sum_{t_i&lt;t} \frac{\hat p_i-p_i}{p_i}\right) </span>
+<span id="cb37-1914"><a href="#cb37-1914" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;=\sum_{t_i&lt;t} \frac{1}{p_i^2}\frac{p_i(1-p_i)}{Y_i} </span>
+<span id="cb37-1915"><a href="#cb37-1915" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \sum_{t_i&lt;t} \frac{(1-p_i)}{p_iY_i}</span>
+<span id="cb37-1916"><a href="#cb37-1916" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;\approx\sum_{t_i&lt;t} \frac{(1-x_i/Y_i)}{x_i}</span>
+<span id="cb37-1917"><a href="#cb37-1917" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;=\sum_{t_i&lt;t} \frac{Y_i-x_i}{x_iY_i}</span>
+<span id="cb37-1918"><a href="#cb37-1918" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;=\sum_{t_i&lt;t} \frac{d_i}{Y_i(Y_i-d_i)}</span>
+<span id="cb37-1919"><a href="#cb37-1919" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> \tf \text{Var}\left(\hat S(t)\right)</span>
+<span id="cb37-1920"><a href="#cb37-1920" aria-hidden="true" tabindex="-1"></a>&amp;\approx \hat S(t)^2\sum_{t_i&lt;t} \frac{d_i}{Y_i(Y_i-d_i)}</span>
+<span id="cb37-1921"><a href="#cb37-1921" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb37-1922"><a href="#cb37-1922" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1923"><a href="#cb37-1923" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1924"><a href="#cb37-1924" aria-hidden="true" tabindex="-1"></a><span class="fu">### Test for differences among the disease groups</span></span>
 <span id="cb37-1925"><a href="#cb37-1925" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1928"><a href="#cb37-1928" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1929"><a href="#cb37-1929" aria-hidden="true" tabindex="-1"></a><span class="fu">survdiff</span>(surv <span class="sc">~</span> group, <span class="at">data =</span> bmt)</span>
-<span id="cb37-1930"><a href="#cb37-1930" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1931"><a href="#cb37-1931" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1932"><a href="#cb37-1932" aria-hidden="true" tabindex="-1"></a><span class="fu">### Cumulative Hazard</span></span>
-<span id="cb37-1933"><a href="#cb37-1933" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1934"><a href="#cb37-1934" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1935"><a href="#cb37-1935" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb37-1936"><a href="#cb37-1936" aria-hidden="true" tabindex="-1"></a>\haz(t) </span>
-<span id="cb37-1937"><a href="#cb37-1937" aria-hidden="true" tabindex="-1"></a>&amp;\eqdef   \p(T=t|T\ge t)<span class="sc">\\</span></span>
-<span id="cb37-1938"><a href="#cb37-1938" aria-hidden="true" tabindex="-1"></a>&amp;= \frac{\p(T=t)}{\P(T\ge t)}<span class="sc">\\</span></span>
-<span id="cb37-1939"><a href="#cb37-1939" aria-hidden="true" tabindex="-1"></a>&amp;= -\deriv{t}\logf{\S(t)}</span>
-<span id="cb37-1940"><a href="#cb37-1940" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb37-1941"><a href="#cb37-1941" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1942"><a href="#cb37-1942" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1943"><a href="#cb37-1943" aria-hidden="true" tabindex="-1"></a>The **cumulative hazard** (or **integrated hazard**) function is</span>
-<span id="cb37-1944"><a href="#cb37-1944" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1945"><a href="#cb37-1945" aria-hidden="true" tabindex="-1"></a>$$H(t)\eqdef  \int_0^t \haz(t) dt$$ Since</span>
-<span id="cb37-1946"><a href="#cb37-1946" aria-hidden="true" tabindex="-1"></a>$\haz(t) = -\deriv{t}\text{log}\left<span class="sc">\{</span>S(t)\right<span class="sc">\}</span>$ as shown above, we</span>
-<span id="cb37-1947"><a href="#cb37-1947" aria-hidden="true" tabindex="-1"></a>have:</span>
-<span id="cb37-1948"><a href="#cb37-1948" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1949"><a href="#cb37-1949" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1950"><a href="#cb37-1950" aria-hidden="true" tabindex="-1"></a>H(t)=-\text{log}\left<span class="sc">\{</span>S\right<span class="sc">\}</span>(t)</span>
-<span id="cb37-1951"><a href="#cb37-1951" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1952"><a href="#cb37-1952" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1953"><a href="#cb37-1953" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1954"><a href="#cb37-1954" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1955"><a href="#cb37-1955" aria-hidden="true" tabindex="-1"></a>So we can estimate $H(t)$ as:</span>
-<span id="cb37-1956"><a href="#cb37-1956" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1957"><a href="#cb37-1957" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1958"><a href="#cb37-1958" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb37-1959"><a href="#cb37-1959" aria-hidden="true" tabindex="-1"></a>\hat H(t) </span>
-<span id="cb37-1960"><a href="#cb37-1960" aria-hidden="true" tabindex="-1"></a>&amp;= -\text{log}\left<span class="sc">\{</span>\hat S(t)\right<span class="sc">\}\\</span></span>
-<span id="cb37-1961"><a href="#cb37-1961" aria-hidden="true" tabindex="-1"></a>&amp;= -\text{log}\left<span class="sc">\{</span>\prod_{t_i &lt; t}\left<span class="co">[</span><span class="ot">1-\frac{d_i}{Y_i}\right</span><span class="co">]</span>\right<span class="sc">\}\\</span></span>
-<span id="cb37-1962"><a href="#cb37-1962" aria-hidden="true" tabindex="-1"></a>&amp;= -\sum_{t_i &lt; t}\text{log}\left<span class="sc">\{</span>1-\frac{d_i}{Y_i}\right<span class="sc">\}\\</span></span>
-<span id="cb37-1963"><a href="#cb37-1963" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb37-1964"><a href="#cb37-1964" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-1965"><a href="#cb37-1965" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1966"><a href="#cb37-1966" aria-hidden="true" tabindex="-1"></a>This is the **Kaplan-Meier (product-limit) estimate of cumulative</span>
-<span id="cb37-1967"><a href="#cb37-1967" aria-hidden="true" tabindex="-1"></a>hazard**.</span>
+<span id="cb37-1926"><a href="#cb37-1926" aria-hidden="true" tabindex="-1"></a>Here we compute a chi-square test for assocation between disease group</span>
+<span id="cb37-1927"><a href="#cb37-1927" aria-hidden="true" tabindex="-1"></a>(<span class="in">`group`</span>) and disease-free survival:</span>
+<span id="cb37-1928"><a href="#cb37-1928" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1931"><a href="#cb37-1931" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1932"><a href="#cb37-1932" aria-hidden="true" tabindex="-1"></a><span class="fu">survdiff</span>(surv <span class="sc">~</span> group, <span class="at">data =</span> bmt)</span>
+<span id="cb37-1933"><a href="#cb37-1933" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1934"><a href="#cb37-1934" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1935"><a href="#cb37-1935" aria-hidden="true" tabindex="-1"></a><span class="fu">### Cumulative Hazard</span></span>
+<span id="cb37-1936"><a href="#cb37-1936" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1937"><a href="#cb37-1937" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1938"><a href="#cb37-1938" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb37-1939"><a href="#cb37-1939" aria-hidden="true" tabindex="-1"></a>\haz(t) </span>
+<span id="cb37-1940"><a href="#cb37-1940" aria-hidden="true" tabindex="-1"></a>&amp;\eqdef   \p(T=t|T\ge t)<span class="sc">\\</span></span>
+<span id="cb37-1941"><a href="#cb37-1941" aria-hidden="true" tabindex="-1"></a>&amp;= \frac{\p(T=t)}{\P(T\ge t)}<span class="sc">\\</span></span>
+<span id="cb37-1942"><a href="#cb37-1942" aria-hidden="true" tabindex="-1"></a>&amp;= -\deriv{t}\logf{\S(t)}</span>
+<span id="cb37-1943"><a href="#cb37-1943" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb37-1944"><a href="#cb37-1944" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1945"><a href="#cb37-1945" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1946"><a href="#cb37-1946" aria-hidden="true" tabindex="-1"></a>The **cumulative hazard** (or **integrated hazard**) function is</span>
+<span id="cb37-1947"><a href="#cb37-1947" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1948"><a href="#cb37-1948" aria-hidden="true" tabindex="-1"></a>$$H(t)\eqdef  \int_0^t \haz(t) dt$$ Since</span>
+<span id="cb37-1949"><a href="#cb37-1949" aria-hidden="true" tabindex="-1"></a>$\haz(t) = -\deriv{t}\text{log}\left<span class="sc">\{</span>S(t)\right<span class="sc">\}</span>$ as shown above, we</span>
+<span id="cb37-1950"><a href="#cb37-1950" aria-hidden="true" tabindex="-1"></a>have:</span>
+<span id="cb37-1951"><a href="#cb37-1951" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1952"><a href="#cb37-1952" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1953"><a href="#cb37-1953" aria-hidden="true" tabindex="-1"></a>H(t)=-\text{log}\left<span class="sc">\{</span>S\right<span class="sc">\}</span>(t)</span>
+<span id="cb37-1954"><a href="#cb37-1954" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1955"><a href="#cb37-1955" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1956"><a href="#cb37-1956" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1957"><a href="#cb37-1957" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1958"><a href="#cb37-1958" aria-hidden="true" tabindex="-1"></a>So we can estimate $H(t)$ as:</span>
+<span id="cb37-1959"><a href="#cb37-1959" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1960"><a href="#cb37-1960" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-1961"><a href="#cb37-1961" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb37-1962"><a href="#cb37-1962" aria-hidden="true" tabindex="-1"></a>\hat H(t) </span>
+<span id="cb37-1963"><a href="#cb37-1963" aria-hidden="true" tabindex="-1"></a>&amp;= -\text{log}\left<span class="sc">\{</span>\hat S(t)\right<span class="sc">\}\\</span></span>
+<span id="cb37-1964"><a href="#cb37-1964" aria-hidden="true" tabindex="-1"></a>&amp;= -\text{log}\left<span class="sc">\{</span>\prod_{t_i &lt; t}\left<span class="co">[</span><span class="ot">1-\frac{d_i}{Y_i}\right</span><span class="co">]</span>\right<span class="sc">\}\\</span></span>
+<span id="cb37-1965"><a href="#cb37-1965" aria-hidden="true" tabindex="-1"></a>&amp;= -\sum_{t_i &lt; t}\text{log}\left<span class="sc">\{</span>1-\frac{d_i}{Y_i}\right<span class="sc">\}\\</span></span>
+<span id="cb37-1966"><a href="#cb37-1966" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb37-1967"><a href="#cb37-1967" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb37-1968"><a href="#cb37-1968" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1969"><a href="#cb37-1969" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1970"><a href="#cb37-1970" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1971"><a href="#cb37-1971" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Example: Cumulative Hazard Curves for Bone-Marrow Transplant (`bmt`) data</span></span>
-<span id="cb37-1972"><a href="#cb37-1972" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1975"><a href="#cb37-1975" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-1976"><a href="#cb37-1976" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Disease-Free Cumulative Hazard by Disease Group"</span></span>
-<span id="cb37-1977"><a href="#cb37-1977" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-cuhaz-bmt</span></span>
-<span id="cb37-1978"><a href="#cb37-1978" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1979"><a href="#cb37-1979" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(</span>
-<span id="cb37-1980"><a href="#cb37-1980" aria-hidden="true" tabindex="-1"></a>  <span class="at">fun =</span> <span class="st">"cumhaz"</span>,</span>
-<span id="cb37-1981"><a href="#cb37-1981" aria-hidden="true" tabindex="-1"></a>  km_model1,</span>
-<span id="cb37-1982"><a href="#cb37-1982" aria-hidden="true" tabindex="-1"></a>  <span class="at">conf.int =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb37-1983"><a href="#cb37-1983" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Cumulative hazard (disease-free survival)"</span>,</span>
-<span id="cb37-1984"><a href="#cb37-1984" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Time since transplant (days)"</span></span>
-<span id="cb37-1985"><a href="#cb37-1985" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
-<span id="cb37-1986"><a href="#cb37-1986" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb37-1987"><a href="#cb37-1987" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
-<span id="cb37-1988"><a href="#cb37-1988" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-1989"><a href="#cb37-1989" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1990"><a href="#cb37-1990" aria-hidden="true" tabindex="-1"></a><span class="fu">## Nelson-Aalen Estimates of Cumulative Hazard and Survival</span></span>
-<span id="cb37-1991"><a href="#cb37-1991" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1992"><a href="#cb37-1992" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-1993"><a href="#cb37-1993" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-1994"><a href="#cb37-1994" aria-hidden="true" tabindex="-1"></a>:::{#def-na-cuhaz-est}</span>
-<span id="cb37-1995"><a href="#cb37-1995" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Nelson-Aalen Cumulative Hazard Estimator</span></span>
-<span id="cb37-1996"><a href="#cb37-1996" aria-hidden="true" tabindex="-1"></a>:::: notes</span>
-<span id="cb37-1997"><a href="#cb37-1997" aria-hidden="true" tabindex="-1"></a>The point hazard at time $t_i$ can be estimated by $d_i/Y_i$, which</span>
-<span id="cb37-1998"><a href="#cb37-1998" aria-hidden="true" tabindex="-1"></a>leads to the **Nelson-Aalen estimator of the cumulative hazard**:</span>
-<span id="cb37-1999"><a href="#cb37-1999" aria-hidden="true" tabindex="-1"></a>::::</span>
-<span id="cb37-2000"><a href="#cb37-2000" aria-hidden="true" tabindex="-1"></a>$$\hat H_{NA}(t) \eqdef \sum_{t_i &lt; t}\frac{d_i}{Y_i}$${#eq-NA-cuhaz-est}</span>
-<span id="cb37-2001"><a href="#cb37-2001" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2002"><a href="#cb37-2002" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-2003"><a href="#cb37-2003" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2004"><a href="#cb37-2004" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-2005"><a href="#cb37-2005" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2006"><a href="#cb37-2006" aria-hidden="true" tabindex="-1"></a>:::{#thm-var-NA-est}</span>
-<span id="cb37-2007"><a href="#cb37-2007" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2008"><a href="#cb37-2008" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Variance of Nelson-Aalen estimator</span></span>
-<span id="cb37-2009"><a href="#cb37-2009" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2010"><a href="#cb37-2010" aria-hidden="true" tabindex="-1"></a>:::: notes</span>
-<span id="cb37-2011"><a href="#cb37-2011" aria-hidden="true" tabindex="-1"></a>The variance of this estimator is approximately: </span>
-<span id="cb37-2012"><a href="#cb37-2012" aria-hidden="true" tabindex="-1"></a>::::</span>
-<span id="cb37-2013"><a href="#cb37-2013" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2014"><a href="#cb37-2014" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-2015"><a href="#cb37-2015" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb37-2016"><a href="#cb37-2016" aria-hidden="true" tabindex="-1"></a>\hat{\text{Var}}\left(\hat H_{NA} (t)\right) </span>
-<span id="cb37-2017"><a href="#cb37-2017" aria-hidden="true" tabindex="-1"></a>&amp;= \sum_{t_i &lt;t}\frac{(d_i/Y_i)(1-d_i/Y_i)}{Y_i}<span class="sc">\\</span></span>
-<span id="cb37-2018"><a href="#cb37-2018" aria-hidden="true" tabindex="-1"></a>&amp;\approx \sum_{t_i &lt;t}\frac{d_i}{Y_i^2}</span>
-<span id="cb37-2019"><a href="#cb37-2019" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb37-2020"><a href="#cb37-2020" aria-hidden="true" tabindex="-1"></a>$${#eq-var-NA-cuhaz-est}</span>
-<span id="cb37-2021"><a href="#cb37-2021" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2022"><a href="#cb37-2022" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-2023"><a href="#cb37-2023" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2024"><a href="#cb37-2024" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-2025"><a href="#cb37-2025" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2026"><a href="#cb37-2026" aria-hidden="true" tabindex="-1"></a>Since $S(t)=\text{exp}\left<span class="sc">\{</span>-H(t)\right<span class="sc">\}</span>$, the Nelson-Aalen cumulative</span>
-<span id="cb37-2027"><a href="#cb37-2027" aria-hidden="true" tabindex="-1"></a>hazard estimate can be converted into an alternate estimate of the</span>
-<span id="cb37-2028"><a href="#cb37-2028" aria-hidden="true" tabindex="-1"></a>survival function:</span>
-<span id="cb37-2029"><a href="#cb37-2029" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2030"><a href="#cb37-2030" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-2031"><a href="#cb37-2031" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb37-2032"><a href="#cb37-2032" aria-hidden="true" tabindex="-1"></a>\hat S_{NA}(t)</span>
-<span id="cb37-2033"><a href="#cb37-2033" aria-hidden="true" tabindex="-1"></a>&amp;= \text{exp}\left<span class="sc">\{</span>-\hat H_{NA}(t)\right<span class="sc">\}\\</span></span>
-<span id="cb37-2034"><a href="#cb37-2034" aria-hidden="true" tabindex="-1"></a>&amp;= \text{exp}\left<span class="sc">\{</span>-\sum_{t_i &lt; t}\frac{d_i}{Y_i}\right<span class="sc">\}\\</span></span>
-<span id="cb37-2035"><a href="#cb37-2035" aria-hidden="true" tabindex="-1"></a>&amp;= \prod_{t_i &lt; t}\text{exp}\left<span class="sc">\{</span>-\frac{d_i}{Y_i}\right<span class="sc">\}\\</span></span>
-<span id="cb37-2036"><a href="#cb37-2036" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb37-2037"><a href="#cb37-2037" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-2038"><a href="#cb37-2038" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2039"><a href="#cb37-2039" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb37-2040"><a href="#cb37-2040" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2041"><a href="#cb37-2041" aria-hidden="true" tabindex="-1"></a>Compare these with the corresponding Kaplan-Meier estimates:</span>
-<span id="cb37-2042"><a href="#cb37-2042" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2043"><a href="#cb37-2043" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-2044"><a href="#cb37-2044" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb37-2045"><a href="#cb37-2045" aria-hidden="true" tabindex="-1"></a>\hat H_{KM}(t) &amp;= -\sum_{t_i &lt; t}\text{log}\left<span class="sc">\{</span>1-\frac{d_i}{Y_i}\right<span class="sc">\}\\</span></span>
-<span id="cb37-2046"><a href="#cb37-2046" aria-hidden="true" tabindex="-1"></a>\hat S_{KM}(t) &amp;= \prod_{t_i &lt; t}\left<span class="co">[</span><span class="ot">1-\frac{d_i}{Y_i}\right</span><span class="co">]</span></span>
-<span id="cb37-2047"><a href="#cb37-2047" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb37-2048"><a href="#cb37-2048" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb37-2049"><a href="#cb37-2049" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2050"><a href="#cb37-2050" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb37-2051"><a href="#cb37-2051" aria-hidden="true" tabindex="-1"></a>The product limit estimate and the Nelson-Aalen estimate often do not</span>
-<span id="cb37-2052"><a href="#cb37-2052" aria-hidden="true" tabindex="-1"></a>differ by much. The latter is considered more accurate in small samples</span>
-<span id="cb37-2053"><a href="#cb37-2053" aria-hidden="true" tabindex="-1"></a>and also directly estimates the cumulative hazard. </span>
-<span id="cb37-2054"><a href="#cb37-2054" aria-hidden="true" tabindex="-1"></a>The <span class="in">`"fleming-harrington"`</span> method for <span class="in">`survfit()`</span> reduces to Nelson-Aalen</span>
-<span id="cb37-2055"><a href="#cb37-2055" aria-hidden="true" tabindex="-1"></a>when the data are unweighted. </span>
-<span id="cb37-2056"><a href="#cb37-2056" aria-hidden="true" tabindex="-1"></a>We can also estimate the cumulative hazard</span>
-<span id="cb37-2057"><a href="#cb37-2057" aria-hidden="true" tabindex="-1"></a>as the negative log of the KM survival function estimate.</span>
-<span id="cb37-2058"><a href="#cb37-2058" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb37-2059"><a href="#cb37-2059" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2060"><a href="#cb37-2060" aria-hidden="true" tabindex="-1"></a><span class="fu">### Application to `bmt` dataset</span></span>
-<span id="cb37-2061"><a href="#cb37-2061" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2064"><a href="#cb37-2064" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-2065"><a href="#cb37-2065" aria-hidden="true" tabindex="-1"></a>na_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
-<span id="cb37-2066"><a href="#cb37-2066" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
-<span id="cb37-2067"><a href="#cb37-2067" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"fleming-harrington"</span>,</span>
-<span id="cb37-2068"><a href="#cb37-2068" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> bmt</span>
-<span id="cb37-2069"><a href="#cb37-2069" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb37-2070"><a href="#cb37-2070" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2071"><a href="#cb37-2071" aria-hidden="true" tabindex="-1"></a>km_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
-<span id="cb37-2072"><a href="#cb37-2072" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
-<span id="cb37-2073"><a href="#cb37-2073" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"kaplan-meier"</span>,</span>
-<span id="cb37-2074"><a href="#cb37-2074" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> bmt</span>
-<span id="cb37-2075"><a href="#cb37-2075" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb37-2076"><a href="#cb37-2076" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2077"><a href="#cb37-2077" aria-hidden="true" tabindex="-1"></a>km_and_na <span class="ot">&lt;-</span></span>
-<span id="cb37-2078"><a href="#cb37-2078" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(</span>
-<span id="cb37-2079"><a href="#cb37-2079" aria-hidden="true" tabindex="-1"></a>    <span class="at">.id =</span> <span class="st">"model"</span>,</span>
-<span id="cb37-2080"><a href="#cb37-2080" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Kaplan-Meier"</span> <span class="ot">=</span> km_fit <span class="sc">|&gt;</span> <span class="fu">fortify</span>(<span class="at">surv.connect =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb37-2081"><a href="#cb37-2081" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Nelson-Aalen"</span> <span class="ot">=</span> na_fit <span class="sc">|&gt;</span> <span class="fu">fortify</span>(<span class="at">surv.connect =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb37-2082"><a href="#cb37-2082" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb37-2083"><a href="#cb37-2083" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>()</span>
-<span id="cb37-2084"><a href="#cb37-2084" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-2085"><a href="#cb37-2085" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2088"><a href="#cb37-2088" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb37-2089"><a href="#cb37-2089" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Kaplan-Meier and Nelson-Aalen Survival Function Estimates, stratified by disease group"</span></span>
-<span id="cb37-2090"><a href="#cb37-2090" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2091"><a href="#cb37-2091" aria-hidden="true" tabindex="-1"></a>km_and_na <span class="sc">|&gt;</span></span>
-<span id="cb37-2092"><a href="#cb37-2092" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> surv, <span class="at">col =</span> model)) <span class="sc">+</span></span>
-<span id="cb37-2093"><a href="#cb37-2093" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_step</span>() <span class="sc">+</span></span>
-<span id="cb37-2094"><a href="#cb37-2094" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(. <span class="sc">~</span> strata) <span class="sc">+</span></span>
-<span id="cb37-2095"><a href="#cb37-2095" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb37-2096"><a href="#cb37-2096" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"S(t) = P(T&gt;=t)"</span>) <span class="sc">+</span></span>
-<span id="cb37-2097"><a href="#cb37-2097" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Survival time (t, days)"</span>) <span class="sc">+</span></span>
-<span id="cb37-2098"><a href="#cb37-2098" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
-<span id="cb37-2099"><a href="#cb37-2099" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb37-2100"><a href="#cb37-2100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-2101"><a href="#cb37-2101" aria-hidden="true" tabindex="-1"></a>The Kaplan-Meier and Nelson-Aalen survival estimates are very similar</span>
-<span id="cb37-2102"><a href="#cb37-2102" aria-hidden="true" tabindex="-1"></a>for this dataset.</span>
+<span id="cb37-1969"><a href="#cb37-1969" aria-hidden="true" tabindex="-1"></a>This is the **Kaplan-Meier (product-limit) estimate of cumulative</span>
+<span id="cb37-1970"><a href="#cb37-1970" aria-hidden="true" tabindex="-1"></a>hazard**.</span>
+<span id="cb37-1971"><a href="#cb37-1971" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1972"><a href="#cb37-1972" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1973"><a href="#cb37-1973" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1974"><a href="#cb37-1974" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Example: Cumulative Hazard Curves for Bone-Marrow Transplant (`bmt`) data</span></span>
+<span id="cb37-1975"><a href="#cb37-1975" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1978"><a href="#cb37-1978" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-1979"><a href="#cb37-1979" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Disease-Free Cumulative Hazard by Disease Group"</span></span>
+<span id="cb37-1980"><a href="#cb37-1980" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-cuhaz-bmt</span></span>
+<span id="cb37-1981"><a href="#cb37-1981" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1982"><a href="#cb37-1982" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(</span>
+<span id="cb37-1983"><a href="#cb37-1983" aria-hidden="true" tabindex="-1"></a>  <span class="at">fun =</span> <span class="st">"cumhaz"</span>,</span>
+<span id="cb37-1984"><a href="#cb37-1984" aria-hidden="true" tabindex="-1"></a>  km_model1,</span>
+<span id="cb37-1985"><a href="#cb37-1985" aria-hidden="true" tabindex="-1"></a>  <span class="at">conf.int =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb37-1986"><a href="#cb37-1986" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Cumulative hazard (disease-free survival)"</span>,</span>
+<span id="cb37-1987"><a href="#cb37-1987" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Time since transplant (days)"</span></span>
+<span id="cb37-1988"><a href="#cb37-1988" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb37-1989"><a href="#cb37-1989" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb37-1990"><a href="#cb37-1990" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
+<span id="cb37-1991"><a href="#cb37-1991" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-1992"><a href="#cb37-1992" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1993"><a href="#cb37-1993" aria-hidden="true" tabindex="-1"></a><span class="fu">## Nelson-Aalen Estimates of Cumulative Hazard and Survival</span></span>
+<span id="cb37-1994"><a href="#cb37-1994" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1995"><a href="#cb37-1995" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-1996"><a href="#cb37-1996" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-1997"><a href="#cb37-1997" aria-hidden="true" tabindex="-1"></a>:::{#def-na-cuhaz-est}</span>
+<span id="cb37-1998"><a href="#cb37-1998" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Nelson-Aalen Cumulative Hazard Estimator</span></span>
+<span id="cb37-1999"><a href="#cb37-1999" aria-hidden="true" tabindex="-1"></a>:::: notes</span>
+<span id="cb37-2000"><a href="#cb37-2000" aria-hidden="true" tabindex="-1"></a>The point hazard at time $t_i$ can be estimated by $d_i/Y_i$, which</span>
+<span id="cb37-2001"><a href="#cb37-2001" aria-hidden="true" tabindex="-1"></a>leads to the **Nelson-Aalen estimator of the cumulative hazard**:</span>
+<span id="cb37-2002"><a href="#cb37-2002" aria-hidden="true" tabindex="-1"></a>::::</span>
+<span id="cb37-2003"><a href="#cb37-2003" aria-hidden="true" tabindex="-1"></a>$$\hat H_{NA}(t) \eqdef \sum_{t_i &lt; t}\frac{d_i}{Y_i}$${#eq-NA-cuhaz-est}</span>
+<span id="cb37-2004"><a href="#cb37-2004" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2005"><a href="#cb37-2005" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-2006"><a href="#cb37-2006" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2007"><a href="#cb37-2007" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-2008"><a href="#cb37-2008" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2009"><a href="#cb37-2009" aria-hidden="true" tabindex="-1"></a>:::{#thm-var-NA-est}</span>
+<span id="cb37-2010"><a href="#cb37-2010" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2011"><a href="#cb37-2011" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Variance of Nelson-Aalen estimator</span></span>
+<span id="cb37-2012"><a href="#cb37-2012" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2013"><a href="#cb37-2013" aria-hidden="true" tabindex="-1"></a>:::: notes</span>
+<span id="cb37-2014"><a href="#cb37-2014" aria-hidden="true" tabindex="-1"></a>The variance of this estimator is approximately: </span>
+<span id="cb37-2015"><a href="#cb37-2015" aria-hidden="true" tabindex="-1"></a>::::</span>
+<span id="cb37-2016"><a href="#cb37-2016" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2017"><a href="#cb37-2017" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-2018"><a href="#cb37-2018" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb37-2019"><a href="#cb37-2019" aria-hidden="true" tabindex="-1"></a>\hat{\text{Var}}\left(\hat H_{NA} (t)\right) </span>
+<span id="cb37-2020"><a href="#cb37-2020" aria-hidden="true" tabindex="-1"></a>&amp;= \sum_{t_i &lt;t}\frac{(d_i/Y_i)(1-d_i/Y_i)}{Y_i}<span class="sc">\\</span></span>
+<span id="cb37-2021"><a href="#cb37-2021" aria-hidden="true" tabindex="-1"></a>&amp;\approx \sum_{t_i &lt;t}\frac{d_i}{Y_i^2}</span>
+<span id="cb37-2022"><a href="#cb37-2022" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb37-2023"><a href="#cb37-2023" aria-hidden="true" tabindex="-1"></a>$${#eq-var-NA-cuhaz-est}</span>
+<span id="cb37-2024"><a href="#cb37-2024" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2025"><a href="#cb37-2025" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-2026"><a href="#cb37-2026" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2027"><a href="#cb37-2027" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-2028"><a href="#cb37-2028" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2029"><a href="#cb37-2029" aria-hidden="true" tabindex="-1"></a>Since $S(t)=\text{exp}\left<span class="sc">\{</span>-H(t)\right<span class="sc">\}</span>$, the Nelson-Aalen cumulative</span>
+<span id="cb37-2030"><a href="#cb37-2030" aria-hidden="true" tabindex="-1"></a>hazard estimate can be converted into an alternate estimate of the</span>
+<span id="cb37-2031"><a href="#cb37-2031" aria-hidden="true" tabindex="-1"></a>survival function:</span>
+<span id="cb37-2032"><a href="#cb37-2032" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2033"><a href="#cb37-2033" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-2034"><a href="#cb37-2034" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb37-2035"><a href="#cb37-2035" aria-hidden="true" tabindex="-1"></a>\hat S_{NA}(t)</span>
+<span id="cb37-2036"><a href="#cb37-2036" aria-hidden="true" tabindex="-1"></a>&amp;= \text{exp}\left<span class="sc">\{</span>-\hat H_{NA}(t)\right<span class="sc">\}\\</span></span>
+<span id="cb37-2037"><a href="#cb37-2037" aria-hidden="true" tabindex="-1"></a>&amp;= \text{exp}\left<span class="sc">\{</span>-\sum_{t_i &lt; t}\frac{d_i}{Y_i}\right<span class="sc">\}\\</span></span>
+<span id="cb37-2038"><a href="#cb37-2038" aria-hidden="true" tabindex="-1"></a>&amp;= \prod_{t_i &lt; t}\text{exp}\left<span class="sc">\{</span>-\frac{d_i}{Y_i}\right<span class="sc">\}\\</span></span>
+<span id="cb37-2039"><a href="#cb37-2039" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb37-2040"><a href="#cb37-2040" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-2041"><a href="#cb37-2041" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2042"><a href="#cb37-2042" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb37-2043"><a href="#cb37-2043" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2044"><a href="#cb37-2044" aria-hidden="true" tabindex="-1"></a>Compare these with the corresponding Kaplan-Meier estimates:</span>
+<span id="cb37-2045"><a href="#cb37-2045" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2046"><a href="#cb37-2046" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-2047"><a href="#cb37-2047" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb37-2048"><a href="#cb37-2048" aria-hidden="true" tabindex="-1"></a>\hat H_{KM}(t) &amp;= -\sum_{t_i &lt; t}\text{log}\left<span class="sc">\{</span>1-\frac{d_i}{Y_i}\right<span class="sc">\}\\</span></span>
+<span id="cb37-2049"><a href="#cb37-2049" aria-hidden="true" tabindex="-1"></a>\hat S_{KM}(t) &amp;= \prod_{t_i &lt; t}\left<span class="co">[</span><span class="ot">1-\frac{d_i}{Y_i}\right</span><span class="co">]</span></span>
+<span id="cb37-2050"><a href="#cb37-2050" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb37-2051"><a href="#cb37-2051" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb37-2052"><a href="#cb37-2052" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2053"><a href="#cb37-2053" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb37-2054"><a href="#cb37-2054" aria-hidden="true" tabindex="-1"></a>The product limit estimate and the Nelson-Aalen estimate often do not</span>
+<span id="cb37-2055"><a href="#cb37-2055" aria-hidden="true" tabindex="-1"></a>differ by much. The latter is considered more accurate in small samples</span>
+<span id="cb37-2056"><a href="#cb37-2056" aria-hidden="true" tabindex="-1"></a>and also directly estimates the cumulative hazard. </span>
+<span id="cb37-2057"><a href="#cb37-2057" aria-hidden="true" tabindex="-1"></a>The <span class="in">`"fleming-harrington"`</span> method for <span class="in">`survfit()`</span> reduces to Nelson-Aalen</span>
+<span id="cb37-2058"><a href="#cb37-2058" aria-hidden="true" tabindex="-1"></a>when the data are unweighted. </span>
+<span id="cb37-2059"><a href="#cb37-2059" aria-hidden="true" tabindex="-1"></a>We can also estimate the cumulative hazard</span>
+<span id="cb37-2060"><a href="#cb37-2060" aria-hidden="true" tabindex="-1"></a>as the negative log of the KM survival function estimate.</span>
+<span id="cb37-2061"><a href="#cb37-2061" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb37-2062"><a href="#cb37-2062" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2063"><a href="#cb37-2063" aria-hidden="true" tabindex="-1"></a><span class="fu">### Application to `bmt` dataset</span></span>
+<span id="cb37-2064"><a href="#cb37-2064" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2067"><a href="#cb37-2067" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-2068"><a href="#cb37-2068" aria-hidden="true" tabindex="-1"></a>na_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
+<span id="cb37-2069"><a href="#cb37-2069" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
+<span id="cb37-2070"><a href="#cb37-2070" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"fleming-harrington"</span>,</span>
+<span id="cb37-2071"><a href="#cb37-2071" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> bmt</span>
+<span id="cb37-2072"><a href="#cb37-2072" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-2073"><a href="#cb37-2073" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2074"><a href="#cb37-2074" aria-hidden="true" tabindex="-1"></a>km_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
+<span id="cb37-2075"><a href="#cb37-2075" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
+<span id="cb37-2076"><a href="#cb37-2076" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"kaplan-meier"</span>,</span>
+<span id="cb37-2077"><a href="#cb37-2077" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> bmt</span>
+<span id="cb37-2078"><a href="#cb37-2078" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-2079"><a href="#cb37-2079" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2080"><a href="#cb37-2080" aria-hidden="true" tabindex="-1"></a>km_and_na <span class="ot">&lt;-</span></span>
+<span id="cb37-2081"><a href="#cb37-2081" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(</span>
+<span id="cb37-2082"><a href="#cb37-2082" aria-hidden="true" tabindex="-1"></a>    <span class="at">.id =</span> <span class="st">"model"</span>,</span>
+<span id="cb37-2083"><a href="#cb37-2083" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Kaplan-Meier"</span> <span class="ot">=</span> km_fit <span class="sc">|&gt;</span> <span class="fu">fortify</span>(<span class="at">surv.connect =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb37-2084"><a href="#cb37-2084" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Nelson-Aalen"</span> <span class="ot">=</span> na_fit <span class="sc">|&gt;</span> <span class="fu">fortify</span>(<span class="at">surv.connect =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb37-2085"><a href="#cb37-2085" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb37-2086"><a href="#cb37-2086" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>()</span>
+<span id="cb37-2087"><a href="#cb37-2087" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-2088"><a href="#cb37-2088" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2091"><a href="#cb37-2091" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb37-2092"><a href="#cb37-2092" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Kaplan-Meier and Nelson-Aalen Survival Function Estimates, stratified by disease group"</span></span>
+<span id="cb37-2093"><a href="#cb37-2093" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2094"><a href="#cb37-2094" aria-hidden="true" tabindex="-1"></a>km_and_na <span class="sc">|&gt;</span></span>
+<span id="cb37-2095"><a href="#cb37-2095" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> surv, <span class="at">col =</span> model)) <span class="sc">+</span></span>
+<span id="cb37-2096"><a href="#cb37-2096" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_step</span>() <span class="sc">+</span></span>
+<span id="cb37-2097"><a href="#cb37-2097" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(. <span class="sc">~</span> strata) <span class="sc">+</span></span>
+<span id="cb37-2098"><a href="#cb37-2098" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb37-2099"><a href="#cb37-2099" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"S(t) = P(T&gt;=t)"</span>) <span class="sc">+</span></span>
+<span id="cb37-2100"><a href="#cb37-2100" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Survival time (t, days)"</span>) <span class="sc">+</span></span>
+<span id="cb37-2101"><a href="#cb37-2101" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
+<span id="cb37-2102"><a href="#cb37-2102" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb37-2103"><a href="#cb37-2103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-2104"><a href="#cb37-2104" aria-hidden="true" tabindex="-1"></a>The Kaplan-Meier and Nelson-Aalen survival estimates are very similar</span>
+<span id="cb37-2105"><a href="#cb37-2105" aria-hidden="true" tabindex="-1"></a>for this dataset.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
