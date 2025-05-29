@@ -89,7 +89,7 @@ $$S_0(t) \eqdef S(t | \vX = \vzero)$$
 ---
 
 ::: notes
-Now, let's generalize the hazard function to depend on covariates.
+Now, let's define how the hazard function depends on covariates.
 We typically use a log link to model the relationship between 
 the hazard function, $\haz(t|\vx)$, and 
 the linear component, $\eta(\vx)$,
@@ -143,10 +143,6 @@ Let's denote:
 
 $$\diffloghaz(t|\vx : \vxs) \eqdef \loghaz(t|\vx) - \loghaz(t|\vxs)$$
 
-:::{#thm-diff-loghaz-lincom}
-
-:::
-
 ---
 
 :::{#thm-diff-loghaz}
@@ -174,9 +170,18 @@ $$
 
 ---
 
+:::{#def-hazard-ratio}
+#### hazard ratio
 $$
 \theta(t| \vx : \vxs) \eqdef \frac{\haz(t|\vx)}{\haz(t|\vxs)}
 $$
+:::
+
+---
+
+:::{#thm-hazard-ratio-diffloghaz}
+
+#### Hazard ratio vs difference of log-odds
 
 $$
 \ba
@@ -188,6 +193,25 @@ $$
 &= \expf{\reglincomb}
 \ea
 $$
+
+:::
+
+---
+
+:::{#cor-hazard-ratio-vs-baseline}
+
+$$
+\ba
+\theta(t|\vx)
+&\eqdef \theta(t| \vx : \vec{0})
+\\
+&= \expf{\diffloghaz(t|\vx)}
+\\
+&= \expf{\reglincomb}
+\ea
+$$
+
+:::
 
 ---
 
@@ -300,9 +324,14 @@ $$
 
 Hence on the log scale, we have:
 
+:::{#thm-diff-loghaz-lincom}
 $$
-\begin{aligned}
-\log{\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}}
+\ba
+\log{\frac{h(t|\vx)}{h(t|\vxs)}}
+&= \diffloghaz(t|\vx : \vxs) 
+\\
+&\eqdef \loghaz(t|\vx) - \loghaz(t|\vxs)
+\\
 &=\eta(\boldsymbol x_1)-\eta(\boldsymbol x_2)\\
 &= \boldsymbol x_1'\beta-\boldsymbol x_2'\beta\\
 &= (\boldsymbol x_1 - \boldsymbol x_2)'\beta
