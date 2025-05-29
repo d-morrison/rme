@@ -1,0 +1,110 @@
+
+### Fit the model
+
+```{r}
+
+bmt.cox <- coxph(Surv(t2, d3) ~ group, data = bmt)
+summary(bmt.cox)
+```
+
+The table provides hypothesis tests comparing groups 2 and 3 to group 1.
+Group 3 has the highest hazard, so the most significant comparison is
+not directly shown.
+
+The coefficient 0.3834 is on the log-hazard-ratio scale, as in
+log-risk-ratio. The next column gives the hazard ratio 1.4673, and a
+hypothesis (Wald) test.
+
+The (not shown) group 3 vs. group 2 log hazard ratio is 0.3834 + 0.5742
+= 0.9576. The hazard ratio is then exp(0.9576) or 2.605.
+
+Inference on all coefficients and combinations can be constructed using
+`coef(bmt.cox)` and `vcov(bmt.cox)` as with logistic and poisson
+regression.
+
+**Concordance** is agreement of first failure between pairs of subjects
+and higher predicted risk between those subjects, omitting
+non-informative pairs.
+
+The Rsquare value is Cox and Snell's pseudo R-squared and is not very
+useful.
+
+### Tests for nested models
+
+`summary()` prints three tests for whether the model with the group
+covariate is better than the one without
+
+-   `Likelihood ratio test` (chi-squared)
+-   `Wald test` (also chi-squared), obtained by adding the squares of the z-scores
+-   `Score` = log-rank test, as with comparison of survival functions.
+
+The likelihood ratio test is probably best in smaller samples, followed
+by the Wald test.
+
+### Survival Curves from the Cox Model
+
+We can take a look at the resulting group-specific curves:
+
+```{r}
+
+#| fig-cap: "Survival Functions for Three Groups by KM and Cox Model"
+
+km_fit = survfit(Surv(t2, d3) ~ group, data = as.data.frame(bmt))
+
+cox_fit = survfit(
+  bmt.cox,
+  newdata =
+    data.frame(
+      group = unique(bmt$group),
+      row.names = unique(bmt$group)))
+
+library(survminer)
+
+list(KM = km_fit, Cox = cox_fit) |>
+  survminer::ggsurvplot(
+    # facet.by = "group",
+    legend = "bottom",
+    legend.title = "",
+    combine = TRUE,
+    fun = 'pct',
+    size = .5,
+    ggtheme = theme_bw(),
+    conf.int = FALSE,
+    censor = FALSE) |>
+  suppressWarnings() # ggsurvplot() throws some warnings that aren't too worrying
+```
+
+When we use `survfit()` with a Cox model, we have to specify the covariate levels we are interested in; the argument `newdata` should include a `data.frame` with the same named columns as the predictors in the Cox model and one or more levels of each.
+
+---
+
+From `?survfit.coxph`:
+
+> If the `newdata` argument is missing, a curve is produced for a
+> single "pseudo" subject with covariate values equal to the means component of the fit.
+> The resulting curve(s) almost never make sense,
+> but the default remains due to an unwarranted attachment to the option shown by some users and by other packages.
+> Two particularly egregious examples are factor variables and interactions.
+> Suppose one were studying interspecies transmission of a virus, and the data set has a factor variable with levels ("pig", "chicken") and about equal numbers of observations for each.
+> The "mean" covariate level will be 0.5 -- is this a flying pig?
+
+### Examining `survfit`
+
+```{r}
+survfit(Surv(t2, d3) ~ group, data = bmt)
+```
+
+```{r}
+survfit(Surv(t2, d3) ~ group, data = bmt) |> summary()
+```
+
+```{r}
+survfit(bmt.cox)
+survfit(bmt.cox, newdata = tibble(group = unique(bmt$group)))
+```
+
+```{r}
+bmt.cox |>
+  survfit(newdata = tibble(group = unique(bmt$group))) |>
+  summary()
+```

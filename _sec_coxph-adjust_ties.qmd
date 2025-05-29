@@ -1,0 +1,94 @@
+
+---
+
+At each time $t_i$ at which more than one of the subjects has an event,
+let $d_i$ be the number of events at that time, $D_i$ the set of
+subjects with events at that time, and let $s_i$ be a covariate vector
+for an artificial subject obtained by adding up the covariate values for
+the subjects with an event at time $t_i$. Let
+$$\bar\eta_i = \beta_1s_{i1}+\cdots+\beta_ps_{ip}$$ and
+$\bar\theta_i = \exp{\bar\eta_i}$.
+
+Let $s_i$ be a covariate vector for an artificial subject obtained by
+adding up the covariate values for the subjects with an event at time
+$t_i$. Note that
+
+$$
+\begin{aligned}
+\bar\eta_i &=\sum_{j \in D_i}\beta_1x_{j1}+\cdots+\beta_px_{jp}\\
+&= \beta_1s_{i1}+\cdots+\beta_ps_{ip}\\
+\bar\theta_i &= \exp{\bar\eta_i}\\
+&= \prod_{j \in D_i}\theta_i
+\end{aligned}
+$$
+
+#### Breslow's method for ties
+
+Breslow's method estimates the partial likelihood as
+
+$$
+\begin{aligned}
+L(\beta|T) &=
+\prod_i \frac{\bar\theta_i}{[\sum_{k \in R(t_i)} \theta_k]^{d_i}}\\
+&= \prod_i \prod_{j \in D_i}\frac{\theta_j}{\sum_{k \in R(t_i)} \theta_k}
+\end{aligned}
+$$
+
+This method is equivalent to treating each event as distinct and using the non-ties formula.
+It works best when the number of ties is small.
+It is the default in many statistical packages, including PROC PHREG in SAS.
+
+#### Efron's method for ties
+
+The other common method is Efron's, which is the default in R.
+
+$$L(\beta|T)=
+\prod_i \frac{\bar\theta_i}{\prod_{j=1}^{d_i}[\sum_{k \in R(t_i)} \theta_k-\frac{j-1}{d_i}\sum_{k \in D_i} \theta_k]}$$
+This is closer to the exact discrete partial likelihood when there are
+many ties.
+
+The third option in R (and an option also in SAS as `discrete`) is the
+"exact" method, which is the same one used for matched logistic
+regression.
+
+#### Example: Breslow's method
+
+Suppose as an example we have a time $t$ where there are 20 individuals
+at risk and three failures. Let the three individuals have risk
+parameters $\theta_1, \theta_2, \theta_3$ and let the sum of the risk
+parameters of the remaining 17 individuals be $\theta_R$. Then the
+factor in the partial likelihood at time $t$ using Breslow's method is
+
+::: smaller
+$$
+\left(\frac{\theta_1}{\theta_R+\theta_1+\theta_2+\theta_3}\right)
+\left(\frac{\theta_2}{\theta_R+\theta_1+\theta_2+\theta_3}\right)
+\left(\frac{\theta_3}{\theta_R+\theta_1+\theta_2+\theta_3}\right)
+$$
+:::
+
+If on the other hand, they had died in the order 1,2, 3, then the
+contribution to the partial likelihood would be:
+
+::: smaller
+$$
+\left(\frac{\theta_1}{\theta_R+\theta_1+\theta_2+\theta_3}\right)
+\left(\frac{\theta_2}{\theta_R+\theta_2+\theta_3}\right)
+\left(\frac{\theta_3}{\theta_R+\theta_3}\right)
+$$
+:::
+
+as the risk set got smaller with each failure. The exact method roughly
+averages the results for the six possible orderings of the failures.
+
+#### Example: Efron's method
+
+But we don't know the order they failed in, so instead of reducing the
+denominator by one risk coefficient each time, we reduce it by the same
+fraction. This is Efron's method.
+
+::: smaller
+$$\left(\frac{\theta_1}{\theta_R+\theta_1+\theta_2+\theta_3}\right)
+\left(\frac{\theta_2}{\theta_R+2(\theta_1+\theta_2+\theta_3)/3}\right)
+\left(\frac{\theta_3}{\theta_R+(\theta_1+\theta_2+\theta_3)/3}\right)$$
+:::

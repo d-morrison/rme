@@ -1,0 +1,136 @@
+
+::: notes
+The Nelson-Aalen estimate of the cumulative hazard is usually used for estimates of the hazard and often the cumulative hazard.
+
+If the hazards of the three groups are proportional, that means that the ratio of the hazards is constant over $t$. We can test this using the ratios of the estimated cumulative hazards, which also would be
+proportional, as shown above.
+:::
+
+```{r}
+
+library(KMsurv)
+library(survival)
+library(dplyr)
+data(bmt)
+
+bmt =
+  bmt |>
+  as_tibble() |>
+  mutate(
+    group =
+      group |>
+      factor(
+        labels = c("ALL","Low Risk AML","High Risk AML")))
+
+nafit = survfit(
+  formula = Surv(t2,d3) ~ group,
+  type = "fleming-harrington",
+  data = bmt)
+
+bmt_curves = tibble(timevec = 1:1000)
+sf1 <- with(nafit[1], stepfun(time,c(1,surv)))
+sf2 <- with(nafit[2], stepfun(time,c(1,surv)))
+sf3 <- with(nafit[3], stepfun(time,c(1,surv)))
+
+bmt_curves =
+  bmt_curves |>
+  mutate(
+    cumhaz1 = -log(sf1(timevec)),
+    cumhaz2 = -log(sf2(timevec)),
+    cumhaz3 = -log(sf3(timevec)))
+```
+
+```{r}
+#| fig-cap: "Hazard Ratios by Disease Group for `bmt` data"
+#| label: fig-HR-bmt
+library(ggplot2)
+bmt_rel_hazard_plot =
+  bmt_curves |>
+  ggplot(
+    aes(
+      x = timevec,
+      y = cumhaz1/cumhaz2)
+  ) +
+  geom_line(aes(col = "ALL/Low Risk AML")) +
+  ylab("Hazard Ratio") +
+  xlab("Time") +
+  ylim(0,6) +
+  geom_line(aes(y = cumhaz3/cumhaz1, col = "High Risk AML/ALL")) +
+  geom_line(aes(y = cumhaz3/cumhaz2, col = "High Risk AML/Low Risk AML")) +
+  theme_bw() +
+  labs(colour = "Comparison") +
+  theme(legend.position="bottom")
+
+print(bmt_rel_hazard_plot)
+```
+
+---
+
+We can zoom in on 30-300 days to take a closer look:
+
+```{r}
+#| fig-cap: "Hazard Ratios by Disease Group (30-300 Days)"
+#| label: fig-HR-bmt-inset
+bmt_rel_hazard_plot + xlim(c(30,300))
+```
+
+---
+
+The cumulative hazard curves should also be proportional
+
+```{r}
+#| fig-cap: "Disease-Free Cumulative Hazard by Disease Group"
+#| label: fig-cuhaz-bmt
+library(ggfortify)
+plot_cuhaz_bmt =
+  bmt |>
+  survfit(formula = Surv(t2, d3) ~ group) |>
+  autoplot(fun = "cumhaz",
+           mark.time = TRUE) +
+  ylab("Cumulative hazard")
+
+plot_cuhaz_bmt |> print()
+
+```
+
+---
+
+```{r}
+#| fig-cap: "Disease-Free Cumulative Hazard by Disease Group (log-scale)"
+#| label: fig-cuhaz-bmt-loglog
+plot_cuhaz_bmt +
+  scale_y_log10() +
+  scale_x_log10()
+```
+
+### Smoothed hazard functions
+
+::: notes
+The Nelson-Aalen estimate of the cumulative hazard is usually used for
+estimates of the hazard. Since the hazard is the derivative of the
+cumulative hazard, we need a smooth estimate of the cumulative hazard,
+which is provided by smoothing the step-function cumulative hazard.
+
+The R package `muhaz` handles this for us. What we are looking for is
+whether the hazard function is more or less the same shape, increasing,
+decreasing, constant, etc. Are the hazards "proportional"?
+:::
+
+
+```{r}
+#| fig-cap: "Smoothed Hazard Rate Estimates by Disease Group"
+library(muhaz)
+
+muhaz(bmt$t2,bmt$d3,bmt$group=="High Risk AML") |> plot(lwd=2,col=3)
+muhaz(bmt$t2,bmt$d3,bmt$group=="ALL") |> lines(lwd=2,col=1)
+muhaz(bmt$t2,bmt$d3,bmt$group=="Low Risk AML") |> lines(lwd=2,col=2)
+legend("topright",c("ALL","Low Risk AML","High Risk AML"),col=1:3,lwd=2)
+```
+
+::: notes
+Group 3 was plotted first because it has the highest hazard.
+
+Except for an initial blip in the high risk AML group,
+the hazards look roughly proportional.
+They are all strongly decreasing.
+:::
