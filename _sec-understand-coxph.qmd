@@ -1,0 +1,295 @@
+<!-- {{< include _sec_cox-bio.qmd >}} -->
+
+---
+
+::: notes
+Let's make two generalizations. 
+First, we let the hazard depend on some
+covariates $x_1,x_2, \dots, x_p$; 
+we will indicate this dependence by extending our notation for hazard:
+:::
+
+$$\haz(t|\vx) \eqdef \p(T=t|T\ge t, \vX = \vx)$$
+
+---
+
+:::{#def-base-hazard}
+
+#### baseline hazard
+
+:::: notes
+The **baseline hazard**, **base hazard**, or **reference hazard**, 
+denoted $h_0(t)$ or $\lambda_0(t)$, 
+is the [hazard function](intro-to-survival-analysis.qmd#def-hazard) 
+for the subpopulation of individuals 
+whose covariates are all equal to their reference levels:
+
+::::
+
+$$\haz_0(t) \eqdef \haz(t | \vX = \vzero)$$
+
+:::
+
+---
+
+::: notes
+Similarly: 
+:::
+
+:::{#def-base-cuhaz}
+
+#### baseline cumulative hazard
+
+:::: notes
+The **baseline cumulative hazard**, 
+**base cumulative hazard**, 
+or **reference cumulative hazard**, 
+denoted $H_0(t)$ or $\Lambda_0(t)$, 
+is the [cumulative hazard function](intro-to-survival-analysis.qmd#def-cuhaz)
+for the subpopulation of individuals 
+whose covariates are all equal to their reference levels:
+::::
+
+$$\cuhaz_0(t) \eqdef \cuhaz(t | \vX = \vzero)$$
+
+:::
+
+---
+
+::: notes
+Also:
+:::
+
+:::{#def-baseline-surv}
+#### Baseline survival function
+The **baseline survival function** 
+is the survival function 
+for an individual whose covariates 
+are all equal to their default values.
+ 
+$$S_0(t) \eqdef S(t | \vX = \vzero)$$
+:::
+
+---
+
+{{< include _def-loghaz.qmd >}}
+
+---
+
+{{< include _def-base-loghaz.qmd >}}
+
+---
+
+::: notes
+As the second generalization, 
+we let the 
+base hazard, 
+cumulative hazard, and 
+survival functions
+depend on $t$, 
+but not on the covariates (for now). 
+We can do this using either parametric 
+or semi-parametric approaches.
+:::
+
+---
+
+::: notes
+We generalize the hazard function to depend on covariates:
+:::
+
+$$
+\begin{aligned}
+h(t|x)&= h_0(t)\theta(x)\\
+\theta(x) &= \exp{\eta(x)}\\
+\eta(x) &= \reglincomb \\
+&\eqdef \beta_1x_1+\cdots+\beta_px_p
+\end{aligned}
+$$
+
+---
+
+::: notes
+The relationship between $h(t|x)$ and $\eta(x)$ is typically modeled using a log link,
+as in a generalized linear model; that is:
+:::
+
+$$\log{h(t|x)} = \log{h_0(t)} + \eta(x)$$
+
+::: notes
+This model is **semi-parametric**,
+because the linear predictor depends on estimated
+parameters but the base hazard function is unspecified.
+There is no constant term in $\eta(x)$,
+because it is absorbed in the base hazard.
+
+:::
+
+---
+
+Alternatively, we could define $\beta_0(t) = \log{h_0(t)}$, and then:
+
+$$\eta(x,t) = \beta_0(t) + \beta_1x_1+\cdots+\beta_px_p$$
+
+---
+
+::: notes
+For two different individuals with covariate patterns $\boldsymbol x_1$ and $\boldsymbol x_2$, the ratio of the hazard functions (a.k.a. **hazard ratio**, a.k.a. **relative hazard**) is:
+:::
+
+$$
+\begin{aligned}
+\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}
+&=\frac{h_0(t)\theta(\boldsymbol x_1)}{h_0(t)\theta(\boldsymbol x_2)}\\
+&=\frac{\theta(\boldsymbol x_1)}{\theta(\boldsymbol x_2)}\\
+\end{aligned}
+$$
+
+::: notes
+Under the proportional hazards model,
+this ratio (a.k.a. proportion) does not depend on $t$.
+This property is a structural limitation of the model;
+it is called the **proportional hazards assumption**.
+:::
+
+---
+
+::: {#def-pha}
+### proportional hazards
+
+A conditional probability distribution $p(T|X)$
+has **proportional hazards** if the hazard ratio $h(t|\boldsymbol x_1)/h(t|\boldsymbol x_2)$ does not depend on $t$. Mathematically, it can be written as:
+
+$$
+\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}
+= \theta(\boldsymbol x_1,\boldsymbol x_2)
+$$
+
+:::
+
+::: notes
+As we saw above, Cox's proportional hazards model has this property, with $\theta(\boldsymbol x_1,\boldsymbol x_2) = \frac{\theta(\boldsymbol x_1)}{\theta(\boldsymbol x_2)}$.
+:::
+
+---
+
+:::{.callout-note}
+
+We are using two similar notations, $\theta(\boldsymbol x_1,\boldsymbol x_2)$ and $\theta(\boldsymbol x)$. We can link these notations if we define $\theta(\boldsymbol x) \eqdef \theta(\boldsymbol x, \boldsymbol 0)$ and $\theta(\boldsymbol 0) = 1$.
+
+:::
+
+---
+
+The proportional hazards model also has additional notable properties:
+
+$$
+\begin{aligned}
+\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}
+&=\frac{\theta(\boldsymbol x_1)}{\theta(\boldsymbol x_2)}\\
+&=\frac{\exp{\eta(\boldsymbol x_1)}}{\exp{\eta(\boldsymbol x_2)}}\\
+&=\exp{\eta(\boldsymbol x_1)-\eta(\boldsymbol x_2)}\\
+&=\exp{\boldsymbol x_1'\beta-\boldsymbol x_2'\beta}\\
+&=\exp{(\boldsymbol x_1 - \boldsymbol x_2)'\beta}\\
+\end{aligned}
+$$
+
+---
+
+Hence on the log scale, we have:
+
+$$
+\begin{aligned}
+\log{\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}}
+&=\eta(\boldsymbol x_1)-\eta(\boldsymbol x_2)\\
+&= \boldsymbol x_1'\beta-\boldsymbol x_2'\beta\\
+&= (\boldsymbol x_1 - \boldsymbol x_2)'\beta
+\end{aligned}
+$$
+
+---
+
+If only one covariate $x_j$ is changing, then:
+
+$$
+\begin{aligned}
+\log{\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}}
+&=  (x_{1j} - x_{2j}) \cdot \beta_j\\
+&\propto (x_{1j} - x_{2j})
+\end{aligned}
+$$
+
+::: notes
+That is, under Cox's model $h(t|\boldsymbol x) = h_0(t)\exp{\boldsymbol x'\beta}$, the log of the hazard ratio is proportional to the difference in $x_j$, with the proportionality coefficient equal to $\beta_j$.
+:::
+
+---
+
+Further,
+
+$$
+\begin{aligned}
+\log{h(t|\boldsymbol x)}
+&=\log{h_0(t)}  + x'\beta
+\end{aligned}
+$$
+
+::: notes
+That is, the covariate effects are additive on the log-hazard scale; hazard functions for different covariate patterns should be vertical shifts of each other.
+
+See also:
+
+<https://en.wikipedia.org/wiki/Proportional_hazards_model#Why_it_is_called_%22proportional%22>
+
+:::
+
+### Additional properties of the proportional hazards model
+
+If $h(t|x)= h_0(t)\theta(x)$, then:
+
+:::{#thm-ph-cuhaz}
+
+#### Cumulative hazards are also proportional to $H_0(t)$
+
+$$
+\begin{aligned}
+H(t|x)
+&\eqdef \int_{u=0}^t h(u)du\\
+&= \int_{u=0}^t h_0(u)\theta(x)du\\
+&= \theta(x)\int_{u=0}^t h_0(u)du\\
+&= \theta(x)H_0(t)
+\end{aligned}
+$$
+
+where $H_0(t) \eqdef H(t|0) = \int_{u=0}^t h_0(u)du$.
+
+:::
+
+---
+
+:::{#thm-log-cuhaz-parallel}
+
+#### The logarithms of cumulative hazard should be parallel
+
+$$
+\log{H(t|\vx)} =\log{H_0(t)}  + \vx'\vb
+$$
+:::
+
+---
+
+:::{#thm-ph-surv}
+#### Survival functions are exponential multiples of $S_0(t)$
+
+$$
+\begin{aligned}
+S(t|x)
+&= \exp{-H(t|x)}\\
+&= \exp{-\theta(x)\cdot H_0(t)}\\
+&= \left(\exp{- H_0(t)}\right)^{\theta(x)}\\
+&= \sb{S_0(t)}^{\theta(x)}\\
+\end{aligned}
+$$
+
+
+:::
