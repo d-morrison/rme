@@ -1,3 +1,5 @@
+{{< include macros.qmd >}}
+
 <!-- {{< include _sec_cox-bio.qmd >}} -->
 
 ---
@@ -28,6 +30,12 @@ whose covariates are all equal to their reference levels:
 
 $$\haz_0(t) \eqdef \haz(t | \vX = \vzero)$$
 
+:::
+
+::: notes
+The baseline hazard is *somewhat* analogous to 
+the intercept term in linear regression, 
+but it is **not** a mean.
 :::
 
 ---
@@ -81,40 +89,167 @@ $$S_0(t) \eqdef S(t | \vX = \vzero)$$
 ---
 
 ::: notes
+Now, let's define how the hazard function depends on covariates.
+We typically use a log link to model the relationship between 
+the hazard function, $\haz(t|\vx)$, and 
+the linear component, $\eta(\vx)$,
+as we did for Poisson models in @sec-count-reg; 
+that is:
+
+:::
+
+$$
+\begin{aligned}
+\logf{\haz(t|\vx)}&= \loghaz(t|\vx)
+\\
+\haz(t|\vx) &= \exp{\loghaz(t|\vx)}
+\ea
+$$
+
+::: note
+However, in contrast with Poisson regression,
+here $\loghaz(t|\vx)$ depends on **both** $t$ **and** $\vx$.
+:::
+
+---
+
+::: notes
 As the second generalization, 
 we let the 
 base hazard, 
 cumulative hazard, and 
 survival functions
 depend on $t$, 
-but not on the covariates (for now). 
+but not on any covariates (for now). 
 We can do this using either parametric 
 or semi-parametric approaches.
 :::
 
----
+$$
+\ba
+\loghaz(t|\vx) &= \loghaz_0(t) + \reglincomb
+\\
+&= \loghaz_0(t) + \regbetasum
+\ea
+$${#eq-ph-lincomp}
 
 ::: notes
-We generalize the hazard function to depend on covariates:
+The intercept term $\loghaz_0(t)$ depends on time $t$.
 :::
+
+---
+
+Let's denote:
+
+$$\diffloghaz(t|\vx : \vxs) \eqdef \loghaz(t|\vx) - \loghaz(t|\vxs)$$
+
+---
+
+:::{#thm-diff-loghaz}
+#### Difference of log-hazards vs hazard ratio
+$$
+\ba
+\diffloghaz(t|\vx : \vxs) 
+&\eqdef \loghaz(t|\vx) - \loghaz(t|\vxs)
+\\
+&= \logf{\haz(t|\vx)} - \logf{\haz(t|\vxs)}
+\\
+&= \logf{\frac{\haz(t|\vx)}{\haz(t|\vxs)}}
+\ea
+$$
+:::
+
+---
+
+:::{#def-hazard-ratio}
+#### hazard ratio
+$$
+\theta(t| \vx : \vxs) \eqdef \frac{\haz(t|\vx)}{\haz(t|\vxs)}
+$$
+:::
+
+---
+
+<!-- :::{#cor-difflogodds-log-HR} -->
+
+<!-- $$\diffloghaz(t|\vx) = \logf{\theta(t| \vx : \vxs)}$$ -->
+
+<!-- ::: -->
+
+<!-- --- -->
+
+:::{#def-difflog-hazard-from-baseline}
+::: notes
+The difference in log-hazard for covariate pattern $\vx$
+compared to the baseline covariate pattern $\vec{0}$ is:
+:::
+
+$$
+\ba
+\diffloghaz(t|\vx)
+&\eqdef \diffloghaz(t | \vx: \vec{0})
+\ea
+$$
+:::
+
+---
+
+:::{#cor-hazard-ratio-diffloghaz}
+
+#### Hazard ratio vs difference of log-odds
+
+$$\theta(t| \vx : \vxs) = \expf{\diffloghaz(t|\vx: \vxs)}$$
+
+:::
+
+---
+
+:::{#cor-hazard-ratio-vs-baseline}
+
+$$
+\ba
+\theta(t|\vx)
+&\eqdef \theta(t| \vx : \vec{0})
+\\
+&= \expf{\diffloghaz(t|\vx)}
+\\
+&= \expf{\reglincomb}
+\ea
+$$
+
+:::
+
+---
+
+So given the assumption in @eq-ph-model, we can write the hazard ratio using a shorthand notation:
+
+$$\theta(t| \vx : \vxs)  = \theta(\vx : \vxs)$$
+
+Then:
+
+$$
+\ba
+\diffloghaz(t|\vx)
+&\eqdef \diffloghaz(t | \vx: \vec{0})
+\\
+&= \reglincomb
+\ea
+$$
 
 $$
 \begin{aligned}
-h(t|x)&= h_0(t)\theta(x)\\
-\theta(x) &= \exp{\eta(x)}\\
-\eta(x) &= \reglincomb \\
+\haz(t|x) &= \haz_0(t)\theta(x)\\
+\theta(x) &= \exp{\diffloghaz(x)}
+\\
+\log{\haz(t|x)} 
+&= \log{\haz_0(t)} + \diffloghaz(x)
+\\
+&= \loghaz_0(t) + \diffloghaz(x)
+\\
+\diffloghaz(x) &= \reglincomb \\
 &\eqdef \beta_1x_1+\cdots+\beta_px_p
 \end{aligned}
 $$
-
----
-
-::: notes
-The relationship between $h(t|x)$ and $\eta(x)$ is typically modeled using a log link,
-as in a generalized linear model; that is:
-:::
-
-$$\log{h(t|x)} = \log{h_0(t)} + \eta(x)$$
 
 ::: notes
 This model is **semi-parametric**,
@@ -198,14 +333,20 @@ $$
 
 Hence on the log scale, we have:
 
+:::{#thm-diff-loghaz-lincom}
 $$
-\begin{aligned}
-\log{\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}}
+\ba
+\log{\frac{h(t|\vx)}{h(t|\vxs)}}
+&= \diffloghaz(t|\vx : \vxs) 
+\\
+&\eqdef \loghaz(t|\vx) - \loghaz(t|\vxs)
+\\
 &=\eta(\boldsymbol x_1)-\eta(\boldsymbol x_2)\\
 &= \boldsymbol x_1'\beta-\boldsymbol x_2'\beta\\
 &= (\boldsymbol x_1 - \boldsymbol x_2)'\beta
 \end{aligned}
 $$
+:::
 
 ---
 
