@@ -651,7 +651,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-05-29: 20:02:00 (PM)</p>
+      <p class="date">Last modified: 2025-05-30: 6:55:26 (AM)</p>
     </div>
   </div>
   
@@ -753,6 +753,9 @@ text-align: center;
 </div>
 </section><section id="understanding-proportional-hazards-models" class="level2" data-number="7.2"><h2 data-number="7.2" class="anchored" data-anchor-id="understanding-proportional-hazards-models">
 <span class="header-section-number">7.2</span> Understanding proportional hazards models</h2>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \def\or{\theta}  -->
+<!-- doesn't work for some reason -->
 <!-- {{< include _sec_cox-bio.qmd >}} -->
 <hr>
 <div class="notes">
@@ -766,6 +769,9 @@ text-align: center;
 <p>The <strong>baseline hazard</strong>, <strong>base hazard</strong>, or <strong>reference hazard</strong>, denoted <span class="math inline">\(h_0(t)\)</span> or <span class="math inline">\(\lambda_0(t)\)</span>, is the <a href="./intro-to-survival-analysis.html#def-hazard">hazard function</a> for the subpopulation of individuals whose covariates are all equal to their reference levels:</p>
 </div>
 <p><span class="math display">\[\lambda_0(t) \stackrel{\text{def}}{=}\lambda(t | \tilde{X}= \tilde{0})\]</span></p>
+</div>
+<div class="notes">
+<p>The baseline hazard is <em>somewhat</em> analogous to the intercept term in linear regression, but it is <strong>not</strong> a mean.</p>
 </div>
 <hr>
 <div class="notes">
@@ -804,25 +810,110 @@ text-align: center;
 </div>
 <hr>
 <div class="notes">
-<p>As the second generalization, we let the base hazard, cumulative hazard, and survival functions depend on <span class="math inline">\(t\)</span>, but not on the covariates (for now). We can do this using either parametric or semi-parametric approaches.</p>
-</div>
-<hr>
-<div class="notes">
-<p>We generalize the hazard function to depend on covariates:</p>
+<p>Now, let’s define how the hazard function depends on covariates. We typically use a log link to model the relationship between the hazard function, <span class="math inline">\(\lambda(t|\tilde{x})\)</span>, and the linear component, <span class="math inline">\(\eta(\tilde{x})\)</span>, as we did for Poisson models in <a href="count-regression.html" class="quarto-xref"><span>Chapter 4</span></a>; that is:</p>
 </div>
 <p><span class="math display">\[
 \begin{aligned}
-h(t|x)&amp;= h_0(t)\theta(x)\\
-\theta(x) &amp;= \text{exp}\left\{\eta(x)\right\}\\
-\eta(x) &amp;= \tilde{x}\cdot \tilde{\beta}\\
+\text{log}\left\{\lambda(t|\tilde{x})\right\}&amp;= \eta(t|\tilde{x})
+\\
+\lambda(t|\tilde{x}) &amp;= \text{exp}\left\{\eta(t|\tilde{x})\right\}
+\end{aligned}
+\]</span></p>
+<div class="note">
+<p>However, in contrast with Poisson regression, here <span class="math inline">\(\eta(t|\tilde{x})\)</span> depends on <strong>both</strong> <span class="math inline">\(t\)</span> <strong>and</strong> <span class="math inline">\(\tilde{x}\)</span>.</p>
+</div>
+<hr>
+<div class="notes">
+<p>As the second generalization, we let the base hazard, cumulative hazard, and survival functions depend on <span class="math inline">\(t\)</span>, but not on any covariates (for now). We can do this using either parametric or semi-parametric approaches.</p>
+</div>
+<p><span id="eq-ph-lincomp"><span class="math display">\[
+\begin{aligned}
+\eta(t|\tilde{x}) &amp;= \eta_0(t) + \tilde{x}\cdot \tilde{\beta}
+\\
+&amp;= \eta_0(t) + \beta_1 x_1+ \dots + \beta_p x_p
+\end{aligned}
+\tag{7.1}\]</span></span></p>
+<div class="notes">
+<p>The intercept term <span class="math inline">\(\eta_0(t)\)</span> depends on time <span class="math inline">\(t\)</span>.</p>
+</div>
+<hr>
+<p>Let’s denote:</p>
+<p><span class="math display">\[\Delta \eta(t|\tilde{x}: {\tilde{x}^*}) \stackrel{\text{def}}{=}\eta(t|\tilde{x}) - \eta(t|{\tilde{x}^*})\]</span></p>
+<hr>
+<div id="thm-diff-loghaz" class="theorem">
+<p><span class="theorem-title"><strong>Theorem 7.1 (Difference of log-hazards vs hazard ratio)</strong></span> <span class="math display">\[
+\begin{aligned}
+\Delta \eta(t|\tilde{x}: {\tilde{x}^*})
+&amp;\stackrel{\text{def}}{=}\eta(t|\tilde{x}) - \eta(t|{\tilde{x}^*})
+\\
+&amp;= \text{log}\left\{\lambda(t|\tilde{x})\right\} - \text{log}\left\{\lambda(t|{\tilde{x}^*})\right\}
+\\
+&amp;= \text{log}\left\{\frac{\lambda(t|\tilde{x})}{\lambda(t|{\tilde{x}^*})}\right\}
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<div id="def-hazard-ratio" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition 7.6 (hazard ratio)</strong></span> <span class="math display">\[
+\theta(t| \tilde{x}: {\tilde{x}^*}) \stackrel{\text{def}}{=}\frac{\lambda(t|\tilde{x})}{\lambda(t|{\tilde{x}^*})}
+\]</span></p>
+</div>
+<hr>
+<!-- :::{#cor-difflogodds-log-HR} --><!-- $$\diffloghaz(t|\vx) = \logf{\theta(t| \vx : \vxs)}$$ --><!-- ::: --><!-- --- --><div id="def-difflog-hazard-from-baseline" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition 7.7</strong></span> &nbsp;</p>
+<div class="notes">
+<p>The difference in log-hazard for covariate pattern <span class="math inline">\(\tilde{x}\)</span> compared to the baseline covariate pattern <span class="math inline">\(\tilde{0}\)</span> is:</p>
+</div>
+<p><span class="math display">\[
+\begin{aligned}
+\Delta \eta(t|\tilde{x})
+&amp;\stackrel{\text{def}}{=}\Delta \eta(t | \tilde{x}: \tilde{0})
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<div id="cor-hazard-ratio-diffloghaz" class="theorem corollary">
+<p><span class="theorem-title"><strong>Corollary 7.1 (Hazard ratio vs difference of log-odds)</strong></span> <span class="math display">\[\theta(t| \tilde{x}: {\tilde{x}^*}) = \text{exp}\left\{\Delta \eta(t|\tilde{x}: {\tilde{x}^*})\right\}\]</span></p>
+</div>
+<hr>
+<div id="cor-hazard-ratio-vs-baseline" class="theorem corollary">
+<p><span class="theorem-title"><strong>Corollary 7.2</strong></span> <span class="math display">\[
+\begin{aligned}
+\theta(t|\tilde{x})
+&amp;\stackrel{\text{def}}{=}\theta(t| \tilde{x}: \tilde{0})
+\\
+&amp;= \text{exp}\left\{\Delta \eta(t|\tilde{x})\right\}
+\\
+&amp;= \text{exp}\left\{\tilde{x}\cdot \tilde{\beta}\right\}
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<p>So given the assumption in <span class="quarto-unresolved-ref">?eq-ph-model</span>, we can write the hazard ratio using a shorthand notation:</p>
+<p><span class="math display">\[\theta(t| \tilde{x}: {\tilde{x}^*})  = \theta(\tilde{x}: {\tilde{x}^*})\]</span></p>
+<p>Then:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Delta \eta(t|\tilde{x})
+&amp;\stackrel{\text{def}}{=}\Delta \eta(t | \tilde{x}: \tilde{0})
+\\
+&amp;= \tilde{x}\cdot \tilde{\beta}
+\end{aligned}
+\]</span></p>
+<p><span class="math display">\[
+\begin{aligned}
+\lambda(t|x) &amp;= \lambda_0(t)\theta(x)\\
+\theta(x) &amp;= \text{exp}\left\{\Delta \eta(x)\right\}
+\\
+\log{\lambda(t|x)}
+&amp;= \log{\lambda_0(t)} + \Delta \eta(x)
+\\
+&amp;= \eta_0(t) + \Delta \eta(x)
+\\
+\Delta \eta(x) &amp;= \tilde{x}\cdot \tilde{\beta}\\
 &amp;\stackrel{\text{def}}{=}\beta_1x_1+\cdots+\beta_px_p
 \end{aligned}
 \]</span></p>
-<hr>
-<div class="notes">
-<p>The relationship between <span class="math inline">\(h(t|x)\)</span> and <span class="math inline">\(\eta(x)\)</span> is typically modeled using a log link, as in a generalized linear model; that is:</p>
-</div>
-<p><span class="math display">\[\log{h(t|x)} = \log{h_0(t)} + \eta(x)\]</span></p>
 <div class="notes">
 <p>This model is <strong>semi-parametric</strong>, because the linear predictor depends on estimated parameters but the base hazard function is unspecified. There is no constant term in <span class="math inline">\(\eta(x)\)</span>, because it is absorbed in the base hazard.</p>
 </div>
@@ -845,7 +936,7 @@ h(t|x)&amp;= h_0(t)\theta(x)\\
 </div>
 <hr>
 <div id="def-pha" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 7.6 (proportional hazards)</strong></span> A conditional probability distribution <span class="math inline">\(p(T|X)\)</span> has <strong>proportional hazards</strong> if the hazard ratio <span class="math inline">\(h(t|\boldsymbol x_1)/h(t|\boldsymbol x_2)\)</span> does not depend on <span class="math inline">\(t\)</span>. Mathematically, it can be written as:</p>
+<p><span class="theorem-title"><strong>Definition 7.8 (proportional hazards)</strong></span> A conditional probability distribution <span class="math inline">\(p(T|X)\)</span> has <strong>proportional hazards</strong> if the hazard ratio <span class="math inline">\(h(t|\boldsymbol x_1)/h(t|\boldsymbol x_2)\)</span> does not depend on <span class="math inline">\(t\)</span>. Mathematically, it can be written as:</p>
 <p><span class="math display">\[
 \frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}
 = \theta(\boldsymbol x_1,\boldsymbol x_2)
@@ -882,14 +973,20 @@ Note
 \]</span></p>
 <hr>
 <p>Hence on the log scale, we have:</p>
-<p><span class="math display">\[
+<div id="thm-diff-loghaz-lincom" class="theorem">
+<p><span class="theorem-title"><strong>Theorem 7.2</strong></span> <span class="math display">\[
 \begin{aligned}
-\log{\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}}
+\log{\frac{h(t|\tilde{x})}{h(t|{\tilde{x}^*})}}
+&amp;= \Delta \eta(t|\tilde{x}: {\tilde{x}^*})
+\\
+&amp;\stackrel{\text{def}}{=}\eta(t|\tilde{x}) - \eta(t|{\tilde{x}^*})
+\\
 &amp;=\eta(\boldsymbol x_1)-\eta(\boldsymbol x_2)\\
 &amp;= \boldsymbol x_1'\beta-\boldsymbol x_2'\beta\\
 &amp;= (\boldsymbol x_1 - \boldsymbol x_2)'\beta
 \end{aligned}
 \]</span></p>
+</div>
 <hr>
 <p>If only one covariate <span class="math inline">\(x_j\)</span> is changing, then:</p>
 <p><span class="math display">\[
@@ -919,7 +1016,7 @@ Note
 <span class="header-section-number">7.2.1</span> Additional properties of the proportional hazards model</h3>
 <p>If <span class="math inline">\(h(t|x)= h_0(t)\theta(x)\)</span>, then:</p>
 <div id="thm-ph-cuhaz" class="theorem">
-<p><span class="theorem-title"><strong>Theorem 7.1 (Cumulative hazards are also proportional to <span class="math inline">\(H_0(t)\)</span>)</strong></span> <span class="math display">\[
+<p><span class="theorem-title"><strong>Theorem 7.3 (Cumulative hazards are also proportional to <span class="math inline">\(H_0(t)\)</span>)</strong></span> <span class="math display">\[
 \begin{aligned}
 H(t|x)
 &amp;\stackrel{\text{def}}{=}\int_{u=0}^t h(u)du\\
@@ -932,13 +1029,13 @@ H(t|x)
 </div>
 <hr>
 <div id="thm-log-cuhaz-parallel" class="theorem">
-<p><span class="theorem-title"><strong>Theorem 7.2 (The logarithms of cumulative hazard should be parallel)</strong></span> <span class="math display">\[
+<p><span class="theorem-title"><strong>Theorem 7.4 (The logarithms of cumulative hazard should be parallel)</strong></span> <span class="math display">\[
 \log{H(t|\tilde{x})} =\log{H_0(t)}  + \tilde{x}'\tilde{\beta}
 \]</span></p>
 </div>
 <hr>
 <div id="thm-ph-surv" class="theorem">
-<p><span class="theorem-title"><strong>Theorem 7.3 (Survival functions are exponential multiples of <span class="math inline">\(S_0(t)\)</span>)</strong></span> <span class="math display">\[
+<p><span class="theorem-title"><strong>Theorem 7.5 (Survival functions are exponential multiples of <span class="math inline">\(S_0(t)\)</span>)</strong></span> <span class="math display">\[
 \begin{aligned}
 S(t|x)
 &amp;= \text{exp}\left\{-H(t|x)\right\}\\
@@ -1985,7 +2082,7 @@ x_{ik}-\frac{\sum_{k\in R}x_{jk}\theta_k}{\sum_{k\in R}\theta_k}
 </div>
 <hr>
 <div id="def-CS-resid" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 7.7 (Cox-Snell generalized residuals)</strong></span> &nbsp;</p>
+<p><span class="theorem-title"><strong>Definition 7.9 (Cox-Snell generalized residuals)</strong></span> &nbsp;</p>
 <div class="notes">
 <p>The <strong>Cox-Snell generalized residuals</strong> are defined as:</p>
 </div>
