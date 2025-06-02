@@ -201,7 +201,7 @@ function**:
 
 $$
 \begin{aligned}
-S(t) &\eqdef \Pr(T > t)\\
+\surv(t) &\eqdef \Pr(T > t)\\
 &=\int_{u=t}^\infty p(u) du\\
 &=1-F(t)\\
 \end{aligned}
@@ -216,17 +216,17 @@ $$
 :::: notes
 Given a random time-to-event variable $T$, 
 the **survival function** or **survivor function**, 
-denoted $S(t)$,
+denoted $\surv(t)$,
 is the probability 
 that the event time is later than $t$. 
 If the event in a clinical trial is death, 
-then $S(t)$ is the expected fraction 
+then $\surv(t)$ is the expected fraction 
 of the original population at time 0 
 who have survived up to time $t$ 
 and are still alive at time $t$; that is:
 ::::
 
-$$S(t) \eqdef \Pr(T > t)$${#eq-def-surv}
+$$\surv(t) \eqdef \Pr(T > t)$${#eq-def-surv}
 
 :::
 
@@ -235,7 +235,7 @@ $$S(t) \eqdef \Pr(T > t)$${#eq-def-surv}
 :::{#exm-exp-survfn}
 ##### exponential distribution
 
-Since $S(t) = 1 - F(t)$, the survival function of the exponential
+Since $\surv(t) = 1 - F(t)$, the survival function of the exponential
 distribution family of models is:
 
 $$
@@ -274,7 +274,7 @@ ggplot() +
     args = list(lower = FALSE, rate = 5)
   ) +
   theme_bw() +
-  ylab("S(t)") +
+  ylab("\surv(t)") +
   guides(col = guide_legend(title = expr(lambda))) +
   xlab("Time (t)") +
   xlim(0, 2.5) +
@@ -301,7 +301,7 @@ ggplot() +
 
 If $A_t$ represents survival status at time $t$, with $A_t = 1$ denoting alive at time $t$ and $A_t = 0$ denoting deceased at time $t$, then:
 
-$$S(t) = \Pr(A_t=1) = \Expp[A_t]$$
+$$\surv(t) = \Pr(A_t=1) = \Expp[A_t]$$
 
 :::
 
@@ -311,7 +311,7 @@ $$S(t) = \Pr(A_t=1) = \Expp[A_t]$$
 
 If $T$ is a nonnegative random variable, then:
 
-$$\Expp[T] = \int_{t=0}^{\infty} S(t)dt$$
+$$\Expp[T] = \int_{t=0}^{\infty} \surv(t)dt$$
 
 :::
 
@@ -357,7 +357,7 @@ In particular, $\{T=t\} \subseteq \{T\geq t\}$, so $p(T=t, T\ge t) = p(T=t)$.
 
 :::{#thm-hazard-dens-surv}
 #### Hazard equals density over survival
-$$\haz(t)=\frac{f(t)}{S(t)}$$
+$$\haz(t)=\frac{f(t)}{\surv(t)}$$
 :::
 
 ---
@@ -369,7 +369,7 @@ $$
 \haz(t) &=p(T=t|T\ge t)\\
 &=\frac{p(T=t, T\ge t)}{p(T \ge t)}\\
 &=\frac{p(T=t)}{p(T \ge t)}\\
-&=\frac{f(t)}{S(t)}
+&=\frac{f(t)}{\surv(t)}
 \end{aligned}
 $$
 
@@ -385,7 +385,7 @@ The hazard function of the exponential distribution family of models is:
 $$
 \begin{aligned}
 P(T=t|T \ge t) 
-&= \frac{f(t)}{S(t)}\\
+&= \frac{f(t)}{\surv(t)}\\
 &= \frac{\mathbb{1}_{t \ge 0}\cdot \lambda  \text{e}^{-\lambda t}}{\text{e}^{-\lambda t}}\\
 &=\mathbb{1}_{t \ge 0}\cdot \lambda
 \end{aligned}
@@ -414,7 +414,7 @@ ggplot() +
     aes(col = "p = 5", yintercept = 5)
   ) +
   theme_bw() +
-  ylab("h(t)") +
+  ylab("\haz(t)") +
   ylim(0, 5) +
   guides(col = guide_legend(title = expr(lambda))) +
   xlab("Time (t)") +
@@ -443,7 +443,7 @@ We can also view the hazard function as the derivative of the negative of the lo
 
 #### transform survival to hazard
 
-$$\haz(t) = \deriv{t}\cb{-\log{S(t)}}$$
+$$\haz(t) = \deriv{t}\cb{-\log{\surv(t)}}$$
 :::
 
 ---
@@ -452,11 +452,11 @@ $$\haz(t) = \deriv{t}\cb{-\log{S(t)}}$$
 $$
 \begin{aligned}
 \haz(t)
-&= \frac{f(t)}{S(t)}\\
-&= \frac{-S'(t)}{S(t)}\\
-&= -\frac{S'(t)}{S(t)}\\
-&=-\deriv{t}\log{S(t)}\\
-&=\deriv{t}\cb{-\log{S(t)}}
+&= \frac{f(t)}{\surv(t)}\\
+&= \frac{-S'(t)}{\surv(t)}\\
+&= -\frac{S'(t)}{\surv(t)}\\
+&=-\deriv{t}\log{\surv(t)}\\
+&=\deriv{t}\cb{-\log{\surv(t)}}
 \end{aligned}
 $$
 ::::
@@ -467,7 +467,7 @@ $$
 
 ### The Cumulative Hazard Function
 
-Since $\haz(t) = \deriv{t}\cb{-\log{S(t)}}$ (see @thm-h-logS), we also have:
+Since $\haz(t) = \deriv{t}\cb{-\log{\surv(t)}}$ (see @thm-h-logS), we also have:
 
 :::{#cor-surv-int-haz}
 $$\surv(t) = \exp{-\int_{u=0}^t \haz(u)du}$${#eq-surv-int-haz}
@@ -483,7 +483,9 @@ The integral in @eq-surv-int-haz is important enough to have its own name: **cum
 
 ##### cumulative hazard
 
-The **cumulative hazard function** $H(t)$ is defined as:
+The **cumulative hazard function**,
+often denoted $\Lambda(t)$ or $\text{H}(t)$,
+is defined as:
 
 $$\cuhaz(t) \eqdef \int_{u=0}^t \haz(u) du$$
 
@@ -528,7 +530,7 @@ ggplot() +
     aes(col = "p = 5", intercept = 0, slope = 5)
   ) +
   theme_bw() +
-  ylab("H(t)") +
+  ylab("\cuhaz(t)") +
   ylim(0, 5) +
   guides(col = guide_legend(title = expr(lambda))) +
   xlab("Time (t)") +
@@ -578,8 +580,8 @@ $$
 \cuhaz(t) &= -\text{log}\left\{\surv(t)\right\}\\
 \cuhaz'(t) &= \haz(t)\\
 \haz(t) &= \frac{\pdf(t)}{\surv(t)}\\
-&= -\deriv{t}\log{S(t)} \\
-f(t) &= \haz(t)\cdot S(t)\\
+&= -\deriv{t}\log{\surv(t)} \\
+f(t) &= \haz(t)\cdot \surv(t)\\
 \end{aligned}
 $$
 
@@ -599,9 +601,9 @@ $$
 
 $$
 \begin{aligned}
-\deriv{t}\log{S(t)} 
-&= \frac{S'(t)}{S(t)}\\
-&= -\frac{f(t)}{S(t)}\\
+\deriv{t}\log{\surv(t)} 
+&= \frac{S'(t)}{\surv(t)}\\
+&= -\frac{f(t)}{\surv(t)}\\
 &= -\haz(t)\\
 \end{aligned}
 $$
@@ -610,15 +612,15 @@ $$
 
 $$
 \begin{aligned}
-H(t)
+\cuhaz(t)
 &\eqdef \int_{u=0}^t h(u) du\\
 &= \int_0^t -\deriv{u}\text{log}\left\{S(u)\right\} du\\
 &= \left[-\text{log}\left\{S(u)\right\}\right]_{u=0}^{u=t}\\
 &= \left[\text{log}\left\{S(u)\right\}\right]_{u=t}^{u=0}\\
-&= \text{log}\left\{S(0)\right\} - \text{log}\left\{S(t)\right\}\\
-&= \text{log}\left\{1\right\} - \text{log}\left\{S(t)\right\}\\
-&= 0 - \text{log}\left\{S(t)\right\}\\
-&=-\text{log}\left\{S(t)\right\}
+&= \text{log}\left\{S(0)\right\} - \text{log}\left\{\surv(t)\right\}\\
+&= \text{log}\left\{1\right\} - \text{log}\left\{\surv(t)\right\}\\
+&= 0 - \text{log}\left\{\surv(t)\right\}\\
+&=-\text{log}\left\{\surv(t)\right\}
 \end{aligned}
 $$
 
@@ -626,7 +628,7 @@ $$
 
 Corollary:
 
-$$S(t) = \text{exp}\left\{-H(t)\right\}$$
+$$\surv(t) = \text{exp}\left\{-\cuhaz(t)\right\}$$
 
 ---
 
@@ -1137,7 +1139,7 @@ large as in the 6-MP group (assuming the hazard is constant over time).
 
 ::: notes
 In the `drug6mp` dataset, the estimated survival function for the placebo patients is easy to compute. 
-For any time $t$ in months, $S(t)$ is the fraction of patients with times greater than $t$:
+For any time $t$ in months, $\surv(t)$ is the fraction of patients with times greater than $t$:
 :::
 
 ```{r}
@@ -1186,7 +1188,7 @@ If the event times are $t_i$ with events per time of $d_i$ ($1\le i \le k$),
 then the **Kaplan-Meier Product-Limit Estimator** 
 of the [survival function](@def-surv-fn) is:
 
-$$\hat S(t) = \prod_{t_i < t} \sb{\frac{1-d_i}{Y_i}}$${#eq-km-surv-est}
+$$\hat \surv(t) = \prod_{t_i < t} \sb{\frac{1-d_i}{Y_i}}$${#eq-km-surv-est}
 
 where $Y_i$ is the set of observations whose time (event or censored) is
 $\ge t_i$, the group at risk at time $t_i$.
@@ -1203,7 +1205,7 @@ after (say) the third event time
 
 $$
 \begin{aligned}
-\hat S(t) 
+\hat \surv(t) 
 &= \prod_{t_i < t}\sb{1-\frac{d_i}{Y_i}}
 \\ &= \sb{\frac{n-d_1}{n}} \sb{\frac{n-d_1-d_2}{n-d_1}} \sb{\frac{n-d_1-d_2-d_3}{n-d_1-d_2}}
 \\ &= \frac{n-d_1-d_2-d_3}{n}
@@ -1770,16 +1772,16 @@ and test for differences.
 
 ### Survival Function Estimate and Variance
 
-$$\hat S(t) = \prod_{t_i < t}\left[1-\frac{d_i}{Y_i}\right]$$ where
+$$\hat \surv(t) = \prod_{t_i < t}\left[1-\frac{d_i}{Y_i}\right]$$ where
 $Y_i$ is the group at risk at time $t_i$.
 
-The estimated variance of $\hat S(t)$ is:
+The estimated variance of $\hat \surv(t)$ is:
 
 :::{#thm-greenwood}
 #### Greenwood's estimator for variance of Kaplan-Meier survival estimator
 
 $$
-\varhf{\hat S(t)} = \hat S(t)^2\sum_{t_i <t}\frac{d_i}{Y_i(Y_i-d_i)}
+\varhf{\hat \surv(t)} = \hat \surv(t)^2\sum_{t_i <t}\frac{d_i}{Y_i(Y_i-d_i)}
 $${#eq-var-est-surv}
 :::
 
@@ -1837,20 +1839,20 @@ autoplot(
 To see where Greenwood's formula comes from, let $x_i = Y_i - d_i$. We
 approximate the solution treating each time as independent, with $Y_i$
 fixed and ignore randomness in times of failure and we treat $x_i$ as
-independent binomials $\text{Bin}(Y_i,p_i)$. Letting $S(t)$ be the
+independent binomials $\text{Bin}(Y_i,p_i)$. Letting $\surv(t)$ be the
 "true" survival function
 :::
 
 $$
 \begin{aligned}
-\hat S(t) &=\prod_{t_i<t}x_i/Y_i\\
-S(t)&=\prod_{t_i<t}p_i
+\hat \surv(t) &=\prod_{t_i<t}x_i/Y_i\\
+\surv(t)&=\prod_{t_i<t}p_i
 \end{aligned}
 $$
 
 $$
 \begin{aligned}
-\frac{\hat S(t)}{S(t)} 
+\frac{\hat \surv(t)}{\surv(t)} 
 &= \prod_{t_i<t} \frac{x_i}.    {p_iY_i}
 \\ &= \prod_{t_i<t} \frac{\hat p_i}{p_i}
 \\ &= \prod_{t_i<t} \paren{1+\frac{\hat p_i-p_i}{p_i}}
@@ -1862,15 +1864,15 @@ $$
 
 $$
 \begin{aligned}
-\text{Var}\left(\frac{\hat S(t)}{S(t)}\right) 
+\text{Var}\left(\frac{\hat \surv(t)}{\surv(t)}\right) 
 &\approx \text{Var}\left(1+\sum_{t_i<t} \frac{\hat p_i-p_i}{p_i}\right) 
 \\ &=\sum_{t_i<t} \frac{1}{p_i^2}\frac{p_i(1-p_i)}{Y_i} 
 \\ &= \sum_{t_i<t} \frac{(1-p_i)}{p_iY_i}
 \\ &\approx\sum_{t_i<t} \frac{(1-x_i/Y_i)}{x_i}
 \\ &=\sum_{t_i<t} \frac{Y_i-x_i}{x_iY_i}
 \\ &=\sum_{t_i<t} \frac{d_i}{Y_i(Y_i-d_i)}
-\\ \tf \text{Var}\left(\hat S(t)\right)
-&\approx \hat S(t)^2\sum_{t_i<t} \frac{d_i}{Y_i(Y_i-d_i)}
+\\ \tf \text{Var}\left(\hat \surv(t)\right)
+&\approx \hat \surv(t)^2\sum_{t_i<t} \frac{d_i}{Y_i(Y_i-d_i)}
 \end{aligned}
 $$
 
@@ -1890,28 +1892,28 @@ $$
 \haz(t) 
 &\eqdef   \p(T=t|T\ge t)\\
 &= \frac{\p(T=t)}{\P(T\ge t)}\\
-&= -\deriv{t}\logf{\S(t)}
+&= -\deriv{t}\logf{\\surv(t)}
 \end{aligned}
 $$
 
 The **cumulative hazard** (or **integrated hazard**) function is
 
-$$H(t)\eqdef  \int_0^t \haz(t) dt$$ Since
-$\haz(t) = -\deriv{t}\text{log}\left\{S(t)\right\}$ as shown above, we
+$$\cuhaz(t)\eqdef  \int_0^t \haz(t) dt$$ Since
+$\haz(t) = -\deriv{t}\text{log}\left\{\surv(t)\right\}$ as shown above, we
 have:
 
 $$
-H(t)=-\text{log}\left\{S\right\}(t)
+\cuhaz(t)=-\text{log}\left\{S\right\}(t)
 $$
 
 ---
 
-So we can estimate $H(t)$ as:
+So we can estimate $\cuhaz(t)$ as:
 
 $$
 \begin{aligned}
-\hat H(t) 
-&= -\text{log}\left\{\hat S(t)\right\}\\
+\hat \cuhaz(t) 
+&= -\text{log}\left\{\hat \surv(t)\right\}\\
 &= -\text{log}\left\{\prod_{t_i < t}\left[1-\frac{d_i}{Y_i}\right]\right\}\\
 &= -\sum_{t_i < t}\text{log}\left\{1-\frac{d_i}{Y_i}\right\}\\
 \end{aligned}
@@ -1975,7 +1977,7 @@ $${#eq-var-NA-cuhaz-est}
 
 ---
 
-Since $S(t)=\text{exp}\left\{-H(t)\right\}$, the Nelson-Aalen cumulative
+Since $\surv(t)=\text{exp}\left\{-\cuhaz(t)\right\}$, the Nelson-Aalen cumulative
 hazard estimate can be converted into an alternate estimate of the
 survival function:
 
@@ -2041,7 +2043,7 @@ km_and_na |>
   geom_step() +
   facet_grid(. ~ strata) +
   theme_bw() +
-  ylab("S(t) = P(T>=t)") +
+  ylab("\surv(t) = P(T>=t)") +
   xlab("Survival time (t, days)") +
   theme(legend.position = "bottom")
 ```
