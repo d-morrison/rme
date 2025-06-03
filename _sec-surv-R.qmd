@@ -1,0 +1,137 @@
+
+We don't have to do these calculations by hand every time; the
+`survival` package and several others have functions available to
+automate many of these tasks (full list:
+<https://cran.r-project.org/web/views/Survival.html>).
+
+### The `Surv` function
+
+To use the `survival` package, the first step is telling R how to
+combine the exit time and exit reason (censoring versus event) columns.
+The `Surv()` function accomplishes this task.
+
+#### Example: `Surv()` with `drug6mp` data
+
+```{r}
+#| code-fold: show
+#| code-line-numbers: "5-7"
+library(survival)
+drug6mp.v3 <-
+  drug6mp.v2 |>
+  mutate(
+    surv2 = Surv(
+      time = t2,
+      event = (outcome == "relapsed")
+    )
+  )
+
+print(drug6mp.v3)
+```
+
+The output of `Surv()` is a vector of objects with class `Surv`. When we
+print this vector:
+
+-   observations where the event was observed are printed as the event
+time (for example, `surv2 = 10` on line 1)
+
+-   observations where the event was right-censored are printed as the
+censoring time with a plus sign (`+`; for example, `surv2 = 32+` on
+line 3).
+
+### The `survfit` function
+
+Once we have constructed our `Surv` variable, we can calculate the
+Kaplan-Meier estimate of the survival curve using the `survfit()`
+function.
+
+::: callout-note
+The documentation for `?survfit` isn't too helpful; the
+`survfit.formula` documentation is better.
+
+```{r, printr.help.sections = c("description", "usage")}
+#| include: false
+?survfit.formula
+```
+:::
+
+---
+
+#### Example: `survfit()` with `drug6mp` data
+
+Here we use `survfit()` to create a `survfit` object, which contains the
+Kaplan-Meier estimate:
+
+```{r}
+#| code-fold: show
+drug6mp.km_model <- survfit(
+  formula = surv2 ~ 1,
+  data = drug6mp.v3
+)
+```
+
+`print.survfit()` just gives some summary statistics:
+
+```{r}
+#| code-fold: show
+print(drug6mp.km_model)
+```
+
+`summary.survfit()` shows us the underlying Kaplan-Meier table:
+
+```{r}
+#| code-fold: show
+summary(drug6mp.km_model)
+```
+
+---
+
+We can specify which time points we want using the `times` argument:
+
+```{r}
+#| code-fold: show
+summary(
+  drug6mp.km_model,
+  times = c(0, drug6mp.v3$t2)
+)
+```
+
+---
+
+```{r, printr.help.sections = c("description", "usage", "arguments")}
+#| code-fold: show
+?summary.survfit
+```
+
+### Plotting estimated survival functions
+
+We can plot `survfit` objects with `plot()`, `autoplot()`, or
+`ggsurvplot()`:
+
+```{r}
+#| code-fold: show
+#| fig-cap: "Kaplan-Meier Survival Curve for 6-MP Patients"
+
+library(ggfortify)
+autoplot(drug6mp.km_model)
+
+# not shown:
+# plot(drug6mp.km_model)
+
+# library(survminer)
+# ggsurvplot(drug6mp.km_model)
+```
+
+---
+
+#### quantiles of survival curve
+
+We can extract quantiles with `quantile()`:
+
+```{r}
+#| code-line-numbers: "2"
+drug6mp.km_model |>
+  quantile(p = c(.25, .5)) |>
+  as_tibble() |>
+  mutate(p = c(.25, .5)) |>
+  relocate(p, .before = everything())
+```

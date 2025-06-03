@@ -1,3 +1,5 @@
+{{< include macros.qmd >}}
+
 ## Building Cox Proportional Hazards models
 
 ### `hodg` Lymphoma Data Set from `KMsurv`
@@ -27,7 +29,9 @@
 #### Data
 
 ```{r}
-
+#| label: load-hodg
+library(dplyr)
+library(survival)
 data(hodg, package = "KMsurv")
 hodg2 = hodg |> 
   as_tibble() |> 
@@ -58,7 +62,8 @@ hodg2 |> print()
 ### Proportional hazards model
 
 ```{r}
-
+#| label: tbl-summary-hodg.cox1
+#| tbl-cap: "Summary of Proportional Hazards model for Hodgkins Lymphoma data"
 hodg.cox1 = coxph(
   formula = surv ~ gtype * dtype + score + wtime, 
   data = hodg2)
@@ -94,11 +99,12 @@ summary(hodg.cox1)
 
 ```{r}
 #| fig-cap: "Kaplan-Meier Survival Curves for HOD/NHL and Allo/Auto Grafts"
-
+#| label: fig-km-hodg2
 km_model = survfit(
   formula = surv ~ dtype + gtype,
   data = hodg2)
 
+library(ggplot2)
 km_model |> 
   autoplot(conf.int = FALSE) +
   theme_bw() +
@@ -118,7 +124,7 @@ km_model |>
 
 ```{r}
 #| fig-cap: "Observed and Expected Survival Curves"
-
+#| label: fig-obs-exp-hodg
 # we need to create a tibble of covariate patterns;
 # we will set score and wtime to mean values for disease and graft types:
 means = hodg2 |> 
@@ -357,7 +363,7 @@ na_and_cph |>
   theme_bw() + 
   scale_y_continuous(
     trans = "log10",
-    name = "Cumulative hazard H(t) (log-scale)") +
+    name = "Cumulative hazard, H(t) (log-scale)") +
   scale_x_continuous(
     trans = "log10",
     name = "Survival time (t, days, log-scale)") +
@@ -397,7 +403,7 @@ $$
 -   The expected event time can be tricky to calculate:
 
 $$
-\hat{\text{E}}[T|X=x] = \int_{t=0}^{\infty} \hat S(t)dt
+\hat{\text{E}}[T|X=x] = \int_{t=0}^{\infty} \hat \surv(t)dt
 $$
 
 ### Wide prediction intervals
@@ -500,6 +506,7 @@ the rank but deals better with censoring.
 The `cox.zph()` function implements a score test proposed in  @grambsch1994proportional.
 
 ```{r}
+
 hodg.zph = cox.zph(hodg.cox1)
 print(hodg.zph)
 ```
@@ -554,7 +561,7 @@ ggcoxzph(hodg.zph, var = "gtype:dtype")
 
 ::: notes
 Suppose that an individual has a survival time $T$ which has survival
-function $S(t)$, meaning that $\Pr(T> t) = S(t)$. Then $S(T)$ has a
+function $\surv(t)$, meaning that $\Pr(T> t) = \surv(t)$. Then $S(T)$ has a
 uniform distribution on $(0,1)$:
 :::
 
@@ -599,7 +606,7 @@ The **Cox-Snell generalized residuals** are defined as:
 :::
 
 $$
-r^{CS}_i \eqdef \hat H(t_i|\vx_i)
+r^{CS}_i \eqdef \hat \cuhaz(t_i|\vx_i)
 $$
 
 :::
@@ -615,7 +622,7 @@ should look like a censored sample from this exponential distribution.
 
 ```{r}
 #| fig-cap: "Cumulative Hazard of Cox-Snell Residuals"
-
+#| label: fig-cox-snell-cuhaz-hodg2
 hodg2 = hodg2 |> 
   mutate(cs = predict(hodg.cox1, type = "expected"))
 
@@ -1104,6 +1111,7 @@ We can also look at the log-hazard ("cloglog survival") plots:
 
 ```{r}
 #| fig-cap: "Cumulative hazard (cloglog scale) for `anderson` data"
+#| label: fig-cuhaz-anderson
 anderson_na_model = survfit(
   formula = surv ~ sex,
   data = anderson,

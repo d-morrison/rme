@@ -44,23 +44,7 @@ but it is **not** a mean.
 Similarly: 
 :::
 
-:::{#def-base-cuhaz}
-
-#### baseline cumulative hazard
-
-:::: notes
-The **baseline cumulative hazard**, 
-**base cumulative hazard**, 
-or **reference cumulative hazard**, 
-denoted $H_0(t)$ or $\Lambda_0(t)$, 
-is the [cumulative hazard function](intro-to-survival-analysis.qmd#def-cuhaz)
-for the subpopulation of individuals 
-whose covariates are all equal to their reference levels:
-::::
-
-$$\cuhaz_0(t) \eqdef \cuhaz(t | \vX = \vzero)$$
-
-:::
+{{< include _def-base-cuhaz.qmd >}}
 
 ---
 
@@ -75,7 +59,7 @@ is the survival function
 for an individual whose covariates 
 are all equal to their default values.
  
-$$S_0(t) \eqdef S(t | \vX = \vzero)$$
+$$S_0(t) \eqdef \surv(t | \vX = \vzero)$$
 :::
 
 ---
@@ -89,7 +73,7 @@ $$S_0(t) \eqdef S(t | \vX = \vzero)$$
 ---
 
 ::: notes
-Now, let's define how the hazard function depends on covariates.
+Now, let's define ***how*** the hazard function depends on covariates.
 We typically use a log link to model the relationship between 
 the hazard function, $\haz(t|\vx)$, and 
 the linear component, $\eta(\vx)$,
@@ -113,29 +97,7 @@ here $\loghaz(t|\vx)$ depends on **both** $t$ **and** $\vx$.
 
 ---
 
-::: notes
-As the second generalization, 
-we let the 
-base hazard, 
-cumulative hazard, and 
-survival functions
-depend on $t$, 
-but not on any covariates (for now). 
-We can do this using either parametric 
-or semi-parametric approaches.
-:::
-
-$$
-\ba
-\loghaz(t|\vx) &= \loghaz_0(t) + \reglincomb
-\\
-&= \loghaz_0(t) + \regbetasum
-\ea
-$${#eq-ph-lincomp}
-
-::: notes
-The intercept term $\loghaz_0(t)$ depends on time $t$.
-:::
+{{< include _def-ph-model.qmd >}}
 
 ---
 
@@ -161,15 +123,6 @@ $$
 
 ---
 
-:::{#def-hazard-ratio}
-#### hazard ratio
-$$
-\theta(t| \vx : \vxs) \eqdef \frac{\haz(t|\vx)}{\haz(t|\vxs)}
-$$
-:::
-
----
-
 <!-- :::{#cor-difflogodds-log-HR} -->
 
 <!-- $$\diffloghaz(t|\vx) = \logf{\theta(t| \vx : \vxs)}$$ -->
@@ -179,6 +132,8 @@ $$
 <!-- --- -->
 
 :::{#def-difflog-hazard-from-baseline}
+
+#### difference in log-hazard from 0
 ::: notes
 The difference in log-hazard for covariate pattern $\vx$
 compared to the baseline covariate pattern $\vec{0}$ is:
@@ -190,6 +145,18 @@ $$
 &\eqdef \diffloghaz(t | \vx: \vec{0})
 \ea
 $$
+:::
+
+---
+
+:::{#thm-loghaz-decomp}
+#### Decomposition of log-hazard
+$$
+\ba
+\loghaz(t|\vx) = \loghaz_0(t) + \diffloghaz(t|\vx)
+\ea
+$$
+
 :::
 
 ---
@@ -274,7 +241,7 @@ For two different individuals with covariate patterns $\boldsymbol x_1$ and $\bo
 
 $$
 \begin{aligned}
-\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}
+\frac{\haz(t|\boldsymbol x_1)}{\haz(t|\boldsymbol x_2)}
 &=\frac{h_0(t)\theta(\boldsymbol x_1)}{h_0(t)\theta(\boldsymbol x_2)}\\
 &=\frac{\theta(\boldsymbol x_1)}{\theta(\boldsymbol x_2)}\\
 \end{aligned}
@@ -293,10 +260,10 @@ it is called the **proportional hazards assumption**.
 ### proportional hazards
 
 A conditional probability distribution $p(T|X)$
-has **proportional hazards** if the hazard ratio $h(t|\boldsymbol x_1)/h(t|\boldsymbol x_2)$ does not depend on $t$. Mathematically, it can be written as:
+has **proportional hazards** if the hazard ratio $\haz(t|\boldsymbol x_1)/\haz(t|\boldsymbol x_2)$ does not depend on $t$. Mathematically, it can be written as:
 
 $$
-\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}
+\frac{\haz(t|\boldsymbol x_1)}{\haz(t|\boldsymbol x_2)}
 = \theta(\boldsymbol x_1,\boldsymbol x_2)
 $$
 
@@ -320,7 +287,7 @@ The proportional hazards model also has additional notable properties:
 
 $$
 \begin{aligned}
-\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}
+\frac{\haz(t|\boldsymbol x_1)}{\haz(t|\boldsymbol x_2)}
 &=\frac{\theta(\boldsymbol x_1)}{\theta(\boldsymbol x_2)}\\
 &=\frac{\exp{\eta(\boldsymbol x_1)}}{\exp{\eta(\boldsymbol x_2)}}\\
 &=\exp{\eta(\boldsymbol x_1)-\eta(\boldsymbol x_2)}\\
@@ -336,7 +303,7 @@ Hence on the log scale, we have:
 :::{#thm-diff-loghaz-lincom}
 $$
 \ba
-\log{\frac{h(t|\vx)}{h(t|\vxs)}}
+\log{\frac{\haz(t|\vx)}{\haz(t|\vxs)}}
 &= \diffloghaz(t|\vx : \vxs) 
 \\
 &\eqdef \loghaz(t|\vx) - \loghaz(t|\vxs)
@@ -354,14 +321,14 @@ If only one covariate $x_j$ is changing, then:
 
 $$
 \begin{aligned}
-\log{\frac{h(t|\boldsymbol x_1)}{h(t|\boldsymbol x_2)}}
+\log{\frac{\haz(t|\boldsymbol x_1)}{\haz(t|\boldsymbol x_2)}}
 &=  (x_{1j} - x_{2j}) \cdot \beta_j\\
 &\propto (x_{1j} - x_{2j})
 \end{aligned}
 $$
 
 ::: notes
-That is, under Cox's model $h(t|\boldsymbol x) = h_0(t)\exp{\boldsymbol x'\beta}$, the log of the hazard ratio is proportional to the difference in $x_j$, with the proportionality coefficient equal to $\beta_j$.
+That is, under Cox's model $\haz(t|\boldsymbol x) = h_0(t)\exp{\boldsymbol x'\beta}$, the log of the hazard ratio is proportional to the difference in $x_j$, with the proportionality coefficient equal to $\beta_j$.
 :::
 
 ---
@@ -370,7 +337,7 @@ Further,
 
 $$
 \begin{aligned}
-\log{h(t|\boldsymbol x)}
+\log{\haz(t|\boldsymbol x)}
 &=\log{h_0(t)}  + x'\beta
 \end{aligned}
 $$
@@ -386,23 +353,23 @@ See also:
 
 ### Additional properties of the proportional hazards model
 
-If $h(t|x)= h_0(t)\theta(x)$, then:
+If $\haz(t|x)= h_0(t)\theta(x)$, then:
 
 :::{#thm-ph-cuhaz}
 
-#### Cumulative hazards are also proportional to $H_0(t)$
+#### Cumulative hazards are also proportional to $\cuhaz_0(t)$
 
 $$
 \begin{aligned}
-H(t|x)
-&\eqdef \int_{u=0}^t h(u)du\\
-&= \int_{u=0}^t h_0(u)\theta(x)du\\
-&= \theta(x)\int_{u=0}^t h_0(u)du\\
-&= \theta(x)H_0(t)
+\cuhaz(t|x)
+&\eqdef \int_{u=0}^t \haz(u)du\\
+&= \int_{u=0}^t \haz_0(u)\theta(x)du\\
+&= \theta(x)\int_{u=0}^t \haz_0(u)du\\
+&= \theta(x)\cuhaz_0(t)
 \end{aligned}
 $$
 
-where $H_0(t) \eqdef H(t|0) = \int_{u=0}^t h_0(u)du$.
+where $\cuhaz_0(t) \eqdef \cuhaz(t|0) = \int_{u=0}^t \haz_0(u)du$.
 
 :::
 
@@ -413,7 +380,7 @@ where $H_0(t) \eqdef H(t|0) = \int_{u=0}^t h_0(u)du$.
 #### The logarithms of cumulative hazard should be parallel
 
 $$
-\log{H(t|\vx)} =\log{H_0(t)}  + \vx'\vb
+\log{\cuhaz(t|\vx)} =\log{\cuhaz_0(t)}  + \vx'\vb
 $$
 :::
 
@@ -424,10 +391,10 @@ $$
 
 $$
 \begin{aligned}
-S(t|x)
-&= \exp{-H(t|x)}\\
-&= \exp{-\theta(x)\cdot H_0(t)}\\
-&= \left(\exp{- H_0(t)}\right)^{\theta(x)}\\
+\surv(t|x)
+&= \exp{-\cuhaz(t|x)}\\
+&= \exp{-\theta(x)\cdot \cuhaz_0(t)}\\
+&= \paren{\exp{- \cuhaz_0(t)}}^{\theta(x)}\\
 &= \sb{S_0(t)}^{\theta(x)}\\
 \end{aligned}
 $$

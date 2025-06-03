@@ -1,0 +1,195 @@
+
+### Estimating survival in datasets without censoring
+
+::: notes
+In the `drug6mp` dataset, the estimated survival function for the placebo patients is easy to compute. 
+For any time $t$ in months, $\surv(t)$ is the fraction of patients with times greater than $t$:
+:::
+
+```{r}
+#| include: false
+#| code-summary: example-km-curve
+
+y <- c(1, 2, 3, 3, 3, 5, 9, 13, 23, 100)
+d <- c(1, 1, 1, 0, 1, 0, 1, 1, 1, 1)
+library(survival)
+temp1 <- survfit(Surv(y, d) ~ 1)
+```
+
+
+### Estimating survival in datasets with censoring
+
+-   For the 6-MP patients, we cannot ignore the censored data because we
+know that the time to relapse is greater than the censoring time.
+
+-   For any time $t$ in months, we know that 6-MP patients with times
+greater than $t$ have not relapsed, and those with relapse time less
+than $t$ have relapsed, but we don't know if patients with censored
+time less than $t$ have relapsed or not.
+
+-   The procedure we usually use is the Kaplan-Meier product-limit
+estimator of the survival function.
+
+-   The Kaplan-Meier estimator is a step function (like the empirical
+cdf), which changes value only at the event times, not at the
+censoring times.
+
+-   At each event time $t$, we compute the at-risk group size $Y$, which
+is all those observations whose event time or censoring time is at
+least $t$.
+
+-   If $d$ of the observations have an event time (not a censoring time)
+of $t$, then the group of survivors immediately following time $t$
+is reduced by the fraction $$\frac{Y-d}{Y}=1-\frac{d}{Y}$$
+
+---
+
+{{< include _def-km-estimator.qmd >}}
+
+---
+
+:::{#thm-KM-est-no-cens}
+#### Kaplan-Meier Estimate with No Censored Observations
+
+If there are no censored data, and there are $n$ data points, then just
+after (say) the third event time 
+
+$$
+\begin{aligned}
+\hat \surv(t) 
+&= \prod_{t_i < t}\sb{1-\frac{d_i}{Y_i}}
+\\ &= \sb{\frac{n-d_1}{n}} \sb{\frac{n-d_1-d_2}{n-d_1}} \sb{\frac{n-d_1-d_2-d_3}{n-d_1-d_2}}
+\\ &= \frac{n-d_1-d_2-d_3}{n}
+\\ &=1-\frac{d_1+d_2+d_3}{n}
+\\ &=1-\hat F(t)
+\end{aligned}
+$$
+
+where $\hat F(t)$ is the usual empirical CDF estimate.
+
+:::
+
+### Kaplan-Meier curve for `drug6mp` data
+
+Here is the Kaplan-Meier estimated survival curve for the patients who
+received 6-MP in the `drug6mp` dataset (we will see code to produce
+figures like this one shortly):
+
+```{r}
+#| fig-cap: "Kaplan-Meier Survival Curve for 6-MP Patients"
+#| label: fig-KM-mp6
+# | echo: false
+
+require(KMsurv)
+data(drug6mp)
+library(dplyr)
+library(survival)
+
+drug6mp_km_model1 <-
+  drug6mp |>
+  mutate(surv = Surv(t2, relapse)) |>
+  survfit(formula = surv ~ 1, data = _)
+
+library(ggfortify)
+drug6mp_km_model1 |>
+  autoplot(
+    mark.time = TRUE,
+    conf.int = FALSE
+  ) +
+  expand_limits(y = 0) +
+  xlab("Time since diagnosis (months)") +
+  ylab("KM Survival Curve")
+```
+
+### Kaplan-Meier calculations {.smaller}
+
+Let's compute these estimates and build the chart by hand:
+
+```{r}
+library(KMsurv)
+library(dplyr)
+data(drug6mp)
+
+drug6mp.v2 <-
+  drug6mp |>
+  as_tibble() |>
+  mutate(
+    remstat = remstat |>
+      case_match(
+        1 ~ "partial",
+        2 ~ "complete"
+      ),
+    # renaming to "outcome" while relabeling is just a style choice:
+    outcome = relapse |>
+      case_match(
+        0 ~ "censored",
+        1 ~ "relapsed"
+      )
+  )
+
+km.6mp <-
+  drug6mp.v2 |>
+  summarize(
+    .by = t2,
+    Relapses = sum(outcome == "relapsed"),
+    Censored = sum(outcome == "censored")
+  ) |>
+  # here we add a start time row, so the graph starts at time 0:
+  bind_rows(
+    tibble(
+      t2 = 0,
+      Relapses = 0,
+      Censored = 0
+    )
+  ) |>
+  # sort in time order:
+  arrange(t2) |>
+  mutate(
+    Exiting = Relapses + Censored,
+    `Study Size` = sum(Exiting),
+    Exited = cumsum(Exiting) |> dplyr::lag(default = 0),
+    `At Risk` = `Study Size` - Exited,
+    Hazard = Relapses / `At Risk`,
+    `KM Factor` = 1 - Hazard,
+    `Cumulative Hazard` = cumsum(`Hazard`),
+    `KM Survival Curve` = cumprod(`KM Factor`)
+  )
+
+library(pander)
+pander(km.6mp)
+```
+
+---
+
+#### Summary
+
+For the 6-MP patients at time 6 months, there are 21 patients at risk.
+At $t=6$ there are 3 relapses and 1 censored observations.
+
+The Kaplan-Meier factor is $(21-3)/21 = 0.857$. The number at risk for
+the next time ($t=7$) is $21-3-1=17$.
+
+At time 7 months, there are 17 patients at risk. At $t=7$ there is 1
+relapse and 0 censored observations. The Kaplan-Meier factor is
+$(17-1)/17 = 0.941$. The Kaplan Meier estimate is
+$0.857\times0.941=0.807$. The number at risk for the next time ($t=9$)
+is $17-1=16$.
+
+---
+
+Now, let's graph this estimated survival curve using `ggplot()`:
+
+```{r}
+#| label: fig-km-by-hand
+#| fig-cap: "KM curve for 6MP patients, calculated by hand"
+library(ggplot2)
+conflicts_prefer(dplyr::filter)
+km.6mp |>
+  ggplot(aes(x = t2, y = `KM Survival Curve`)) +
+  geom_step() +
+  geom_point(data = km.6mp |> filter(Censored > 0), shape = 3) +
+  expand_limits(y = c(0, 1), x = 0) +
+  xlab("Time since diagnosis (months)") +
+  ylab("KM Survival Curve") +
+  scale_y_continuous(labels = scales::percent)
+```

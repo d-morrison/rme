@@ -1,0 +1,236 @@
+
+(a.k.a. the Mantel-Cox test)
+
+---
+
+:::{#exr-compare-surv-ests}
+How do we test the null hypothesis that two or more groups
+have the same time-to-event distribution?
+:::
+
+---
+
+:::{#sol-compare-surv-ests}
+One option is the log-rank test
+comparing the Kaplan-Meier estimates of the survival functions of those groups.
+:::
+
+---
+
+::: notes
+Adapted from @kleinbaum2012survival p68:
+
+- The log–rank test is a large-sample chi-square test.
+
+- The log–rank test uses a test statistic that compares KM curves between groups across all survival times.
+
+- Like many other statistics used in other kinds of chi-square tests,
+the log–rank statistic makes use of observed
+versus expected cell counts over categories of
+outcomes.
+
+- The categories for the log–rank statistic
+are defined by each of the ordered failure
+times for the entire set of data being analyzed.
+
+:::
+
+For $t \in t_1,...,t_n$:
+$$
+\ba
+\hat{\haz}_t &= \frac{\sum_x m_{x,t}}{\sum_x n_{x,t}}
+\\
+\hat{E}_{t,x} &= \hat{\haz}_t * n_{x,t}
+\ea
+$$
+
+
+### The `survdiff` function
+
+```{r, printr.help.sections = c("description", "usage")}
+?survdiff
+```
+
+### Example: `survdiff()` with `drug6mp` data
+
+Now we are going to compare the placebo and 6-MP data. We need to
+reshape the data to make it usable with the standard `survival`
+workflow:
+
+```{r}
+library(survival)
+library(tidyr)
+drug6mp.v4 <-
+  drug6mp.v3 |>
+  select(pair, remstat, t1, t2, outcome) |>
+  # here we are going to change the data from a wide format to long:
+  pivot_longer(
+    cols = c(t1, t2),
+    names_to = "treatment",
+    values_to = "exit_time"
+  ) |>
+  mutate(
+    treatment = treatment |>
+      case_match(
+        "t1" ~ "placebo",
+        "t2" ~ "6-MP"
+      ),
+    outcome = if_else(
+      treatment == "placebo",
+      "relapsed",
+      outcome
+    ),
+    surv = Surv(
+      time = exit_time,
+      event = (outcome == "relapsed")
+    )
+  )
+```
+
+---
+
+Using this long data format, we can fit a Kaplan-Meier curve for each
+treatment group simultaneously:
+
+```{r}
+drug6mp.km_model2 <-
+  survfit(
+    formula = surv ~ treatment,
+    data = drug6mp.v4
+  )
+```
+
+---
+
+We can plot the curves in the same graph:
+
+```{r}
+drug6mp.km_model2 |> autoplot()
+```
+
+---
+
+We can also perform something like a t-test, where the null hypothesis
+is that the curves are the same:
+
+:::{#tbl-logrank-6mp}
+```{r}
+
+o_e <- drug6mp.v4 |>
+  arrange(exit_time) |>
+  mutate(
+    .by = treatment,
+    n_exited = row_number(),
+    n_at_risk = n() - n_exited + 1
+  ) |>
+  dplyr::summarize(
+    .by = all_of(c("exit_time", "treatment")),
+    n_at_risk = max(n_at_risk),
+    n_events = sum(outcome == "relapsed")
+  ) |>
+  tidyr::pivot_wider(
+    names_from = "treatment",
+    values_from = c(n_at_risk, n_events)
+  ) |>
+  tidyr::fill(
+    starts_with("n_at_risk"),
+    .direction = "up"
+  ) |>
+  replace_na(list("n_events_placebo" = 0,
+                  "n_events_6-MP" = 0)) |>
+  mutate(
+    n_at_risk = rowSums(across(starts_with("n_at_risk"))),
+    n_events = rowSums(across(starts_with("n_events"))),
+    marginal_hazard = n_events / n_at_risk,
+    expected_6mp = marginal_hazard * `n_at_risk_6-MP`,
+    expected_plc = marginal_hazard * n_at_risk_placebo,
+    diff_6mp = `n_events_6-MP` - expected_6mp,
+    diff_plc = n_events_placebo - expected_plc
+  ) |>
+  filter(n_events > 0)
+
+o_e
+
+```
+Observed and expected event counts for the 6-MP data, for log-rank test
+:::
+
+:::{#tbl-sum-obs-exp}
+```{r}
+o_e_summ <- o_e |>
+  summarize(
+    across(starts_with("expected"), sum),
+    across(starts_with("n_events_"), sum)
+  )
+pander::pander(o_e_summ)
+```
+Observed and expected sums for the 6-MP data, for log-rank test
+
+:::
+
+---
+
+::: notes
+The exact variance formula for each of two groups is:
+:::
+
+$$
+\Varf{O_i - E_i} = \sum_j \frac
+{n_{1j} n_{2j} (m_j) (n_j - m_j)}
+{(n_j)^2 (n_j - 1)}
+$$
+
+::: notes
+See @kleinbaum2012survival, Chapter 2 Appendix for the exact variance formula
+for more than two groups.
+:::
+
+---
+
+::: notes
+Or we can use an approximate statistic:
+:::
+$$X^2 \approx \sum_{i = 1}^p \frac{(O_i - E_i)^2}{E_i}$$
+
+```{r}
+with(
+  o_e_summ,
+  tibble(
+    "6mp" = (`n_events_6-MP` - expected_6mp)^2 / expected_6mp,
+    "placebo" = (n_events_placebo - expected_plc)^2 / expected_plc,
+    sum = `6mp` + placebo
+  )
+) |>
+  pander::pander()
+```
+
+---
+
+R gives us both the exact and approximate results:
+
+```{r}
+survdiff(
+  formula = surv ~ treatment,
+  data = drug6mp.v4
+)
+```
+
+---
+
+::: notes
+By default, `survdiff()` ignores any pairing,
+but we can use `strata()` to perform something similar to a paired t-test:
+:::
+
+```{r}
+lrank_test <- survdiff(
+  formula = surv ~ treatment + strata(pair),
+  data = drug6mp.v4
+)
+lrank_test
+```
+
+::: notes
+Interestingly, accounting for pairing reduces the significance of the
+difference.
+:::

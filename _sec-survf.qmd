@@ -1,0 +1,127 @@
+
+For survival data, a more important quantity is the **survival
+function**:
+
+$$
+\begin{aligned}
+\surv(t) &\eqdef \Pr(T > t)\\
+&=\int_{u=t}^\infty p(u) du\\
+&=1-F(t)\\
+\end{aligned}
+$$
+
+---
+
+:::{#def-surv-fn}
+
+#### Survival function
+
+:::: notes
+Given a random time-to-event variable $T$,
+the **survival function** or **survivor function**,
+denoted $\surv(t)$,
+is the probability
+that the event time is later than $t$.
+If the event in a clinical trial is death,
+then $\surv(t)$ is the expected fraction
+of the original population at time 0
+who have survived up to time $t$
+and are still alive at time $t$; that is:
+::::
+
+$$\surv(t) \eqdef \Pr(T > t)$${#eq-def-surv}
+
+:::
+
+---
+
+:::{#exm-exp-survfn}
+##### exponential distribution
+
+Since $\surv(t) = 1 - F(t)$, the survival function of the exponential
+distribution family of models is:
+
+$$
+P(T> t) = \left\{ {{\text{e}^{-\lambda t}, t\ge0} \atop {1, t \le 0}}\right.
+$$ where $\lambda > 0$.
+
+@fig-exp-survfuns shows some examples of exponential survival functions.
+
+:::
+
+---
+
+```{r}
+#| fig-cap: "Exponential Survival Functions"
+#| label: fig-exp-survfuns
+library(ggplot2)
+ggplot() +
+  geom_function(
+    aes(col = "0.5"),
+    fun = pexp,
+    args = list(lower = FALSE, rate = 0.5)
+  ) +
+  geom_function(
+    aes(col = "p = 1"),
+    fun = pexp,
+    args = list(lower = FALSE, rate = 1)
+  ) +
+  geom_function(
+    aes(col = "p = 1.5"),
+    fun = pexp,
+    args = list(lower = FALSE, rate = 1.5)
+  ) +
+  geom_function(
+    aes(col = "p = 5"),
+    fun = pexp,
+    args = list(lower = FALSE, rate = 5)
+  ) +
+  theme_bw() +
+  ylab("S(t)") +
+  guides(col = guide_legend(title = expr(lambda))) +
+  xlab("Time (t)") +
+  xlim(0, 2.5) +
+  theme(
+    legend.position = "bottom",
+    axis.title.x =
+      element_text(
+        angle = 0,
+        vjust = 1,
+        hjust = 1
+      ),
+    axis.title.y =
+      element_text(
+        angle = 0,
+        vjust = 1,
+        hjust = 1
+      )
+  )
+```
+
+---
+
+:::{#thm-surv-fn-as-mean-status}
+
+If $A_t$ represents survival status at time $t$, with $A_t = 1$ denoting alive at time $t$ and $A_t = 0$ denoting deceased at time $t$, then:
+
+$$\surv(t) = \Pr(A_t=1) = \Expp[A_t]$$
+
+:::
+
+---
+
+:::{#thm-surv-and-mean}
+
+If $T$ is a nonnegative random variable, then:
+
+$$\Expp[T] = \int_{t=0}^{\infty} \surv(t)dt$$
+
+:::
+
+---
+
+:::{.proof}
+
+See <https://statproofbook.github.io/P/mean-nnrvar.html> or
+
+:::

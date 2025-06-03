@@ -16,10 +16,10 @@ $$
 f(t) &= \lambda e^{-\lambda t}\\
 \log{f(t)} &= \log{\lambda}-\lambda t\\
 F(t) &= 1-e^{-\lambda t}\\
-S(t)&= e^{-\lambda t}\\
-H(t) &= \log{S(t)}
+\surv(t)&= e^{-\lambda t}\\
+\cuhaz(t) &= \log{\surv(t)}
 \\   &= -\lambda t\\
-h(t) &= \lambda\\
+\haz(t) &= \lambda\\
 \text{E}(T) &= \lambda^{-1}
 \end{aligned}
 $$
@@ -32,10 +32,10 @@ $$
 \begin{aligned}
 f(t)&= \lambda p (\lambda t)^{p-1}e^{-(\lambda t)^p}\\
 F(t)&=1 - e^{-(\lambda t)^p}\\
-S(t)&=e^{-(\lambda t)^p}\\
-h(t)&=\lambda p (\lambda t)^{p-1}\\
-H(t)&=(\lambda t)^p\\
-\log{H(t)} &= p \log{\lambda t} 
+\surv(t)&=e^{-(\lambda t)^p}\\
+\haz(t)&=\lambda p (\lambda t)^{p-1}\\
+\cuhaz(t)&=(\lambda t)^p\\
+\log{\cuhaz(t)} &= p \log{\lambda t} 
 \\ &= p \log{\lambda} + p \log{t}
 \\ \text{E}(T) &= \lambda^{-1} \cdot \Gamma\left(1 + \frac{1}{p}\right)
 \end{aligned}
@@ -115,8 +115,8 @@ If $T$ has a Weibull distribution, then:
     distribution
 -   When $p > 1$, the hazard is increasing: $h'(t) > 0$
 -   When $p < 1$, the hazard is decreasing: $h'(t) < 0$
--   $\log{H(t)}$ is a straight line relative to $\log{t}$: 
-$\log{H(t)} = p \log{\lambda} + p \log{t}$
+-   $\log{\cuhaz(t)}$ is a straight line relative to $\log{t}$: 
+$\log{\cuhaz(t)} = p \log{\lambda} + p \log{t}$
 
 :::
 
@@ -161,7 +161,7 @@ ggplot() +
     fun = \(x) hweibull(x, shape = 2, scale = 1/lambda)) +
   theme_bw() + 
   xlim(0, 2.5) + 
-  ylab("h(t)") +
+  ylab(expr(lambda)) +
   theme(axis.title.y = element_text(angle=0)) +
   theme(legend.position="bottom") +
   guides(
@@ -218,8 +218,8 @@ For each subject $i$, define a linear predictor:
 $$
 \begin{aligned}
 \eta(\boldsymbol x) &= \beta_0 + (\beta_1x_1 + \dots + \beta_p x_p)\\
-h(t|\boldsymbol x) &= \exp{\eta(\boldsymbol x)}\\
-h_0 &\stackrel{\text{def}}{=} h(t|\boldsymbol 0)\\
+\haz(t|\boldsymbol x) &= \exp{\eta(\boldsymbol x)}\\
+h_0 &\stackrel{\text{def}}{=} \haz(t|\boldsymbol 0)\\
 &= \exp{\eta(\boldsymbol 0)}\\
 &= \exp{\beta_0 + (\beta_1 \cdot 0 + \dots + \beta_p \cdot 0)}\\
 &= \exp{\beta_0 + 0}\\
@@ -241,8 +241,8 @@ $$
 \begin{aligned}
 h(T=t|X=x) 
 &\stackrel{\text{def}}{=} p(T=t|X=x,T \ge t)\\
-&= h(t|X=0)\cdot \exp{\eta(x)}\\
-&= h(t|X=0)\cdot \theta(x)\\
+&= \haz(t|X=0)\cdot \exp{\eta(x)}\\
+&= \haz(t|X=0)\cdot \theta(x)\\
 &= h_0(t)\cdot \theta(x)
 \end{aligned}
 $$
@@ -251,10 +251,10 @@ and correspondingly,
 
 $$
 \begin{aligned}
-H(t|x)
+\cuhaz(t|x)
 &= \theta(x)H_0(t)\\
-S(t|x)
-&= \exp{-H(t|x)}\\
+\surv(t|x)
+&= \exp{-\cuhaz(t|x)}\\
 &= \exp{-\theta(x)\cdot H_0(t)}\\
 &= \left(\exp{- H_0(t)}\right)^{\theta(x)}\\
 &= \left(S_0(t)\right)^{\theta(x)}\\
@@ -262,7 +262,7 @@ S(t|x)
 $$
 
 An alternative modeling assumption would be
-$$S(t|X=x)=S_0(t\cdot \theta(x))$$ where $\theta(x)=\exp{\eta(x)}$,
+$$\surv(t|X=x)=S_0(t\cdot \theta(x))$$ where $\theta(x)=\exp{\eta(x)}$,
 $\eta(x) =\beta_1x_1+\cdots+\beta_px_p$, and $S_0(t)=P(T\ge t|X=0)$ is
 the base survival function.
 
@@ -271,7 +271,7 @@ Then
 $$
 \begin{aligned}
 E(T|X=x)
-&= \int_{t=0}^{\infty} S(t|x)dt\\
+&= \int_{t=0}^{\infty} \surv(t|x)dt\\
 &= \int_{t=0}^{\infty} S_0(t\cdot \theta(x))dt\\
 &= \int_{u=0}^{\infty} S_0(u)du \cdot \theta(x)^{-1}\\
 &= \theta(x)^{-1} \cdot \int_{u=0}^{\infty} S_0(u)du\\
@@ -288,8 +288,8 @@ Additionally:
 
 $$
 \begin{aligned}
-H(t|x) &= H_0(\theta(x)\cdot t)\\
-h(t|x) &= \theta(x) \cdot h_0(\theta(x)\cdot t)
+\cuhaz(t|x) &= H_0(\theta(x)\cdot t)\\
+\haz(t|x) &= \theta(x) \cdot h_0(\theta(x)\cdot t)
 \end{aligned}
 $$
 
@@ -297,7 +297,7 @@ If the base distribution is exponential with parameter $\lambda$ then
 
 $$
 \begin{aligned}
-S(t|x)
+\surv(t|x)
 &= \exp{-\lambda \cdot t \theta(x)}\\
 &= [\exp{-\lambda t}]^{\theta(x)}\\
 \end{aligned}
@@ -327,8 +327,8 @@ function are
 
 $$
 \begin{aligned}
-h(t)&=\lambda p (\lambda t)^{p-1}\\
-S(t)&=e^{-(\lambda t)^p}
+\haz(t)&=\lambda p (\lambda t)^{p-1}\\
+\surv(t)&=e^{-(\lambda t)^p}
 \end{aligned}
 $$
 
@@ -338,11 +338,11 @@ $\theta_i=e^{\eta_i}$ we have
 
 $$
 \begin{aligned}
-h(t)&=\lambda p (\lambda t)^{p-1}\theta_i
+\haz(t)&=\lambda p (\lambda t)^{p-1}\theta_i
 \end{aligned}
 $$
 
-A distribution with $h(t)=\lambda p (\lambda t)^{p-1}\theta_i$ is a
+A distribution with $\haz(t)=\lambda p (\lambda t)^{p-1}\theta_i$ is a
 Weibull distribution with parameters $\lambda^*=\lambda \theta_i^{1/p}$
 and $p$ so the survival function is
 
@@ -350,7 +350,7 @@ $$
 \begin{aligned}
 S^*(t)&=e^{-(\lambda^* t)^p}\\
 &=e^{-(\lambda \theta^{1/p} t)^p}\\
-&= S(t\theta^{1/p})
+&= \surv(t\theta^{1/p})
 \end{aligned}
 $$
 

@@ -1,0 +1,221 @@
+
+---
+
+Data from @copelan1991treatment
+
+![Recovery process from a bone marrow transplant (Fig. 1.1 from @klein2003survival)](images/bone marrow multi-stage model.png){#fig-bmt-mst}
+
+### Study design
+
+##### Treatment {.unnumbered}
+
+-   **allogeneic** (from a donor) **bone marrow transplant therapy**
+
+##### Inclusion criteria {.unnumbered}
+
+-   **acute myeloid leukemia (AML)**
+-   **acute lymphoblastic leukemia (ALL).**
+
+##### Possible intermediate events {.unnumbered}
+
+-   **graft vs. host disease (GVHD)**: an immunological rejection
+response to the transplant
+-   **platelet recovery**: a return of platelet count to normal levels.
+
+One or the other, both in either order, or neither may occur.
+
+##### End point events
+
+-   relapse of the disease
+-   death
+
+Any or all of these events may be censored.
+
+### `KMsurv::bmt` data in R
+
+```{r}
+library(KMsurv)
+?bmt
+```
+
+### Analysis plan
+
+-   We concentrate for now on disease-free survival (`t2` and `d3`) for
+the three risk groups, ALL, AML Low Risk, and AML High Risk.
+-   We will construct the Kaplan-Meier survival curves, compare them,
+and test for differences.
+-   We will construct the cumulative hazard curves and compare them.
+-   We will estimate the hazard functions, interpret, and compare them.
+
+### Survival Function Estimate and Variance
+
+$$\hat \surv(t) = \prod_{t_i < t}\left[1-\frac{d_i}{Y_i}\right]$$ where
+$Y_i$ is the group at risk at time $t_i$.
+
+The estimated variance of $\hat \surv(t)$ is:
+
+:::{#thm-greenwood}
+#### Greenwood's estimator for variance of Kaplan-Meier survival estimator
+
+$$
+\varhf{\hat \surv(t)} = \hat \surv(t)^2\sum_{t_i <t}\frac{d_i}{Y_i(Y_i-d_i)}
+$${#eq-var-est-surv}
+:::
+
+
+We can use @eq-var-est-surv for confidence intervals for a survival function or a
+difference of survival functions.
+
+---
+
+##### Kaplan-Meier survival curves
+
+```{r}
+#| code-summary: "code to preprocess and model `bmt` data"
+library(KMsurv)
+library(survival)
+data(bmt)
+
+bmt <-
+  bmt |>
+  as_tibble() |>
+  mutate(
+    group =
+      group |>
+      factor(
+        labels = c("ALL", "Low Risk AML", "High Risk AML")
+      ),
+    surv = Surv(t2, d3)
+  )
+
+km_model1 <- survfit(
+  formula = surv ~ group,
+  data = bmt
+)
+```
+
+```{r "KM survival curves for bmt data"}
+#| fig-cap: "Disease-Free Survival by Disease Group"
+
+library(ggfortify)
+autoplot(
+  km_model1,
+  conf.int = TRUE,
+  ylab = "Pr(disease-free survival)",
+  xlab = "Time since transplant (days)"
+) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+---
+
+### Understanding Greenwood's formula (optional)
+
+::: notes
+To see where Greenwood's formula comes from, let $x_i = Y_i - d_i$. We
+approximate the solution treating each time as independent, with $Y_i$
+fixed and ignore randomness in times of failure and we treat $x_i$ as
+independent binomials $\text{Bin}(Y_i,p_i)$. Letting $\surv(t)$ be the
+"true" survival function
+:::
+
+$$
+\begin{aligned}
+\hat \surv(t) &=\prod_{t_i<t}x_i/Y_i\\
+\surv(t)&=\prod_{t_i<t}p_i
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\frac{\hat \surv(t)}{\surv(t)}
+&= \prod_{t_i<t} \frac{x_i}.    {p_iY_i}
+\\ &= \prod_{t_i<t} \frac{\hat p_i}{p_i}
+\\ &= \prod_{t_i<t} \paren{1+\frac{\hat p_i-p_i}{p_i}}
+\\ &\approx 1+\sum_{t_i<t} \frac{\hat p_i-p_i}{p_i}
+\end{aligned}
+$$
+
+---
+
+$$
+\begin{aligned}
+\text{Var}\left(\frac{\hat \surv(t)}{\surv(t)}\right)
+&\approx \text{Var}\left(1+\sum_{t_i<t} \frac{\hat p_i-p_i}{p_i}\right)
+\\ &=\sum_{t_i<t} \frac{1}{p_i^2}\frac{p_i(1-p_i)}{Y_i}
+\\ &= \sum_{t_i<t} \frac{(1-p_i)}{p_iY_i}
+\\ &\approx\sum_{t_i<t} \frac{(1-x_i/Y_i)}{x_i}
+\\ &=\sum_{t_i<t} \frac{Y_i-x_i}{x_iY_i}
+\\ &=\sum_{t_i<t} \frac{d_i}{Y_i(Y_i-d_i)}
+\\ \tf \Varf{\hat \surv(t)}
+&\approx \hat \surv(t)^2\sum_{t_i<t} \frac{d_i}{Y_i(Y_i-d_i)}
+\end{aligned}
+$$
+
+### Test for differences among the disease groups
+
+Here we compute a chi-square test for assocation between disease group
+(`group`) and disease-free survival:
+
+```{r}
+survdiff(surv ~ group, data = bmt)
+```
+
+### Cumulative Hazard
+
+$$
+\begin{aligned}
+\haz(t)
+&\eqdef   \p(T=t|T\ge t)\\
+&= \frac{\p(T=t)}{\P(T\ge t)}\\
+&= -\deriv{t}\logf{\surv(t)}
+\end{aligned}
+$$
+
+The **cumulative hazard** (or **integrated hazard**) function is
+
+$$\cuhaz(t)\eqdef  \int_0^t \haz(t) dt$$
+
+Since
+$\haz(t) = -\deriv{t}\logf{\surv(t)}$ as shown above,
+we have:
+
+$$
+\cuhaz(t)=-\logf{\surv(t)}
+$$
+
+---
+
+So we can estimate $\cuhaz(t)$ as:
+
+$$
+\begin{aligned}
+\hat \cuhaz(t)
+&= -\logf{\hat \surv(t)}\\
+&= -\logf{\prod_{t_i < t}\sb{1-\frac{d_i}{Y_i}}}\\
+&= -\sum_{t_i < t}\logf{1-\frac{d_i}{Y_i}}
+\end{aligned}
+$$
+
+This is the **Kaplan-Meier (product-limit) estimate of cumulative
+hazard**.
+
+---
+
+#### Example: Cumulative Hazard Curves for Bone-Marrow Transplant (`bmt`) data
+
+```{r}
+#| fig-cap: "Disease-Free Cumulative Hazard by Disease Group"
+#| label: fig-cuhaz-bmt
+
+autoplot(
+  fun = "cumhaz",
+  km_model1,
+  conf.int = FALSE,
+  ylab = "Cumulative hazard (disease-free survival)",
+  xlab = "Time since transplant (days)"
+) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```

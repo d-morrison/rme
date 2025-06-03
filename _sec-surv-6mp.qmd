@@ -1,0 +1,118 @@
+
+### Overview of study {.smaller}
+
+This is from a clinical trial in 1963 for 6-MP treatment vs. placebo for
+Acute Leukemia in 42 children.
+
+-   Pairs of children:
+
+-   matched by remission status at the time of treatment (`remstat`:
+`1` = partial, `2` = complete)
+-   randomized to 6-MP (exit times in `t2`) or placebo (exit times
+in `t1`)
+
+-   Followed until relapse or end of study.
+
+-   All of the placebo group relapsed, but some of the 6-MP group were
+censored (which means they were still in remission); indicated by
+`relapse` variable (`0` = censored, `1` = relapse).
+
+-   6-MP = 6-Mercaptopurine (Purinethol) is an anti-cancer
+("antineoplastic" or "cytotoxic") chemotherapy drug used currently
+for Acute lymphoblastic leukemia (ALL). It is classified as an
+antimetabolite.
+
+### Study design {.smaller}
+
+- Clinical trial in 1963 for 6-MP treatment vs. placebo for Acute Leukemia
+in 42 children.
+- Pairs of children:
+- matched by remission status at the time of treatment (`remstat`)
+- `remstat` = 1: partial
+- `remstat` = 2: complete
+- randomized to 6-MP (exit time: `t2`) or placebo (`t1`).
+- Followed until relapse or end of study.
+- All of the placebo group relapsed,
+- Some of the 6-MP group were censored.
+
+---
+
+```{r}
+#| tbl-cap: "`drug6mp` pediatric acute leukemia data"
+#| label: tbl-drug6mp
+library(KMsurv)
+data(drug6mp)
+drug6mp <- drug6mp |>
+  tibble::as_tibble() |>
+  print()
+```
+
+### Data documentation for `drug6mp`
+
+```{r, printr.help.sections = c("description", "format")}
+#| fig-cap: Data documentation for `drug6mp`
+#| label: fig-drug6mp-helpdoc
+# library(printr) # inserts help-file output into markdown output
+library(KMsurv)
+?drug6mp
+```
+
+### Descriptive Statistics {.smaller}
+
+```{r}
+#| tbl-cap: "Summary statistics for `drug6mp` data"
+#| label: tbl-drug6mp-summary
+#| code-fold: show
+summary(drug6mp)
+```
+
+::: notes
+
+-   The average time in each group is not useful. Some of the 6-MP
+patients have not relapsed at the time recorded, while all of the
+placebo patients have relapsed.
+-   The median time is not really useful either because so many of the
+6-MP patients have not relapsed (12/21).
+-   Both are biased down in the 6-MP group. Remember that lower times
+are worse since they indicate sooner recurrence.
+:::
+
+### Exponential model
+
+::: notes
+-   We *can* compute the hazard rate, assuming an exponential model:
+number of relapses divided by the sum of the exit times (@eq-mle-exp).
+:::
+
+$$\hat\lambda = \frac{\sumin D_i}{\sumin Y_i}$$
+
+::: notes
+-   For the placebo, that is just the reciprocal of the mean time:
+:::
+$$
+\ba
+\hat \lambda_{\text{placebo}}
+&= \frac{\sumin D_i}{\sumin Y_i}
+\\ &= \frac{\sumin 1}{\sumin Y_i}
+\\ &= \frac{n}{\sumin Y_i}
+\\ &= \frac{1}{\bar{Y}}
+\\ &= \frac{1}{`r drug6mp |> pull(t1) |> mean()`}
+\\ &= `r 1/(drug6mp |> pull(t1) |> mean())`
+\ea
+$$
+
+---
+
+-   For the 6-MP group, $\hat\lambda = 9/359 = 0.025$
+
+$$
+\ba
+\hat \lambda_{\text{6-MP}}
+&= \frac{\sumin D_i}{\sumin Y_i}
+\\ &= \frac{9}{359}
+\\ &= `r 9/359`
+\ea
+$$
+
+-   The estimated hazard in the placebo group is 4.6 times as
+large as in the 6-MP group (assuming the hazard is constant over time).
