@@ -1,0 +1,140 @@
+
+Another important quantity is the **hazard function**:
+
+{{< include _def-hazard.qmd >}}
+
+---
+
+{{< include def-incidence-rate.qmd >}}
+
+---
+
+::: notes
+The hazard function has an important relationship to the density and survival functions,
+which we can use to derive the hazard function for a given probability distribution (@thm-hazard-dens-surv).
+:::
+
+:::::{#lem-joint-prob-same-var}
+
+#### Joint probability of a variable with itself
+
+$$p(T=t, T\ge t) = p(T=t)$$
+
+::::::{.proof}
+Recall from Epi 202:
+if $A$ and $B$ are statistical events and $A\subseteq B$, then $p(A, B) = p(A)$.
+In particular, $\{T=t\} \subseteq \{T\geq t\}$, so $p(T=t, T\ge t) = p(T=t)$.
+::::::
+:::::
+
+---
+
+:::{#thm-hazard-dens-surv}
+#### Hazard equals density over survival
+$$\haz(t)=\frac{f(t)}{\surv(t)}$$
+:::
+
+---
+
+::::{.proof}
+
+$$
+\begin{aligned}
+\haz(t) &=p(T=t|T\ge t)\\
+&=\frac{p(T=t, T\ge t)}{p(T \ge t)}\\
+&=\frac{p(T=t)}{p(T \ge t)}\\
+&=\frac{f(t)}{\surv(t)}
+\end{aligned}
+$$
+
+::::
+
+---
+
+:::{#exm-exp-haz}
+##### exponential distribution
+
+The hazard function of the exponential distribution family of models is:
+
+$$
+\begin{aligned}
+P(T=t|T \ge t)
+&= \frac{f(t)}{\surv(t)}\\
+&= \frac{\mathbb{1}_{t \ge 0}\cdot \lambda  \text{e}^{-\lambda t}}{\text{e}^{-\lambda t}}\\
+&=\mathbb{1}_{t \ge 0}\cdot \lambda
+\end{aligned}
+$$
+@fig-exp-hazard shows some examples of exponential hazard functions.
+
+:::
+
+---
+
+```{r, echo = FALSE}
+#| fig-cap: "Examples of hazard functions for exponential distributions"
+#| label: fig-exp-hazard
+library(ggplot2)
+ggplot() +
+  geom_hline(
+    aes(col = "0.5", yintercept = 0.5)
+  ) +
+  geom_hline(
+    aes(col = "p = 1", yintercept = 1)
+  ) +
+  geom_hline(
+    aes(col = "p = 1.5", yintercept = 1.5)
+  ) +
+  geom_hline(
+    aes(col = "p = 5", yintercept = 5)
+  ) +
+  theme_bw() +
+  ylab(expr(lambda)) +
+  ylim(0, 5) +
+  guides(col = guide_legend(title = expr(lambda))) +
+  xlab("Time (t)") +
+  xlim(0, 2.5) +
+  theme(
+    axis.title.x =
+      element_text(
+        angle = 0,
+        vjust = 1,
+        hjust = 1
+      ),
+    axis.title.y =
+      element_text(
+        angle = 0,
+        vjust = 1,
+        hjust = 1
+      )
+  )
+```
+
+---
+
+We can also view the hazard function as the derivative of the negative of the logarithm of the survival function:
+
+:::{#thm-h-logS}
+
+#### transform survival to hazard
+
+$$\haz(t) = \deriv{t}\cb{-\log{\surv(t)}}$$
+:::
+
+---
+
+::::{.proof}
+$$
+\begin{aligned}
+\haz(t)
+&= \frac{f(t)}{\surv(t)}\\
+&= \frac{-S'(t)}{\surv(t)}\\
+&= -\frac{S'(t)}{\surv(t)}\\
+&=-\deriv{t}\log{\surv(t)}\\
+&=\deriv{t}\cb{-\log{\surv(t)}}
+\end{aligned}
+$$
+::::
+
+---
+
+{{< include _def-hazard-ratio.qmd >}}

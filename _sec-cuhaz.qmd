@@ -1,0 +1,84 @@
+
+Since $\haz(t) = \deriv{t}\cb{-\log{\surv(t)}}$ (see @thm-h-logS), we also have:
+
+:::{#cor-surv-int-haz}
+$$\surv(t) = \exp{-\int_{u=0}^t \haz(u)du}$${#eq-surv-int-haz}
+:::
+
+---
+
+::: notes
+The integral in @eq-surv-int-haz is important enough to have its own name: **cumulative hazard**.
+:::
+
+:::{#def-cuhaz}
+
+##### cumulative hazard
+
+The **cumulative hazard function**,
+often denoted $\Lambda(t)$ or $\text{H}(t)$,
+is defined as:
+
+$$\cuhaz(t) \eqdef \int_{u=0}^t \haz(u) du$$
+
+:::
+
+As we will see below, $\cuhaz(t)$ is tractable to estimate, and we can then
+derive an estimate of the hazard function using an approximate derivative
+of the estimated cumulative hazard.
+
+---
+
+:::{#exm-exp-cumhaz}
+
+The cumulative hazard function for the exponential distribution
+with rate parameter $\lambda$ is:
+
+$$
+\cuhaz(t) = \mathbb{1}_{t \ge 0}\cdot \lambda t
+$$
+
+@fig-cuhaz-exp shows some examples of exponential cumulative hazard functions.
+
+:::
+
+---
+
+```{r, echo = FALSE}
+#| fig-cap: "Examples of exponential cumulative hazard functions"
+#| label: fig-cuhaz-exp
+library(ggplot2)
+ggplot() +
+  geom_abline(
+    aes(col = "0.5", intercept = 0, slope = 0.5)
+  ) +
+  geom_abline(
+    aes(col = "p = 1", intercept = 0, slope = 1)
+  ) +
+  geom_abline(
+    aes(col = "p = 1.5", intercept = 0, slope = 1.5)
+  ) +
+  geom_abline(
+    aes(col = "p = 5", intercept = 0, slope = 5)
+  ) +
+  theme_bw() +
+  ylab(expr(Lambda)) +
+  ylim(0, 5) +
+  guides(col = guide_legend(title = expr(lambda))) +
+  xlab("Time (t)") +
+  xlim(0, 2.5) +
+  theme(
+    axis.title.x =
+      element_text(
+        angle = 0,
+        vjust = 1,
+        hjust = 1
+      ),
+    axis.title.y =
+      element_text(
+        angle = 0,
+        vjust = 1,
+        hjust = 1
+      )
+  )
+```
