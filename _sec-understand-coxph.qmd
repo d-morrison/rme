@@ -11,89 +11,7 @@ covariates $x_1,x_2, \dots, x_p$;
 we will indicate this dependence by extending our notation for hazard:
 :::
 
-$$\haz(t|\vx) \eqdef \p(T=t|T\ge t, \vX = \vx)$$
-
----
-
-:::{#def-base-hazard}
-
-#### baseline hazard
-
-:::: notes
-The **baseline hazard**, **base hazard**, or **reference hazard**, 
-denoted $h_0(t)$ or $\lambda_0(t)$, 
-is the [hazard function](intro-to-survival-analysis.qmd#def-hazard) 
-for the subpopulation of individuals 
-whose covariates are all equal to their reference levels:
-
-::::
-
-$$\haz_0(t) \eqdef \haz(t | \vX = \vzero)$$
-
-:::
-
-::: notes
-The baseline hazard is *somewhat* analogous to 
-the intercept term in linear regression, 
-but it is **not** a mean.
-:::
-
----
-
-::: notes
-Similarly: 
-:::
-
-{{< include _def-base-cuhaz.qmd >}}
-
----
-
-::: notes
-Also:
-:::
-
-:::{#def-baseline-surv}
-#### Baseline survival function
-The **baseline survival function** 
-is the survival function 
-for an individual whose covariates 
-are all equal to their default values.
- 
-$$S_0(t) \eqdef \surv(t | \vX = \vzero)$$
-:::
-
----
-
-{{< include _def-loghaz.qmd >}}
-
----
-
-{{< include _def-base-loghaz.qmd >}}
-
----
-
-::: notes
-Now, let's define ***how*** the hazard function depends on covariates.
-We typically use a log link to model the relationship between 
-the hazard function, $\haz(t|\vx)$, and 
-the linear component, $\eta(\vx)$,
-as we did for Poisson models in @sec-count-reg; 
-that is:
-
-:::
-
-$$
-\begin{aligned}
-\logf{\haz(t|\vx)}&= \loghaz(t|\vx)
-\\
-\haz(t|\vx) &= \exp{\loghaz(t|\vx)}
-\ea
-$$
-
-::: note
-However, in contrast with Poisson regression,
-here $\loghaz(t|\vx)$ depends on **both** $t$ **and** $\vx$.
-:::
+{{< include _sec-surv-conditional-hazards.qmd >}}
 
 ---
 
@@ -101,77 +19,58 @@ here $\loghaz(t|\vx)$ depends on **both** $t$ **and** $\vx$.
 
 ---
 
-Let's denote:
 
-$$\diffloghaz(t|\vx : \vxs) \eqdef \loghaz(t|\vx) - \loghaz(t|\vxs)$$
+:::{#lem-diffloghaz-ph}
+
+If $\loghaz(t|\vx) = \loghaz_0(t) + \reglincomb$, then: 
+
+$$
+\ba
+\diffloghaz(t|\vx: \vxs)
+&= (\vx - \vxs) \cdot \beta
+\ea
+$$
 
 ---
 
-:::{#thm-diff-loghaz}
-#### Difference of log-hazards vs hazard ratio
+:::{#thm-hazard-ratio-ph}
+
+If $\loghaz(t|\vx) = \loghaz_0(t) + \reglincomb$, then: 
+
 $$
 \ba
-\diffloghaz(t|\vx : \vxs) 
-&\eqdef \loghaz(t|\vx) - \loghaz(t|\vxs)
+\theta(t|\vx: \vxs)
+&= \expf{\diffloghaz(t|\vx: \vxs)}
 \\
-&= \logf{\haz(t|\vx)} - \logf{\haz(t|\vxs)}
-\\
-&= \logf{\frac{\haz(t|\vx)}{\haz(t|\vxs)}}
-\ea
-$$
-:::
-
----
-
-<!-- :::{#cor-difflogodds-log-HR} -->
-
-<!-- $$\diffloghaz(t|\vx) = \logf{\theta(t| \vx : \vxs)}$$ -->
-
-<!-- ::: -->
-
-<!-- --- -->
-
-:::{#def-difflog-hazard-from-baseline}
-
-#### difference in log-hazard from 0
-::: notes
-The difference in log-hazard for covariate pattern $\vx$
-compared to the baseline covariate pattern $\vec{0}$ is:
-:::
-
-$$
-\ba
-\diffloghaz(t|\vx)
-&\eqdef \diffloghaz(t | \vx: \vec{0})
-\ea
-$$
-:::
-
----
-
-:::{#thm-loghaz-decomp}
-#### Decomposition of log-hazard
-$$
-\ba
-\loghaz(t|\vx) = \loghaz_0(t) + \diffloghaz(t|\vx)
+&= \expf{(\vx - \vxs) \cdot \beta}
 \ea
 $$
 
 :::
 
+So for proportional hazards models, we can write the hazard ratio using a shorthand notation:
+
+$$\theta(t| \vx : \vxs)  = \theta(\vx : \vxs)$$
+
 ---
 
-:::{#cor-hazard-ratio-diffloghaz}
+:::{#lem-ph-diffloghaz-0}
+$$\diffloghaz(t|\vx)= \reglincomb$${#eq-diffloghaz-0-ph}
+:::
 
-#### Hazard ratio vs difference of log-odds
+---
 
-$$\theta(t| \vx : \vxs) = \expf{\diffloghaz(t|\vx: \vxs)}$$
+:::{#thm-hazard-ratio-vs-baseline-ph}
+
+If $\loghaz(t|\vx) = \loghaz_0(t) + \reglincomb$, then: 
+
+$$\theta(t|\vx) = \expf{\reglincomb}$$
 
 :::
 
 ---
 
-:::{#cor-hazard-ratio-vs-baseline}
+::: proof
 
 $$
 \ba
@@ -188,20 +87,9 @@ $$
 
 ---
 
-So given the assumption in Equation @eq-ph-lincomp, we can write the hazard ratio using a shorthand notation:
-
-$$\theta(t| \vx : \vxs)  = \theta(\vx : \vxs)$$
-
 Then:
 
-$$
-\ba
-\diffloghaz(t|\vx)
-&\eqdef \diffloghaz(t | \vx: \vec{0})
-\\
-&= \reglincomb
-\ea
-$$
+:::{#thm-ph-haz-decomp}
 
 $$
 \begin{aligned}
@@ -217,6 +105,8 @@ $$
 &\eqdef \beta_1x_1+\cdots+\beta_px_p
 \end{aligned}
 $$
+
+:::
 
 ::: notes
 This model is **semi-parametric**,
