@@ -1,0 +1,161 @@
+
+#### Diagram:
+
+{{< include _surv_diagram.qmd >}}
+
+---
+
+#### Identities:
+
+$$
+\begin{aligned}
+\surv(t) &= 1 - \cdf(t)\\
+&= \expf{-\cuhaz(t)}\\
+\surv'(t) &= -f(t)\\
+\cuhaz(t) &= -\logf{\surv(t)}\\
+\cuhaz'(t) &= \haz(t)\\
+\haz(t) &= \frac{\pdf(t)}{\surv(t)}\\
+&= -\deriv{t}\log{\surv(t)} \\
+f(t) &= \haz(t)\cdot \surv(t)\\
+\end{aligned}
+$$
+
+---
+
+Some proofs (others left as exercises):
+
+$$
+\begin{aligned}
+S'(t) &= \deriv{t}(1-F(t))\\
+&= -F'(t)\\
+&= -f(t)\\
+\end{aligned}
+$$
+
+---
+
+$$
+\begin{aligned}
+\deriv{t}\log{\surv(t)}
+&= \frac{S'(t)}{\surv(t)}\\
+&= -\frac{f(t)}{\surv(t)}\\
+&= -\haz(t)\\
+\end{aligned}
+$$
+
+---
+
+$$
+\begin{aligned}
+\cuhaz(t)
+&\eqdef \int_{u=0}^t h(u) du\\
+&= \int_0^t -\deriv{u}\text{log}\left\{S(u)\right\} du\\
+&= \left[-\text{log}\left\{S(u)\right\}\right]_{u=0}^{u=t}\\
+&= \left[\text{log}\left\{S(u)\right\}\right]_{u=t}^{u=0}\\
+&= \logf{\surv(0)} - \logf{\surv(t)}\\
+&= \logf{1} - \logf{\surv(t)}\\
+&= 0 - \logf{\surv(t)}\\
+&=-\logf{\surv(t)}
+\end{aligned}
+$$
+
+---
+
+Corollary:
+
+$$\surv(t) = \text{exp}\left\{-\cuhaz(t)\right\}$$
+
+---
+
+#### Example: Time to death the US in 2004
+
+The first day is the most dangerous:
+
+```{r}
+#| fig-cap: "Daily Hazard Rates in 2004 for US Females"
+#| fig-pos: "H"
+#| fig-height: 6
+#| label: fig-haz-female-US
+#| echo: true
+
+# download `survexp.rda` from:
+# paste0(
+# "https://github.com/therneau/survival/raw/",
+# "f3ac93704949ff26e07720b56f2b18ffa8066470/",
+# "Data/survexp.rda")
+
+# (newer versions of `survival` don't have the first-year breakdown; see:
+# https://cran.r-project.org/web/packages/survival/news.html)
+
+fs::path(
+  here::here(),
+  "Data",
+  "survexp.rda"
+) |>
+  load()
+s1 <- survexp.us[, "female", "2004"]
+age1 <- c(
+  0.5 / 365.25,
+  4 / 365.25,
+  17.5 / 365.25,
+  196.6 / 365.25,
+  1:109 + 0.5
+)
+s2 <- 365.25 * s1[5:113]
+s2 <- c(s1[1], 6 * s1[2], 22 * s1[3], 337.25 * s1[4], s2)
+cols <- rep(1, 113)
+cols[1] <- 2
+cols[2] <- 3
+cols[3] <- 4
+
+plot(age1, s1, type = "b", lwd = 2, xlab = "Age", ylab = "Daily Hazard Rate", col = cols)
+
+text(10, .003, "First Day", col = 2)
+text(18, .00030, "Rest of First Week", col = 3)
+text(18, .00015, "Rest of First month", col = 4)
+```
+
+---
+
+:::{#exr-compare-mf}
+Hypothesize why the male and female hazard functions in @fig-haz-mf differ where they do?
+:::
+
+```{r}
+#| fig-cap: "Daily Hazard Rates in 2004 for US Males and Females 1-40"
+#| fig-pos: "H"
+#| label: fig-haz-mf
+#| echo: true
+yrs <- 1:40
+s1 <- survexp.us[5:113, "male", "2004"]
+s2 <- survexp.us[5:113, "female", "2004"]
+
+age1 <- 1:109
+
+plot(age1[yrs], s1[yrs], type = "l", lwd = 2, xlab = "Age", ylab = "Daily Hazard Rate")
+lines(age1[yrs], s2[yrs], col = 2, lwd = 2)
+legend(5, 5e-6, c("Males", "Females"), col = 1:2, lwd = 2)
+```
+
+---
+
+:::{#exr-surv-vs-haz}
+Compare and contrast @fig-surv-US-females with @fig-haz-female-US.
+:::
+
+---
+
+```{r}
+#| fig-cap: "Survival Curve in 2004 for US Females"
+#| label: fig-surv-US-females
+#| fig-pos: "H"
+#| echo: true
+
+s1 <- survexp.us[, "female", "2004"]
+
+s2 <- 365.25 * s1[5:113]
+s2 <- c(s1[1], 6 * s1[2], 21 * s1[3], 337.25 * s1[4], s2)
+cs2 <- cumsum(s2)
+age2 <- c(1 / 365.25, 7 / 365.25, 28 / 365.25, 1:110)
+plot(age2, exp(-cs2), type = "l", lwd = 2, xlab = "Age", ylab = "Survival")
+```
