@@ -1,0 +1,108 @@
+
+---
+
+:::{#def-na-cuhaz-est}
+#### Nelson-Aalen Cumulative Hazard Estimator
+:::: notes
+The point hazard at time $t_i$ can be estimated by $d_i/Y_i$, which
+leads to the **Nelson-Aalen estimator of the cumulative hazard**:
+::::
+$$\hat H_{NA}(t) \eqdef \sum_{t_i < t}\frac{d_i}{Y_i}$${#eq-NA-cuhaz-est}
+
+:::
+
+---
+
+:::{#thm-var-NA-est}
+
+#### Variance of Nelson-Aalen estimator
+
+:::: notes
+The variance of this estimator is approximately:
+::::
+
+$$
+\begin{aligned}
+\hat{\text{Var}}\left(\hat H_{NA} (t)\right)
+&= \sum_{t_i <t}\frac{(d_i/Y_i)(1-d_i/Y_i)}{Y_i}\\
+&\approx \sum_{t_i <t}\frac{d_i}{Y_i^2}
+\end{aligned}
+$${#eq-var-NA-cuhaz-est}
+
+:::
+
+---
+
+Since $\surv(t)=\text{exp}\left\{-\cuhaz(t)\right\}$, the Nelson-Aalen cumulative
+hazard estimate can be converted into an alternate estimate of the
+survival function:
+
+$$
+\begin{aligned}
+\hat S_{NA}(t)
+&= \text{exp}\left\{-\hat H_{NA}(t)\right\}\\
+&= \text{exp}\left\{-\sum_{t_i < t}\frac{d_i}{Y_i}\right\}\\
+&= \prod_{t_i < t}\text{exp}\left\{-\frac{d_i}{Y_i}\right\}\\
+\end{aligned}
+$$
+
+---
+
+Compare these with the corresponding Kaplan-Meier estimates:
+
+$$
+\begin{aligned}
+\hat H_{KM}(t) &= -\sum_{t_i < t}\text{log}\left\{1-\frac{d_i}{Y_i}\right\}\\
+\hat S_{KM}(t) &= \prod_{t_i < t}\left[1-\frac{d_i}{Y_i}\right]
+\end{aligned}
+$$
+
+::: notes
+The product limit estimate and the Nelson-Aalen estimate often do not
+differ by much. The latter is considered more accurate in small samples
+and also directly estimates the cumulative hazard.
+The `"fleming-harrington"` method for `survfit()` reduces to Nelson-Aalen
+when the data are unweighted.
+We can also estimate the cumulative hazard
+as the negative log of the KM survival function estimate.
+:::
+
+### Application to `bmt` dataset
+
+```{r}
+na_fit <- survfit(
+  formula = surv ~ group,
+  type = "fleming-harrington",
+  data = bmt
+)
+
+km_fit <- survfit(
+  formula = surv ~ group,
+  type = "kaplan-meier",
+  data = bmt
+)
+
+km_and_na <-
+  bind_rows(
+    .id = "model",
+    "Kaplan-Meier" = km_fit |> fortify(surv.connect = TRUE),
+    "Nelson-Aalen" = na_fit |> fortify(surv.connect = TRUE)
+  ) |>
+  as_tibble()
+```
+
+```{r}
+#| fig-cap: "Kaplan-Meier and Nelson-Aalen Survival Function Estimates, stratified by disease group"
+
+km_and_na |>
+  ggplot(aes(x = time, y = surv, col = model)) +
+  geom_step() +
+  facet_grid(. ~ strata) +
+  theme_bw() +
+  ylab("S(t) = P(T>=t)") +
+  xlab("Survival time (t, days)") +
+  theme(legend.position = "bottom")
+```
+
+The Kaplan-Meier and Nelson-Aalen survival estimates are very similar
+for this dataset.
