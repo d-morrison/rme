@@ -219,7 +219,7 @@ $$
 \begin{aligned}
 \eta(\vec x) &= \beta_0 + (\beta_1x_1 + \dots + \beta_p x_p)\\
 \haz(t|\vec x) &= \exp{\eta(\vec x)}\\
-h_0 &\stackrel{\text{def}}{=} \haz(t|\vec 0)\\
+\haz_0 &\stackrel{\text{def}}{=} \haz(t|\vec 0)\\
 &= \exp{\eta(\vec 0)}\\
 &= \exp{\beta_0 + (\beta_1 \cdot 0 + \dots + \beta_p \cdot 0)}\\
 &= \exp{\beta_0 + 0}\\
@@ -243,7 +243,7 @@ h(T=t|X=x)
 &\stackrel{\text{def}}{=} p(T=t|X=x,T \ge t)\\
 &= \haz(t|X=0)\cdot \exp{\eta(x)}\\
 &= \haz(t|X=0)\cdot \theta(x)\\
-&= h_0(t)\cdot \theta(x)
+&= \haz_0(t)\cdot \theta(x)
 \end{aligned}
 $$
 
@@ -252,30 +252,30 @@ and correspondingly,
 $$
 \begin{aligned}
 \cuhaz(t|x)
-&= \theta(x)H_0(t)\\
+&= \theta(x)\cuhaz_0(t)\\
 \surv(t|x)
-&= \exp{-\cuhaz(t|x)}\\
-&= \exp{-\theta(x)\cdot H_0(t)}\\
-&= \left(\exp{- H_0(t)}\right)^{\theta(x)}\\
-&= \left(S_0(t)\right)^{\theta(x)}\\
+&= \expf{-\cuhaz(t|x)}\\
+&= \expf{-\theta(x)\cdot \cuhaz_0(t)}\\
+&= \paren{\expf{- cuhaz_0(t)}}^{\theta(x)}\\
+&= \paren{\surv_0(t)}^{\theta(x)}\\
 \end{aligned}
 $$
 
 An alternative modeling assumption would be
-$$\surv(t|X=x)=S_0(t\cdot \theta(x))$$ where $\theta(x)=\exp{\eta(x)}$,
-$\eta(x) =\beta_1x_1+\cdots+\beta_px_p$, and $S_0(t)=P(T\ge t|X=0)$ is
+$$\surv(t|X=x)=\surv_0(t\cdot \theta(x))$$ where $\theta(x)=\expf{\eta(x)}$,
+$\eta(x) =\beta_1x_1+\cdots+\beta_px_p$, and $\surv_0(t)=\P(T\ge t|X=0)$ is
 the base survival function.
 
 Then
 
 $$
 \begin{aligned}
-E(T|X=x)
+\Expp[T|X=x]
 &= \int_{t=0}^{\infty} \surv(t|x)dt\\
-&= \int_{t=0}^{\infty} S_0(t\cdot \theta(x))dt\\
-&= \int_{u=0}^{\infty} S_0(u)du \cdot \theta(x)^{-1}\\
-&= \theta(x)^{-1} \cdot \int_{u=0}^{\infty} S_0(u)du\\
-&= \theta(x)^{-1} \cdot \text{E}(T|X=0)\\
+&= \int_{t=0}^{\infty} \surv_0(t\cdot \theta(x))dt\\
+&= \int_{u=0}^{\infty} \surv_0(u)du \cdot \theta(x)^{-1}\\
+&= \theta(x)^{-1} \cdot \int_{u=0}^{\infty} \surv_0(u)du\\
+&= \theta(x)^{-1} \cdot \Expp[T|X=0]\\
 \end{aligned}
 $$ So the mean of $T$ given $X=x$ is the baseline mean divided by
 $\theta(x) = \exp{\eta(x)}$.
@@ -288,8 +288,8 @@ Additionally:
 
 $$
 \begin{aligned}
-\cuhaz(t|x) &= H_0(\theta(x)\cdot t)\\
-\haz(t|x) &= \theta(x) \cdot h_0(\theta(x)\cdot t)
+\cuhaz(t|x) &= \cuhaz_0(\theta(x)\cdot t)\\
+\haz(t|x) &= \theta(x) \cdot \haz_0(\theta(x)\cdot t)
 \end{aligned}
 $$
 
