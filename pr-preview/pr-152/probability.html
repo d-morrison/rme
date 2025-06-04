@@ -1,0 +1,2606 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Appendix C — Probability – Regression Models for Epidemiology</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./estimation.html" rel="next">
+<link href="./math-prereqs.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-8ef56b68f8fa1e9d2ba328e99e439f80.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6e4858b4921ffe5a9c7d897cee0e5447.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-cbfe9299f5caab731b93668de05d1c8d.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-6e4858b4921ffe5a9c7d897cee0e5447.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script async="" src="https://www.googletagmanager.com/gtag/js?id=GTM-W4FPTMX9"></script><script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'GTM-W4FPTMX9', { 'anonymize_ip': true});
+</script><script type="application/json" class="js-hypothesis-config">
+{
+  "theme": "clean",
+  "openSidebar": false,
+  "enableExperimentalNewNoteButton": true
+}
+</script><script async="" src="https://hypothes.is/embed.js"></script><script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script><link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script><link rel="stylesheet" href="custom.scss">
+</head>
+<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./appendices-are-prereqs.html">Appendices</a></li><li class="breadcrumb-item"><a href="./probability.html"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Probability</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Regression Models for Epidemiology</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/d-morrison/rme" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="./Regression-Models-for-Epidemiology.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Intro-to-GLMs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./glms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generalized Linear Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Linear-models-overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Linear (Gaussian) Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./logistic-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Models for Binary Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./count-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Models for Count Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-multilevel-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Introduction to multi-level models for correlated data</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./time-to-event-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time to Event Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-to-survival-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Introduction to Survival Analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./proportional-hazards-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Proportional Hazards Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parametric-survival-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Parametric survival models</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendices-are-prereqs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Overview of Appendices</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./math-prereqs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Mathematics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./probability.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Probability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-MLEs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">F</span>&nbsp; <span class="chapter-title">Introduction to Maximum Likelihood Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">G</span>&nbsp; <span class="chapter-title">Introduction to Bayesian inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./common-mistakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">H</span>&nbsp; <span class="chapter-title">Common Mistakes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./notation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">I</span>&nbsp; <span class="chapter-title">Notation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-to-R.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">J</span>&nbsp; <span class="chapter-title">Statistical computing in R</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./CONTRIBUTING.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">K</span>&nbsp; <span class="chapter-title">Contributing to <code>rme</code></span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#configuring-r" id="toc-configuring-r" class="nav-link active" data-scroll-target="#configuring-r">Configuring R</a></li>
+  <li>
+<a href="#core-properties-of-probabilities" id="toc-core-properties-of-probabilities" class="nav-link" data-scroll-target="#core-properties-of-probabilities"><span class="header-section-number">C.1</span> Core properties of probabilities</a>
+  <ul class="collapse">
+<li><a href="#defining-probabilities" id="toc-defining-probabilities" class="nav-link" data-scroll-target="#defining-probabilities"><span class="header-section-number">C.1.1</span> Defining probabilities</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#random-variables" id="toc-random-variables" class="nav-link" data-scroll-target="#random-variables"><span class="header-section-number">C.2</span> Random variables</a>
+  <ul class="collapse">
+<li><a href="#sec-binary-vars" id="toc-sec-binary-vars" class="nav-link" data-scroll-target="#sec-binary-vars"><span class="header-section-number">C.2.1</span> Binary variables</a></li>
+  <li><a href="#sec-count-vars" id="toc-sec-count-vars" class="nav-link" data-scroll-target="#sec-count-vars"><span class="header-section-number">C.2.2</span> Count variables</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#key-probability-distributions" id="toc-key-probability-distributions" class="nav-link" data-scroll-target="#key-probability-distributions"><span class="header-section-number">C.3</span> Key probability distributions</a>
+  <ul class="collapse">
+<li><a href="#sec-bern-dist" id="toc-sec-bern-dist" class="nav-link" data-scroll-target="#sec-bern-dist"><span class="header-section-number">C.3.1</span> The Bernoulli distribution</a></li>
+  <li><a href="#sec-poisson-dist" id="toc-sec-poisson-dist" class="nav-link" data-scroll-target="#sec-poisson-dist"><span class="header-section-number">C.3.2</span> The Poisson distribution</a></li>
+  <li><a href="#sec-nb-dist" id="toc-sec-nb-dist" class="nav-link" data-scroll-target="#sec-nb-dist"><span class="header-section-number">C.3.3</span> The Negative-Binomial distribution</a></li>
+  <li><a href="#sec-weibull" id="toc-sec-weibull" class="nav-link" data-scroll-target="#sec-weibull"><span class="header-section-number">C.3.4</span> Weibull Distribution</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#characteristics-of-probability-distributions" id="toc-characteristics-of-probability-distributions" class="nav-link" data-scroll-target="#characteristics-of-probability-distributions"><span class="header-section-number">C.4</span> Characteristics of probability distributions</a>
+  <ul class="collapse">
+<li><a href="#sec-prob-dens" id="toc-sec-prob-dens" class="nav-link" data-scroll-target="#sec-prob-dens"><span class="header-section-number">C.4.1</span> Probability density function</a></li>
+  <li><a href="#sec-prob-haz" id="toc-sec-prob-haz" class="nav-link" data-scroll-target="#sec-prob-haz"><span class="header-section-number">C.4.2</span> Hazard function</a></li>
+  <li><a href="#sec-expectation" id="toc-sec-expectation" class="nav-link" data-scroll-target="#sec-expectation"><span class="header-section-number">C.4.3</span> Expectation</a></li>
+  <li><a href="#variance-and-related-characteristics" id="toc-variance-and-related-characteristics" class="nav-link" data-scroll-target="#variance-and-related-characteristics"><span class="header-section-number">C.4.4</span> Variance and related characteristics</a></li>
+  </ul>
+</li>
+  <li><a href="#the-central-limit-theorem" id="toc-the-central-limit-theorem" class="nav-link" data-scroll-target="#the-central-limit-theorem"><span class="header-section-number">C.5</span> The Central Limit Theorem</a></li>
+  <li><a href="#additional-resources" id="toc-additional-resources" class="nav-link" data-scroll-target="#additional-resources"><span class="header-section-number">C.6</span> Additional resources</a></li>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/d-morrison/rme/edit/main/probability.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/d-morrison/rme/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/d-morrison/rme/blob/main/probability.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./appendices-are-prereqs.html">Appendices</a></li><li class="breadcrumb-item"><a href="./probability.html"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Probability</span></a></li></ol></nav><div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Appendix C — Probability</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Last modified: 2025-06-04: 21:32:33 (PM)</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header><!-- ::: {.content-hidden when-format="revealjs"} --><hr>
+<section id="configuring-r" class="level3 unnumbered"><h3 class="unnumbered anchored" data-anchor-id="configuring-r">Configuring R</h3>
+<p>Functions from these packages will be used throughout this document:</p>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://conflicted.r-lib.org/">conflicted</a></span><span class="op">)</span> <span class="co"># check for conflicting function definitions</span></span>
+<span><span class="co"># library(printr) # inserts help-file output into markdown output</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/rmarkdown">rmarkdown</a></span><span class="op">)</span> <span class="co"># Convert R Markdown documents into a variety of formats.</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rapporter.github.io/pander/">pander</a></span><span class="op">)</span> <span class="co"># format tables for markdown</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span> <span class="co"># graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jonocarroll/ggeasy">ggeasy</a></span><span class="op">)</span> <span class="co"># help with graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span> <span class="co"># help with graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span> <span class="co"># manipulate data</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span> <span class="co"># `tibble`s extend `data.frame`s</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org">magrittr</a></span><span class="op">)</span> <span class="co"># `%&gt;%` and other additional piping tools</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://haven.tidyverse.org">haven</a></span><span class="op">)</span> <span class="co"># import Stata files</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://yihui.org/knitr/">knitr</a></span><span class="op">)</span> <span class="co"># format R output for markdown</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span> <span class="co"># Tools to help to create tidy data</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://plotly-r.com">plotly</a></span><span class="op">)</span> <span class="co"># interactive graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">dobson</span><span class="op">)</span> <span class="co"># datasets from Dobson and Barnett 2018</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/parameters/">parameters</a></span><span class="op">)</span> <span class="co"># format model output tables for markdown</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://haven.tidyverse.org">haven</a></span><span class="op">)</span> <span class="co"># import Stata files</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://www.stefanom.io/latex2exp/">latex2exp</a></span><span class="op">)</span> <span class="co"># use LaTeX in R code (for figures and tables)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://fs.r-lib.org">fs</a></span><span class="op">)</span> <span class="co"># filesystem path manipulations</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival">survival</a></span><span class="op">)</span> <span class="co"># survival analysis</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rpkgs.datanovia.com/survminer/index.html">survminer</a></span><span class="op">)</span> <span class="co"># survival analysis graphics</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jun-yan/KMsurv">KMsurv</a></span><span class="op">)</span> <span class="co"># datasets from Klein and Moeschberger</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/parameters/">parameters</a></span><span class="op">)</span> <span class="co"># format model output tables for</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/webshot2/">webshot2</a></span><span class="op">)</span> <span class="co"># convert interactive content to static for pdf</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://forcats.tidyverse.org/">forcats</a></span><span class="op">)</span> <span class="co"># functions for categorical variables ("factors")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org">stringr</a></span><span class="op">)</span> <span class="co"># functions for dealing with strings</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span> <span class="co"># functions for dealing with dates and times</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Here are some R settings I use in this document:</p>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span>list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># delete any data that's already loaded into R</span></span>
+<span></span>
+<span><span class="fu"><a href="https://conflicted.r-lib.org/reference/conflicts_prefer.html">conflicts_prefer</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">)</span></span>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html">theme_set</a></span><span class="op">(</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>        <span class="co"># ggplot2::labs(col = "") +</span></span>
+<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span></span>
+<span>      legend.position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
+<span>      text <span class="op">=</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">12</span>, family <span class="op">=</span> <span class="st">"serif"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/knitr/man/opts_chunk.html">opts_chunk</a></span><span class="op">$</span><span class="fu">set</span><span class="op">(</span>message <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span><span class="st">'digits'</span> <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/panderOptions.html">panderOptions</a></span><span class="op">(</span><span class="st">"big.mark"</span>, <span class="st">","</span><span class="op">)</span></span>
+<span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/panderOptions.html">panderOptions</a></span><span class="op">(</span><span class="st">"table.emphasize.rownames"</span>, <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/panderOptions.html">panderOptions</a></span><span class="op">(</span><span class="st">"table.split.table"</span>, <span class="cn">Inf</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://conflicted.r-lib.org/reference/conflicts_prefer.html">conflicts_prefer</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">)</span> <span class="co"># use the `filter()` function from dplyr() by default</span></span>
+<span><span class="va">legend_text_size</span> <span class="op">=</span> <span class="fl">9</span></span>
+<span><span class="va">run_graphs</span> <span class="op">=</span> <span class="cn">TRUE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<!-- ::: -->
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \def\or{\theta}  -->
+<!-- doesn't work for some reason -->
+<style>
+.quarto-figure-center > figure {
+text-align: center;
+}
+</style>
+<hr>
+<p>Most of the content in this chapter should be review from UC Davis Epi 202.</p>
+</section><section id="core-properties-of-probabilities" class="level2" data-number="C.1"><h2 data-number="C.1" class="anchored" data-anchor-id="core-properties-of-probabilities">
+<span class="header-section-number">C.1</span> Core properties of probabilities</h2>
+<section id="defining-probabilities" class="level3" data-number="C.1.1"><h3 data-number="C.1.1" class="anchored" data-anchor-id="defining-probabilities">
+<span class="header-section-number">C.1.1</span> Defining probabilities</h3>
+<div id="def-probability" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.1 (Probability measure)</strong></span> A <strong>probability measure</strong>, often denoted <span class="math inline">\(\Pr()\)</span> or <span class="math inline">\(\text{P}()\)</span>, is a function whose domain is a <a href="https://en.wikipedia.org/wiki/%CE%A3-algebra"><span class="math inline">\(\sigma\)</span>-algebra</a> of possible outcomes, <span class="math inline">\(\mathscr{S}\)</span>, and which satisfies the following properties:</p>
+<ol type="1">
+<li><p>For any statistical event <span class="math inline">\(A \in \mathscr{S}\)</span>, <span class="math inline">\(\Pr(A) \ge 0\)</span>.</p></li>
+<li><p>The probability of the union of all outcomes (<span class="math inline">\(\Omega \stackrel{\text{def}}{=}\cup \mathscr{S}\)</span>) is 1:</p></li>
+</ol>
+<p><span class="math display">\[\Pr(\Omega) = 1\]</span></p>
+<ol start="3" type="1">
+<li>The probability of the union of disjoint events, <span class="math inline">\(A_1 \cup A_2: A_1 \cap A_2 = \emptyset\)</span>, is equal to the sum of their probabilities:</li>
+</ol>
+<p><span class="math display">\[\Pr(A_1 \cup A_2) = \Pr(A_1) + \Pr(A_2)\]</span></p>
+</div>
+<hr>
+<div id="thm-prob-subset" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.1</strong></span> If <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are statistical events and <span class="math inline">\(A\subseteq B\)</span>, then <span class="math inline">\(\Pr(A \cap B) = \Pr(A)\)</span>.</p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>Left to the reader for now.</p>
+</div>
+<hr>
+<div id="thm-total-prob-1" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.2</strong></span> <span class="math display">\[\Pr(A) + \Pr(\neg A) = 1\]</span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>By properties 2 and 3 of <a href="#def-probability" class="quarto-xref">Definition&nbsp;<span>C.1</span></a>.</p>
+</div>
+<hr>
+<div id="cor-p-neg0" class="theorem corollary">
+<p><span class="theorem-title"><strong>Corollary C.1</strong></span> <span class="math display">\[\Pr(\neg A) = 1 - \Pr(A)\]</span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>By <a href="#thm-total-prob-1" class="quarto-xref">Theorem&nbsp;<span>C.2</span></a> and algebra.</p>
+</div>
+<hr>
+<div id="cor-p-neg" class="theorem corollary">
+<p><span class="theorem-title"><strong>Corollary C.2</strong></span> If the probability of an outcome <span class="math inline">\(A\)</span> is <span class="math inline">\(\Pr(A)=\pi\)</span>, then the probability that <span class="math inline">\(A\)</span> does not occur is:</p>
+<p><span class="math display">\[\Pr(\neg A)= 1 - \pi\]</span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>Using <a href="#cor-p-neg0" class="quarto-xref">Corollary&nbsp;<span>C.1</span></a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Pr(\neg A) &amp;= 1 - \Pr(A)
+\\ &amp;= 1 - \pi
+\end{aligned}
+\]</span></p>
+</div>
+</section></section><section id="random-variables" class="level2" data-number="C.2"><h2 data-number="C.2" class="anchored" data-anchor-id="random-variables">
+<span class="header-section-number">C.2</span> Random variables</h2>
+<section id="sec-binary-vars" class="level3" data-number="C.2.1"><h3 data-number="C.2.1" class="anchored" data-anchor-id="sec-binary-vars">
+<span class="header-section-number">C.2.1</span> Binary variables</h3>
+<div id="def-binary" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.2 (binary variable)</strong></span> A <strong>binary variable</strong> is a random variable which has only two possible values in its range.</p>
+</div>
+<div id="exr-binary-examples" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise C.1 (Examples of binary variables)</strong></span> What are some examples of binary variables in the health sciences?</p>
+</div>
+<hr>
+<div class="proof solution">
+<p><span class="proof-title"><em>Solution</em>. </span>Examples of binary outcomes include:</p>
+<ul>
+<li>exposure (exposed vs unexposed)</li>
+<li>disease (diseased vs healthy)</li>
+<li>recovery (recovered vs unrecovered)</li>
+<li>relapse (relapse vs remission)</li>
+<li>return to hospital (returned vs not)</li>
+<li>vital status (dead vs alive)</li>
+</ul>
+</div>
+<hr></section><section id="sec-count-vars" class="level3" data-number="C.2.2"><h3 data-number="C.2.2" class="anchored" data-anchor-id="sec-count-vars">
+<span class="header-section-number">C.2.2</span> Count variables</h3>
+<div id="def-count" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.3 (Count variable)</strong></span> A <strong>count variable</strong> is a random variable whose possible values are some subset of the non-negative integers; that is, a random variable <span class="math inline">\(X\)</span> such that:</p>
+<p><span class="math display">\[\mathcal{R}(X) \in \mathbb{N}\]</span></p>
+</div>
+<hr>
+<div id="exr-count-examples" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise C.2</strong></span> What are some examples of count variables?</p>
+</div>
+<hr>
+<div class="proof solution">
+<p><span class="proof-title"><em>Solution</em>. </span></p>
+<ul>
+<li>Number of fish in a pond</li>
+<li>Number of cyclones per season</li>
+<li><a href="https://pubmed.ncbi.nlm.nih.gov/35587489/">Seconds of tooth-brushing per session (if rounded)</a></li>
+<li>Infections per person-year</li>
+<li>Visits to ER per person-month</li>
+<li>Car accidents per 1000 miles driven</li>
+</ul>
+</div>
+<hr>
+<div id="def-exposure" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.4 (Exposure magnitude)</strong></span> For many count outcomes, there is some sense of an <strong>exposure magnitude</strong>, such as <strong>population size</strong>, or <strong>duration of observation</strong>, which multiplicatively rescales the expected (mean) count.</p>
+</div>
+<hr>
+<div id="exr-exposure-magnitude" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise C.3</strong></span> What are some examples of exposure magnitudes?</p>
+</div>
+<hr>
+<div class="smaller proof solution">
+<p><span class="proof-title"><em>Solution</em>. </span></p>
+<div id="tbl-exposure-units" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-exposure-units-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;C.1: Examples of exposure units
+</figcaption><div aria-describedby="tbl-exposure-units-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 69%">
+<col style="width: 30%">
+</colgroup>
+<thead><tr class="header">
+<th>outcome</th>
+<th>exposure units</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>disease incidence</td>
+<td>number of individuals exposed; time at risk</td>
+</tr>
+<tr class="even">
+<td>car accidents</td>
+<td>miles driven</td>
+</tr>
+<tr class="odd">
+<td>worksite accidents</td>
+<td>person-hours worked</td>
+</tr>
+<tr class="even">
+<td>population size</td>
+<td>size of habitat</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</div>
+<div class="notes">
+<p>Exposure units are similar to the number of trials in a binomial distribution, but <strong>in non-binomial count outcomes, there can be more than one event per unit of exposure</strong>.</p>
+<p>We can use <span class="math inline">\(t\)</span> to represent continuous-valued exposures/observation durations, and <span class="math inline">\(n\)</span> to represent discrete-valued exposures.</p>
+</div>
+<hr>
+<div id="def-event-rate" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.5 (Event rate)</strong></span> &nbsp;</p>
+<div class="notes">
+<p>For a count outcome <span class="math inline">\(Y\)</span> with exposure magnitude <span class="math inline">\(t\)</span>, the <strong>event rate</strong> (denoted <span class="math inline">\(\lambda\)</span>) is defined as the mean of <span class="math inline">\(Y\)</span> divided by the the exposure magnitude. That is:</p>
+</div>
+<p><span class="math display">\[\mu \stackrel{\text{def}}{=}\mathbb{E}[Y|T=t]\]</span></p>
+<p><span id="eq-def-event-rate"><span class="math display">\[\lambda \stackrel{\text{def}}{=}\frac{\mu}{t} \tag{C.1}\]</span></span></p>
+</div>
+<div class="notes">
+<p>Event rate is somewhat analogous to odds in binary outcome models; it typically serves as an intermediate transformation between the mean of the outcome and the linear component of the model. However, in contrast with the odds function, the transformation <span class="math inline">\(\lambda = \mu/t\)</span> is <em>not</em> considered part of the Poisson model’s link function, and it treats the exposure magnitude covariate differently from the other covariates.</p>
+</div>
+<hr>
+<div id="thm-mean-vs-event-rate" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.3 (Transformation function from event rate to mean)</strong></span> For a count variable with mean <span class="math inline">\(\mu\)</span>, event rate <span class="math inline">\(\lambda\)</span>, and exposure magnitude <span class="math inline">\(t\)</span>:</p>
+<p><span id="eq-lambda-to-mu"><span class="math display">\[\therefore\mu  = \lambda \cdot t \tag{C.2}\]</span></span></p>
+</div>
+<hr>
+<div class="proof solution">
+<p><span class="proof-title"><em>Solution</em>. </span>Start from definition of event rate and use algebra to solve for <span class="math inline">\(\mu\)</span>.</p>
+</div>
+<hr>
+<p><a href="#eq-lambda-to-mu" class="quarto-xref">Equation&nbsp;<span>C.2</span></a> is analogous to the inverse-odds function for binary variables.</p>
+<hr>
+<div id="thm-non-exposed" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.4</strong></span> When the exposure magnitude is 0, there is no opportunity for events to occur:</p>
+<p><span class="math display">\[\mathbb{E}[Y|T=0] = 0\]</span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span><span class="math display">\[\mathbb{E}[Y|T=0] = \lambda \cdot 0 = 0\]</span></p>
+</div>
+<hr>
+<section id="probability-distributions-for-count-outcomes" class="level4"><h4 class="anchored" data-anchor-id="probability-distributions-for-count-outcomes">Probability distributions for count outcomes</h4>
+<ul>
+<li><p><a href="#sec-poisson-dist">Poisson distribution</a></p></li>
+<li><p><a href="#sec-nb-dist">Negative binomial distribution</a></p></li>
+</ul>
+<hr></section></section></section><section id="key-probability-distributions" class="level2" data-number="C.3"><h2 data-number="C.3" class="anchored" data-anchor-id="key-probability-distributions">
+<span class="header-section-number">C.3</span> Key probability distributions</h2>
+<hr>
+<div class="notes">
+<p>Some distributions are typically used for outcome models (<a href="#tbl-outcome-distns" class="quarto-xref">Table&nbsp;<span>C.2</span></a>); other distributions are typically used for test statistics (<a href="#tbl-test-stat-distns" class="quarto-xref">Table&nbsp;<span>C.3</span></a>).</p>
+</div>
+<div id="tbl-outcome-distns" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-outcome-distns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;C.2: Distributions typically used for outcome models
+</figcaption><div aria-describedby="tbl-outcome-distns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 80%">
+<col style="width: 20%">
+</colgroup>
+<thead><tr class="header">
+<th>Distribution</th>
+<th>Uses</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Bernoulli</td>
+<td>Binary outcomes</td>
+</tr>
+<tr class="even">
+<td>Binomial</td>
+<td>Sums of Bernoulli outcomes</td>
+</tr>
+<tr class="odd">
+<td>Poisson</td>
+<td>unbounded count outcomes</td>
+</tr>
+<tr class="even">
+<td>Geometric</td>
+<td>Counts of non-events before an event occurs</td>
+</tr>
+<tr class="odd">
+<td>Negative binomal</td>
+<td>Mixtures of Poisson distributions, counts of non-events until a given number of events occurs</td>
+</tr>
+<tr class="even">
+<td>Normal (Gaussian)</td>
+<td>Continuous outcomes without a more specific distribution</td>
+</tr>
+<tr class="odd">
+<td>exponential</td>
+<td>Time to event outcomes</td>
+</tr>
+<tr class="even">
+<td>Gamma</td>
+<td>Time to event outcomes</td>
+</tr>
+<tr class="odd">
+<td>Weibull</td>
+<td>Time to event outcomes</td>
+</tr>
+<tr class="even">
+<td>Log-normal</td>
+<td>Time to event outcomes</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<hr>
+<div id="tbl-test-stat-distns" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-test-stat-distns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;C.3: Distributions typically used for test statistics
+</figcaption><div aria-describedby="tbl-test-stat-distns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 75%">
+<col style="width: 25%">
+</colgroup>
+<thead><tr class="header">
+<th>Distribution</th>
+<th>Uses</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\chi^2\)</span></td>
+<td>Regression comparisons (asymptotic), contingency table independence tests, goodness-of-fit tests</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(F\)</span></td>
+<td>Gaussian model comparisons (exact)</td>
+</tr>
+<tr class="odd">
+<td>
+<span class="math inline">\(Z\)</span> (standard normal)</td>
+<td>Proportions, means, regression coefficients (asymptotic)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(T\)</span></td>
+<td>Means, regression coefficients in Gaussian outcome models (exact)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<section id="sec-bern-dist" class="level3" data-number="C.3.1"><h3 data-number="C.3.1" class="anchored" data-anchor-id="sec-bern-dist">
+<span class="header-section-number">C.3.1</span> The Bernoulli distribution</h3>
+<div id="def-bernoulli" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.6 (Bernoulli distribution)</strong></span> The <strong>Bernoulli distribution</strong> family for a random variable <span class="math inline">\(X\)</span> is defined as:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Pr(X=x) &amp;= \mathbb{1}_{x\in \left\{0,1\right\}}\pi^x(1-\pi)^{1-x}\\
+&amp;= \left\{{\pi, x=1}\atop{1-\pi, x=0}\right.
+\end{aligned}
+\]</span></p>
+</div>
+<hr></section><section id="sec-poisson-dist" class="level3" data-number="C.3.2"><h3 data-number="C.3.2" class="anchored" data-anchor-id="sec-poisson-dist">
+<span class="header-section-number">C.3.2</span> The Poisson distribution</h3>
+<div id="fig-poissons" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-poissons-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;C.1: “Les Poissons”
+</figcaption><div aria-describedby="fig-poissons-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><figcaption>Siméon Denis Poisson</figcaption><p><a href="images/poisson.jpg" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Siméon Denis Poisson"><img src="images/poisson.jpg" style="height:40.0%" class="figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><figcaption><a href="https://youtu.be/UoJxBEQRLd0?t=12">Les Poissons</a></figcaption><p><a href="images/poissons.jpeg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Les Poissons"><img src="images/poissons.jpeg" style="height:40.0%" class="figure-img"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</figure>
+</div>
+<hr>
+<div id="def-poisson" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.7 (Poisson distribution)</strong></span> <span class="math display">\[\mathcal{R}(Y) = \left\{0, 1, 2, ...\right\} = \mathbb{N}\]</span></p>
+<p><span id="eq-pois-pmf"><span class="math display">\[\text{P}(Y = y) = \frac{\mu^{y} e^{-\mu}}{y!}, y \in \mathbb{N} \tag{C.3}\]</span></span></p>
+<div class="notes">
+<p>(see <a href="#fig-pois-pmf" class="quarto-xref">Figure&nbsp;<span>C.2</span></a>)</p>
+</div>
+<p><span id="eq-pois-cdf"><span class="math display">\[\text{P}(Y \le y) = e^{-\mu} \sum_{j=0}^{\left \lfloor{y}\right \rfloor}\frac{\mu^j}{j!} \tag{C.4}\]</span></span></p>
+<div class="notes">
+<p>(see <a href="#fig-pois-cdfs" class="quarto-xref">Figure&nbsp;<span>C.3</span></a>)</p>
+</div>
+</div>
+<hr>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span><span class="va">pois_dists</span> <span class="op">=</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/reframe.html">reframe</a></span><span class="op">(</span></span>
+<span>    .by <span class="op">=</span> <span class="va">mu</span>,</span>
+<span>    x <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">30</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>    `P(X = x)` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">dpois</a></span><span class="op">(</span><span class="va">x</span>, lambda <span class="op">=</span> <span class="va">mu</span><span class="op">)</span>,</span>
+<span>    `P(X &lt;= x)` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">ppois</a></span><span class="op">(</span><span class="va">x</span>, lambda <span class="op">=</span> <span class="va">mu</span><span class="op">)</span>,</span>
+<span>    mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">mu</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://www.stefanom.io/latex2exp/">latex2exp</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plot0</span> <span class="op">=</span> <span class="va">pois_dists</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
+<span>      x <span class="op">=</span> <span class="va">x</span>,</span>
+<span>      y <span class="op">=</span> <span class="va">`P(X = x)`</span>,</span>
+<span>      fill <span class="op">=</span> <span class="va">mu</span>,</span>
+<span>      col <span class="op">=</span> <span class="va">mu</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
+<span>    fill <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\mu$"</span><span class="op">)</span>,</span>
+<span>    col <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\mu$"</span><span class="op">)</span>,</span>
+<span>    y <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\Pr_{\\mu}(X = x)$"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plot1</span> <span class="op">=</span> <span class="va">plot0</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>position <span class="op">=</span> <span class="st">"identity"</span>, alpha  <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">mu</span><span class="op">)</span></span>
+<span>  <span class="co"># geom_point(alpha = 0.75) +</span></span>
+<span>  <span class="co"># geom_line(alpha = 0.75)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-pois-pmf" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-pois-pmf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;C.2: Poisson PMFs, by mean parameter <span class="math inline">\(\mu\)</span>
+</figcaption><div aria-describedby="fig-pois-pmf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="probability_files/figure-html/fig-pois-pmf-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;C.2: Poisson PMFs, by mean parameter \mu"><img src="probability_files/figure-html/fig-pois-pmf-1.png" class="img-fluid figure-img" width="672"></a>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plot2</span> <span class="op">=</span> </span>
+<span>  <span class="va">plot0</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_step</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">`P(X &lt;= x)`</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\Pr_{\\mu}(X \\leq x)$"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-pois-cdfs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-pois-cdfs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;C.3: Poisson CDFs
+</figcaption><div aria-describedby="fig-pois-cdfs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="probability_files/figure-html/fig-pois-cdfs-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;C.3: Poisson CDFs"><img src="probability_files/figure-html/fig-pois-cdfs-1.png" class="img-fluid figure-img" width="672"></a>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+<div id="exr-pois-dist-funs" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise C.4 (Poisson distribution functions)</strong></span> Let <span class="math inline">\(X \sim \text{Pois}(\mu = 3.75)\)</span>.</p>
+<p>Compute:</p>
+<ul>
+<li><span class="math inline">\(\text{P}(X = 4 | \mu = 3.75)\)</span></li>
+<li><span class="math inline">\(\text{P}(X \le 7 | \mu = 3.75)\)</span></li>
+<li><span class="math inline">\(\text{P}(X &gt; 5 | \mu = 3.75)\)</span></li>
+</ul>
+</div>
+<hr>
+<div class="proof solution">
+<p><span class="proof-title"><em>Solution</em>. </span></p>
+<ul>
+<li><span class="math inline">\(\text{P}(X=4) = 0.19378\)</span></li>
+<li><span class="math inline">\(\text{P}(X\le 7) = 0.962379\)</span></li>
+<li><span class="math inline">\(\text{P}(X &gt; 5) = 0.177117\)</span></li>
+</ul>
+</div>
+<hr>
+<div id="thm-poisson-properties" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.5 (Properties of the Poisson distribution)</strong></span> If <span class="math inline">\(X \sim \text{Pois}(\mu)\)</span>, then:</p>
+<ul>
+<li><span class="math inline">\(\mathbb{E}[X] = \mu\)</span></li>
+<li><span class="math inline">\(\text{Var}(X) = \mu\)</span></li>
+<li><span class="math inline">\(\text{P}(X=x) = \frac{\mu}{x} \text{P}(X = x-1)\)</span></li>
+<li>For <span class="math inline">\(x &lt; \mu\)</span>, <span class="math inline">\(\text{P}(X=x) &gt; \text{P}(X = x-1)\)</span>
+</li>
+<li>For <span class="math inline">\(x = \mu\)</span>, <span class="math inline">\(\text{P}(X=x) = \text{P}(X = x-1)\)</span>
+</li>
+<li>For <span class="math inline">\(x &gt; \mu\)</span>, <span class="math inline">\(\text{P}(X=x) &lt; \text{P}(X = x-1)\)</span>
+</li>
+<li><span class="math inline">\(\arg \max_{x} \text{P}(X=x) = \left \lfloor{\mu}\right \rfloor\)</span></li>
+</ul>
+</div>
+<div id="exr-poisson-properties" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise C.5</strong></span> Prove <a href="#thm-poisson-properties" class="quarto-xref">Theorem&nbsp;<span>C.5</span></a>.</p>
+</div>
+<hr>
+<div class="smaller proof solution">
+<p><span class="proof-title"><em>Solution</em>. </span><span class="math display">\[
+\begin{aligned}
+\text{E}[X]
+&amp;= \sum_{x=0}^\infty x \cdot P(X=x)\\
+&amp;= 0 \cdot P(X=0) + \sum_{x=1}^\infty x \cdot P(X=x)\\
+&amp;= 0 + \sum_{x=1}^\infty x \cdot P(X=x)\\
+&amp;= \sum_{x=1}^\infty x \cdot P(X=x)\\
+&amp;= \sum_{x=1}^\infty x \cdot \frac{\lambda^x e^{-\lambda}}{x!}\\
+&amp;= \sum_{x=1}^\infty x \cdot \frac{\lambda^x e^{-\lambda}}{x \cdot (x-1)!} &amp; [\text{definition of factorial ("!") function}]\\
+&amp;= \sum_{x=1}^\infty \frac{\lambda^x e^{-\lambda}}{ (x-1)!}\\
+&amp;= \sum_{x=1}^\infty \frac{(\lambda \cdot \lambda^{x-1}) e^{-\lambda}}{ (x-1)!}\\
+&amp;= \lambda \cdot \sum_{x=1}^\infty \frac{( \lambda^{x-1}) e^{-\lambda}}{ (x-1)!}\\
+&amp;= \lambda \cdot \sum_{y=0}^\infty \frac{( \lambda^{y}) e^{-\lambda}}{ (y)!} &amp;[\text{substituting } y \stackrel{\text{def}}{=}x-1]\\
+&amp;= \lambda \cdot 1 &amp;[\text{because PDFs sum to 1}]\\
+&amp;= \lambda\\
+\end{aligned}
+\]</span></p>
+<p>See also <a href="https://statproofbook.github.io/P/poiss-mean" class="uri">https://statproofbook.github.io/P/poiss-mean</a>.</p>
+<p>For the variance, see <a href="https://statproofbook.github.io/P/poiss-var" class="uri">https://statproofbook.github.io/P/poiss-var</a>.</p>
+</div>
+<hr>
+<section id="accounting-for-exposure" class="level4"><h4 class="anchored" data-anchor-id="accounting-for-exposure">Accounting for exposure</h4>
+<p>If the exposures/observation durations, denoted <span class="math inline">\(T=t\)</span> or <span class="math inline">\(N=n\)</span>, vary between observations, we model:</p>
+<p><span class="math display">\[\mu = \lambda\cdot t\]</span></p>
+<p><span class="math inline">\(\lambda\)</span> is interpreted as the “expected event rate per unit of exposure”; that is,</p>
+<p><span class="math display">\[\lambda = \frac{\mathbb{E}[Y|T=t]}{t}\]</span></p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The exposure magnitude, <span class="math inline">\(T\)</span>, is <em>similar</em> to a covariate in linear or logistic regression. However, there is an important difference: in count regression, <strong>there is no intercept corresponding to <span class="math inline">\(\mathbb{E}[Y|T=0]\)</span></strong>. In other words, this model assumes that if there is no exposure, there can’t be any events.</p>
+</div>
+</div>
+<div id="thm-exposure-log-scale" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.6</strong></span> If <span class="math inline">\(\mu = \lambda\cdot t\)</span>, then:</p>
+<p><span class="math display">\[\log{\mu} = \log{\lambda} + \log{t}\]</span></p>
+</div>
+<div id="def-offset" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.8 (Offset)</strong></span> When the linear component of a model involves a term without an unknown coefficient, that term is called an <strong>offset</strong>.</p>
+</div>
+<hr>
+<div id="thm-sum-pois" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.7</strong></span> If <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are independent Poisson random variables with means <span class="math inline">\(\mu_X\)</span> and <span class="math inline">\(\mu_Y\)</span>, their sum, <span class="math inline">\(Z=X+Y\)</span>, is also a Poisson random variable, with mean <span class="math inline">\(\mu_Z = \mu_X + \mu_Y\)</span>.</p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>See <a href="https://web.stanford.edu/class/archive/cs/cs109/cs109.1206/lectureNotes/LN12_independent_rvs.pdf" class="uri">https://web.stanford.edu/class/archive/cs/cs109/cs109.1206/lectureNotes/LN12_independent_rvs.pdf</a>, Example 3.</p>
+</div>
+<hr></section></section><section id="sec-nb-dist" class="level3" data-number="C.3.3"><h3 data-number="C.3.3" class="anchored" data-anchor-id="sec-nb-dist">
+<span class="header-section-number">C.3.3</span> The Negative-Binomial distribution</h3>
+<div id="def-nb" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.9 (Negative binomial distribution)</strong></span> <span class="math display">\[
+\text{P}(Y=y)
+= \frac{\mu^y}{y!}
+\cdot \frac{\Gamma(\rho + y)}{\Gamma(\rho) \cdot (\rho + \mu)^y}
+\cdot \left(1+\frac{\mu}{\rho}\right)^{-\rho}
+\]</span></p>
+<p>where <span class="math inline">\(\rho\)</span> is an overdispersion parameter and <span class="math inline">\(\Gamma(x) = (x-1)!\)</span> for integers <span class="math inline">\(x\)</span>.</p>
+</div>
+<div class="notes">
+<p>You don’t need to memorize or understand this expression.</p>
+<p>As <span class="math inline">\(\rho \rightarrow \infty\)</span>, the second term converges to 1 and the third term converges to <span class="math inline">\(\text{exp}\left\{-\mu\right\}\)</span>, which brings us back to the Poisson distribution.</p>
+</div>
+<hr>
+<div id="thm-nb" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.8</strong></span> If <span class="math inline">\(Y \sim \text{NegBin}(\mu, \rho)\)</span>, then:</p>
+<ul>
+<li><span class="math inline">\(\mathbb{E}[Y] = \mu\)</span></li>
+<li><span class="math inline">\(\text{Var}\left(Y\right) = \mu + \frac{\mu^2}{\rho} &gt; \mu\)</span></li>
+</ul>
+</div>
+</section><section id="sec-weibull" class="level3" data-number="C.3.4"><h3 data-number="C.3.4" class="anchored" data-anchor-id="sec-weibull">
+<span class="header-section-number">C.3.4</span> Weibull Distribution</h3>
+<p><span class="math display">\[
+\begin{aligned}
+p(t)&amp;= \alpha\lambda x^{\alpha-1}\text{e}^{-\lambda x^\alpha}\\
+{\lambda}(t)&amp;=\alpha\lambda x^{\alpha-1}\\
+\text{S}(t)&amp;=\text{e}^{-\lambda x^\alpha}\\
+E(T)&amp;= \Gamma(1+1/\alpha)\cdot \lambda^{-1/\alpha}
+\end{aligned}
+\]</span></p>
+<p>When <span class="math inline">\(\alpha=1\)</span> this is the exponential. When <span class="math inline">\(\alpha&gt;1\)</span> the hazard is increasing and when <span class="math inline">\(\alpha &lt; 1\)</span> the hazard is decreasing. This provides more flexibility than the exponential.</p>
+<p>We will see more of this distribution later.</p>
+</section></section><section id="characteristics-of-probability-distributions" class="level2" data-number="C.4"><h2 data-number="C.4" class="anchored" data-anchor-id="characteristics-of-probability-distributions">
+<span class="header-section-number">C.4</span> Characteristics of probability distributions</h2>
+<section id="sec-prob-dens" class="level3" data-number="C.4.1"><h3 data-number="C.4.1" class="anchored" data-anchor-id="sec-prob-dens">
+<span class="header-section-number">C.4.1</span> Probability density function</h3>
+<div id="def-pdf" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.10 (probability density)</strong></span> If <span class="math inline">\(X\)</span> is a continuous random variable, then the <strong>probability density</strong> of <span class="math inline">\(X\)</span> at value <span class="math inline">\(x\)</span>, denoted <span class="math inline">\(f(x)\)</span>, <span class="math inline">\(f_X(x)\)</span>, <span class="math inline">\(\text{p}(x)\)</span>, <span class="math inline">\(\text{p}_X(x)\)</span>, or <span class="math inline">\(\text{p}(X=x)\)</span>, is defined as the limit of the probability (mass) that <span class="math inline">\(X\)</span> is in an interval around <span class="math inline">\(x\)</span>, divided by the width of that interval, as that width reduces to 0.</p>
+<p><span class="math display">\[
+\begin{aligned}
+f(x) &amp;\stackrel{\text{def}}{=}\lim_{\Delta \rightarrow 0}
+   \frac{\text{P}(X \in [x, x + \Delta])}{\Delta}
+\end{aligned}
+\]</span></p>
+<div class="notes">
+<p>See also <span class="citation" data-cites="me4">Rothman et al. (<a href="references.html#ref-me4" role="doc-biblioref">2021</a>)</span> (Chapter 22, p.&nbsp;535) and <a href="https://en.wikipedia.org/wiki/Probability_density_function#Formal_definition" class="uri">https://en.wikipedia.org/wiki/Probability_density_function#Formal_definition</a></p>
+</div>
+</div>
+<hr>
+<div id="thm-density-vs-CDF" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.9 (Density function is derivative of CDF)</strong></span> The density function <span class="math inline">\(f(t)\)</span> or <span class="math inline">\(\text{p}(T=t)\)</span> for a random variable <span class="math inline">\(T\)</span> at value <span class="math inline">\(t\)</span> is equal to the derivative of the cumulative probability function <span class="math inline">\(F(t) \stackrel{\text{def}}{=}P(T\le t)\)</span>; that is:</p>
+<p><span class="math display">\[f(t) \stackrel{\text{def}}{=}\frac{\partial}{\partial t} F(t)\]</span></p>
+</div>
+<hr>
+<div id="thm-density-sums-to-one" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.10 (Density functions integrate to 1)</strong></span> For any density function <span class="math inline">\(f(x)\)</span>,</p>
+<p><span class="math display">\[\int_{x \in \mathcal{R}(X)} f(x) dx = 1\]</span></p>
+</div>
+<hr></section><section id="sec-prob-haz" class="level3" data-number="C.4.2"><h3 data-number="C.4.2" class="anchored" data-anchor-id="sec-prob-haz">
+<span class="header-section-number">C.4.2</span> Hazard function</h3>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \def\or{\theta}  -->
+<!-- doesn't work for some reason -->
+<div id="def-hazard" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.11 (Hazard function, hazard rate, hazard rate function)</strong></span> &nbsp;</p>
+<div class="notes">
+<p>The <strong>hazard function</strong>, <strong>hazard rate</strong>, <strong>hazard rate function</strong>, for a random variable <span class="math inline">\(T\)</span> at value <span class="math inline">\(t\)</span>, typically denoted as <span class="math inline">\(\text{h}(t)\)</span> <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> or <span class="math inline">\(\lambda(t)\)</span>, <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> is the conditional <a href="./probability.html#def-pdf">density</a> of <span class="math inline">\(T\)</span> at <span class="math inline">\(t\)</span>, given <span class="math inline">\(T \ge t\)</span>. That is:</p>
+</div>
+<p><span class="math display">\[{\lambda}(t) \stackrel{\text{def}}{=}\text{p}(T=t|T\ge t)\]</span></p>
+<div class="notes">
+<p>If <span class="math inline">\(T\)</span> represents the time at which an event occurs, then <span class="math inline">\({\lambda}(t)\)</span> is the probability that the event occurs at time <span class="math inline">\(t\)</span>, given that it has not occurred prior to time <span class="math inline">\(t\)</span>.</p>
+</div>
+</div>
+<hr></section><section id="sec-expectation" class="level3" data-number="C.4.3"><h3 data-number="C.4.3" class="anchored" data-anchor-id="sec-expectation">
+<span class="header-section-number">C.4.3</span> Expectation</h3>
+<div id="def-expectation" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.12 (Expectation, expected value, population mean )</strong></span> The <strong>expectation</strong>, <strong>expected value</strong>, or <strong>population mean</strong> of a <em>continuous</em> random variable <span class="math inline">\(X\)</span>, denoted <span class="math inline">\(\mathbb{E}\left[X\right]\)</span>, <span class="math inline">\(\mu(X)\)</span>, or <span class="math inline">\(\mu_X\)</span>, is the weighted mean of <span class="math inline">\(X\)</span>’s possible values, weighted by the probability density function of those values:</p>
+<p><span class="math display">\[\mathbb{E}\left[X\right] = \int_{x\in \mathcal{R}(X)} x \cdot \text{p}(X=x)dx\]</span></p>
+<p>The <strong>expectation</strong>, <strong>expected value</strong>, or <strong>population mean</strong> of a <em>discrete</em> random variable <span class="math inline">\(X\)</span>, denoted <span class="math inline">\(\mathbb{E}\left[X\right]\)</span>, <span class="math inline">\(\mu(X)\)</span>, or <span class="math inline">\(\mu_X\)</span>, is the mean of <span class="math inline">\(X\)</span>’s possible values, weighted by the probability mass function of those values:</p>
+<p><span class="math display">\[\mathbb{E}\left[X\right] = \sum_{x \in \mathcal{R}(X)} x \cdot \text{P}(X=x)\]</span></p>
+<p>(c.f. <a href="https://en.wikipedia.org/wiki/Expected_value" class="uri">https://en.wikipedia.org/wiki/Expected_value</a>)</p>
+</div>
+<hr>
+<div id="thm-bernoulli-mean" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.11 (Expectation of the Bernoulli distribution)</strong></span> The expectation of a Bernoulli random variable with parameter <span class="math inline">\(\pi\)</span> is:</p>
+<p><span class="math display">\[\mathbb{E}\left[X\right] = \pi\]</span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span><span class="math display">\[
+\begin{aligned}
+\mathbb{E}\left[X\right]
+&amp;= \sum_{x\in \mathcal{R}(X)} x \cdot\text{P}(X=x)
+\\&amp;= \sum_{x\in \left\{0,1\right\}} x \cdot\text{P}(X=x)
+\\&amp;= \left(0 \cdot\text{P}(X=0)\right) + \left(1 \cdot\text{P}(X=1)\right)
+\\&amp;= \left(0 \cdot(1-\pi)\right) + \left(1 \cdot\pi\right)
+\\&amp;= 0 + \pi
+\\&amp;= \pi
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<div id="thm-surv-mean" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.12 (Expectation of time-to-event variables)</strong></span> If <span class="math inline">\(T\)</span> is a non-negative random variable, then:</p>
+<p><span class="math display">\[\mu(T|\tilde{X}= \tilde{x}) = \int_{t=0}^{\infty}\text{S}(t)dt\]</span></p>
+</div>
+<hr></section><section id="variance-and-related-characteristics" class="level3" data-number="C.4.4"><h3 data-number="C.4.4" class="anchored" data-anchor-id="variance-and-related-characteristics">
+<span class="header-section-number">C.4.4</span> Variance and related characteristics</h3>
+<div id="def-variance" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.13 (Variance)</strong></span> The variance of a random variable <span class="math inline">\(X\)</span> is the expectation of the squared difference between <span class="math inline">\(X\)</span> and <span class="math inline">\(\mathbb{E}\left[X\right]\)</span>; that is:</p>
+<p><span class="math display">\[
+\text{Var}\left(X\right) \stackrel{\text{def}}{=}\mathbb{E}\left[(X-\mathbb{E}\left[X\right])^2\right]
+\]</span></p>
+</div>
+<hr>
+<div id="thm-variance" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.13 (Simplified expression for variance)</strong></span> <span class="math display">\[\text{Var}\left(X\right)=\mathbb{E}\left[X^2\right] - \left(\mathbb{E}\left[X\right]\right)^2\]</span></p>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>By linearity of expectation, we have:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\text{Var}\left(X\right)
+&amp;\stackrel{\text{def}}{=}\mathbb{E}\left[(X-\mathbb{E}\left[X\right])^2\right]\\
+&amp;=\mathbb{E}\left[X^2 - 2X\mathbb{E}\left[X\right] + \left(\mathbb{E}\left[X\right]\right)^2\right]\\
+&amp;=\mathbb{E}\left[X^2\right] - \mathbb{E}\left[2X\mathbb{E}\left[X\right]\right] + \mathbb{E}\left[\left(\mathbb{E}\left[X\right]\right)^2\right]\\
+&amp;=\mathbb{E}\left[X^2\right] - 2\mathbb{E}\left[X\right]\mathbb{E}\left[X\right] + \left(\mathbb{E}\left[X\right]\right)^2\\
+&amp;=\mathbb{E}\left[X^2\right] - \left(\mathbb{E}\left[X\right]\right)^2\\
+\end{aligned}
+\]</span></p>
+</div>
+</div>
+<hr>
+<div id="def-precision" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.14 (Precision)</strong></span> The <strong>precision</strong> of a random variable <span class="math inline">\(X\)</span>, often denoted <span class="math inline">\(\tau(X)\)</span>, <span class="math inline">\(\tau_X\)</span>, or shorthanded as <span class="math inline">\(\tau\)</span>, is the inverse of that random variable’s variance; that is:</p>
+<p><span class="math display">\[\tau(X) \stackrel{\text{def}}{=}\left(\text{Var}\left(X\right)\right)^{-1}\]</span></p>
+</div>
+<div id="def-sd" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.15 (Standard deviation)</strong></span> The standard deviation of a random variable <span class="math inline">\(X\)</span> is the square-root of the variance of <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[\text{SD}\left(X\right) \stackrel{\text{def}}{=}\sqrt{\text{Var}\left(X\right)}\]</span></p>
+</div>
+<hr>
+<div id="def-cov" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.16 (Covariance)</strong></span> For any two one-dimensional random variables, <span class="math inline">\(X,Y\)</span>:</p>
+<p><span class="math display">\[\text{Cov}\left(X,Y\right) \stackrel{\text{def}}{=}\mathbb{E}\left[(X - \mathbb{E}\left[X\right])(Y - \mathbb{E}\left[Y\right])\right]\]</span></p>
+</div>
+<hr>
+<div id="thm-alt-cov" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.14</strong></span> <span class="math display">\[\text{Cov}\left(X,Y\right)= \mathbb{E}\left[XY\right] - \mathbb{E}\left[X\right] \mathbb{E}\left[Y\right]\]</span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>Left to the reader.</p>
+</div>
+<hr>
+<div id="lem-cov-xx" class="theorem lemma">
+<p><span class="theorem-title"><strong>Lemma C.1 (The covariance of a variable with itself is its variance)</strong></span> For any random variable <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[\text{Cov}\left(X,X\right) = \text{Var}\left(X\right)\]</span></p>
+</div>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span><span class="math display">\[
+\begin{aligned}
+\text{Cov}\left(X,X\right) &amp;= E[XX] - E[X]E[X]
+\\ &amp;= E[X^2]-(E[X])^2
+\\ &amp;= \text{Var}\left(X\right)
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<div id="def-cov-vec-x" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.17 (Variance/covariance of a <span class="math inline">\(p \times 1\)</span> random vector)</strong></span> For a <span class="math inline">\(p \times 1\)</span> dimensional random vector <span class="math inline">\(\tilde{X}\)</span>,</p>
+<p><span class="math display">\[
+\begin{aligned}
+\text{Var}\left(\tilde{X}\right)
+&amp;\stackrel{\text{def}}{=}\text{Cov}\left(\tilde{X}\right)
+\\
+&amp;\stackrel{\text{def}}{=}\mathbb{E}\left[\left(\tilde{X}- \mathbb{E}\tilde{X}\right)^{\top} \left(\tilde{X}- \mathbb{E}\tilde{X}\right)\right]
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<div id="thm-vcov-vec" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.15 (Alternate expression for variance of a random vector)</strong></span> <span class="math display">\[
+\begin{aligned}
+\text{Var}\left(X\right)
+&amp;= E[ X^{\top}X ] - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span><span class="math display">\[
+\begin{aligned}
+\text{Var}\left(X\right)
+&amp;= E[ \left( X^{\top} - E\lbrack X\rbrack^{\top} \right)\left( X - E\lbrack X\rbrack \right) ]\\
+&amp;= E[ X^{\top}X - E\lbrack X\rbrack^{\top}X - X^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack ]\\
+&amp;= E[ X^{\top}X ] - E\lbrack X\rbrack^{\top}E\lbrack X\rbrack - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack\\
+&amp;= E[ X^{\top}X ] - 2{E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack\\
+&amp;= E[ X^{\top}X ] - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<div id="thm-var-lincom" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.16 (Variance of a linear combination)</strong></span> For any vector of random variables <span class="math inline">\(\tilde{X}= (X_1, \ldots, X_n)\)</span> and corresponding vector of constants <span class="math inline">\(\tilde{a}= (a_1, ... ,a_n)\)</span>, the variance of their linear combination is:</p>
+<p><span id="eq-var-lincom"><span class="math display">\[
+\begin{aligned}
+\text{Var}\left(\tilde{a}\cdot \tilde{X}\right)
+&amp;= \text{Var}\left(\sum_{i=1}^na_i X_i\right)
+\\ &amp;= \tilde{a}^{\top} \text{Var}\left(\tilde{X}\right) \tilde{a}
+\\ &amp;= \sum_{i=1}^n\sum_{j=1}^n a_i a_j \text{Cov}\left(X_i,X_j\right)
+\end{aligned}
+\tag{C.5}\]</span></span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>Left to the reader…</p>
+</div>
+<hr>
+<div id="cor-var-lincom2" class="theorem corollary">
+<p><span class="theorem-title"><strong>Corollary C.3</strong></span> For any two random variables <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> and scalars <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span>:</p>
+<p><span class="math display">\[\text{Var}\left(aX + bY\right) = a^2 \text{Var}\left(X\right) + b^2 \text{Var}\left(Y\right) + 2(a \cdot b) \text{Cov}\left(X,Y\right)\]</span></p>
+</div>
+<hr>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span>Apply <a href="#thm-var-lincom" class="quarto-xref">Theorem&nbsp;<span>C.16</span></a> with <span class="math inline">\(n=2\)</span>, <span class="math inline">\(X_1 = X\)</span>, and <span class="math inline">\(X_2 = Y\)</span>.</p>
+<p>Or, see <a href="https://statproofbook.github.io/P/var-lincomb.html" class="uri">https://statproofbook.github.io/P/var-lincomb.html</a></p>
+</div>
+<hr>
+<div id="def-homosked" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.18 (homoskedastic, heteroskedastic)</strong></span> A random variable <span class="math inline">\(Y\)</span> is <strong>homoskedastic</strong> (with respect to covariates <span class="math inline">\(X\)</span>) if the variance of <span class="math inline">\(Y\)</span> does not vary with <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[\text{Var}(Y|X=x) = \sigma^2, \forall x\]</span></p>
+<p>Otherwise it is <strong>heteroskedastic</strong>.</p>
+</div>
+<hr>
+<div id="def-indpt" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.19 (Statistical independence)</strong></span> A set of random variables <span class="math inline">\(X_1, \ldots, X_n\)</span> are <strong>statistically independent</strong> if their joint probability is equal to the product of their marginal probabilities:</p>
+<p><span class="math display">\[\Pr(X_1=x_1, \ldots, X_n = x_n) = \prod_{i=1}^n{\Pr(X_i=x_i)}\]</span></p>
+</div>
+<div class="notes">
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The symbol for independence, <span class="math inline">\(\perp\!\!\!\perp\)</span>, is essentially just <span class="math inline">\(\prod\)</span> upside-down. So the symbol can remind you of its definition (<a href="#def-indpt" class="quarto-xref">Definition&nbsp;<span>C.19</span></a>).</p>
+</div>
+</div>
+</div>
+<hr>
+<div id="def-cind" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.20 (Conditional independence)</strong></span> A set of random variables <span class="math inline">\(Y_1, \ldots, Y_n\)</span> are <strong>conditionally statistically independent</strong> given a set of covariates <span class="math inline">\(X_1, \ldots, X_n\)</span> if the joint probability of the <span class="math inline">\(Y_i\)</span>s given the <span class="math inline">\(X_i\)</span>s is equal to the product of their marginal probabilities:</p>
+<p><span class="math display">\[\Pr(Y_1=y_1, \ldots, Y_n = y_n|X_1=x_1, \ldots, X_n = x_n) = \prod_{i=1}^n{\Pr(Y_i=y_i|X_i=x_i)}\]</span></p>
+</div>
+<hr>
+<div id="def-ident" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.21 (Identically distributed)</strong></span> A set of random variables <span class="math inline">\(X_1, \ldots, X_n\)</span> are <strong>identically distributed</strong> if they have the same range <span class="math inline">\(\mathcal{R}(X)\)</span> and if their marginal distributions <span class="math inline">\(\text{P}(X_1=x_1), ..., \text{P}(X_n=x_n)\)</span> are all equal to some shared distribution <span class="math inline">\(\text{P}(X=x)\)</span>:</p>
+<p><span class="math display">\[
+\forall i\in \left\{1:n\right\}, \forall x \in \mathcal{R}(X): \text{P}(X_i=x) = \text{P}(X=x)
+\]</span></p>
+</div>
+<hr>
+<div id="def-cident" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.22 (Conditionally identically distributed)</strong></span> A set of random variables <span class="math inline">\(Y_1, \ldots, Y_n\)</span> are <strong>conditionally identically distributed</strong> given a set of covariates <span class="math inline">\(X_1, \ldots, X_n\)</span> if <span class="math inline">\(Y_1, \ldots, Y_n\)</span> have the same range <span class="math inline">\(\mathcal{R}(X)\)</span> and if the distributions <span class="math inline">\(\text{P}(Y_i=y_i|X_i =x_i)\)</span> are all equal to the same distribution <span class="math inline">\(\text{P}(Y=y|X=x)\)</span>:</p>
+<p><span class="math display">\[
+\text{P}(Y_i=y|X_i=x) = \text{P}(Y=y|X=x)
+\]</span></p>
+</div>
+<hr>
+<div id="def-iid" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.23 (Independent and identically distributed)</strong></span> A set of random variables <span class="math inline">\(X_1, \ldots, X_n\)</span> are <strong>independent and identically distributed</strong> (shorthand: “<span class="math inline">\(X_i\ \text{iid}\)</span>”) if they are statistically independent and identically distributed.</p>
+</div>
+<hr>
+<div id="def-iid" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition C.24 (Conditionally independent and identically distributed)</strong></span> A set of random variables <span class="math inline">\(Y_1, \ldots, Y_n\)</span> are <strong>conditionally independent and identically distributed</strong> (shorthand: “<span class="math inline">\(Y_i | X_i\ \text{ciid}\)</span>” or just “<span class="math inline">\(Y_i |X_i\ \text{iid}\)</span>”) given a set of covariates <span class="math inline">\(X_1, \ldots, X_n\)</span> if <span class="math inline">\(Y_1, \ldots, Y_n\)</span> are conditionally independent given <span class="math inline">\(X_1, \ldots, X_n\)</span> and <span class="math inline">\(Y_1, \ldots, Y_n\)</span> are identically distributed given <span class="math inline">\(X_1, \ldots, X_n\)</span>.</p>
+</div>
+</section></section><section id="the-central-limit-theorem" class="level2" data-number="C.5"><h2 data-number="C.5" class="anchored" data-anchor-id="the-central-limit-theorem">
+<span class="header-section-number">C.5</span> The Central Limit Theorem</h2>
+<p>The sum of many independent or nearly-independent random variables with small variances (relative to the number of RVs being summed) produces bell-shaped distributions.</p>
+<p>For example, consider the sum of five dice (<a href="#fig-clt-5d6" class="quarto-xref">Figure&nbsp;<span>C.4</span></a>).</p>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span><span class="va">dist</span> <span class="op">=</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html">expand.grid</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/c_across.html">c_across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">total</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>`p(X=x)` <span class="op">=</span> <span class="va">n</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">dist</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">total</span>, y <span class="op">=</span> <span class="va">`p(X=x)`</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"sum of dice (x)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Probability of outcome, Pr(X=x)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expand_limits.html">expand_limits</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span>  </span>
+<span>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-clt-5d6" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-clt-5d6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;C.4: Distribution of the sum of five dice
+</figcaption><div aria-describedby="fig-clt-5d6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="probability_files/figure-html/fig-clt-5d6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;C.4: Distribution of the sum of five dice"><img src="probability_files/figure-html/fig-clt-5d6-1.png" class="img-fluid figure-img" width="672"></a>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<p>In comparison, the outcome of just one die is not bell-shaped (<a href="#fig-clt-1d6" class="quarto-xref">Figure&nbsp;<span>C.5</span></a>).</p>
+<div class="cell">
+<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span><span class="va">dist</span> <span class="op">=</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html">expand.grid</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/c_across.html">c_across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">total</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>`p(X=x)` <span class="op">=</span> <span class="va">n</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">dist</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">total</span>, y <span class="op">=</span> <span class="va">`p(X=x)`</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"sum of dice (x)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Probability of outcome, Pr(X=x)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expand_limits.html">expand_limits</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span>  </span>
+<span>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-clt-1d6" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-clt-1d6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;C.5: Distribution of the outcome of one die
+</figcaption><div aria-describedby="fig-clt-1d6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="probability_files/figure-html/fig-clt-1d6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;C.5: Distribution of the outcome of one die"><img src="probability_files/figure-html/fig-clt-1d6-1.png" class="img-fluid figure-img" width="672"></a>
+</div>
+</figure>
+</div>
+</div>
+</div>
+<p>What distribution does a single die have?</p>
+<p>Answer: discrete uniform on 1:6.</p>
+</section><section id="additional-resources" class="level2" data-number="C.6"><h2 data-number="C.6" class="anchored" data-anchor-id="additional-resources">
+<span class="header-section-number">C.6</span> Additional resources</h2>
+<ul>
+<li><span class="citation" data-cites="problifesaver">Miller (<a href="references.html#ref-problifesaver" role="doc-biblioref">2017</a>)</span></li>
+</ul>
+
+
+<!-- -->
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-dobson4e" class="csl-entry" role="listitem">
+Dobson, Annette J, and Adrian G Barnett. 2018. <em>An Introduction to Generalized Linear Models</em>. 4th ed. CRC press. <a href="https://doi.org/10.1201/9781315182780">https://doi.org/10.1201/9781315182780</a>.
+</div>
+<div id="ref-kalbfleisch2011statistical" class="csl-entry" role="listitem">
+Kalbfleisch, John D, and Ross L Prentice. 2011. <em>The Statistical Analysis of Failure Time Data</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-klein2003survival" class="csl-entry" role="listitem">
+Klein, John P, and Melvin L Moeschberger. 2003. <em>Survival Analysis: Techniques for Censored and Truncated Data</em>. Vol. 1230. Springer. <a href="https://link.springer.com/book/10.1007/b97377">https://link.springer.com/book/10.1007/b97377</a>.
+</div>
+<div id="ref-kleinbaum2012survival" class="csl-entry" role="listitem">
+Kleinbaum, David G, and Mitchel Klein. 2012. <em>Survival Analysis: A Self-Learning Text</em>. 3rd ed. Springer. <a href="https://link.springer.com/book/10.1007/978-1-4419-6646-9">https://link.springer.com/book/10.1007/978-1-4419-6646-9</a>.
+</div>
+<div id="ref-problifesaver" class="csl-entry" role="listitem">
+Miller, Steven J. 2017. <em>The Probability Lifesaver : All the Tools You Need to Understand Chance</em>. A Princeton Lifesaver Study Guide. Princeton: Princeton University Press. <a href="https://press.princeton.edu/books/hardcover/9780691149547/the-probability-lifesaver">https://press.princeton.edu/books/hardcover/9780691149547/the-probability-lifesaver</a>.
+</div>
+<div id="ref-me4" class="csl-entry" role="listitem">
+Rothman, Kenneth J., Timothy L. Lash, Tyler J. VanderWeele, and Sebastien Haneuse. 2021. <em>Modern Epidemiology</em>. Fourth edition. Philadelphia: Wolters Kluwer.
+</div>
+<div id="ref-vittinghoff2e" class="csl-entry" role="listitem">
+Vittinghoff, Eric, David V Glidden, Stephen C Shiboski, and Charles E McCulloch. 2012. <em>Regression Methods in Biostatistics: Linear, Logistic, Survival, and Repeated Measures Models</em>. 2nd ed. Springer. <a href="https://doi.org/10.1007/978-1-4614-1353-0">https://doi.org/10.1007/978-1-4614-1353-0</a>.
+</div>
+</div>
+</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>for example in <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span>, <span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="references.html#ref-vittinghoff2e" role="doc-biblioref">2012</a>)</span>, <span class="citation" data-cites="klein2003survival">Klein and Moeschberger (<a href="references.html#ref-klein2003survival" role="doc-biblioref">2003</a>)</span>, and <span class="citation" data-cites="kleinbaum2012survival">Kleinbaum and Klein (<a href="references.html#ref-kleinbaum2012survival" role="doc-biblioref">2012</a>)</span><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>for example, in <span class="citation" data-cites="me4">Rothman et al. (<a href="references.html#ref-me4" role="doc-biblioref">2021</a>)</span> and <span class="citation" data-cites="kalbfleisch2011statistical">Kalbfleisch and Prentice (<a href="references.html#ref-kalbfleisch2011statistical" role="doc-biblioref">2011</a>)</span><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./math-prereqs.html" class="pagination-link" aria-label="Mathematics">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Mathematics</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./estimation.html" class="pagination-link" aria-label="Estimation">
+        <span class="nav-page-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Estimation</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb7" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Probability</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>{{&lt; include shared-config.qmd &gt;}}</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>Most of the content in this chapter should be review from UC Davis Epi 202.</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Core properties of probabilities</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">### Defining probabilities</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>:::{#def-probability}</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Probability measure</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>A **probability measure**, often denoted $\Pr()$ or $\P()$, </span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>is a function whose domain is a </span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">$\sigma$-algebra</span><span class="co">](https://en.wikipedia.org/wiki/%CE%A3-algebra)</span> </span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>of possible outcomes, $\mathscr{S}$,</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>and which satisfies the following properties:</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>For any statistical event $A \in \mathscr{S}$, $\Pr(A) \ge 0$.</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>The probability of the union of all outcomes ($\Omega \eqdef \cup \mathscr{S}$)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>is 1:</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>$$\Pr(\Omega) = 1$$</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>The probability of the union of disjoint events, $A_1 \cup A_2: A_1 \cap A_2 = \emptyset$, is equal to </span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>the sum of their probabilities:</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>$$\Pr(A_1 \cup A_2) = \Pr(A_1) + \Pr(A_2)$$</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>:::{#thm-prob-subset}</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>If $A$ and $B$ are statistical events and $A\subseteq B$, then $\Pr(A \cap B) = \Pr(A)$.</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>::: proof</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>Left to the reader for now.</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>:::{#thm-total-prob-1}</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>$$\Pr(A) + \Pr(\neg A) = 1$$</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>::: proof</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>By properties 2 and 3 of @def-probability.</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>:::{#cor-p-neg0}</span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>$$\Pr(\neg A) = 1 - \Pr(A)$$</span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a>::: proof</span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a>By @thm-total-prob-1 and algebra.</span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>:::{#cor-p-neg}</span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>If the probability of an outcome $A$ is $\Pr(A)=\pi$,</span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>then the probability that $A$ does not occur is:</span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>$$\Pr(\neg A)= 1 - \pi$$</span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a>::: proof</span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a>Using @cor-p-neg0:</span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a>\Pr(\neg A) &amp;= 1 - \Pr(A)</span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= 1 - \pi</span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a>\ea</span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a><span class="fu">## Random variables</span></span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a><span class="fu">### Binary variables {#sec-binary-vars}</span></span>
+<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a>{{&lt; include binary-vars.qmd &gt;}}</span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a><span class="fu">### Count variables {#sec-count-vars}</span></span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a>{{&lt; include count-vars.qmd &gt;}}</span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a><span class="fu">## Key probability distributions</span></span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_distn_uses.qmd &gt;}}</span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a><span class="fu">### The Bernoulli distribution {#sec-bern-dist}</span></span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a>{{&lt; include bernoulli.qmd &gt;}}</span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a><span class="fu">### The Poisson distribution {#sec-poisson-dist}</span></span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a>{{&lt; include poisson.qmd &gt;}}</span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a><span class="fu">### The Negative-Binomial distribution {#sec-nb-dist}</span></span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a>{{&lt; include negbinom.qmd &gt;}}</span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a><span class="fu">### Weibull Distribution {#sec-weibull}</span></span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>p(t)&amp;= \alpha\lambda x^{\alpha-1}\text{e}^{-\lambda x^\alpha}<span class="sc">\\</span></span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a>\haz(t)&amp;=\alpha\lambda x^{\alpha-1}<span class="sc">\\</span></span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>\surv(t)&amp;=\text{e}^{-\lambda x^\alpha}<span class="sc">\\</span></span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>E(T)&amp;= \Gamma(1+1/\alpha)\cdot \lambda^{-1/\alpha}</span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>When $\alpha=1$ this is the exponential. When $\alpha&gt;1$ the hazard is</span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a>increasing and when $\alpha &lt; 1$ the hazard is decreasing. This provides</span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a>more flexibility than the exponential.</span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a>We will see more of this distribution later.</span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a><span class="fu">## Characteristics of probability distributions</span></span>
+<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a><span class="fu">### Probability density function {#sec-prob-dens}</span></span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def-pdf.qmd &gt;}}</span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a>:::{#thm-density-vs-CDF}</span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a><span class="fu">### Density function is derivative of CDF</span></span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a>The density function $f(t)$ or $\p(T=t)$ for a random variable $T$ at value $t$ is equal to the derivative of the cumulative probability function $F(t) \eqdef P(T\le t)$; that is:</span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a>$$f(t) \eqdef \deriv{t} F(t)$$</span>
+<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a>:::{#thm-density-sums-to-one}</span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Density functions integrate to 1</span></span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a>For any density function $f(x)$,</span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>$$\int_{x \in \rangef{X}} f(x) dx = 1$$</span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a><span class="fu">### Hazard function {#sec-prob-haz}</span></span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def-hazard.qmd &gt;}}</span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a><span class="fu">### Expectation {#sec-expectation}</span></span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a>:::{#def-expectation}</span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a><span class="fu">### Expectation, expected value, population mean \index{expectation} \index{expected value}</span></span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a>The **expectation**, **expected value**, or **population mean** of a *continuous* random variable $X$, denoted $\E{X}$, $\mu(X)$, or $\mu_X$, is the weighted mean of $X$'s possible values, weighted by the probability density function of those values:</span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a>$$\E{X} = \int_{x\in \rangef{X}} x \cdot \p(X=x)dx$$</span>
+<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a>The **expectation**, **expected value**, or **population mean** of a *discrete* random variable $X$, </span>
+<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a>denoted $\E{X}$, $\mu(X)$, or $\mu_X$, </span>
+<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a>is the mean of $X$'s possible values, </span>
+<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a>weighted by the probability mass function of those values:</span>
+<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a>$$\E{X} = \sum_{x \in \rangef{X}} x \cdot \P(X=x)$$</span>
+<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a>(c.f. <span class="ot">&lt;https://en.wikipedia.org/wiki/Expected_value&gt;</span>)</span>
+<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a>:::{#thm-bernoulli-mean}</span>
+<span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Expectation of the Bernoulli distribution</span></span>
+<span id="cb7-212"><a href="#cb7-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-213"><a href="#cb7-213" aria-hidden="true" tabindex="-1"></a>The expectation of a Bernoulli random variable with parameter $\pi$ is:</span>
+<span id="cb7-214"><a href="#cb7-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-215"><a href="#cb7-215" aria-hidden="true" tabindex="-1"></a>$$\E{X} = \pi$$</span>
+<span id="cb7-216"><a href="#cb7-216" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-217"><a href="#cb7-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-218"><a href="#cb7-218" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-219"><a href="#cb7-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-220"><a href="#cb7-220" aria-hidden="true" tabindex="-1"></a>:::{.proof}</span>
+<span id="cb7-221"><a href="#cb7-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-222"><a href="#cb7-222" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-223"><a href="#cb7-223" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb7-224"><a href="#cb7-224" aria-hidden="true" tabindex="-1"></a>\E{X}</span>
+<span id="cb7-225"><a href="#cb7-225" aria-hidden="true" tabindex="-1"></a>&amp;= \sum_{x\in \rangef{X}} x \cd \P(X=x)</span>
+<span id="cb7-226"><a href="#cb7-226" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span>&amp;= \sum_{x\in \set{0,1}} x \cd \P(X=x)</span>
+<span id="cb7-227"><a href="#cb7-227" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span>&amp;= \paren{0 \cd \P(X=0)} + \paren{1 \cd \P(X=1)}</span>
+<span id="cb7-228"><a href="#cb7-228" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span>&amp;= \paren{0 \cd (1-\pi)} + \paren{1 \cd \pi}</span>
+<span id="cb7-229"><a href="#cb7-229" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span>&amp;= 0 + \pi</span>
+<span id="cb7-230"><a href="#cb7-230" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span>&amp;= \pi</span>
+<span id="cb7-231"><a href="#cb7-231" aria-hidden="true" tabindex="-1"></a>\ea</span>
+<span id="cb7-232"><a href="#cb7-232" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-233"><a href="#cb7-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-234"><a href="#cb7-234" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-235"><a href="#cb7-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-236"><a href="#cb7-236" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-237"><a href="#cb7-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-238"><a href="#cb7-238" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm-surv-mean.qmd &gt;}}</span>
+<span id="cb7-239"><a href="#cb7-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-240"><a href="#cb7-240" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-241"><a href="#cb7-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-242"><a href="#cb7-242" aria-hidden="true" tabindex="-1"></a><span class="fu">### Variance and related characteristics</span></span>
+<span id="cb7-243"><a href="#cb7-243" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-244"><a href="#cb7-244" aria-hidden="true" tabindex="-1"></a>:::{#def-variance}</span>
+<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Variance</span></span>
+<span id="cb7-246"><a href="#cb7-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-247"><a href="#cb7-247" aria-hidden="true" tabindex="-1"></a>The variance of a random variable $X$ is the expectation of the squared difference between $X$ and $\E{X}$; that is:</span>
+<span id="cb7-248"><a href="#cb7-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-249"><a href="#cb7-249" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-250"><a href="#cb7-250" aria-hidden="true" tabindex="-1"></a>\Var{X} \eqdef \E{(X-\E{X})^2}</span>
+<span id="cb7-251"><a href="#cb7-251" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-252"><a href="#cb7-252" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-253"><a href="#cb7-253" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-254"><a href="#cb7-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-255"><a href="#cb7-255" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-256"><a href="#cb7-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-257"><a href="#cb7-257" aria-hidden="true" tabindex="-1"></a>:::{#thm-variance}</span>
+<span id="cb7-258"><a href="#cb7-258" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Simplified expression for variance</span></span>
+<span id="cb7-259"><a href="#cb7-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-260"><a href="#cb7-260" aria-hidden="true" tabindex="-1"></a>$$\Var{X}=\E{X^2} - \sqf{\E{X}}$$</span>
+<span id="cb7-261"><a href="#cb7-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-262"><a href="#cb7-262" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-263"><a href="#cb7-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-264"><a href="#cb7-264" aria-hidden="true" tabindex="-1"></a>::::{.proof}</span>
+<span id="cb7-265"><a href="#cb7-265" aria-hidden="true" tabindex="-1"></a>By linearity of expectation, we have:</span>
+<span id="cb7-266"><a href="#cb7-266" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-267"><a href="#cb7-267" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-268"><a href="#cb7-268" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb7-269"><a href="#cb7-269" aria-hidden="true" tabindex="-1"></a>\Var{X} </span>
+<span id="cb7-270"><a href="#cb7-270" aria-hidden="true" tabindex="-1"></a>&amp;\eqdef \E{(X-\E{X})^2}<span class="sc">\\</span></span>
+<span id="cb7-271"><a href="#cb7-271" aria-hidden="true" tabindex="-1"></a>&amp;=\E{X^2 - 2X\E{X} + \sqf{\E{X}}}<span class="sc">\\</span></span>
+<span id="cb7-272"><a href="#cb7-272" aria-hidden="true" tabindex="-1"></a>&amp;=\E{X^2} - \E{2X\E{X}} + \E{\sqf{\E{X}}}<span class="sc">\\</span></span>
+<span id="cb7-273"><a href="#cb7-273" aria-hidden="true" tabindex="-1"></a>&amp;=\E{X^2} - 2\E{X}\E{X} + \sqf{\E{X}}<span class="sc">\\</span></span>
+<span id="cb7-274"><a href="#cb7-274" aria-hidden="true" tabindex="-1"></a>&amp;=\E{X^2} - \sqf{\E{X}}<span class="sc">\\</span></span>
+<span id="cb7-275"><a href="#cb7-275" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb7-276"><a href="#cb7-276" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-277"><a href="#cb7-277" aria-hidden="true" tabindex="-1"></a>::::</span>
+<span id="cb7-278"><a href="#cb7-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-279"><a href="#cb7-279" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-280"><a href="#cb7-280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-281"><a href="#cb7-281" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-282"><a href="#cb7-282" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-283"><a href="#cb7-283" aria-hidden="true" tabindex="-1"></a>::: {#def-precision}</span>
+<span id="cb7-284"><a href="#cb7-284" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Precision</span></span>
+<span id="cb7-285"><a href="#cb7-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-286"><a href="#cb7-286" aria-hidden="true" tabindex="-1"></a>The **precision** of a random variable $X$, often denoted $\tau(X)$, $\tau_X$, or shorthanded as $\tau$, is</span>
+<span id="cb7-287"><a href="#cb7-287" aria-hidden="true" tabindex="-1"></a>the inverse of that random variable's variance; that is:</span>
+<span id="cb7-288"><a href="#cb7-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-289"><a href="#cb7-289" aria-hidden="true" tabindex="-1"></a>$$\tau(X) \eqdef \inv{\Var{X}}$$</span>
+<span id="cb7-290"><a href="#cb7-290" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-291"><a href="#cb7-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-292"><a href="#cb7-292" aria-hidden="true" tabindex="-1"></a>::: {#def-sd}</span>
+<span id="cb7-293"><a href="#cb7-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-294"><a href="#cb7-294" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Standard deviation</span></span>
+<span id="cb7-295"><a href="#cb7-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-296"><a href="#cb7-296" aria-hidden="true" tabindex="-1"></a>The standard deviation of a random variable $X$ is the square-root of the variance of $X$:</span>
+<span id="cb7-297"><a href="#cb7-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-298"><a href="#cb7-298" aria-hidden="true" tabindex="-1"></a>$$\SD{X} \eqdef \sqrt{\Var{X}}$$</span>
+<span id="cb7-299"><a href="#cb7-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-300"><a href="#cb7-300" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-301"><a href="#cb7-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-302"><a href="#cb7-302" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-303"><a href="#cb7-303" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-304"><a href="#cb7-304" aria-hidden="true" tabindex="-1"></a>:::{#def-cov}</span>
+<span id="cb7-305"><a href="#cb7-305" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Covariance</span></span>
+<span id="cb7-306"><a href="#cb7-306" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-307"><a href="#cb7-307" aria-hidden="true" tabindex="-1"></a>For any two one-dimensional random variables, $X,Y$:</span>
+<span id="cb7-308"><a href="#cb7-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-309"><a href="#cb7-309" aria-hidden="true" tabindex="-1"></a>$$\Cov{X,Y} \eqdef \Expf{(X - \E X)(Y - \E Y)}$$</span>
+<span id="cb7-310"><a href="#cb7-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-311"><a href="#cb7-311" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-312"><a href="#cb7-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-313"><a href="#cb7-313" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-314"><a href="#cb7-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-315"><a href="#cb7-315" aria-hidden="true" tabindex="-1"></a>:::{#thm-alt-cov}</span>
+<span id="cb7-316"><a href="#cb7-316" aria-hidden="true" tabindex="-1"></a>$$\Cov{X,Y}= \E{XY} - \E{X} \E{Y}$$</span>
+<span id="cb7-317"><a href="#cb7-317" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-318"><a href="#cb7-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-319"><a href="#cb7-319" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-320"><a href="#cb7-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-321"><a href="#cb7-321" aria-hidden="true" tabindex="-1"></a>:::{.proof}</span>
+<span id="cb7-322"><a href="#cb7-322" aria-hidden="true" tabindex="-1"></a>Left to the reader.</span>
+<span id="cb7-323"><a href="#cb7-323" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-324"><a href="#cb7-324" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-325"><a href="#cb7-325" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-326"><a href="#cb7-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-327"><a href="#cb7-327" aria-hidden="true" tabindex="-1"></a>:::{#lem-cov-xx}</span>
+<span id="cb7-328"><a href="#cb7-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-329"><a href="#cb7-329" aria-hidden="true" tabindex="-1"></a><span class="fu">##### The covariance of a variable with itself is its variance</span></span>
+<span id="cb7-330"><a href="#cb7-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-331"><a href="#cb7-331" aria-hidden="true" tabindex="-1"></a>For any random variable $X$:</span>
+<span id="cb7-332"><a href="#cb7-332" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-333"><a href="#cb7-333" aria-hidden="true" tabindex="-1"></a>$$\Cov{X,X} = \Var{X}$$</span>
+<span id="cb7-334"><a href="#cb7-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-335"><a href="#cb7-335" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-336"><a href="#cb7-336" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-337"><a href="#cb7-337" aria-hidden="true" tabindex="-1"></a>:::{.proof}</span>
+<span id="cb7-338"><a href="#cb7-338" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-339"><a href="#cb7-339" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb7-340"><a href="#cb7-340" aria-hidden="true" tabindex="-1"></a>\Cov{X,X} &amp;= E<span class="co">[</span><span class="ot">XX</span><span class="co">]</span> - E<span class="co">[</span><span class="ot">X</span><span class="co">]</span>E<span class="co">[</span><span class="ot">X</span><span class="co">]</span> </span>
+<span id="cb7-341"><a href="#cb7-341" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= E<span class="co">[</span><span class="ot">X^2</span><span class="co">]</span>-(E<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)^2</span>
+<span id="cb7-342"><a href="#cb7-342" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \Var{X}</span>
+<span id="cb7-343"><a href="#cb7-343" aria-hidden="true" tabindex="-1"></a>\ea</span>
+<span id="cb7-344"><a href="#cb7-344" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-345"><a href="#cb7-345" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-346"><a href="#cb7-346" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-347"><a href="#cb7-347" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-348"><a href="#cb7-348" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-349"><a href="#cb7-349" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def-cov-vec-x.qmd &gt;}}</span>
+<span id="cb7-350"><a href="#cb7-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-351"><a href="#cb7-351" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-352"><a href="#cb7-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-353"><a href="#cb7-353" aria-hidden="true" tabindex="-1"></a>:::{#thm-vcov-vec}</span>
+<span id="cb7-354"><a href="#cb7-354" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-355"><a href="#cb7-355" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Alternate expression for variance of a random vector</span></span>
+<span id="cb7-356"><a href="#cb7-356" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-357"><a href="#cb7-357" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-358"><a href="#cb7-358" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb7-359"><a href="#cb7-359" aria-hidden="true" tabindex="-1"></a>\Var{X} </span>
+<span id="cb7-360"><a href="#cb7-360" aria-hidden="true" tabindex="-1"></a>&amp;= E<span class="co">[</span><span class="ot"> X^{\top}X </span><span class="co">]</span> - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack</span>
+<span id="cb7-361"><a href="#cb7-361" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb7-362"><a href="#cb7-362" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-363"><a href="#cb7-363" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-364"><a href="#cb7-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-365"><a href="#cb7-365" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-366"><a href="#cb7-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-367"><a href="#cb7-367" aria-hidden="true" tabindex="-1"></a>:::{.proof}</span>
+<span id="cb7-368"><a href="#cb7-368" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-369"><a href="#cb7-369" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb7-370"><a href="#cb7-370" aria-hidden="true" tabindex="-1"></a>\Var{X} </span>
+<span id="cb7-371"><a href="#cb7-371" aria-hidden="true" tabindex="-1"></a>&amp;= E<span class="co">[</span><span class="ot"> \left( X^{\top} - E\lbrack X\rbrack^{\top} \right)\left( X - E\lbrack X\rbrack \right) </span><span class="co">]</span><span class="sc">\\</span></span>
+<span id="cb7-372"><a href="#cb7-372" aria-hidden="true" tabindex="-1"></a>&amp;= E<span class="co">[</span><span class="ot"> X^{\top}X - E\lbrack X\rbrack^{\top}X - X^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack </span><span class="co">]</span><span class="sc">\\</span></span>
+<span id="cb7-373"><a href="#cb7-373" aria-hidden="true" tabindex="-1"></a>&amp;= E<span class="co">[</span><span class="ot"> X^{\top}X </span><span class="co">]</span> - E\lbrack X\rbrack^{\top}E\lbrack X\rbrack - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack<span class="sc">\\</span></span>
+<span id="cb7-374"><a href="#cb7-374" aria-hidden="true" tabindex="-1"></a>&amp;= E<span class="co">[</span><span class="ot"> X^{\top}X </span><span class="co">]</span> - 2{E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack<span class="sc">\\</span></span>
+<span id="cb7-375"><a href="#cb7-375" aria-hidden="true" tabindex="-1"></a>&amp;= E<span class="co">[</span><span class="ot"> X^{\top}X </span><span class="co">]</span> - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack</span>
+<span id="cb7-376"><a href="#cb7-376" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb7-377"><a href="#cb7-377" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-378"><a href="#cb7-378" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-379"><a href="#cb7-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-380"><a href="#cb7-380" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-381"><a href="#cb7-381" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-382"><a href="#cb7-382" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm-var-lincom.qmd &gt;}}</span>
+<span id="cb7-383"><a href="#cb7-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-384"><a href="#cb7-384" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-385"><a href="#cb7-385" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-386"><a href="#cb7-386" aria-hidden="true" tabindex="-1"></a>:::{.proof}</span>
+<span id="cb7-387"><a href="#cb7-387" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-388"><a href="#cb7-388" aria-hidden="true" tabindex="-1"></a>Left to the reader...</span>
+<span id="cb7-389"><a href="#cb7-389" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-390"><a href="#cb7-390" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-391"><a href="#cb7-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-392"><a href="#cb7-392" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-393"><a href="#cb7-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-394"><a href="#cb7-394" aria-hidden="true" tabindex="-1"></a>:::{#cor-var-lincom2}</span>
+<span id="cb7-395"><a href="#cb7-395" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-396"><a href="#cb7-396" aria-hidden="true" tabindex="-1"></a>For any two random variables $X$ and $Y$ and scalars $a$ and $b$:</span>
+<span id="cb7-397"><a href="#cb7-397" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-398"><a href="#cb7-398" aria-hidden="true" tabindex="-1"></a>$$\Var{aX + bY} = a^2 \Var{X} + b^2 \Var{Y} + 2(a \cd b) \Cov{X,Y}$$</span>
+<span id="cb7-399"><a href="#cb7-399" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-400"><a href="#cb7-400" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-401"><a href="#cb7-401" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-402"><a href="#cb7-402" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-403"><a href="#cb7-403" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-404"><a href="#cb7-404" aria-hidden="true" tabindex="-1"></a>:::{.proof}</span>
+<span id="cb7-405"><a href="#cb7-405" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-406"><a href="#cb7-406" aria-hidden="true" tabindex="-1"></a>Apply @thm-var-lincom with $n=2$, $X_1 = X$, and $X_2 = Y$.</span>
+<span id="cb7-407"><a href="#cb7-407" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-408"><a href="#cb7-408" aria-hidden="true" tabindex="-1"></a>Or, see <span class="ot">&lt;https://statproofbook.github.io/P/var-lincomb.html&gt;</span></span>
+<span id="cb7-409"><a href="#cb7-409" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-410"><a href="#cb7-410" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-411"><a href="#cb7-411" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-412"><a href="#cb7-412" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-413"><a href="#cb7-413" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-414"><a href="#cb7-414" aria-hidden="true" tabindex="-1"></a>:::{#def-homosked}</span>
+<span id="cb7-415"><a href="#cb7-415" aria-hidden="true" tabindex="-1"></a><span class="fu">### homoskedastic, heteroskedastic</span></span>
+<span id="cb7-416"><a href="#cb7-416" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-417"><a href="#cb7-417" aria-hidden="true" tabindex="-1"></a>A random variable $Y$ is **homoskedastic** (with respect to covariates $X$) if the variance of $Y$ does not vary with $X$: </span>
+<span id="cb7-418"><a href="#cb7-418" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-419"><a href="#cb7-419" aria-hidden="true" tabindex="-1"></a>$$\Varr(Y|X=x) = \ss, \forall x$$</span>
+<span id="cb7-420"><a href="#cb7-420" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-421"><a href="#cb7-421" aria-hidden="true" tabindex="-1"></a>Otherwise it is **heteroskedastic**.</span>
+<span id="cb7-422"><a href="#cb7-422" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-423"><a href="#cb7-423" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-424"><a href="#cb7-424" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-425"><a href="#cb7-425" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-426"><a href="#cb7-426" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-427"><a href="#cb7-427" aria-hidden="true" tabindex="-1"></a>:::{#def-indpt}</span>
+<span id="cb7-428"><a href="#cb7-428" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-429"><a href="#cb7-429" aria-hidden="true" tabindex="-1"></a><span class="fu">### Statistical independence</span></span>
+<span id="cb7-430"><a href="#cb7-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-431"><a href="#cb7-431" aria-hidden="true" tabindex="-1"></a>A set of random variables $\X1n$ are **statistically independent** </span>
+<span id="cb7-432"><a href="#cb7-432" aria-hidden="true" tabindex="-1"></a>if their joint probability is equal to the product of their marginal probabilities:</span>
+<span id="cb7-433"><a href="#cb7-433" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-434"><a href="#cb7-434" aria-hidden="true" tabindex="-1"></a>$$\Pr(\Xx1n) = \prodi1n{\Pr(X_i=x_i)}$$</span>
+<span id="cb7-435"><a href="#cb7-435" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-436"><a href="#cb7-436" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-437"><a href="#cb7-437" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-438"><a href="#cb7-438" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb7-439"><a href="#cb7-439" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-440"><a href="#cb7-440" aria-hidden="true" tabindex="-1"></a>::::{.callout-tip}</span>
+<span id="cb7-441"><a href="#cb7-441" aria-hidden="true" tabindex="-1"></a>The symbol for independence, $\ind$, is essentially just $\prod$ upside-down.</span>
+<span id="cb7-442"><a href="#cb7-442" aria-hidden="true" tabindex="-1"></a>So the symbol can remind you of its definition (@def-indpt).</span>
+<span id="cb7-443"><a href="#cb7-443" aria-hidden="true" tabindex="-1"></a>::::</span>
+<span id="cb7-444"><a href="#cb7-444" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-445"><a href="#cb7-445" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-446"><a href="#cb7-446" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-447"><a href="#cb7-447" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-448"><a href="#cb7-448" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-449"><a href="#cb7-449" aria-hidden="true" tabindex="-1"></a>:::{#def-cind}</span>
+<span id="cb7-450"><a href="#cb7-450" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-451"><a href="#cb7-451" aria-hidden="true" tabindex="-1"></a><span class="fu">### Conditional independence</span></span>
+<span id="cb7-452"><a href="#cb7-452" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-453"><a href="#cb7-453" aria-hidden="true" tabindex="-1"></a>A set of random variables $\dsn{Y}$ are **conditionally statistically independent** </span>
+<span id="cb7-454"><a href="#cb7-454" aria-hidden="true" tabindex="-1"></a>given a set of covariates $\X1n$</span>
+<span id="cb7-455"><a href="#cb7-455" aria-hidden="true" tabindex="-1"></a>if the joint probability of the $Y_i$s given the $X_i$s is equal to </span>
+<span id="cb7-456"><a href="#cb7-456" aria-hidden="true" tabindex="-1"></a>the product of their marginal probabilities:</span>
+<span id="cb7-457"><a href="#cb7-457" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-458"><a href="#cb7-458" aria-hidden="true" tabindex="-1"></a>$$\Pr(\dsvn{Y}{y}|\dsvn{X}{x}) = \prodi1n{\Pr(Y_i=y_i|X_i=x_i)}$$</span>
+<span id="cb7-459"><a href="#cb7-459" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-460"><a href="#cb7-460" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-461"><a href="#cb7-461" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-462"><a href="#cb7-462" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-463"><a href="#cb7-463" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-464"><a href="#cb7-464" aria-hidden="true" tabindex="-1"></a>:::{#def-ident}</span>
+<span id="cb7-465"><a href="#cb7-465" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-466"><a href="#cb7-466" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Identically distributed</span></span>
+<span id="cb7-467"><a href="#cb7-467" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-468"><a href="#cb7-468" aria-hidden="true" tabindex="-1"></a>A set of random variables $\X1n$ are **identically distributed**</span>
+<span id="cb7-469"><a href="#cb7-469" aria-hidden="true" tabindex="-1"></a>if they have the same range $\rangef{X}$ and if</span>
+<span id="cb7-470"><a href="#cb7-470" aria-hidden="true" tabindex="-1"></a>their marginal distributions $\P(X_1=x_1), ..., \P(X_n=x_n)$ are all </span>
+<span id="cb7-471"><a href="#cb7-471" aria-hidden="true" tabindex="-1"></a>equal to some shared distribution $\P(X=x)$:</span>
+<span id="cb7-472"><a href="#cb7-472" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-473"><a href="#cb7-473" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-474"><a href="#cb7-474" aria-hidden="true" tabindex="-1"></a>\forall i\in \set{1:n}, \forall x \in \rangef{X}: \P(X_i=x) = \P(X=x)</span>
+<span id="cb7-475"><a href="#cb7-475" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-476"><a href="#cb7-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-477"><a href="#cb7-477" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-478"><a href="#cb7-478" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-479"><a href="#cb7-479" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-480"><a href="#cb7-480" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-481"><a href="#cb7-481" aria-hidden="true" tabindex="-1"></a>:::{#def-cident}</span>
+<span id="cb7-482"><a href="#cb7-482" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-483"><a href="#cb7-483" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Conditionally identically distributed</span></span>
+<span id="cb7-484"><a href="#cb7-484" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-485"><a href="#cb7-485" aria-hidden="true" tabindex="-1"></a>A set of random variables $\dsn{Y}$ are **conditionally identically distributed** </span>
+<span id="cb7-486"><a href="#cb7-486" aria-hidden="true" tabindex="-1"></a>given a set of covariates $\X1n$ </span>
+<span id="cb7-487"><a href="#cb7-487" aria-hidden="true" tabindex="-1"></a>if $\dsn{Y}$ have the same range $\rangef{X}$ and if</span>
+<span id="cb7-488"><a href="#cb7-488" aria-hidden="true" tabindex="-1"></a>the distributions $\P(Y_i=y_i|X_i =x_i)$ are all </span>
+<span id="cb7-489"><a href="#cb7-489" aria-hidden="true" tabindex="-1"></a>equal to the same distribution $\P(Y=y|X=x)$:</span>
+<span id="cb7-490"><a href="#cb7-490" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-491"><a href="#cb7-491" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-492"><a href="#cb7-492" aria-hidden="true" tabindex="-1"></a>\P(Y_i=y|X_i=x) = \P(Y=y|X=x)</span>
+<span id="cb7-493"><a href="#cb7-493" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb7-494"><a href="#cb7-494" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb7-495"><a href="#cb7-495" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-496"><a href="#cb7-496" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-497"><a href="#cb7-497" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-498"><a href="#cb7-498" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-499"><a href="#cb7-499" aria-hidden="true" tabindex="-1"></a>:::{#def-iid}</span>
+<span id="cb7-500"><a href="#cb7-500" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Independent and identically distributed</span></span>
+<span id="cb7-501"><a href="#cb7-501" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-502"><a href="#cb7-502" aria-hidden="true" tabindex="-1"></a>A set of random variables $\dsn{X}$ are **independent and identically distributed**</span>
+<span id="cb7-503"><a href="#cb7-503" aria-hidden="true" tabindex="-1"></a>(shorthand: "$X_i\ \iid$") if they are statistically independent and identically distributed.</span>
+<span id="cb7-504"><a href="#cb7-504" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-505"><a href="#cb7-505" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-506"><a href="#cb7-506" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-507"><a href="#cb7-507" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb7-508"><a href="#cb7-508" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-509"><a href="#cb7-509" aria-hidden="true" tabindex="-1"></a>:::{#def-iid}</span>
+<span id="cb7-510"><a href="#cb7-510" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Conditionally independent and identically distributed</span></span>
+<span id="cb7-511"><a href="#cb7-511" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-512"><a href="#cb7-512" aria-hidden="true" tabindex="-1"></a>A set of random variables $\dsn{Y}$ are **conditionally independent and identically distributed** (shorthand: "$Y_i | X_i\ \ciid$" or just "$Y_i |X_i\ \iid$") given a set of covariates $\dsn{X}$</span>
+<span id="cb7-513"><a href="#cb7-513" aria-hidden="true" tabindex="-1"></a>if $\dsn{Y}$ are conditionally independent given $\dsn{X}$ and $\dsn{Y}$ are identically distributed given </span>
+<span id="cb7-514"><a href="#cb7-514" aria-hidden="true" tabindex="-1"></a>$\dsn{X}$.</span>
+<span id="cb7-515"><a href="#cb7-515" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-516"><a href="#cb7-516" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb7-517"><a href="#cb7-517" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-518"><a href="#cb7-518" aria-hidden="true" tabindex="-1"></a>{{&lt; include sec-CLT.qmd &gt;}}</span>
+<span id="cb7-519"><a href="#cb7-519" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-520"><a href="#cb7-520" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-521"><a href="#cb7-521" aria-hidden="true" tabindex="-1"></a><span class="fu">## Additional resources</span></span>
+<span id="cb7-522"><a href="#cb7-522" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-523"><a href="#cb7-523" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@problifesaver</span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer"><div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+<li class="nav-item">
+ Copyright 2024, Douglas Ezra Morrison
+  </li>  
+</ul>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/d-morrison/rme/edit/main/probability.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/d-morrison/rme/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/d-morrison/rme/blob/main/probability.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer><script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+</body></html>

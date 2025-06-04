@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>References – Regression Models for Epidemiology</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./appendices-are-prereqs.html" rel="next">
+<link href="./parametric-survival-models.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-8ef56b68f8fa1e9d2ba328e99e439f80.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-6e4858b4921ffe5a9c7d897cee0e5447.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-cbfe9299f5caab731b93668de05d1c8d.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-6e4858b4921ffe5a9c7d897cee0e5447.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=GTM-W4FPTMX9"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'GTM-W4FPTMX9', { 'anonymize_ip': true});
+</script>
+<script type="application/json" class="js-hypothesis-config">
+{
+  "theme": "clean",
+  "openSidebar": false,
+  "enableExperimentalNewNoteButton": true
+}
+</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
+
+
+<link rel="stylesheet" href="custom.scss">
+</head>
+
+<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./references.html">References</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Regression Models for Epidemiology</a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/d-morrison/rme" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="./Regression-Models-for-Epidemiology.pdf" title="Download PDF" class="quarto-navigation-tool px-1" aria-label="Download PDF"><i class="bi bi-file-pdf"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Intro-to-GLMs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./glms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Generalized Linear Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Linear-models-overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Linear (Gaussian) Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./logistic-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Models for Binary Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./count-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Models for Count Outcomes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-multilevel-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Introduction to multi-level models for correlated data</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./time-to-event-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time to Event Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-to-survival-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Introduction to Survival Analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./proportional-hazards-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Proportional Hazards Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parametric-survival-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Parametric survival models</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendices-are-prereqs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Overview of Appendices</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./math-prereqs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Mathematics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Probability</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./estimation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-MLEs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">F</span>&nbsp; <span class="chapter-title">Introduction to Maximum Likelihood Inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-bayes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">G</span>&nbsp; <span class="chapter-title">Introduction to Bayesian inference</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./common-mistakes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">H</span>&nbsp; <span class="chapter-title">Common Mistakes</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./notation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">I</span>&nbsp; <span class="chapter-title">Notation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro-to-R.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">J</span>&nbsp; <span class="chapter-title">Statistical computing in R</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./CONTRIBUTING.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">K</span>&nbsp; <span class="chapter-title">Contributing to <code>rme</code></span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">References</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Last modified: 2025-06-04: 21:32:33 (PM)</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-agresti2010ordinal" class="csl-entry" role="listitem">
+Agresti, Alan. 2010. <em>Analysis of Ordinal Categorical Data</em>. Vol.
+656. John Wiley &amp; Sons.
+</div>
+<div id="ref-agresti2012categorical" class="csl-entry" role="listitem">
+———. 2012. <em>Categorical Data Analysis</em>. Vol. 792. John Wiley
+&amp; Sons. <a href="https://www.wiley.com/en-us/Categorical+Data+Analysis%2C+3rd+Edition-p-9780470463635">https://www.wiley.com/en-us/Categorical+Data+Analysis%2C+3rd+Edition-p-9780470463635</a>.
+</div>
+<div id="ref-agresti2015foundations" class="csl-entry" role="listitem">
+———. 2015. <em>Foundations of Linear and Generalized Linear Models</em>.
+John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/Foundations+of+Linear+and+Generalized+Linear+Models-p-9781118730034">https://www.wiley.com/en-us/Foundations+of+Linear+and+Generalized+Linear+Models-p-9781118730034</a>.
+</div>
+<div id="ref-agresti2018introcat" class="csl-entry" role="listitem">
+———. 2018. <em>An Introduction to Categorical Data Analysis</em>. John
+Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/An+Introduction+to+Categorical+Data+Analysis%2C+3rd+Edition-p-9781119405283">https://www.wiley.com/en-us/An+Introduction+to+Categorical+Data+Analysis%2C+3rd+Edition-p-9781119405283</a>.
+</div>
+<div id="ref-anderson1935irises" class="csl-entry" role="listitem">
+Anderson, Edgar. 1935. <span>“The Irises of the Gaspe Peninsula.”</span>
+<em>Bulletin of American Iris Society</em> 59: 2–5.
+</div>
+<div id="ref-andrews2012data" class="csl-entry" role="listitem">
+Andrews, David F, and Agnes M Herzberg. 2012. <em>Data: A Collection of
+Problems from Many Fields for the Student and Research Worker</em>.
+Springer Science &amp; Business Media. <a href="https://link.springer.com/book/10.1007/978-1-4612-5098-2">https://link.springer.com/book/10.1007/978-1-4612-5098-2</a>.
+</div>
+<div id="ref-aragon2018population" class="csl-entry" role="listitem">
+Aragon, Tomas J. 2018. <span>“Population Health Thinking with Bayesian
+Networks.”</span> <a href="https://escholarship.org/uc/item/8000r5m5">https://escholarship.org/uc/item/8000r5m5</a>.
+</div>
+<div id="ref-appliedepiusingR" class="csl-entry" role="listitem">
+Aragon, Tomas J. 2013. <em>Applied Epidemiology Using
+<span>R</span></em>. Online. <a href="https://tbrieder.org/epidata/course_reading/e_aragon.pdf">https://tbrieder.org/epidata/course_reading/e_aragon.pdf</a>.
+</div>
+<div id="ref-phdswR" class="csl-entry" role="listitem">
+———. 2017. <em>Population Health Data Science with <span>R</span>:
+Transforming Data into Actionable Knowledge</em>. Online. <a href="https://bookdown.org/medepi/phds/">https://bookdown.org/medepi/phds/</a>.
+</div>
+<div id="ref-magrittr" class="csl-entry" role="listitem">
+Bache, Stefan Milton, and Hadley Wickham. 2022. <em>Magrittr: A
+Forward-Pipe Operator for r</em>. <a href="https://CRAN.R-project.org/package=magrittr">https://CRAN.R-project.org/package=magrittr</a>.
+</div>
+<div id="ref-banerjee2014linear" class="csl-entry" role="listitem">
+Banerjee, Sudipto, and Anindya Roy. 2014. <em>Linear Algebra and Matrix
+Analysis for Statistics</em>. Vol. 181. Crc Press Boca Raton. <a href="https://www.routledge.com/Linear-Algebra-and-Matrix-Analysis-for-Statistics/Banerjee-Roy/p/book/9781420095388">https://www.routledge.com/Linear-Algebra-and-Matrix-Analysis-for-Statistics/Banerjee-Roy/p/book/9781420095388</a>.
+</div>
+<div id="ref-calclifesaver" class="csl-entry" role="listitem">
+Banner, Adrian D. 2007. <em>The Calculus Lifesaver : All the Tools You
+Need to Excel at Calculus</em>. A Princeton Lifesaver Study Guide.
+Princeton, New Jersey: Princeton University Press. <a href="https://press.princeton.edu/books/paperback/9780691130880/the-calculus-lifesaver">https://press.princeton.edu/books/paperback/9780691130880/the-calculus-lifesaver</a>.
+</div>
+<div id="ref-epirhb" class="csl-entry" role="listitem">
+Batra, Neale, ed. 2024. <em>The Epidemiologist <span>R</span>
+Handbook</em>. Online. <a href="https://www.epirhandbook.com/">https://www.epirhandbook.com/</a>.
+</div>
+<div id="ref-bliss1935beetles" class="csl-entry" role="listitem">
+Bliss, C. I. 1935. <span>“The Calculation of the Dosage-Mortality
+Curve.”</span> <em>Annals of Applied Biology</em> 22 (1): 134–67. <a href="https://doi.org/10.1111/j.1744-7348.1935.tb07713.x">https://doi.org/10.1111/j.1744-7348.1935.tb07713.x</a>.
+</div>
+<div id="ref-box_draper_1987" class="csl-entry" role="listitem">
+Box, George E. P., and Norman Richard. Draper. 1987. <em>Empirical
+Model-Building and Response Surfaces</em>. Wiley Series in Probability
+and Mathematical Statistics. Applied Probability and Statistics. New
+York: Wiley.
+</div>
+<div id="ref-canchola2003cox" class="csl-entry" role="listitem">
+Canchola, Alison J, Susan L Stewart, Leslie Bernstein, Dee W West,
+Ronald K Ross, Dennis Deapen, Richard Pinder, et al. 2003. <span>“Cox
+Regression Using Different Time-Scales.”</span> <em>Western Users of SAS
+Software</em>. <a href="https://www.lexjansen.com/wuss/2003/DataAnalysis/i-cox_time_scales.pdf">https://www.lexjansen.com/wuss/2003/DataAnalysis/i-cox_time_scales.pdf</a>.
+</div>
+<div id="ref-r4epi" class="csl-entry" role="listitem">
+Cannell, Brad, and Melvin Livingston. 2024. <em>R for Epidemiology</em>.
+Online. <a href="https://www.r4epi.com/">https://www.r4epi.com/</a>.
+</div>
+<div id="ref-CaseBerg01" class="csl-entry" role="listitem">
+Casella, George, and Roger Berger. 2002. <em>Statistical Inference</em>.
+2nd ed. Cengage Learning. <a href="https://www.cengage.com/c/statistical-inference-2e-casella-berger/9780534243128/">https://www.cengage.com/c/statistical-inference-2e-casella-berger/9780534243128/</a>.
+</div>
+<div id="ref-changRgraphicscookbook" class="csl-entry" role="listitem">
+Chang, Winston. 2024. <em>R Graphics Cookbook: Practical Recipes for
+Visualizing Data</em>. O’Reilly Media. <a href="https://r-graphics.org/">https://r-graphics.org/</a>.
+</div>
+<div id="ref-chatterjee2015regression" class="csl-entry" role="listitem">
+Chatterjee, Samprit, and Ali S Hadi. 2015. <em>Regression Analysis by
+Example</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/Regression+Analysis+by+Example%2C+4th+Edition-p-9780470055458">https://www.wiley.com/en-us/Regression+Analysis+by+Example%2C+4th+Edition-p-9780470055458</a>.
+</div>
+<div id="ref-clayton2013statistical" class="csl-entry" role="listitem">
+Clayton, David, and Michael Hills. 2013. <em>Statistical Models in
+Epidemiology</em>. Oxford University Press. <a href="https://global.oup.com/academic/product/statistical-models-in-epidemiology-9780199671182">https://global.oup.com/academic/product/statistical-models-in-epidemiology-9780199671182</a>.
+</div>
+<div id="ref-congdon2020" class="csl-entry" role="listitem">
+Congdon, Peter D. 2020. <em>Bayesian Hierarchical Models: With
+Applications Using <span>R</span>, Second Edition</em>. 2nd edition.
+Milton: CRC Press.
+</div>
+<div id="ref-copelan1991treatment" class="csl-entry" role="listitem">
+Copelan, Edward A, James C Biggs, James M Thompson, Pamela Crilley, Jeff
+Szer, John P Klein, Neena Kapoor, Belinda R Avalos, Isabel Cunningham,
+and Kerry Atkinson. 1991. <span>“Treatment for Acute Myelocytic Leukemia
+with Allogeneic Bone Marrow Transplantation Following Preparation with
+BuCy2.”</span> <a href="https://doi.org/10.1182/blood.V78.3.838.838">https://doi.org/10.1182/blood.V78.3.838.838</a>.
+</div>
+<div id="ref-dalgaardintroductory" class="csl-entry" role="listitem">
+Dalgaard, Peter. 2008. <em>Introductory Statistics with r</em>. New
+York, NY: Springer New York. <a href="https://link.springer.com/book/10.1007/978-0-387-79054-1">https://link.springer.com/book/10.1007/978-0-387-79054-1</a>.
+</div>
+<div id="ref-DigglePeter2013AoLD" class="csl-entry" role="listitem">
+Diggle, Peter, Scott Zeger, Patrick Heagerty, and Kung-Yee Liang. 2013.
+<em>Analysis of Longitudinal Data</em>. Second edition. Vol. 25. Oxford
+Statistical Science Series. United Kingdom: Oxford University Press.
+</div>
+<div id="ref-dobson4e" class="csl-entry" role="listitem">
+Dobson, Annette J, and Adrian G Barnett. 2018. <em>An Introduction to
+Generalized Linear Models</em>. 4th ed. CRC press. <a href="https://doi.org/10.1201/9781315182780">https://doi.org/10.1201/9781315182780</a>.
+</div>
+<div id="ref-dunn2018generalized" class="csl-entry" role="listitem">
+Dunn, Peter K, and Gordon K Smyth. 2018. <em>Generalized Linear Models
+with Examples in <span>R</span></em>. Vol. 53. Springer. <a href="https://link.springer.com/book/10.1007/978-1-4419-0118-7">https://link.springer.com/book/10.1007/978-1-4419-0118-7</a>.
+</div>
+<div id="ref-Edelmann2019" class="csl-entry" role="listitem">
+Edelmann, Dominic. 2019. <span>“Generalized Linear Models with Examples
+in r. Peter k.dunnand Gordon k.smyth (2018). Berlin, Germany: Springer
+Science+business Media, Pp. 562 Pages, ISBN: 978‐1‐4419‐0118‐7.”</span>
+<em>Biometrical Journal</em> 62 (1): 253–53. <a href="https://doi.org/10.1002/bimj.201900264">https://doi.org/10.1002/bimj.201900264</a>.
+</div>
+<div id="ref-efron1978assessing" class="csl-entry" role="listitem">
+Efron, Bradley, and David V Hinkley. 1978. <span>“Assessing the Accuracy
+of the Maximum Likelihood Estimator: Observed Versus Expected Fisher
+Information.”</span> <em>Biometrika</em> 65 (3): 457–83.
+</div>
+<div id="ref-faraway2016extending" class="csl-entry" role="listitem">
+Faraway, Julian J. 2016. <em>Extending the Linear Model with r:
+Generalized Linear, Mixed Effects and Nonparametric Regression
+Models</em>. 2nd ed. Chapman; Hall/CRC. <a href="https://doi.org/10.1201/9781315382722">https://doi.org/10.1201/9781315382722</a>.
+</div>
+<div id="ref-Faraway2025-io" class="csl-entry" role="listitem">
+———. 2025. <em>Linear Models with <span>R</span></em>. <a href="https://www.routledge.com/Linear-Models-with-R/Faraway/p/book/9781032583983">https://www.routledge.com/Linear-Models-with-R/Faraway/p/book/9781032583983</a>.
+</div>
+<div id="ref-golembook" class="csl-entry" role="listitem">
+Fay, Colin, Sébastien Rochette, Vincent Guyader, and Cervan Girard.
+2021. <em>Engineering Production-Grade Shiny Apps</em>. Chapman;
+Hall/CRC. <a href="https://engineering-shiny.org/">https://engineering-shiny.org/</a>.
+</div>
+<div id="ref-fieller2018basics" class="csl-entry" role="listitem">
+Fieller, Nick. 2016. <em>Basics of Matrix Algebra for Statistics with
+<span>R</span></em>. Chapman; Hall/CRC. <a href="https://doi.org/10.1201/9781315370200">https://doi.org/10.1201/9781315370200</a>.
+</div>
+<div id="ref-fitzmaurice2009" class="csl-entry" role="listitem">
+Fitzmaurice, Garrett M, Marie Davidian, Geert Verbeke, and Geert
+Molenberghs. 2009. <em>Longitudinal Data Analysis</em>. Chapman &amp;
+Hall/CRC Handbooks of Modern Statistical Methods. Boca Raton: CRC Press.
+<a href="https://doi.org/10.1201/9781420011579">https://doi.org/10.1201/9781420011579</a>.
+</div>
+<div id="ref-fitzmaurice2012" class="csl-entry" role="listitem">
+Fitzmaurice, Garrett M, Nan M Laird, and James H Ware. 2012. <em>Applied
+Longitudinal Analysis</em>. 2nd ed. Vol. 998. Wiley Series in
+Probability and Statistics. Chicester: Wiley. <a href="https://doi.org/10.1002/9781119513469">https://doi.org/10.1002/9781119513469</a>.
+</div>
+<div id="ref-fox2015applied" class="csl-entry" role="listitem">
+Fox, John. 2015. <em>Applied Regression Analysis and Generalized Linear
+Models</em>. Sage publications.
+</div>
+<div id="ref-galecki2013" class="csl-entry" role="listitem">
+Gałecki, Andrzej T., and Tomasz. Burzykowski. 2013. <em>Linear
+Mixed-Effects Models Using <span>R</span> : A Step-by-Step
+Approach</em>. Springer Texts in Statistics. New York, NY: Springer. <a href="https://doi.org/10.1007/978-1-4614-3900-4">https://doi.org/10.1007/978-1-4614-3900-4</a>.
+</div>
+<div id="ref-gelman2006data" class="csl-entry" role="listitem">
+Gelman, Andrew, and Jennifer Hill. 2007. <em>Data Analysis Using
+Regression and Multilevel/Hierarchical Models</em>. Analytical Methods
+for Social Research. Cambridge, MA: Cambridge University Press.
+</div>
+<div id="ref-grambsch1994proportional" class="csl-entry" role="listitem">
+Grambsch, Patricia M, and Terry M Therneau. 1994. <span>“Proportional
+Hazards Tests and Diagnostics Based on Weighted Residuals.”</span>
+<em>Biometrika</em> 81 (3): 515–26. <a href="https://doi.org/10.1093/biomet/81.3.515">https://doi.org/10.1093/biomet/81.3.515</a>.
+</div>
+<div id="ref-Greenland2014" class="csl-entry" role="listitem">
+Greenland, Sander. 2014. <span>“Regression Methods for Epidemiological
+Analysis.”</span> In <em>Handbook of Epidemiology</em>, edited by
+Wolfgang Ahrens and Iris Pigeot, 1087–1159. New York, NY: Springer New
+York. <a href="https://doi.org/10.1007/978-0-387-09834-0_17">https://doi.org/10.1007/978-0-387-09834-0_17</a>.
+</div>
+<div id="ref-realanalysislifesaver" class="csl-entry" role="listitem">
+Grinberg, Raffi. 2017. <em>The Real Analysis Lifesaver: All the Tools
+You Need to Understand Proofs</em>. 1st ed. Princeton Lifesaver Study
+Guides. Princeton: Princeton University Press. <a href="https://press.princeton.edu/books/paperback/9780691172934/the-real-analysis-lifesaver">https://press.princeton.edu/books/paperback/9780691172934/the-real-analysis-lifesaver</a>.
+</div>
+<div id="ref-hardin2007generalized" class="csl-entry" role="listitem">
+Hardin, James W, and Joseph M Hilbe. 2018. <em>Generalized Linear Models
+and Extensions</em>. 4th ed. Stata Press.
+</div>
+<div id="ref-rms2e" class="csl-entry" role="listitem">
+Harrell, Frank E. 2015. <em>Regression Modeling Strategies: With
+Applications to Linear Models, Logistic Regression, and Survival
+Analysis</em>. 2nd ed. Springer. <a href="https://doi.org/10.1007/978-3-319-19425-7">https://doi.org/10.1007/978-3-319-19425-7</a>.
+</div>
+<div id="ref-hedeker2006" class="csl-entry" role="listitem">
+Hedeker, Donald R., and Robert D. Gibbons. 2006. <em>Longitudinal Data
+Analysis</em>. Wiley Series in Probability and Statistics. Hoboken, N.J:
+Wiley-Interscience.
+</div>
+<div id="ref-hoggtanis2015" class="csl-entry" role="listitem">
+Hogg, Robert V., Elliot A. Tanis, and Dale L. Zimmerman. 2015.
+<em>Probability and Statistical Inference</em>. Ninth edition. Boston:
+Pearson.
+</div>
+<div id="ref-hosmer2013applied" class="csl-entry" role="listitem">
+Hosmer, David W, Stanley Lemeshow, and Rodney X Sturdivant. 2013.
+<em>Applied Logistic Regression</em>. John Wiley &amp; Sons. <a href="https://onlinelibrary.wiley.com/doi/book/10.1002/9781118548387">https://onlinelibrary.wiley.com/doi/book/10.1002/9781118548387</a>.
+</div>
+<div id="ref-HulleyStephen1998RToE" class="csl-entry" role="listitem">
+Hulley, Stephen, Deborah Grady, Trudy Bush, Curt Furberg, David
+Herrington, Betty Riggs, Eric Vittinghoff, for the Heart, and
+Estrogen/progestin Replacement Study (HERS) Research Group. 1998.
+<span>“Randomized Trial of Estrogen Plus Progestin for Secondary
+Prevention of Coronary Heart Disease in Postmenopausal Women.”</span>
+<em>JAMA : The Journal of the American Medical Association</em> 280 (7):
+605–13.
+</div>
+<div id="ref-james2013introduction" class="csl-entry" role="listitem">
+James, Gareth, Daniela Witten, Trevor Hastie, Robert Tibshirani, et al.
+2013. <em>An Introduction to Statistical Learning</em>. Vol. 112.
+Springer. <a href="https://www.statlearning.com/">https://www.statlearning.com/</a>.
+</div>
+<div id="ref-jewell2003statistics" class="csl-entry" role="listitem">
+Jewell, Nicholas P. 2003. <em>Statistics for Epidemiology</em>. Oxford,
+UK: Chapman; Hall/CRC. <a href="https://www.routledge.com/Statistics-for-Epidemiology/Jewell/p/book/9781584884330">https://www.routledge.com/Statistics-for-Epidemiology/Jewell/p/book/9781584884330</a>.
+</div>
+<div id="ref-jewell2016analysis" class="csl-entry" role="listitem">
+Jewell, Nicholas P, and Alan E Hubbard. 2016. <em>Analysis of
+Longitudinal Studies in Epidemiology</em>. Chapman &amp; Hall/CRC Texts
+in Statistical Science. Taylor &amp; Francis. <a href="https://books.google.com/books?id=-LoLPQAACAAJ">https://books.google.com/books?id=-LoLPQAACAAJ</a>.
+</div>
+<div id="ref-jiming2021" class="csl-entry" role="listitem">
+Jiang, Jiming, and Thuan Nguyen. 2021. <em>Linear and Generalized Linear
+Mixed Models and Their Applications</em>. Second edition. Springer
+Series in Statistics. New York, NY: Springer. <a href="https://doi.org/10.1007/978-1-0716-1282-8">https://doi.org/10.1007/978-1-0716-1282-8</a>.
+</div>
+<div id="ref-kalbfleisch2011statistical" class="csl-entry" role="listitem">
+Kalbfleisch, John D, and Ross L Prentice. 2011. <em>The Statistical
+Analysis of Failure Time Data</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-mosaiccalc" class="csl-entry" role="listitem">
+Kaplan, Daniel. 2022. <em>MOSAIC Calculus</em>. www.mosaic-web.org. <a href="https://www.mosaic-web.org">www.mosaic-web.org</a>.
+</div>
+<div id="ref-khuri2003advanced" class="csl-entry" role="listitem">
+Khuri, André I. 2003. <em>Advanced Calculus with Applications in
+Statistics</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/Advanced+Calculus+with+Applications+in+Statistics%2C+2nd+Edition-p-9780471391043">https://www.wiley.com/en-us/Advanced+Calculus+with+Applications+in+Statistics%2C+2nd+Edition-p-9780471391043</a>.
+</div>
+<div id="ref-klein2003survival" class="csl-entry" role="listitem">
+Klein, John P, and Melvin L Moeschberger. 2003. <em>Survival Analysis:
+Techniques for Censored and Truncated Data</em>. Vol. 1230. Springer. <a href="https://link.springer.com/book/10.1007/b97377">https://link.springer.com/book/10.1007/b97377</a>.
+</div>
+<div id="ref-kleinbaum2010logistic" class="csl-entry" role="listitem">
+Kleinbaum, David G, and Mitchel Klein. 2010. <em>Logistic Regression: A
+Self-Learning Text</em>. 3rd ed. Springer. <a href="https://link.springer.com/book/10.1007/978-1-4419-1742-3">https://link.springer.com/book/10.1007/978-1-4419-1742-3</a>.
+</div>
+<div id="ref-kleinbaum2012survival" class="csl-entry" role="listitem">
+———. 2012. <em>Survival Analysis: A Self-Learning Text</em>. 3rd ed.
+Springer. <a href="https://link.springer.com/book/10.1007/978-1-4419-6646-9">https://link.springer.com/book/10.1007/978-1-4419-6646-9</a>.
+</div>
+<div id="ref-kleinbaumEpi" class="csl-entry" role="listitem">
+Kleinbaum, David G., Lawrence L. Kupper, and Hal Morgenstern. 1982.
+<em>Epidemiologic Research : Principles and Quantitative Methods</em>.
+Belmont, Calif: Lifetime Learning Publications.
+</div>
+<div id="ref-kleinbaumEpiSols" class="csl-entry" role="listitem">
+———. 1983. <em>Solutions Manual for Epidemiologic Research : Principles
+and Quantitative Methods</em>. Belmont, Calif: Lifetime Learning
+Publications.
+</div>
+<div id="ref-kleinbaum2014applied" class="csl-entry" role="listitem">
+Kleinbaum, David G, Lawrence L Kupper, Azhar Nizam, K Muller, and ES
+Rosenberg. 2014. <em>Applied Regression Analysis and Other Multivariable
+Methods</em>. 5th ed. Cengage Learning. <a href="https://www.cengage.com/c/applied-regression-analysis-and-other-multivariable-methods-5e-kleinbaum/9781285051086/">https://www.cengage.com/c/applied-regression-analysis-and-other-multivariable-methods-5e-kleinbaum/9781285051086/</a>.
+</div>
+<div id="ref-kleinman2009sas" class="csl-entry" role="listitem">
+Kleinman, Ken, and Nicholas J Horton. 2009. <em>SAS and r: Data
+Management, Statistical Analysis, and Graphics</em>. Chapman; Hall/CRC.
+<a href="https://www.routledge.com/SAS-and-R-Data-Management-Statistical-Analysis-and-Graphics-Second-Edition/Kleinman-Horton/p/book/9781466584495">https://www.routledge.com/SAS-and-R-Data-Management-Statistical-Analysis-and-Graphics-Second-Edition/Kleinman-Horton/p/book/9781466584495</a>.
+</div>
+<div id="ref-knuth84" class="csl-entry" role="listitem">
+Knuth, Donald E. 1984. <span>“Literate Programming.”</span> <em>Comput.
+J.</em> 27 (2): 97–111. <a href="https://doi.org/10.1093/comjnl/27.2.97">https://doi.org/10.1093/comjnl/27.2.97</a>.
+</div>
+<div id="ref-kuhn2022tidy" class="csl-entry" role="listitem">
+Kuhn, Max, and Julia Silge. 2022. <em>Tidy Modeling with r</em>. "
+O’Reilly Media, Inc.". <a href="https://www.tmwr.org/">https://www.tmwr.org/</a>.
+</div>
+<div id="ref-kutner2005applied" class="csl-entry" role="listitem">
+Kutner, Michael H, Christopher J Nachtsheim, John Neter, and William Li.
+2005. <em>Applied Linear Statistical Models</em>. McGraw-Hill.
+</div>
+<div id="ref-kutoyants2023introduction" class="csl-entry" role="listitem">
+Kutoyants, Yury A. 2023. <em>Introduction to the Statistics of Poisson
+Processes and Applications</em>. Springer Nature. <a href="https://link.springer.com/book/10.1007/978-3-031-37054-0">https://link.springer.com/book/10.1007/978-3-031-37054-0</a>.
+</div>
+<div id="ref-lawrance2020estimand" class="csl-entry" role="listitem">
+Lawrance, Rachael, Evgeny Degtyarev, Philip Griffiths, Peter Trask,
+Helen Lau, Denise D’Alessio, Ingolf Griebsch, Gudrun Wallenstein, Kim
+Cocks, and Kaspar Rufibach. 2020. <span>“What Is an Estimand, and How
+Does It Relate to Quantifying the Effect of Treatment on
+Patient-Reported Quality of Life Outcomes in Clinical Trials?”</span>
+<em>Journal of Patient-Reported Outcomes</em> 4 (1): 1–8. <a href="https://link.springer.com/article/10.1186/s41687-020-00218-5">https://link.springer.com/article/10.1186/s41687-020-00218-5</a>.
+</div>
+<div id="ref-lehmannELST" class="csl-entry" role="listitem">
+Lehmann, E. L. 1999. <em>Elements of Large-Sample Theory</em>. Springer
+Texts in Statistics. New York: Springer. <a href="https://doi.org/10.1007/b98855">https://doi.org/10.1007/b98855</a>.
+</div>
+<div id="ref-mccullaghnelder" class="csl-entry" role="listitem">
+McCullagh, Peter, and J. A. Nelder. 1989. <em>Generalized Linear
+Models</em>. 2nd ed. Routledge. <a href="https://www.utstat.toronto.edu/~brunner/oldclass/2201s11/readings/glmbook.pdf">https://www.utstat.toronto.edu/~brunner/oldclass/2201s11/readings/glmbook.pdf</a>.
+</div>
+<div id="ref-mcculloch2008generalized" class="csl-entry" role="listitem">
+McCulloch, Charles E, Searle Shayle R, and John M Neuhaus. 2008.
+<em>Generalized, Linear, and Mixed Models</em>. 2nd ed. Vol. 651. John
+Wiley &amp; Sons.
+</div>
+<div id="ref-mclachlan2007em" class="csl-entry" role="listitem">
+McLachlan, Geoffrey J, and Thriyambakam Krishnan. 2007. <em>The EM
+Algorithm and Extensions</em>. 2nd ed. John Wiley &amp; Sons. <a href="https://doi.org/10.1002/9780470191613">https://doi.org/10.1002/9780470191613</a>.
+</div>
+<div id="ref-problifesavercalc" class="csl-entry" role="listitem">
+Miller, Steven J. 2016. <em>The Probability Lifesaver: Calculus Review
+Problems</em>. <a href="https://web.williams.edu/Mathematics/sjmiller/public_html/probabilitylifesaver/index.htm#:~:text=http%3A//web.williams.edu/Mathematics/sjmiller/public_html/probabilitylifesaver/supplementalchap_calcreview.pdf">https://web.williams.edu/Mathematics/sjmiller/public_html/probabilitylifesaver/index.htm#:~:text=http%3A//web.williams.edu/Mathematics/sjmiller/public_html/probabilitylifesaver/supplementalchap_calcreview.pdf</a>.
+</div>
+<div id="ref-problifesaver" class="csl-entry" role="listitem">
+———. 2017. <em>The Probability Lifesaver : All the Tools You Need to
+Understand Chance</em>. A Princeton Lifesaver Study Guide. Princeton:
+Princeton University Press. <a href="https://press.princeton.edu/books/hardcover/9780691149547/the-probability-lifesaver">https://press.princeton.edu/books/hardcover/9780691149547/the-probability-lifesaver</a>.
+</div>
+<div id="ref-molenberghs2005" class="csl-entry" role="listitem">
+Molenberghs, Geert., and Geert. Verbeke. 2005. <em>Models for Discrete
+Longitudinal Data</em>. Springer Series in Statistics. New York:
+Springer Science+Business Media, Inc. <a href="https://doi.org/10.1007/0-387-28980-1">https://doi.org/10.1007/0-387-28980-1</a>.
+</div>
+<div id="ref-moore2016applied" class="csl-entry" role="listitem">
+Moore, Dirk F. 2016. <em>Applied Survival Analysis Using
+<span>R</span></em>. Vol. 473. Springer. <a href="https://doi.org/10.1007/978-3-319-31245-3">https://doi.org/10.1007/978-3-319-31245-3</a>.
+</div>
+<div id="ref-muenchen2011r" class="csl-entry" role="listitem">
+Muenchen, Robert A. 2011. <em>R for SAS and SPSS Users</em>. Springer
+Science &amp; Business Media. <a href="https://link.springer.com/book/10.1007/978-1-4614-0685-3">https://link.springer.com/book/10.1007/978-1-4614-0685-3</a>.
+</div>
+<div id="ref-practicalr4epi" class="csl-entry" role="listitem">
+Myatt, Mark. 2022. <em>Practical <span>R</span> for
+Epidemiologists</em>. Online. <a href="https://practical-r.org/index.html">https://practical-r.org/index.html</a>.
+</div>
+<div id="ref-NahhasIntroR" class="csl-entry" role="listitem">
+Nahhas, Ramzi W. 2023. <em>An Introduction to r for Research</em>. <a href="https://bookdown.org/rwnahhas/IntroToR/">https://bookdown.org/rwnahhas/IntroToR/</a>.
+</div>
+<div id="ref-NahhasIRMPHR" class="csl-entry" role="listitem">
+———. 2024. <em>Introduction to Regression Methods for Public Health
+Using <span>R</span></em>. CRC Press. <a href="https://www.bookdown.org/rwnahhas/RMPH/">https://www.bookdown.org/rwnahhas/RMPH/</a>.
+</div>
+<div id="ref-nelder1972generalized" class="csl-entry" role="listitem">
+Nelder, John Ashworth, and Robert WM Wedderburn. 1972.
+<span>“Generalized Linear Models.”</span> <em>Journal of the Royal
+Statistical Society Series A: Statistics in Society</em> 135 (3):
+370–84.
+</div>
+<div id="ref-newey1994large" class="csl-entry" role="listitem">
+Newey, Whitney K, and Daniel McFadden. 1994. <span>“Large Sample
+Estimation and Hypothesis Testing.”</span> In <em>Handbook of
+Econometrics</em>, edited by Robert Engle and Dan McFadden, 4:2111–2245.
+Elsevier. https://doi.org/<a href="https://doi.org/10.1016/S1573-4412(05)80005-4">https://doi.org/10.1016/S1573-4412(05)80005-4</a>.
+</div>
+<div id="ref-norton2024requiem" class="csl-entry" role="listitem">
+Norton, Edward C., Bryan E. Dowd, Melissa M. Garrido, and Matthew L.
+Maciejewski. 2024. <span>“Requiem for Odds Ratios.”</span> <em>Health
+Services Research</em> 59 (4): e14337. https://doi.org/<a href="https://doi.org/10.1111/1475-6773.14337">https://doi.org/10.1111/1475-6773.14337</a>.
+</div>
+<div id="ref-spatialds" class="csl-entry" role="listitem">
+Pebesma, Edzer, and Roger Bivand. 2023. <em>Spatial Data Science: With
+Applications in <span>R</span></em>. Boca Raton: Chapman; Hall/CRC. <a href="https://doi.org/10.1201/9780429459016">https://doi.org/10.1201/9780429459016</a>.
+</div>
+<div id="ref-pohl2021estimands" class="csl-entry" role="listitem">
+Pohl, Moritz, Lukas Baumann, Rouven Behnisch, Marietta Kirchner,
+Johannes Krisam, and Anja Sander. 2021. <span>“<span class="nocase">Estimands—A Basic Element for Clinical
+Trials</span>.”</span> <em>Deutsches <span>Ä</span>rzteblatt
+International</em> 118 (51-52): 883–88. <a href="https://doi.org/10.3238/arztebl.m2021.0373">https://doi.org/10.3238/arztebl.m2021.0373</a>.
+</div>
+<div id="ref-polin2011fetal" class="csl-entry" role="listitem">
+Polin, Richard A, William W Fox, and Steven H Abman. 2011. <em>Fetal and
+Neonatal Physiology</em>. 4th ed. Elsevier health sciences.
+</div>
+<div id="ref-roback2021beyond" class="csl-entry" role="listitem">
+Roback, Paul, and Julie Legler. 2021. <em>Beyond Multiple Linear
+Regression: Applied Generalized Linear Models and Multilevel Models in
+r</em>. Chapman; Hall/CRC. <a href="https://bookdown.org/roback/bookdown-BeyondMLR/">https://bookdown.org/roback/bookdown-BeyondMLR/</a>.
+</div>
+<div id="ref-rapR" class="csl-entry" role="listitem">
+Rodrigues, Bruno. 2023. <em>Building Reproducible Analytical Pipelines
+with r</em>. Online. <a href="https://raps-with-r.dev/">https://raps-with-r.dev/</a>.
+</div>
+<div id="ref-rosenman1975coronary" class="csl-entry" role="listitem">
+Rosenman, Ray H, Richard J Brand, C David Jenkins, Meyer Friedman,
+Reuben Straus, and Moses Wurm. 1975. <span>“Coronary Heart Disease in
+the Western Collaborative Group Study: Final Follow-up Experience of 8
+1/2 Years.”</span> <em>JAMA</em> 233 (8): 872–77. <a href="https://doi.org/10.1001/jama.1975.03260080034016">https://doi.org/10.1001/jama.1975.03260080034016</a>.
+</div>
+<div id="ref-rossbayes" class="csl-entry" role="listitem">
+Ross, Kevin. 2022. <em>An Introduction to Bayesian Reasoning and
+Methods</em>. Online. <a href="https://bookdown.org/kevin_davisross/bayesian-reasoning-and-methods/">https://bookdown.org/kevin_davisross/bayesian-reasoning-and-methods/</a>.
+</div>
+<div id="ref-me4" class="csl-entry" role="listitem">
+Rothman, Kenneth J., Timothy L. Lash, Tyler J. VanderWeele, and
+Sebastien Haneuse. 2021. <em>Modern Epidemiology</em>. Fourth edition.
+Philadelphia: Wolters Kluwer.
+</div>
+<div id="ref-sackett1996down" class="csl-entry" role="listitem">
+Sackett, David L, Jonathan J Deeks, and Doughs G Altman. 1996.
+<span>“Down with Odds Ratios!”</span> <em>BMJ Evidence-Based
+Medicine</em> 1 (6): 164.
+</div>
+<div id="ref-searle2017matrix" class="csl-entry" role="listitem">
+Searle, Shayle R, and Andre I Khuri. 2017. <em>Matrix Algebra Useful for
+Statistics</em>. John Wiley &amp; Sons.
+</div>
+<div id="ref-seber2012linear" class="csl-entry" role="listitem">
+Seber, George AF, and Alan J Lee. 2012. <em>Linear Regression
+Analysis</em>. 2nd ed. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/Linear+Regression+Analysis%2C+2nd+Edition-p-9781118274422">https://www.wiley.com/en-us/Linear+Regression+Analysis%2C+2nd+Edition-p-9781118274422</a>.
+</div>
+<div id="ref-selvin2001epidemiologic" class="csl-entry" role="listitem">
+Selvin, Steve. 2001. <em>Epidemiologic Analysis: A Case-Oriented
+Approach</em>. Oxford University Press.
+</div>
+<div id="ref-selvin2004" class="csl-entry" role="listitem">
+———. 2004. <em>Statistical Analysis of Epidemiologic Data</em>. 3rd ed.
+Monographs in Epidemiology and Biostatistics ; v. 35. Oxford ; Oxford
+University Press.
+</div>
+<div id="ref-statproofbook" class="csl-entry" role="listitem">
+Soch, Joram, ed. 2023. <em>The Book of Statistical Proofs</em>. Zenodo.
+<a href="https://doi.org/10.5281/ZENODO.4305949">https://doi.org/10.5281/ZENODO.4305949</a>.
+</div>
+<div id="ref-suarez2017applications" class="csl-entry" role="listitem">
+Suárez, Erick, Cynthia M Pérez, Roberto Rivera, and Melissa N Martı́nez.
+2017. <em>Applications of Regression Models in Epidemiology</em>. John
+Wiley &amp; Sons.
+</div>
+<div id="ref-van2018flexible" class="csl-entry" role="listitem">
+Van Buuren, Stef. 2018. <em>Flexible Imputation of Missing Data</em>.
+CRC press. <a href="https://stefvanbuuren.name/fimd/">https://stefvanbuuren.name/fimd/</a>.
+</div>
+<div id="ref-venablescodingMatrices" class="csl-entry" role="listitem">
+Venables, Bill. 2023. <em>codingMatrices: Alternative Factor Coding
+Matrices for Linear Model Formulae</em> (version 0.4.0). <a href="https://CRAN.R-project.org/package=codingMatrices">https://CRAN.R-project.org/package=codingMatrices</a>.
+</div>
+<div id="ref-VerbekeGeert2000LMMf" class="csl-entry" role="listitem">
+Verbeke, Geert, and Geert Molenberghs. 2000. <em>Linear Mixed Models for
+Longitudinal Data</em>. 1st ed. Springer Series in Statistics. New York,
+NY: SpringerLink (Online service); Springer. <a href="https://doi.org/10.1007/978-1-4419-0300-6">https://doi.org/10.1007/978-1-4419-0300-6</a>.
+</div>
+<div id="ref-vittinghoff2e" class="csl-entry" role="listitem">
+Vittinghoff, Eric, David V Glidden, Stephen C Shiboski, and Charles E
+McCulloch. 2012. <em>Regression Methods in Biostatistics: Linear,
+Logistic, Survival, and Repeated Measures Models</em>. 2nd ed. Springer.
+<a href="https://doi.org/10.1007/978-1-4614-1353-0">https://doi.org/10.1007/978-1-4614-1353-0</a>.
+</div>
+<div id="ref-wakefield2013" class="csl-entry" role="listitem">
+Wakefield, Jon. 2013. <em>Bayesian and Frequentist Regression
+Methods</em>. 1st ed. 2013. Springer Series in Statistics. New York, NY:
+Springer New York.
+</div>
+<div id="ref-weisberg2005applied" class="csl-entry" role="listitem">
+Weisberg, Sanford. 2005. <em>Applied Linear Regression</em>. Vol. 528.
+John Wiley &amp; Sons.
+</div>
+<div id="ref-wickham2019advanced" class="csl-entry" role="listitem">
+Wickham, Hadley. 2019. <em>Advanced r</em>. Chapman; Hall/CRC. <a href="https://adv-r.hadley.nz/index.html">https://adv-r.hadley.nz/index.html</a>.
+</div>
+<div id="ref-masteringshiny" class="csl-entry" role="listitem">
+———. 2021. <em>Mastering Shiny</em>. " O’Reilly Media, Inc.". <a href="https://mastering-shiny.org/">https://mastering-shiny.org/</a>.
+</div>
+<div id="ref-welcometidyverse" class="csl-entry" role="listitem">
+Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy
+D’Agostino McGowan, Romain François, Garrett Grolemund, et al. 2019.
+<span>“Welcome to the <span class="nocase">tidyverse</span>.”</span>
+<em>Journal of Open Source Software</em> 4 (43): 1686. <a href="https://doi.org/10.21105/joss.01686">https://doi.org/10.21105/joss.01686</a>.
+</div>
+<div id="ref-rpkgs" class="csl-entry" role="listitem">
+Wickham, Hadley, and Jennifer Bryan. 2023. <em><span>R</span>
+Packages</em>. O’Reilly Media, Inc. <a href="https://r-pkgs.org/">https://r-pkgs.org/</a>.
+</div>
+<div id="ref-r4ds" class="csl-entry" role="listitem">
+Wickham, Hadley, Mine Çetinkaya-Rundel, and Garrett Grolemund. 2023.
+<em>R for Data Science</em>. " O’Reilly Media, Inc.". <a href="https://r4ds.hadley.nz/">https://r4ds.hadley.nz/</a>.
+</div>
+<div id="ref-wood2017generalized" class="csl-entry" role="listitem">
+Wood, Simon N. 2017. <em>Generalized Additive Models: An Introduction
+with r</em>. chapman; hall/CRC.
+</div>
+<div id="ref-woodward2013epidemiology" class="csl-entry" role="listitem">
+Woodward, Mark. 2013. <em>Epidemiology: Study Design and Data
+Analysis</em>. CRC press. <a href="https://www.routledge.com/Epidemiology-Study-Design-and-Data-Analysis-Third-Edition/Woodward/p/book/9781439839706">https://www.routledge.com/Epidemiology-Study-Design-and-Data-Analysis-Third-Edition/Woodward/p/book/9781439839706</a>.
+</div>
+<div id="ref-pscl08" class="csl-entry" role="listitem">
+Zeileis, Achim, Christian Kleiber, and Simon Jackman. 2008.
+<span>“Regression Models for Count Data in <span>R</span>.”</span>
+<em>Journal of Statistical Software</em> 27 (8). <a href="https://www.jstatsoft.org/v27/i08/">https://www.jstatsoft.org/v27/i08/</a>.
+</div>
+<div id="ref-zuur2009" class="csl-entry" role="listitem">
+Zuur, Alain F. 2009. <em>Mixed Effects Models and Extensions in Ecology
+with r</em>. Statistics for Biology and Health. New York ; Springer.
+</div>
+</div>
+
+
+<!-- -->
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./parametric-survival-models.html" class="pagination-link" aria-label="Parametric survival models">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Parametric survival models</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./appendices-are-prereqs.html" class="pagination-link" aria-label="Overview of Appendices">
+        <span class="nav-page-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Overview of Appendices</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># References {.unnumbered}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>::: {#refs}</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>:::</span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+ Copyright 2024, Douglas Ezra Morrison
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions"><ul><li><a href="https://github.com/d-morrison/rme/edit/main/references.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/d-morrison/rme/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/d-morrison/rme/blob/main/references.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
