@@ -595,7 +595,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-06-04: 21:32:33 (PM)</p>
+      <p class="date">Last modified: 2025-06-04: 22:38:01 (PM)</p>
     </div>
   </div>
   
@@ -672,6 +672,7 @@ window.Quarto = {
 </div>
 <!-- ::: -->
 <!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \renewcommand{\exp}[1]{\text{exp}\cb{#1}} -->
 <!-- \def\or{\theta}  -->
 <!-- doesn't work for some reason -->
 <style>
@@ -681,16 +682,17 @@ text-align: center;
 </style></section></section><section id="introduction" class="level2" data-number="4.1"><h2 data-number="4.1" class="anchored" data-anchor-id="introduction">
 <span class="header-section-number">4.1</span> Introduction</h2>
 <!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \renewcommand{\exp}[1]{\text{exp}\cb{#1}} -->
 <!-- \def\or{\theta}  -->
 <!-- doesn't work for some reason -->
 <div class="notes">
-<p>This chapter presents models for <a href="./probability.html#sec-count-vars">count data</a> outcomes. With covariates, the event rate <span class="math inline">\(\lambda\)</span> becomes a function of the covariates <span class="math inline">\(\tilde{X}= (X_1, \dots,X_n)\)</span>. Typically, count data models use a <span class="math inline">\(\text{log}\left\{\right\}\)</span> link function, and thus an <span class="math inline">\(\text{exp}\left\{\right\}\)</span> inverse-link function. That is:</p>
+<p>This chapter presents models for <a href="./probability.html#sec-count-vars">count data</a> outcomes. With covariates, the event rate <span class="math inline">\(\lambda\)</span> becomes a function of the covariates <span class="math inline">\(\tilde{X}= (X_1, \dots,X_n)\)</span>. Typically, count data models use a <span class="math inline">\(\text{log}\left\{\right\}\)</span> link function, and thus an <span class="math inline">\(\exp{}\)</span> inverse-link function. That is:</p>
 </div>
 <p><span id="eq-mean-poisson"><span class="math display">\[
 \begin{aligned}
-\mathbb{E}[Y | \tilde{X}= \tilde{x}, T = t] &amp;= \mu(\tilde{x},t)
+\textbf{E}[Y | \tilde{X}= \tilde{x}, T = t] &amp;= \mu(\tilde{x},t)
 \\ \mu(\tilde{x},t) &amp;= \lambda(\tilde{x})\cdot t
-\\ \lambda(\tilde{x}) &amp;= \text{exp}\left\{\eta(\tilde{x})\right\}
+\\ \lambda(\tilde{x}) &amp;= \exp{\eta(\tilde{x})}
 \\ \eta(\tilde{x}) &amp;= \tilde{x}'\tilde \beta = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p
 \end{aligned}
 \tag{4.1}\]</span></span></p>
@@ -711,11 +713,11 @@ text-align: center;
 </div>
 <p><span class="math display">\[
 \begin{aligned}
-\text{log}\left\{\mathbb{E}[Y | \tilde{X}= \tilde{x},T=t]\right\}
+\text{log}\left\{\textbf{E}[Y | \tilde{X}= \tilde{x},T=t]\right\}
 &amp;= \text{log}\left\{\mu(\tilde{x})\right\}\\
 &amp;=\text{log}\left\{\lambda(\tilde{x}) \cdot t\right\}\\
 &amp;=\text{log}\left\{\lambda(\tilde{x})\right\} + \log{t}\\
-&amp;=\text{log}\left\{\text{exp}\left\{\eta(\tilde{x})\right\}\right\} + \log{t}\\
+&amp;=\text{log}\left\{\exp{\eta(\tilde{x})}\right\} + \log{t}\\
 &amp;=\eta(\tilde{x}) + \log{t}\\
 &amp;=\tilde{x}'\tilde\beta + \log{t}\\
 &amp;=(\beta_0 +\beta_1 x_1+\dots + \beta_p x_p) + \log{t}\\
@@ -756,17 +758,17 @@ text-align: center;
 <div class="notes">
 <p>Differences on the log-rate scale become ratios on the rate scale, because</p>
 </div>
-<p><span class="math display">\[\text{exp}\left\{a-b\right\} = \frac{\text{exp}\left\{a\right\}}{\text{exp}\left\{b\right\}}\]</span></p>
+<p><span class="math display">\[\exp{a-b} = \frac{\exp{a}}{\exp{b}}\]</span></p>
 <p>(recall from <a href="./math-prereqs.html#cor-exp-sum">Algebra 2</a>)</p>
-<p>Therefore, according to this model, <strong>differences of <span class="math inline">\(\delta\)</span> in covariate <span class="math inline">\(x_j\)</span> correspond to rate ratios of <span class="math inline">\(\text{exp}\left\{\beta_j \cdot \delta\right\}\)</span></strong>.</p>
+<p>Therefore, according to this model, <strong>differences of <span class="math inline">\(\delta\)</span> in covariate <span class="math inline">\(x_j\)</span> correspond to rate ratios of <span class="math inline">\(\exp{\beta_j \cdot \delta}\)</span></strong>.</p>
 <p>That is, letting <span class="math inline">\(\tilde{X}_{-j}\)</span> denote vector <span class="math inline">\(\tilde{X}\)</span> with element <span class="math inline">\(j\)</span> removed:</p>
 <p><span class="math display">\[
 \begin{aligned}
 &amp;{
 \left\{
-    \log{\mathbb{E}[Y |{\color{red}{X_j = a}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]}
+    \log{\textbf{E}[Y |{\color{red}{X_j = a}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]}
     \atop
-    {-\log{\mathbb{E}[Y |{\color{red}{X_j = b}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]}}
+    {-\log{\textbf{E}[Y |{\color{red}{X_j = b}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]}}
     \right\}
 }\\
 &amp;=
@@ -785,10 +787,10 @@ text-align: center;
 {\mathbb{E}[Y |{\color{red}{X_j = a}}, \tilde{X}_{-j} = \tilde{x}_{-j}, T = t]
 }
 {
-\mathbb{E}[Y |{\color{red}{X_j = b}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]
+\textbf{E}[Y |{\color{red}{X_j = b}}, \tilde{X}_{-j}=\tilde{x}_{-j},T=t]
 }
 =
-\text{exp}\left\{{\color{red}{\beta_j(a-b)}}\right\}
+\exp{{\color{red}{\beta_j(a-b)}}}
 \end{aligned}
 \]</span></p>
 </section><section id="example-needle-sharing" class="level2" data-number="4.3"><h2 data-number="4.3" class="anchored" data-anchor-id="example-needle-sharing">
@@ -1143,7 +1145,7 @@ Figure&nbsp;4.2
 \]</span></p>
 <p>Rate ratios: exponentiate CI endpoints</p>
 <p><span class="math display">\[
-\text{exp}\left\{\beta\right\} \in \left[\text{exp}\left\{\hat \beta{\color{red}\pm} z_{1 - \frac{\alpha}{2}}\cdot \hat{\text{se}}\left(\hat \beta\right)\right\} \right]
+\exp{\beta} \in \left[\exp{\hat \beta{\color{red}\pm} z_{1 - \frac{\alpha}{2}}\cdot \hat{\text{se}}\left(\hat \beta\right)} \right]
 \]</span></p>
 </section><section id="hypothesis-tests-for-regression-coefficients" class="level3" data-number="4.4.2"><h3 data-number="4.4.2" class="anchored" data-anchor-id="hypothesis-tests-for-regression-coefficients">
 <span class="header-section-number">4.4.2</span> Hypothesis tests for regression coefficients</h3>
@@ -1159,11 +1161,11 @@ z = \frac{\hat \beta - \beta_0}{\hat{\text{se}}\left(\hat \beta\right)}
 <p><span class="math display">\[
 \begin{aligned}
 \hat y
-&amp;\stackrel{\text{def}}{=}\hat{\mathbb{E}}[Y|\tilde{X}= \tilde{x},T=t]\\
+&amp;\stackrel{\text{def}}{=}\hat{\textbf{E}}[Y|\tilde{X}= \tilde{x},T=t]\\
 &amp;=\hat\mu(\tilde{x}, t)\\
 &amp;=\hat\lambda(\tilde{x}) \cdot t\\
-&amp;=\text{exp}\left\{\hat\eta(\tilde{x})\right\} \cdot t\\
-&amp;=\text{exp}\left\{\tilde{x}'\hat{\tilde{\beta}}\right\} \cdot t
+&amp;=\exp{\hat\eta(\tilde{x})} \cdot t\\
+&amp;=\exp{\tilde{x}'\hat{\tilde{\beta}}} \cdot t
 \end{aligned}
 \]</span></p>
 </section><section id="diagnostics" class="level2" data-number="4.6"><h2 data-number="4.6" class="anchored" data-anchor-id="diagnostics">
@@ -1234,7 +1236,7 @@ Table&nbsp;4.5: Diagnostics for Poisson model
 <p>Even though we never observe <span class="math inline">\(Z\)</span>, we can estimate the parameters <span class="math inline">\(\gamma_0\)</span>-<span class="math inline">\(\gamma_p\)</span>, via maximum likelihood:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\text{P}(Y=y|X=x,T=t) &amp;= \text{P}(Y=y,Z=1|...) + \text{P}(Y=y,Z=0|...)
+\textbf{P}(Y=y|X=x,T=t) &amp;= \textbf{P}(Y=y,Z=1|...) + \textbf{P}(Y=y,Z=0|...)
 \end{aligned}
 \]</span> (by the Law of Total Probability)</p>
 <p>where <span class="math display">\[
@@ -1249,7 +1251,7 @@ P(Y=y,Z=z|...)
 </div>
 <hr>
 <div id="exr-zinf-moments" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise 4.5</strong></span> Derive the expected value and variance of <span class="math inline">\(Y\)</span>, conditional on <span class="math inline">\(X\)</span> and <span class="math inline">\(T\)</span>, as functions of <span class="math inline">\(P(Z=1|X=x,T=t)\)</span> and <span class="math inline">\(\mathbb{E}[Y|Z=0,X=x,T=t]\)</span>.</p>
+<p><span class="theorem-title"><strong>Exercise 4.5</strong></span> Derive the expected value and variance of <span class="math inline">\(Y\)</span>, conditional on <span class="math inline">\(X\)</span> and <span class="math inline">\(T\)</span>, as functions of <span class="math inline">\(P(Z=1|X=x,T=t)\)</span> and <span class="math inline">\(\textbf{E}[Y|Z=0,X=x,T=t]\)</span>.</p>
 </div>
 </section></section><section id="over-dispersion" class="level2" data-number="4.8"><h2 data-number="4.8" class="anchored" data-anchor-id="over-dispersion">
 <span class="header-section-number">4.8</span> Over-dispersion</h2>
@@ -1258,7 +1260,7 @@ P(Y=y,Z=z|...)
 <p>The Poisson distribution model <strong>forces</strong> the variance to equal the mean. In practice, many count distributions will have a variance substantially larger than the mean (or occasionally, smaller).</p>
 </div>
 <div id="def-overdispersion" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 4.1 (Overdispersion)</strong></span> A random variable <span class="math inline">\(X\)</span> is <strong>overdispersed</strong> relative to a model <span class="math inline">\(\text{p}(X=x)\)</span> if if its empirical variance in a dataset is larger than the value is predicted by the fitted model <span class="math inline">\(\hat{\text{p}}(X=x)\)</span>.</p>
+<p><span class="theorem-title"><strong>Definition 4.1 (Overdispersion)</strong></span> A random variable <span class="math inline">\(X\)</span> is <strong>overdispersed</strong> relative to a model <span class="math inline">\(\textbf{p}(X=x)\)</span> if if its empirical variance in a dataset is larger than the value is predicted by the fitted model <span class="math inline">\(\hat{\textbf{p}}(X=x)\)</span>.</p>
 </div>
 <div class="notes">
 <p>c.f. <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span> §3.2.1, 7.7, 9.8; <span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="references.html#ref-vittinghoff2e" role="doc-biblioref">2012</a>)</span> §8.1.5; and <a href="https://en.wikipedia.org/wiki/Overdispersion" class="uri">https://en.wikipedia.org/wiki/Overdispersion</a>.</p>
