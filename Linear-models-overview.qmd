@@ -192,7 +192,7 @@ distribution varies with gestational age and sex:
 
 $$
 \ba
-Y|M,A &\siid N(\mu(M,A), \sigma^2)\\
+Y|M,A &\ciid N(\mu(M,A), \sigma^2)\\
 \mu(m,a) &= \beta_0 + \beta_M m + \beta_A a
 \ea
 $$ {#eq-lm-parallel}
@@ -407,11 +407,16 @@ $$
 
 :::{.notes}
 
-Note that age doesn't show up in this difference: in other words, according to this model, the difference between females and males with the same gestational age is the same for every age.
+Age cancels out in this difference.
+In other words, 
+according to this model, 
+the difference between females and males with the same gestational age 
+is the same for every age.
 
-That's an assumption of the model; it's built-in to the parametric structure, even before we plug in the estimated values of those parameters.
-
-That's why the lines are parallel.
+This characteristic is an assumption of the model
+specified by @eq-lm-parallel.
+It's hardwired into the parametric model structure, 
+even before we estimated values for those parameters.
 
 :::
 
@@ -495,7 +500,14 @@ If you want to understand a coefficient in a model with interactions,
 collect terms for the corresponding variable, 
 and you will see which other covariates interact with the variable 
 whose coefficient you are interested in.
-In this case, the coefficient $S$ is interacting with $A$. 
+In this case, 
+the association between
+$A$ (age) varies between males and females (that is, by sex $S$).
+^[some call this kind of variation "interaction" or "effect modification",
+but "act", "effect", "modify", and "by" all suggest causality, 
+which we are not prepared to assess here;
+let's try to avoid using causal terms, 
+unless we are constructing a causal model.]
 So the slope of $Y$ with respect to $A$ depends on the value of $M$.
 According to this model, there is no such thing as 
 "*the* slope of birthweight with respect to age". 
@@ -1366,7 +1378,8 @@ x <- tibble(age = 40, sex = "male")
 bw_lm1 |> predict(newdata = x)
 ```
 
-If you don't provide `newdata`, R will use the covariate values from the original dataset:
+If you don't provide `newdata`, 
+R will use the covariate values from the original dataset:
 
 ```{r}
 predict(bw_lm1)
@@ -1376,7 +1389,9 @@ These special predictions are called the *fitted values* of the dataset:
 
 :::{#def-fitted-value}
 
-For a given dataset $(\vY, \mX)$ and corresponding fitted model $\p_{\hb}(\vy|\mx)$, the **fitted value** of $y_i$ is the predicted value of $y$ when $\vX=\vx_i$ using the estimate parameters $\hb$.
+For a given dataset $(\vY, \mX)$ and corresponding fitted model $\p_{\hb}(\vy|\mx)$, 
+the **fitted value** of $y_i$ is 
+the predicted value of $y$ when $\vX=\vx_i$ using the estimate parameters $\hb$.
 
 :::
 
