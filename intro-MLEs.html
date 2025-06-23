@@ -630,7 +630,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-06-21: 3:05:48 (AM)</p>
+      <p class="date">Last modified: 2025-06-23: 19:09:03 (PM)</p>
     </div>
   </div>
   
@@ -709,6 +709,9 @@ text-align: center;
 }
 </style></section><section id="overview-of-maximum-likelihood-estimation" class="level2" data-number="F.1"><h2 data-number="F.1" class="anchored" data-anchor-id="overview-of-maximum-likelihood-estimation">
 <span class="header-section-number">F.1</span> Overview of maximum likelihood estimation</h2>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \def\or{\theta}  -->
+<!-- doesn't work for some reason -->
 <section id="the-likelihood-function" class="level3" data-number="F.1.1"><h3 data-number="F.1.1" class="anchored" data-anchor-id="the-likelihood-function">
 <span class="header-section-number">F.1.1</span> The likelihood function</h3>
 <div id="def-lik-obs" class="theorem definition">
@@ -750,7 +753,16 @@ Notation for the likelihood function
 <li><span class="math inline">\(\mathscr{L}_{\theta}(\tilde{x})\)</span></li>
 <li><span class="math inline">\(\mathscr{L}(\tilde{x} | \theta)\)</span></li>
 </ul>
-<p>All of these notations mean the same thing.</p>
+<p>All of these notations mean the same thing. The parameter vector <span class="math inline">\(\theta\)</span> is often listed first or solely, either to emphasize that we are interested in how this function varies with the parameters, given the data, or possibly to make the likelihood resemble the Bayesian posterior probability <span class="math inline">\(\text{p}(\theta | \tilde{x})\)</span>, hinting at the fact that if the prior probability <span class="math inline">\(\text{p}(\theta)\)</span> is uniform over some finite parameter space, the posterior probability is proportional to the likelihood:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\text{p}(\theta | \tilde{x}) &amp;= \frac{\text{p}(\tilde{x}| \theta)\text{p}(\theta)}{\text{p}(\tilde{x})}
+\\
+&amp;= \frac{\mathscr{L}(\tilde{x} | \theta) \text{p}(\theta)}{\text{p}(\tilde{x})}
+\\
+&amp;= \mathscr{L}(\tilde{x} | \theta) \frac{\text{p}(\theta)}{\text{p}(\tilde{x})}
+\end{aligned}
+\]</span></p>
 </div>
 </div>
 <div class="notes">
@@ -790,8 +802,20 @@ Notation for the likelihood function
 \text{P}(Y=y) &amp;= \pi^y (1-\pi)^{1-y}\\
 \end{aligned}
 \]</span></p>
+<div id="exr-bernoulli-likelihood-one-group" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise F.1</strong></span> Let <span class="math inline">\(\tilde{y}\)</span> represent a data set of mutually independent binary outcomes, all with the same event probability <span class="math inline">\(\pi\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\tilde{y}&amp;= (y_1, ..., y_n)
+\\
+y_i &amp;\ \sim_{\perp\!\!\!\perp}\ \text{Ber}(\pi)
+\end{aligned}
+\]</span></p>
+<p>Write the likelihood of <span class="math inline">\(\tilde{y}\)</span>.</p>
+</div>
 <hr>
-<p>For <span class="math inline">\(\text{iid}\)</span> data <span class="math inline">\(\tilde{y}= (y_1, ..., y_n)\)</span>:</p>
+<div id="sol-bernoulli-likelihood-one-group" class="proof solution">
+<p><span class="proof-title"><em>Solution F.1</em>. </span>For <span class="math inline">\(\text{iid}\)</span> data <span class="math inline">\(\tilde{y}= (y_1, ..., y_n)\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \mathscr{L}(\pi;\tilde{y}) &amp;= \text{P}(Y_1=y_1, \ldots, Y_n = y_n)
@@ -804,8 +828,14 @@ Notation for the likelihood function
 &amp;= \pi^{\tilde{1} \cdot \tilde{y}} (1-\pi)^{\tilde{1} \cdot (\tilde{1} - \tilde{y})}
 \end{aligned}
 \]</span></p>
+</div>
 <hr>
-<p><span class="math display">\[
+<div id="exr-bernoulli-loglik-one-group" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise F.2</strong></span> Write the log-likelihood of <span class="math inline">\(\tilde{y}\)</span>.</p>
+</div>
+<hr>
+<div id="sol-bernoulli-loglik-one-group" class="proof solution">
+<p><span class="proof-title"><em>Solution F.2</em>. </span><span class="math display">\[
 \begin{aligned}
 \ell(\pi, \tilde{y}) &amp;= \left(\sum_{i=1}^ny_i\right) \text{log}\left\{\pi\right\} + \left(n - \sum y_i\right) \text{log}\left\{1-\pi\right\}\\
 &amp;= \left(\sum_{i=1}^ny_i\right) \left(\text{log}\left\{\pi\right\} - \text{log}\left\{1-\pi\right\}\right) + n \cdot \text{log}\left\{1-\pi\right\}\\
@@ -813,6 +843,7 @@ Notation for the likelihood function
 \\ &amp;= \left(\sum_{i=1}^ny_i\right) \text{logit}(\pi) + n \cdot \text{log}\left\{1-\pi\right\}
 \end{aligned}
 \]</span></p>
+</div>
 </section><section id="the-maximum-likelihood-estimate" class="level3" data-number="F.1.3"><h3 data-number="F.1.3" class="anchored" data-anchor-id="the-maximum-likelihood-estimate">
 <span class="header-section-number">F.1.3</span> The maximum likelihood estimate</h3>
 <div id="def-mle" class="theorem definition">
@@ -889,15 +920,145 @@ Notation for the likelihood function
 \end{aligned}
 \]</span></p>
 </div>
-<hr></section><section id="the-score-function" class="level3" data-number="F.1.7"><h3 data-number="F.1.7" class="anchored" data-anchor-id="the-score-function">
+</section><section id="the-score-function" class="level3" data-number="F.1.7"><h3 data-number="F.1.7" class="anchored" data-anchor-id="the-score-function">
 <span class="header-section-number">F.1.7</span> The score function</h3>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \def\or{\theta}  -->
+<!-- doesn't work for some reason -->
 <p>The first derivative<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> of the log-likelihood, <span class="math inline">\(\ell'(\theta)\)</span>, is important enough to have its own name: the <em>score function</em>.</p>
 <div id="def-score" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition F.6 (Score function)</strong></span> The <strong>score function</strong> of a statistical model <span class="math inline">\(\text{p}(\tilde{X}=\tilde{x})\)</span> is the gradient (i.e., first derivative) of the log-likelihood of that model:</p>
 <p><span id="eq-def-score"><span class="math display">\[\ell'\stackrel{\text{def}}{=}\frac{\partial}{\partial \theta} \ell(\tilde{x}|\theta) \tag{F.7}\]</span></span></p>
 </div>
 <div class="notes">
-<p>We often skip writing the arguments <span class="math inline">\(x\)</span> and/or <span class="math inline">\(\theta)\)</span>, so <span class="math inline">\(\ell' \stackrel{\text{def}}{=}\ell'(\tilde{x};\theta) \stackrel{\text{def}}{=}\ell'(\theta)\)</span>.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> Some statisticians use <span class="math inline">\(U\)</span> or <span class="math inline">\(S\)</span> instead of <span class="math inline">\(\ell'\)</span>. I prefer <span class="math inline">\(\ell'\)</span>. Why use up extra letters?</p>
+<p>We often skip writing the arguments <span class="math inline">\(x\)</span> and/or <span class="math inline">\(\theta\)</span>, so <span class="math inline">\(\ell' \stackrel{\text{def}}{=}\ell'(\tilde{x} | \theta) \stackrel{\text{def}}{=}\ell'(\theta)\)</span>.</p>
+<p>Some statisticians use <span class="math inline">\(U\)</span> or <span class="math inline">\(S\)</span> instead of <span class="math inline">\(\ell'\)</span>. We will use <span class="math inline">\(\ell'\)</span>, both to save <span class="math inline">\(U\)</span> and <span class="math inline">\(S\)</span> for other uses and to avoid introducing unnecessary notation to memorize.</p>
+</div>
+<hr>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package --><!-- \def\or{\theta}  --><!-- doesn't work for some reason --><div id="exr-derive-bernoulli-score" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise F.3</strong></span> Derive the score function for a single Bernoulli random variable <span class="math inline">\(X\)</span>. In other words, differentiate the marginal log-likelihood of a single Bernoulli random variable <span class="math inline">\(X\)</span> with respect to the event probability parameter, <span class="math inline">\(\pi\)</span>. Simplify as much as possible.</p>
+</div>
+<hr>
+<div id="sol-derive-bernoulli-score" class="proof solution">
+<p><span class="proof-title"><em>Solution F.3</em>. </span>Starting from <a href="#sol-bernoulli-loglik-one-group" class="quarto-xref">Solution&nbsp;<span>F.2</span></a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\ell'
+&amp;\stackrel{\text{def}}{=}\frac{\partial}{\partial \pi} \ell
+\\
+&amp;= \frac{\partial}{\partial \pi} \left(x \text{log}\left\{\pi\right\} + (1-x) \text{log}\left\{1-\pi\right\}\right)
+\\
+&amp;= \frac{\partial}{\partial \pi} x \text{log}\left\{\pi\right\} +  \frac{\partial}{\partial \pi} (1-x) \text{log}\left\{1-\pi\right\}
+\\
+&amp;= x \frac{\partial}{\partial \pi} \text{log}\left\{\pi\right\} +  (1-x) \frac{\partial}{\partial \pi} \text{log}\left\{1-\pi\right\}
+\\
+&amp;= x \frac{1}{\pi} - (1-x) \frac{1}{1-\pi}
+\\
+&amp;= x \frac{1-\pi}{\pi(1-\pi)} - (1-x) \frac{\pi}{\pi(1-\pi)}
+\\
+&amp;= \frac{x(1-\pi) - (1-x)\pi}{\pi(1-\pi)}
+\\
+&amp;= \frac{x-x\pi - \pi+x\pi}{\pi(1-\pi)}
+\\
+&amp;= \frac{x-\pi}{\pi(1-\pi)}
+\\
+&amp;= \frac{x-\mu}{\pi(1-\pi)}
+\\
+&amp;= \frac{\varepsilon}{\text{Var}\left(X\right)}
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package --><!-- \def\or{\theta}  --><!-- doesn't work for some reason --><div id="exr-pois-score-fn" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise F.4</strong></span> Derive the score function for a single Poisson random variable <span class="math inline">\(X\)</span>.</p>
+</div>
+<hr>
+<div id="sol-pois-score-fn" class="proof solution">
+<p><span class="proof-title"><em>Solution F.4</em>. </span>The score function is the first derivative of the log-likelihood:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\ell'&amp;=
+\frac{\partial}{\partial {\lambda}}\left(x\log{{\lambda}} - {\lambda}- \log{x!}\right)
+\\
+&amp;= \frac{\partial}{\partial {\lambda}}x\log{{\lambda}} - \frac{\partial}{\partial {\lambda}}n{\lambda}- \frac{\partial}{\partial {\lambda}}\log{x!}
+\\
+&amp;= x\frac{\partial}{\partial {\lambda}}\log{{\lambda}} - n\frac{\partial}{\partial {\lambda}}{\lambda}- \frac{\partial}{\partial {\lambda}}\log{x!}
+\\
+&amp;= x\frac{1}{{\lambda}} - 1 - 0
+\\
+&amp;= \frac{1}{{\lambda}} x- 1
+\\
+&amp;= \frac{x}{{\lambda}} - \frac{{\lambda}}{{\lambda}}
+\\
+&amp;= \frac{x-{\lambda}}{{\lambda}}
+\\
+&amp;= \frac{x-\mu}{{\lambda}}
+\\
+&amp;= \frac{\varepsilon}{\text{Var}\left(X\right)}
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package --><!-- \def\or{\theta}  --><!-- doesn't work for some reason --><div id="exr-gauss-score-fn" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise F.5</strong></span> Derive the score function for a single Gaussian random variable <span class="math inline">\(X\)</span>, with respect to the mean parameter <span class="math inline">\(\mu\)</span>.</p>
+</div>
+<hr>
+<div id="sol-gauss-score-fn" class="proof solution">
+<p><span class="proof-title"><em>Solution F.5</em>. </span>The score function is the first derivative of the log-likelihood:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\ell'&amp;\stackrel{\text{def}}{=}
+\frac{\partial}{\partial \mu}\ell
+\\
+&amp;=\frac{\partial}{\partial \mu}\left(\frac{-1}{2}\left(\text{log}\left\{2\pi\sigma^2\right\} + \frac{\varepsilon^2}{\sigma^2}\right)\right)
+\\
+&amp;=\frac{-1}{2}\frac{\partial}{\partial \mu}\left(\text{log}\left\{2\pi\sigma^2\right\} + \frac{\varepsilon^2}{\sigma^2}\right)
+\\
+&amp;=\frac{-1}{2}\left(\frac{\partial}{\partial \mu}\text{log}\left\{2\pi\sigma^2\right\} + \frac{\partial}{\partial \mu}\frac{\varepsilon^2}{\sigma^2}\right)
+\\
+&amp;=\frac{-1}{2}\left(0 + \frac{\partial}{\partial \mu}\frac{(x-\mu)^2}{\sigma^2}\right)
+\\
+&amp;=\frac{-1}{2}\left(-2\frac{x-\mu}{\sigma^2}\right)
+\\
+&amp;=\frac{x-\mu}{\sigma^2}
+\\
+&amp;= \frac{\varepsilon}{\text{Var}\left(X\right)}
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package --><!-- \def\or{\theta}  --><!-- doesn't work for some reason --><div id="exr-exp-score-fn" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise F.6</strong></span> Derive the score function for a single exponential random variable <span class="math inline">\(X\)</span>, with respect to the mean parameter <span class="math inline">\(\mu\)</span>.</p>
+</div>
+<hr>
+<div id="sol-exp-score-fn" class="proof solution">
+<p><span class="proof-title"><em>Solution F.6</em>. </span>The score function is the first derivative of the log-likelihood:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\ell'&amp;\stackrel{\text{def}}{=}
+\frac{\partial}{\partial \mu}\ell
+\\
+&amp;=\frac{\partial}{\partial \mu}\left(-\text{log}\left\{\mu\right\} - \frac{x}{\mu}\right)
+\\
+&amp;=\frac{\partial}{\partial \mu}\left(-\text{log}\left\{\mu\right\}\right) -\frac{\partial}{\partial \mu} \frac{x}{\mu}
+\\
+&amp;=-\frac{1}{\mu} + \frac{x}{\mu^2}
+\\
+&amp;=-\frac{\mu}{\mu^2} + \frac{x}{\mu^2}
+\\
+&amp;=\frac{x - \mu}{\mu^2}
+\\
+&amp;= \frac{\varepsilon}{\text{Var}\left(X\right)}
+\end{aligned}
+\]</span></p>
+</div>
+<hr>
+<div class="notes">
+<p>In all four cases above, the score function (with respect to the mean) turned out to be:</p>
+</div>
+<p><span class="math display">\[\ell'= \frac{\varepsilon}{\text{Var}\left(X\right)}\]</span></p>
+<div class="notes">
+<p>That is no coincidence. All four of these distributions belong to the <a href="https://en.wikipedia.org/wiki/Exponential_family">exponential family/class of probability distributions</a>. The distributions in the exponential family share many special properties. For more details, see <span class="citation" data-cites="hoggtanis2015">Hogg, Tanis, and Zimmerman (<a href="references.html#ref-hoggtanis2015" role="doc-biblioref">2015</a>)</span>, Section 6.7 and <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span>, Chapter 3.</p>
 </div>
 </section><section id="asymptotic-distribution-of-the-maximum-likelihood-estimate" class="level3" data-number="F.1.8"><h3 data-number="F.1.8" class="anchored" data-anchor-id="asymptotic-distribution-of-the-maximum-likelihood-estimate">
 <span class="header-section-number">F.1.8</span> Asymptotic distribution of the maximum likelihood estimate</h3>
@@ -999,7 +1160,7 @@ Notation for the likelihood function
 <p>(see <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span>, §3.17).</p>
 <hr>
 <div id="def-hessian" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition F.9 (Hessian)</strong></span> The matrix of second derivatives of the log-likelihood function is called the <strong>Hessian matrix (of the log-likelihood function)</strong> <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>:</p>
+<p><span class="theorem-title"><strong>Definition F.9 (Hessian)</strong></span> The matrix of second derivatives of the log-likelihood function is called the <strong>Hessian matrix (of the log-likelihood function)</strong> <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>:</p>
 <p><span id="eq-def-hess"><span class="math display">\[
 \ell''\stackrel{\text{def}}{=}\frac{\partial}{\partial \tilde{\theta}}\frac{\partial}{\partial \tilde{\theta}^{\top}} \ell(\tilde{x}| \tilde{\theta})
 \tag{F.11}\]</span></span></p>
@@ -1051,7 +1212,7 @@ Key point
 <p>See also <a href="https://online.stat.psu.edu/stat504/book/export/html/657" class="uri">https://online.stat.psu.edu/stat504/book/export/html/657</a></p>
 </section><section id="prediction-intervals-for-mles" class="level4"><h4 class="anchored" data-anchor-id="prediction-intervals-for-mles">Prediction intervals for MLEs</h4>
 <p><span class="math display">\[\overline{X} \in [ \widehat{\mu} \pm z_{1 - \alpha\text{/}2}\frac{\sigma}{m} ]\]</span></p>
-<p>Where <span class="math inline">\(m\)</span> is the sample size of the new data to be predicted (typically 1, except for binary outcomes, where it needs to be bigger for prediction intervals to make sense)</p>
+<p>Where <span class="math inline">\(m\)</span> is the sample size of the new data to be predicted (typically 1, except for binary outcomes, where it needs to be bigger for prediction intervals to make sense).</p>
 </section></section></section><section id="example-maximum-likelihood-for-tropical-cyclones-in-australia" class="level2" data-number="F.2"><h2 data-number="F.2" class="anchored" data-anchor-id="example-maximum-likelihood-for-tropical-cyclones-in-australia">
 <span class="header-section-number">F.2</span> Example: Maximum likelihood for Tropical Cyclones in Australia</h2>
 <p>(Adapted from <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="references.html#ref-dobson4e" role="doc-biblioref">2018</a>)</span> §1.6.5)</p>
@@ -1262,7 +1423,7 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 <p>We could estimate <span class="math inline">\(P(Y=y)\)</span> for each value of <span class="math inline">\(y\)</span> in <span class="math inline">\(0:\infty\)</span> separately (“nonparametrically”) using the fraction of our data with <span class="math inline">\(Y_i=y\)</span>, but then we would be estimating an infinitely large set of parameters, and we would have low precision. We will probably do better with a parametric model.</p>
 <hr>
 <div id="exr-cyclone-choose-dist" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.1</strong></span> What parametric probability distribution family might we use to model this empirical distribution?</p>
+<p><span class="theorem-title"><strong>Exercise F.7</strong></span> What parametric probability distribution family might we use to model this empirical distribution?</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1270,7 +1431,7 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 </div>
 <hr>
 <div id="exr-def-poisson" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.2</strong></span> Write down the Poisson distribution’s probability mass function.</p>
+<p><span class="theorem-title"><strong>Exercise F.8</strong></span> Write down the Poisson distribution’s probability mass function.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1281,7 +1442,7 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 <p>Now, we can estimate the parameter <span class="math inline">\(\lambda\)</span> for this distribution using maximum likelihood estimation.</p>
 <hr>
 <div id="exr-poisson-likelihood" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.3 (What is the likelihood?)</strong></span> Write down the likelihood (probability mass function or probability density function) of a single observation <span class="math inline">\(x\)</span>, according to your model.</p>
+<p><span class="theorem-title"><strong>Exercise F.9 (What is the likelihood?)</strong></span> Write down the likelihood (probability mass function or probability density function) of a single observation <span class="math inline">\(x\)</span>, according to your model.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1295,7 +1456,7 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 </div>
 <hr>
 <div id="exr-poisson-parameters" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.4</strong></span> Write down the vector of parameters in your model.</p>
+<p><span class="theorem-title"><strong>Exercise F.10</strong></span> Write down the vector of parameters in your model.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1304,7 +1465,7 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 </div>
 <hr>
 <div id="exr-poisson-mean-and-variance" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.5</strong></span> Write down the population mean and variance of a single observation from your chosen probability model, as a function of the parameters (extra credit - derive them).</p>
+<p><span class="theorem-title"><strong>Exercise F.11</strong></span> Write down the population mean and variance of a single observation from your chosen probability model, as a function of the parameters (extra credit - derive them).</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1318,7 +1479,7 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 </div>
 <hr>
 <div id="exr-sample-likelihood" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.6</strong></span> Write down the likelihood of the full dataset.</p>
+<p><span class="theorem-title"><strong>Exercise F.12</strong></span> Write down the likelihood of the full dataset.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1334,7 +1495,7 @@ Table&nbsp;F.2: Summary statistics for <code>cyclones</code> data
 </div>
 <hr>
 <div id="exr-graph-likelihood" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.7</strong></span> Graph the likelihood as a function of <span class="math inline">\(\lambda\)</span>.</p>
+<p><span class="theorem-title"><strong>Exercise F.13</strong></span> Graph the likelihood as a function of <span class="math inline">\(\lambda\)</span>.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1367,7 +1528,7 @@ Figure&nbsp;F.3: Likelihood of Dobson cyclone data
 </div>
 <hr>
 <div id="exr-sample-llik" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.8</strong></span> Write down the log-likelihood of the full dataset.</p>
+<p><span class="theorem-title"><strong>Exercise F.14</strong></span> Write down the log-likelihood of the full dataset.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1385,7 +1546,7 @@ Figure&nbsp;F.3: Likelihood of Dobson cyclone data
 </div>
 <hr>
 <div id="exr-graph-loglikelihood" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.9</strong></span> Graph the log-likelihood as a function of <span class="math inline">\(\lambda\)</span>.</p>
+<p><span class="theorem-title"><strong>Exercise F.15</strong></span> Graph the log-likelihood as a function of <span class="math inline">\(\lambda\)</span>.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1417,7 +1578,7 @@ Figure&nbsp;F.4: log-likelihood of Dobson cyclone data
 <hr>
 <section id="the-score-function-1" class="level4"><h4 class="anchored" data-anchor-id="the-score-function-1">The score function</h4>
 <div id="exr-cyclone-score-fn" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.10</strong></span> Derive the score function for the dataset.</p>
+<p><span class="theorem-title"><strong>Exercise F.16</strong></span> Derive the score function for the dataset.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1425,7 +1586,7 @@ Figure&nbsp;F.4: log-likelihood of Dobson cyclone data
 <p><span class="math display">\[
 \begin{aligned}
 \ell'( \lambda; \tilde{x} ) &amp;=
-\frac{\partial}{\partial \lambda}{\sum_{i = 1}^nx_i\log{\lambda} - n\lambda - \sum_{i = 1}^n\log{x_i!}}\\
+\frac{\partial}{\partial \lambda}\left(\sum_{i = 1}^nx_i\log{\lambda} - n\lambda - \sum_{i = 1}^n\log{x_i!}\right)\\
 &amp;= \frac{\partial}{\partial \lambda}\sum_{i = 1}^nx_i\log{\lambda} - \frac{\partial}{\partial \lambda}n\lambda - \frac{\partial}{\partial \lambda}\sum_{i = 1}^n\log{x_i!}\\
 &amp;= \sum_{i = 1}^nx_i\frac{\partial}{\partial \lambda}\log{\lambda} - n\frac{\partial}{\partial \lambda}\lambda - \sum_{i = 1}^n\frac{\partial}{\partial \lambda}\log{x_i!}\\
 &amp;= \sum_{i = 1}^nx_i\frac{1}{\lambda} - n - 0\\
@@ -1437,7 +1598,7 @@ Figure&nbsp;F.4: log-likelihood of Dobson cyclone data
 </div>
 <hr>
 <div id="exr-graph-score-function" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.11</strong></span> Graph the score function.</p>
+<p><span class="theorem-title"><strong>Exercise F.17</strong></span> Graph the score function.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1468,7 +1629,7 @@ Figure&nbsp;F.5: score function of Dobson cyclone data
 </div>
 <hr></section><section id="sec-hessian" class="level4"><h4 class="anchored" data-anchor-id="sec-hessian">The Hessian matrix</h4>
 <div id="exr-hessian" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.12</strong></span> Derive the Hessian matrix.</p>
+<p><span class="theorem-title"><strong>Exercise F.18</strong></span> Derive the Hessian matrix.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1485,7 +1646,7 @@ Figure&nbsp;F.5: score function of Dobson cyclone data
 </div>
 <hr>
 <div id="exr-graph-hession" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.13</strong></span> Graph the Hessian.</p>
+<p><span class="theorem-title"><strong>Exercise F.19</strong></span> Graph the Hessian.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1516,7 +1677,7 @@ Figure&nbsp;F.6: Hessian function of Dobson cyclone data
 </div>
 <hr>
 <div id="exr-score-equation" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.14</strong></span> Write the score equation (estimating equation).</p>
+<p><span class="theorem-title"><strong>Exercise F.20</strong></span> Write the score equation (estimating equation).</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1527,7 +1688,7 @@ Figure&nbsp;F.6: Hessian function of Dobson cyclone data
 <p>In this case, we can find the MLE of <span class="math inline">\(\lambda\)</span> by solving the score equation for <span class="math inline">\(\lambda\)</span> analytically (using algebra):</p>
 <hr>
 <div id="exr-solve-score-equation" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.15</strong></span> Solve the estimating equation for <span class="math inline">\(\lambda\)</span>:</p>
+<p><span class="theorem-title"><strong>Exercise F.21</strong></span> Solve the estimating equation for <span class="math inline">\(\lambda\)</span>:</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1546,7 +1707,7 @@ n\lambda &amp;= \sum_{i = 1}^nx_i\\
 <p><span class="math display">\[\tilde \lambda \stackrel{\text{def}}{=}\bar x\]</span></p>
 <hr>
 <div id="exr-check-hessian" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.16</strong></span> Confirm that the Hessian <span class="math inline">\(\ell''(\lambda; \tilde{x})\)</span> is negative when evaluated at <span class="math inline">\(\tilde \lambda\)</span>.</p>
+<p><span class="theorem-title"><strong>Exercise F.22</strong></span> Confirm that the Hessian <span class="math inline">\(\ell''(\lambda; \tilde{x})\)</span> is negative when evaluated at <span class="math inline">\(\tilde \lambda\)</span>.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1562,7 +1723,7 @@ n\lambda &amp;= \sum_{i = 1}^nx_i\\
 </div>
 <hr>
 <div id="exr-find-mle" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.17</strong></span> Draw conclusions about the MLE of <span class="math inline">\(\lambda\)</span>.</p>
+<p><span class="theorem-title"><strong>Exercise F.23</strong></span> Draw conclusions about the MLE of <span class="math inline">\(\lambda\)</span>.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1575,7 +1736,7 @@ n\lambda &amp;= \sum_{i = 1}^nx_i\\
 </div>
 <hr>
 <div id="exr-graph-mle" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise F.18</strong></span> Graph the log-likelihood with the MLE superimposed.</p>
+<p><span class="theorem-title"><strong>Exercise F.24</strong></span> Graph the log-likelihood with the MLE superimposed.</p>
 </div>
 <hr>
 <div class="proof solution">
@@ -1684,13 +1845,13 @@ Figure&nbsp;F.8: Observed information function of Dobson cyclone data
 </div>
 <hr>
 <div class="notes">
-<p>In <a href="#exr-cyclone-score-fn" class="quarto-xref">Exercise&nbsp;<span>F.10</span></a>, we found that the score function was:</p>
+<p>In <a href="#exr-cyclone-score-fn" class="quarto-xref">Exercise&nbsp;<span>F.16</span></a>, we found that the score function was:</p>
 </div>
 <p><span class="math display">\[
 \ell'( \lambda; \tilde{x} ) = \left(\frac{72}{\lambda} \right) - n
 \]</span></p>
 <div class="notes">
-<p>In <a href="#exr-hessian" class="quarto-xref">Exercise&nbsp;<span>F.12</span></a>, we found that the Hessian was:</p>
+<p>In <a href="#exr-hessian" class="quarto-xref">Exercise&nbsp;<span>F.18</span></a>, we found that the Hessian was:</p>
 </div>
 <p><span class="math display">\[
 \ell''( \lambda; \tilde{x} ) = -\frac{72}{\lambda^2}
@@ -1985,7 +2146,7 @@ Table&nbsp;F.3: Convergence of Newton-Raphson Algorithm for finding MLE of <code
 </figure>
 </div>
 <div class="notes">
-<p>Compare with <a href="#exr-find-mle" class="quarto-xref">Exercise&nbsp;<span>F.17</span></a></p>
+<p>Compare with <a href="#exr-find-mle" class="quarto-xref">Exercise&nbsp;<span>F.23</span></a></p>
 </div>
 <hr>
 <details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ll_plot</span> <span class="op">+</span></span>
@@ -2509,7 +2670,7 @@ Table&nbsp;F.4: HERS dataset
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["mu-hat"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["sigma-hat"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se_hat"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["confint_left"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["confint_right"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["tstat"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pval"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["confint covers true mu"],"name":[8],"type":["lgl"],"align":["right"]},{"label":["test rejects null hypothesis"],"name":[9],"type":["lgl"],"align":["right"]}],"data":[{"1":"98.871","2":"9.33438","3":"0.933438","4":"97.0188","5":"100.723","6":"10.7955","7":"2.02741e-18","8":"TRUE","9":"TRUE"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["mu-hat"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["sigma-hat"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se_hat"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["confint_left"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["confint_right"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["tstat"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["pval"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["confint covers true mu"],"name":[8],"type":["lgl"],"align":["right"]},{"label":["test rejects null hypothesis"],"name":[9],"type":["lgl"],"align":["right"]}],"data":[{"1":"98.6785","2":"10.1187","3":"1.01187","4":"96.6707","5":"100.686","6":"9.76847","7":"3.50074e-16","8":"TRUE","9":"TRUE"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -2693,7 +2854,7 @@ Table&nbsp;F.4: HERS dataset
 <span><span class="va">plot1</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/pkg/plotly/man/ggplotly.html">ggplotly</a></span><span class="op">(</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div class="plotly html-widget html-fill-item" id="htmlwidget-dfe893b7762e16791a76" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-dfe893b7762e16791a76">{"x":{"data":[{"orientation":"v","width":[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],"base":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"x":[68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124],"y":[2,1,1,3,5,7,22,35,39,56,80,100,102,94,101,100,89,68,51,49,38,31,33,17,20,14,14,9,10],"text":["count:   2<br />glucose:  68","count:   1<br />glucose:  70","count:   1<br />glucose:  72","count:   3<br />glucose:  74","count:   5<br />glucose:  76","count:   7<br />glucose:  78","count:  22<br />glucose:  80","count:  35<br />glucose:  82","count:  39<br />glucose:  84","count:  56<br />glucose:  86","count:  80<br />glucose:  88","count: 100<br />glucose:  90","count: 102<br />glucose:  92","count:  94<br />glucose:  94","count: 101<br />glucose:  96","count: 100<br />glucose:  98","count:  89<br />glucose: 100","count:  68<br />glucose: 102","count:  51<br />glucose: 104","count:  49<br />glucose: 106","count:  38<br />glucose: 108","count:  31<br />glucose: 110","count:  33<br />glucose: 112","count:  17<br />glucose: 114","count:  20<br />glucose: 116","count:  14<br />glucose: 118","count:  14<br />glucose: 120","count:   9<br />glucose: 122","count:  10<br />glucose: 124"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(89,89,89,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":26.228310502283104,"r":7.3059360730593621,"b":40.182648401826491,"l":43.105022831050235},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[64.099999999999994,127.90000000000001],"tickmode":"array","ticktext":["80","100","120"],"tickvals":[80,100,120],"categoryorder":"array","categoryarray":["80","100","120"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176002,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"fasting glucose (mg/dl)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-5.1000000000000005,107.09999999999999],"tickmode":"array","ticktext":["0","25","50","75","100"],"tickvals":[0,25,50,75,100],"categoryorder":"array","categoryarray":["0","25","50","75","100"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176002,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"count","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","layer":"below","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.8897637795275593,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"2e6a7f8901e2":{"x":{},"type":"bar"}},"cur_data":"2e6a7f8901e2","visdat":{"2e6a7f8901e2":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-dfe893b7762e16791a76">{"x":{"data":[{"orientation":"v","width":[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],"base":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"x":[68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124],"y":[2,1,1,3,5,7,22,35,39,56,80,100,102,94,101,100,89,68,51,49,38,31,33,17,20,14,14,9,10],"text":["count:   2<br />glucose:  68","count:   1<br />glucose:  70","count:   1<br />glucose:  72","count:   3<br />glucose:  74","count:   5<br />glucose:  76","count:   7<br />glucose:  78","count:  22<br />glucose:  80","count:  35<br />glucose:  82","count:  39<br />glucose:  84","count:  56<br />glucose:  86","count:  80<br />glucose:  88","count: 100<br />glucose:  90","count: 102<br />glucose:  92","count:  94<br />glucose:  94","count: 101<br />glucose:  96","count: 100<br />glucose:  98","count:  89<br />glucose: 100","count:  68<br />glucose: 102","count:  51<br />glucose: 104","count:  49<br />glucose: 106","count:  38<br />glucose: 108","count:  31<br />glucose: 110","count:  33<br />glucose: 112","count:  17<br />glucose: 114","count:  20<br />glucose: 116","count:  14<br />glucose: 118","count:  14<br />glucose: 120","count:   9<br />glucose: 122","count:  10<br />glucose: 124"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(89,89,89,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":26.228310502283104,"r":7.3059360730593621,"b":40.182648401826491,"l":43.105022831050235},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[64.099999999999994,127.90000000000001],"tickmode":"array","ticktext":["80","100","120"],"tickvals":[80,100,120],"categoryorder":"array","categoryarray":["80","100","120"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176002,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"fasting glucose (mg/dl)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-5.1000000000000005,107.09999999999999],"tickmode":"array","ticktext":["0","25","50","75","100"],"tickvals":[0,25,50,75,100],"categoryorder":"array","categoryarray":["0","25","50","75","100"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":true,"linecolor":"rgba(0,0,0,1)","linewidth":0.66417600664176002,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"count","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","layer":"below","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.8897637795275593,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"2be74e65e3be":{"x":{},"type":"bar"}},"cur_data":"2be74e65e3be","visdat":{"2be74e65e3be":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p>Looks somewhat plausibly Gaussian. Good enough for this example!</p>
@@ -2828,7 +2989,7 @@ Figure&nbsp;F.16: Log-likelihood of <code>hers</code> data w.r.t. <span class="m
 <div class="cell">
 <div class="cell-output-display">
 <div class="plotly html-widget html-fill-item" id="htmlwidget-9641cff1517304a0b68f" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-9641cff1517304a0b68f">{"x":{"visdat":{"2e6a4c0c55a5":["function () ","plotlyVisDat"]},"cur_data":"2e6a4c0c55a5","attrs":{"2e6a4c0c55a5":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"surface"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"mu"},"yaxis":{"title":"sigma"},"zaxis":{"title":"t(lliks)"}},"hovermode":"closest","showlegend":false,"legend":{"yanchor":"top","y":0.5}},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"colorbar":{"title":"t(lliks)","ticklen":2,"len":0.5,"lenmode":"fraction","y":1,"yanchor":"top"},"colorscale":[["0","rgba(68,1,84,1)"],["0.0416666666666669","rgba(70,19,97,1)"],["0.0833333333333332","rgba(72,32,111,1)"],["0.125","rgba(71,45,122,1)"],["0.166666666666666","rgba(68,58,128,1)"],["0.208333333333333","rgba(64,70,135,1)"],["0.25","rgba(60,82,138,1)"],["0.291666666666667","rgba(56,93,140,1)"],["0.333333333333334","rgba(49,104,142,1)"],["0.375","rgba(46,114,142,1)"],["0.416666666666667","rgba(42,123,142,1)"],["0.458333333333334","rgba(38,133,141,1)"],["0.5","rgba(37,144,140,1)"],["0.541666666666667","rgba(33,154,138,1)"],["0.583333333333333","rgba(39,164,133,1)"],["0.625","rgba(47,174,127,1)"],["0.666666666666666","rgba(53,183,121,1)"],["0.708333333333333","rgba(79,191,110,1)"],["0.75","rgba(98,199,98,1)"],["0.791666666666667","rgba(119,207,85,1)"],["0.833333333333334","rgba(147,214,70,1)"],["0.875","rgba(172,220,52,1)"],["0.916666666666667","rgba(199,225,42,1)"],["0.958333333333333","rgba(226,228,40,1)"],["1","rgba(253,231,37,1)"]],"showscale":true,"x":[90,90.625,91.25,91.875,92.5,93.125,93.75,94.375,95,95.625,96.25,96.875,97.5,98.125,98.75,99.375,100,100.625,101.25,101.875,102.5,103.125,103.75,104.375,105],"y":[6,6.583333333333333,7.166666666666667,7.75,8.3333333333333339,8.9166666666666679,9.5,10.083333333333334,10.666666666666668,11.25,11.833333333333334,12.416666666666668,13,13.583333333333334,14.166666666666668,14.75,15.333333333333334,15.916666666666668,16.5,17.083333333333336,17.666666666666668,18.25,18.833333333333336,19.416666666666668,20],"z":[[-5744.0385431196009,-5598.2952705501566,-5465.4751750640453,-5345.578256661267,-5238.6045153418236,-5144.5539511057123,-5063.426563952934,-4995.2223538834896,-4939.9413208973783,-4897.5834649946009,-4868.1487861751566,-4851.6372844390453,-4848.048959786267,-4857.3838122168236,-4879.6418417307123,-4914.823048327934,-4962.9274320084896,-5023.9549927723783,-5097.9057306196009,-5184.7796455501566,-5284.5767375640453,-5397.297006661267,-5522.9404528418236,-5661.5070761057123,-5812.996876452934],[-5428.4902715422704,-5307.43064568103,-5197.1054774387612,-5097.5147668154641,-5008.6585138111377,-4930.536718425783,-4863.149380659399,-4806.4965005119866,-4760.5780779835459,-4725.3941130740768,-4700.9446057835776,-4687.2295561120509,-4684.2489640594958,-4692.0028296259115,-4710.491152811298,-4739.7139336156561,-4779.6711720389858,-4830.3628680812872,-4891.7890217425593,-4963.949633022803,-5046.8447019220175,-5140.4742284402037,-5244.8382125773614,-5359.93665433349,-5485.7695537085901],[-5203.2905386280709,-5101.136249147271,-5008.0400653992992,-4924.0019873841557,-4849.0220151018411,-4783.1001485523548,-4726.2363877356966,-4678.4307326518683,-4639.6831833008673,-4609.9937396826954,-4589.3624017973525,-4577.7891696448369,-4575.2740432251503,-4581.8170225382928,-4597.4181075842644,-4622.0772983630632,-4655.794594874691,-4698.569997119148,-4750.4035050964321,-4811.2951188065463,-4881.2448382494886,-4960.252663425259,-5048.3185943338576,-5145.4426309752862,-5251.624773349542],[-5041.0456906186137,-4953.6907218360957,-4874.0815907226724,-4802.218297278343,-4738.1008415031092,-4681.7292233969692,-4633.1034429599249,-4592.2235001919753,-4559.0893950931195,-4533.7011276633593,-4516.058697902693,-4506.1621058111214,-4504.0113513886454,-4509.6064346352632,-4522.9473555509758,-4544.034114135784,-4572.866710389686,-4609.4451443126827,-4653.7694159047742,-4705.8395251659604,-4765.6554720962413,-4833.2172566956169,-4908.5248789640873,-4991.5783389016524,-5082.3776365083122],[-4923.7752646610734,-4848.2219521610732,-4779.3680146610732,-4717.2134521610733,-4661.7582646610736,-4613.0024521610731,-4570.9460146610736,-4535.5889521610734,-4506.9312646610733,-4484.9729521610734,-4469.7140146610736,-4461.1544521610731,-4459.2942646610736,-4464.1334521610734,-4475.6720146610733,-4493.9099521610733,-4518.8472646610735,-4550.4839521610738,-4588.8200146610734,-4633.8554521610731,-4685.5902646610739,-4744.024452161073,-4809.1580146610731,-4880.9909521610734,-4959.523264661073],[-4839.3099830167948,-4773.3187938299661,-4713.1790982233633,-4658.8908961969855,-4610.4541877508327,-4567.8689728849058,-4531.1352515992039,-4500.253023893727,-4475.222289768476,-4456.0430492234509,-4442.7153022586499,-4435.2390488740748,-4433.6142890697256,-4437.8410228456014,-4447.9192502017022,-4463.848971138028,-4485.6301856545797,-4513.2628937513573,-4546.747095428359,-4586.0827906855866,-4631.2699795230401,-4682.3086619407186,-4739.1988379386221,-4801.9405075167515,-4870.5336706751059],[-4779.1958487328075,-4721.0600280956878,-4668.0791589821147,-4620.2532413920871,-4577.5822753256052,-4540.0662607826689,-4507.7051977632782,-4480.4990862674331,-4458.4479262951345,-4441.5517178463806,-4429.8104609211732,-4423.2241555195105,-4421.7928016413944,-4425.5163992868238,-4434.3949484557988,-4448.4284491483195,-4467.6169013643866,-4491.9603051039985,-4521.458660367156,-4556.11196715386,-4595.9202254641095,-4640.8834352979047,-4691.0015966552446,-4746.274709536131,-4806.7027739405639],[-4737.426524702807,-4685.8225956679053,-4638.7944299005394,-4596.3420274007103,-4558.4653881684171,-4525.1645122036607,-4496.4393995064411,-4472.2900500767573,-4452.7164639146094,-4437.7186410199984,-4427.2965813929241,-4421.4502850333856,-4420.179751941384,-4423.4849821169182,-4431.3659755599892,-4443.8227322705961,-4460.8552522487398,-4482.4635354944194,-4508.6475820076357,-4539.4073917883888,-4574.7429648366779,-4614.6543011525027,-4659.1414007358653,-4708.2042635867629,-4761.8428897051981],[-4709.6507010712703,-4663.5366187348445,-4621.5115103974422,-4583.5753760590633,-4549.7282157197078,-4519.9700293793758,-4494.3008170380672,-4472.720578695782,-4455.2293143525203,-4441.827024008282,-4432.5137076630672,-4427.2893653168758,-4426.1539969697078,-4429.1076026215633,-4436.1501822724422,-4447.2817359223445,-4462.5022635712703,-4481.8117652192195,-4505.2102408661922,-4532.6976905121883,-4564.2741141572078,-4599.9395118012508,-4639.6938834443172,-4683.537229086407,-4731.4695487275203],[-4692.6618885904145,-4651.2060243928836,-4613.4260861212788,-4579.3220737755992,-4548.8939873558465,-4522.1418268620191,-4499.0655922941178,-4479.6652836521425,-4463.9409009360934,-4451.8924441459694,-4443.5199132817725,-4438.8233083435007,-4437.802629331155,-4440.4578762447354,-4446.789049084241,-4456.7961478496736,-4470.4791725410314,-4487.8381231583153,-4508.8729997015253,-4533.5838021706613,-4561.9705305657226,-4594.0331848867108,-4629.7717651336243,-4669.1862713064638,-4712.2767034052285],[-4684.0615345587457,-4646.592127447062,-4612.445163798976,-4581.6206436144894,-4554.1185668936005,-4529.9389336363101,-4509.0817438426184,-4491.5469975125252,-4477.3346946460306,-4466.4448352431336,-4458.8774193038362,-4454.6324468281373,-4453.7099178160361,-4456.1098322675343,-4461.8321901826303,-4470.8769915613248,-4483.2442364036178,-4498.9339247095095,-4517.9460564789997,-4540.2806317120885,-4565.9376504087759,-4594.9171125690609,-4627.2190181929454,-4662.8433672804285,-4701.7901598315093],[-4682.0315100399148,-4648.000019341298,-4616.9861292012147,-4588.9898396196641,-4564.011150596647,-4542.0500621321635,-4523.1065742262135,-4507.1806868787962,-4494.2724000899134,-4484.3817138595632,-4477.5086281877466,-4473.6531430744635,-4472.8152585197131,-4474.9949745234971,-4480.1922910858138,-4488.407208206665,-4499.6397258860488,-4513.8898441239653,-4531.1575629204162,-4551.4428822753998,-4574.7458021889179,-4601.0663226609686,-4630.4044436915528,-4662.7601652806698,-4698.1334874283211],[-4685.1773416887809,-4654.1314374728045,-4625.8383993810885,-4600.298227413633,-4577.5109215704369,-4557.4764818515023,-4540.1949082568281,-4525.6662007864134,-4513.89035944026,-4504.8673842183662,-4498.5972751207328,-4495.0800321473607,-4494.3156552982482,-4496.3041445733961,-4501.0454999728045,-4508.5397214964732,-4518.7868091444016,-4531.7867629165912,-4547.5395828130413,-4566.0452688337509,-4587.303820978721,-4611.3152392479524,-4638.0795236414433,-4667.5966741591947,-4699.8666908012065],[-4692.4182263208004,-4663.9815849342222,-4638.0664441686677,-4614.6728040241387,-4593.8006645006335,-4575.4500255981538,-4559.6208873166979,-4546.3132496562666,-4535.5271126168591,-4527.2624761984771,-4521.5193404011197,-4518.2977052247861,-4517.5975706694771,-4519.4189367351928,-4523.7618034219331,-4530.6261707296981,-4540.0120386584867,-4551.919407208301,-4566.348276379139,-4583.2986461710016,-4602.7705165838888,-4624.7638876178007,-4649.2787592727364,-4676.3151315486975,-4705.8730044456825],[-4702.9086037176412,-4676.7655890117585,-4652.9406971432463,-4631.4339281121047,-4612.2452819183336,-4595.3747585619321,-4580.8223580429003,-4568.5880803612399,-4558.6719255169492,-4551.0738935100289,-4545.7939843404783,-4542.8321980082983,-4542.1885345134888,-4543.8629938560498,-4547.8555760359804,-4554.1662810532816,-4562.7951089079525,-4573.7420595999938,-4587.0071331294057,-4602.5903294961881,-4620.4916487003402,-4640.7110907418628,-4663.248655620755,-4688.1043433370187,-4715.278153890652],[-4715.9814037541382,-4691.8653092410677,-4669.8876088676116,-4650.0483026337706,-4632.3473905395449,-4616.7848725849344,-4603.3607487699383,-4592.0750190945573,-4582.9276835587916,-4575.9187421626411,-4571.0481949061059,-4568.3160417891859,-4567.7222828118802,-4569.2669179741897,-4572.9499472761145,-4578.7713707176545,-4586.7311882988097,-4596.8294000195792,-4609.066005879964,-4623.441005879964,-4639.9544000195792,-4658.6061882988097,-4679.3963707176545,-4702.3249472761145,-4727.3919179741897],[-4731.1064245447342,-4708.7903468923241,-4688.4530543887804,-4670.0945470341012,-4653.7148248282883,-4639.3138877713418,-4626.8917358632598,-4616.448369104045,-4607.9837874936948,-4601.4979910322108,-4596.9909797195933,-4594.4627535558402,-4593.9133125409535,-4595.3426566749331,-4598.7507859577781,-4604.1377003894886,-4611.5033999700654,-4620.8478846995076,-4632.1711545778162,-4645.4732096049902,-4660.7540497810296,-4678.0136751059354,-4697.2520855797065,-4718.4692812023432,-4741.6652619738461],[-4747.859432153281,-4727.1491137683679,-4708.2751965237749,-4691.237680419501,-4676.036565455548,-4662.6718516319133,-4651.1435389485987,-4641.4516274056041,-4633.5961170029286,-4627.5770077405723,-4623.3942996185369,-4621.0479926368198,-4620.5380867954227,-4621.8645820943457,-4625.0274785335878,-4630.0267761131499,-4636.8624748330321,-4645.5345746932326,-4656.043075693754,-4668.3879778345945,-4682.5692811157542,-4698.5869855372339,-4716.4410910990337,-4736.1315978011526,-4757.6585056435906],[-4765.8989617110392,-4746.6271240159067,-4729.0641361830321,-4713.2099982124173,-4699.0647101040604,-4686.6282718579632,-4675.9006834741249,-4666.8819449525454,-4659.5720562932247,-4653.9710174961638,-4650.0788285613608,-4647.8954894888175,-4647.421000278533,-4648.6553609305074,-4651.5985714447406,-4656.2506318212327,-4662.6115420599835,-4670.6813021609933,-4680.4599121242627,-4691.947371949791,-4705.1436816375781,-4720.048841187624,-4736.6628505999288,-4754.9857098744924,-4775.0174190113148],[-4784.9487202900136,-4766.9705376606262,-4750.5864954238623,-4735.796593579722,-4722.6008321282052,-4710.9992110693111,-4700.9917304030414,-4692.5783901293944,-4685.7591902483709,-4680.534130759972,-4676.9032116641956,-4674.8664329610428,-4674.4237946505127,-4675.5752967326071,-4678.320939207324,-4682.6607220746655,-4688.5946453346296,-4696.1227089872173,-4705.2449130324285,-4715.9612574702633,-4728.2717423007216,-4742.1763675238026,-4757.675133139508,-4774.7680391478361,-4793.4550855487878],[-4804.7841116520822,-4787.973566863011,-4772.6536270490205,-4758.8242922101099,-4746.485562346279,-4735.6374374575289,-4726.2799175438586,-4718.413002605268,-4712.0366926417582,-4707.1509876533282,-4703.755887639978,-4701.8513926017085,-4701.4375025385189,-4702.514217450409,-4705.0815373373789,-4709.1394621994295,-4714.6879920365609,-4721.7271268487711,-4730.2568666360621,-4740.2772113984329,-4751.7881611358844,-4764.7897158484157,-4779.2818755360267,-4795.2646401987176,-4812.7380098364893],[-4825.2218265170231,-4809.4687537078662,-4795.1125189546292,-4782.1531222573121,-4770.5905636159168,-4760.4248430304406,-4751.6559605008852,-4744.2839160272506,-4738.308709609536,-4733.7303412477422,-4730.5488109418684,-4728.7641186919154,-4728.3762644978833,-4729.3852483597711,-4731.7910702775789,-4735.5937302513075,-4740.793228280957,-4747.3895643665264,-4755.3827385080167,-4764.7727507054269,-4775.5596009587571,-4787.743289268009,-4801.3238156331809,-4816.3011800542727,-4832.6753825312853],[-4846.1117354014305,-4831.3194038758611,-4817.8387206782736,-4805.6696858086671,-4794.8122992670433,-4785.2665610534004,-4777.0324711677404,-4770.1100296100612,-4764.499236380364,-4760.2000914786495,-4757.2125949049159,-4755.5367466591642,-4755.1725467413944,-4756.1199951516073,-4758.3790918898012,-4761.9498369559769,-4766.8322303501345,-4773.026272072274,-4780.5319621223953,-4789.3493005004993,-4799.4782872065844,-4810.9189222406512,-4823.6712056027,-4837.7351372927305,-4853.1107173107421],[-4867.3305269502716,-4853.4136538268031,-4840.7308014073442,-4829.281969691895,-4819.0671586804565,-4810.0863683730277,-4802.3395987696094,-4795.8268498702,-4790.5481216748012,-4786.503414183413,-4783.6927273960346,-4782.1160613126658,-4781.7734159333068,-4782.6647912579583,-4784.7901872866196,-4788.1496040192915,-4792.7430414559731,-4798.5704995966644,-4805.6319784413654,-4813.927477990077,-4823.4569982427993,-4834.2205391995303,-4846.218100860272,-4859.4496832250234,-4873.9152862937854],[-4888.7766808495689,-4875.6597863183188,-4863.7059777245686,-4852.9152550683184,-4843.2876183495682,-4834.8230675683189,-4827.5216027245688,-4821.3832238183186,-4816.4079308495684,-4812.5957238183182,-4809.9466027245689,-4808.4605675683188,-4808.1376183495686,-4808.9777550683184,-4810.9809777245682,-4814.1472863183189,-4818.4766808495688,-4823.9691613183186,-4830.6247277245684,-4838.4433800683182,-4847.4251183495689,-4857.5699425683188,-4868.8778527245686,-4881.3488488183184,-4894.9829308495682]],"type":"surface","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-9641cff1517304a0b68f">{"x":{"visdat":{"2be75935370b":["function () ","plotlyVisDat"]},"cur_data":"2be75935370b","attrs":{"2be75935370b":{"x":{},"y":{},"z":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"surface"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"mu"},"yaxis":{"title":"sigma"},"zaxis":{"title":"t(lliks)"}},"hovermode":"closest","showlegend":false,"legend":{"yanchor":"top","y":0.5}},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"colorbar":{"title":"t(lliks)","ticklen":2,"len":0.5,"lenmode":"fraction","y":1,"yanchor":"top"},"colorscale":[["0","rgba(68,1,84,1)"],["0.0416666666666669","rgba(70,19,97,1)"],["0.0833333333333332","rgba(72,32,111,1)"],["0.125","rgba(71,45,122,1)"],["0.166666666666666","rgba(68,58,128,1)"],["0.208333333333333","rgba(64,70,135,1)"],["0.25","rgba(60,82,138,1)"],["0.291666666666667","rgba(56,93,140,1)"],["0.333333333333334","rgba(49,104,142,1)"],["0.375","rgba(46,114,142,1)"],["0.416666666666667","rgba(42,123,142,1)"],["0.458333333333334","rgba(38,133,141,1)"],["0.5","rgba(37,144,140,1)"],["0.541666666666667","rgba(33,154,138,1)"],["0.583333333333333","rgba(39,164,133,1)"],["0.625","rgba(47,174,127,1)"],["0.666666666666666","rgba(53,183,121,1)"],["0.708333333333333","rgba(79,191,110,1)"],["0.75","rgba(98,199,98,1)"],["0.791666666666667","rgba(119,207,85,1)"],["0.833333333333334","rgba(147,214,70,1)"],["0.875","rgba(172,220,52,1)"],["0.916666666666667","rgba(199,225,42,1)"],["0.958333333333333","rgba(226,228,40,1)"],["1","rgba(253,231,37,1)"]],"showscale":true,"x":[90,90.625,91.25,91.875,92.5,93.125,93.75,94.375,95,95.625,96.25,96.875,97.5,98.125,98.75,99.375,100,100.625,101.25,101.875,102.5,103.125,103.75,104.375,105],"y":[6,6.583333333333333,7.166666666666667,7.75,8.3333333333333339,8.9166666666666679,9.5,10.083333333333334,10.666666666666668,11.25,11.833333333333334,12.416666666666668,13,13.583333333333334,14.166666666666668,14.75,15.333333333333334,15.916666666666668,16.5,17.083333333333336,17.666666666666668,18.25,18.833333333333336,19.416666666666668,20],"z":[[-5744.0385431196009,-5598.2952705501566,-5465.4751750640453,-5345.578256661267,-5238.6045153418236,-5144.5539511057123,-5063.426563952934,-4995.2223538834896,-4939.9413208973783,-4897.5834649946009,-4868.1487861751566,-4851.6372844390453,-4848.048959786267,-4857.3838122168236,-4879.6418417307123,-4914.823048327934,-4962.9274320084896,-5023.9549927723783,-5097.9057306196009,-5184.7796455501566,-5284.5767375640453,-5397.297006661267,-5522.9404528418236,-5661.5070761057123,-5812.996876452934],[-5428.4902715422704,-5307.43064568103,-5197.1054774387612,-5097.5147668154641,-5008.6585138111377,-4930.536718425783,-4863.149380659399,-4806.4965005119866,-4760.5780779835459,-4725.3941130740768,-4700.9446057835776,-4687.2295561120509,-4684.2489640594958,-4692.0028296259115,-4710.491152811298,-4739.7139336156561,-4779.6711720389858,-4830.3628680812872,-4891.7890217425593,-4963.949633022803,-5046.8447019220175,-5140.4742284402037,-5244.8382125773614,-5359.93665433349,-5485.7695537085901],[-5203.2905386280709,-5101.136249147271,-5008.0400653992992,-4924.0019873841557,-4849.0220151018411,-4783.1001485523548,-4726.2363877356966,-4678.4307326518683,-4639.6831833008673,-4609.9937396826954,-4589.3624017973525,-4577.7891696448369,-4575.2740432251503,-4581.8170225382928,-4597.4181075842644,-4622.0772983630632,-4655.794594874691,-4698.569997119148,-4750.4035050964321,-4811.2951188065463,-4881.2448382494886,-4960.252663425259,-5048.3185943338576,-5145.4426309752862,-5251.624773349542],[-5041.0456906186137,-4953.6907218360957,-4874.0815907226724,-4802.218297278343,-4738.1008415031092,-4681.7292233969692,-4633.1034429599249,-4592.2235001919753,-4559.0893950931195,-4533.7011276633593,-4516.058697902693,-4506.1621058111214,-4504.0113513886454,-4509.6064346352632,-4522.9473555509758,-4544.034114135784,-4572.866710389686,-4609.4451443126827,-4653.7694159047742,-4705.8395251659604,-4765.6554720962413,-4833.2172566956169,-4908.5248789640873,-4991.5783389016524,-5082.3776365083122],[-4923.7752646610734,-4848.2219521610732,-4779.3680146610732,-4717.2134521610733,-4661.7582646610736,-4613.0024521610731,-4570.9460146610736,-4535.5889521610734,-4506.9312646610733,-4484.9729521610734,-4469.7140146610736,-4461.1544521610731,-4459.2942646610736,-4464.1334521610734,-4475.6720146610733,-4493.9099521610733,-4518.8472646610735,-4550.4839521610738,-4588.8200146610734,-4633.8554521610731,-4685.5902646610739,-4744.024452161073,-4809.1580146610731,-4880.9909521610734,-4959.523264661073],[-4839.3099830167948,-4773.3187938299661,-4713.1790982233633,-4658.8908961969855,-4610.4541877508327,-4567.8689728849058,-4531.1352515992039,-4500.253023893727,-4475.222289768476,-4456.0430492234509,-4442.7153022586499,-4435.2390488740748,-4433.6142890697256,-4437.8410228456014,-4447.9192502017022,-4463.848971138028,-4485.6301856545797,-4513.2628937513573,-4546.747095428359,-4586.0827906855866,-4631.2699795230401,-4682.3086619407186,-4739.1988379386221,-4801.9405075167515,-4870.5336706751059],[-4779.1958487328075,-4721.0600280956878,-4668.0791589821147,-4620.2532413920871,-4577.5822753256052,-4540.0662607826689,-4507.7051977632782,-4480.4990862674331,-4458.4479262951345,-4441.5517178463806,-4429.8104609211732,-4423.2241555195105,-4421.7928016413944,-4425.5163992868238,-4434.3949484557988,-4448.4284491483195,-4467.6169013643866,-4491.9603051039985,-4521.458660367156,-4556.11196715386,-4595.9202254641095,-4640.8834352979047,-4691.0015966552446,-4746.274709536131,-4806.7027739405639],[-4737.426524702807,-4685.8225956679053,-4638.7944299005394,-4596.3420274007103,-4558.4653881684171,-4525.1645122036607,-4496.4393995064411,-4472.2900500767573,-4452.7164639146094,-4437.7186410199984,-4427.2965813929241,-4421.4502850333856,-4420.179751941384,-4423.4849821169182,-4431.3659755599892,-4443.8227322705961,-4460.8552522487398,-4482.4635354944194,-4508.6475820076357,-4539.4073917883888,-4574.7429648366779,-4614.6543011525027,-4659.1414007358653,-4708.2042635867629,-4761.8428897051981],[-4709.6507010712703,-4663.5366187348445,-4621.5115103974422,-4583.5753760590633,-4549.7282157197078,-4519.9700293793758,-4494.3008170380672,-4472.720578695782,-4455.2293143525203,-4441.827024008282,-4432.5137076630672,-4427.2893653168758,-4426.1539969697078,-4429.1076026215633,-4436.1501822724422,-4447.2817359223445,-4462.5022635712703,-4481.8117652192195,-4505.2102408661922,-4532.6976905121883,-4564.2741141572078,-4599.9395118012508,-4639.6938834443172,-4683.537229086407,-4731.4695487275203],[-4692.6618885904145,-4651.2060243928836,-4613.4260861212788,-4579.3220737755992,-4548.8939873558465,-4522.1418268620191,-4499.0655922941178,-4479.6652836521425,-4463.9409009360934,-4451.8924441459694,-4443.5199132817725,-4438.8233083435007,-4437.802629331155,-4440.4578762447354,-4446.789049084241,-4456.7961478496736,-4470.4791725410314,-4487.8381231583153,-4508.8729997015253,-4533.5838021706613,-4561.9705305657226,-4594.0331848867108,-4629.7717651336243,-4669.1862713064638,-4712.2767034052285],[-4684.0615345587457,-4646.592127447062,-4612.445163798976,-4581.6206436144894,-4554.1185668936005,-4529.9389336363101,-4509.0817438426184,-4491.5469975125252,-4477.3346946460306,-4466.4448352431336,-4458.8774193038362,-4454.6324468281373,-4453.7099178160361,-4456.1098322675343,-4461.8321901826303,-4470.8769915613248,-4483.2442364036178,-4498.9339247095095,-4517.9460564789997,-4540.2806317120885,-4565.9376504087759,-4594.9171125690609,-4627.2190181929454,-4662.8433672804285,-4701.7901598315093],[-4682.0315100399148,-4648.000019341298,-4616.9861292012147,-4588.9898396196641,-4564.011150596647,-4542.0500621321635,-4523.1065742262135,-4507.1806868787962,-4494.2724000899134,-4484.3817138595632,-4477.5086281877466,-4473.6531430744635,-4472.8152585197131,-4474.9949745234971,-4480.1922910858138,-4488.407208206665,-4499.6397258860488,-4513.8898441239653,-4531.1575629204162,-4551.4428822753998,-4574.7458021889179,-4601.0663226609686,-4630.4044436915528,-4662.7601652806698,-4698.1334874283211],[-4685.1773416887809,-4654.1314374728045,-4625.8383993810885,-4600.298227413633,-4577.5109215704369,-4557.4764818515023,-4540.1949082568281,-4525.6662007864134,-4513.89035944026,-4504.8673842183662,-4498.5972751207328,-4495.0800321473607,-4494.3156552982482,-4496.3041445733961,-4501.0454999728045,-4508.5397214964732,-4518.7868091444016,-4531.7867629165912,-4547.5395828130413,-4566.0452688337509,-4587.303820978721,-4611.3152392479524,-4638.0795236414433,-4667.5966741591947,-4699.8666908012065],[-4692.4182263208004,-4663.9815849342222,-4638.0664441686677,-4614.6728040241387,-4593.8006645006335,-4575.4500255981538,-4559.6208873166979,-4546.3132496562666,-4535.5271126168591,-4527.2624761984771,-4521.5193404011197,-4518.2977052247861,-4517.5975706694771,-4519.4189367351928,-4523.7618034219331,-4530.6261707296981,-4540.0120386584867,-4551.919407208301,-4566.348276379139,-4583.2986461710016,-4602.7705165838888,-4624.7638876178007,-4649.2787592727364,-4676.3151315486975,-4705.8730044456825],[-4702.9086037176412,-4676.7655890117585,-4652.9406971432463,-4631.4339281121047,-4612.2452819183336,-4595.3747585619321,-4580.8223580429003,-4568.5880803612399,-4558.6719255169492,-4551.0738935100289,-4545.7939843404783,-4542.8321980082983,-4542.1885345134888,-4543.8629938560498,-4547.8555760359804,-4554.1662810532816,-4562.7951089079525,-4573.7420595999938,-4587.0071331294057,-4602.5903294961881,-4620.4916487003402,-4640.7110907418628,-4663.248655620755,-4688.1043433370187,-4715.278153890652],[-4715.9814037541382,-4691.8653092410677,-4669.8876088676116,-4650.0483026337706,-4632.3473905395449,-4616.7848725849344,-4603.3607487699383,-4592.0750190945573,-4582.9276835587916,-4575.9187421626411,-4571.0481949061059,-4568.3160417891859,-4567.7222828118802,-4569.2669179741897,-4572.9499472761145,-4578.7713707176545,-4586.7311882988097,-4596.8294000195792,-4609.066005879964,-4623.441005879964,-4639.9544000195792,-4658.6061882988097,-4679.3963707176545,-4702.3249472761145,-4727.3919179741897],[-4731.1064245447342,-4708.7903468923241,-4688.4530543887804,-4670.0945470341012,-4653.7148248282883,-4639.3138877713418,-4626.8917358632598,-4616.448369104045,-4607.9837874936948,-4601.4979910322108,-4596.9909797195933,-4594.4627535558402,-4593.9133125409535,-4595.3426566749331,-4598.7507859577781,-4604.1377003894886,-4611.5033999700654,-4620.8478846995076,-4632.1711545778162,-4645.4732096049902,-4660.7540497810296,-4678.0136751059354,-4697.2520855797065,-4718.4692812023432,-4741.6652619738461],[-4747.859432153281,-4727.1491137683679,-4708.2751965237749,-4691.237680419501,-4676.036565455548,-4662.6718516319133,-4651.1435389485987,-4641.4516274056041,-4633.5961170029286,-4627.5770077405723,-4623.3942996185369,-4621.0479926368198,-4620.5380867954227,-4621.8645820943457,-4625.0274785335878,-4630.0267761131499,-4636.8624748330321,-4645.5345746932326,-4656.043075693754,-4668.3879778345945,-4682.5692811157542,-4698.5869855372339,-4716.4410910990337,-4736.1315978011526,-4757.6585056435906],[-4765.8989617110392,-4746.6271240159067,-4729.0641361830321,-4713.2099982124173,-4699.0647101040604,-4686.6282718579632,-4675.9006834741249,-4666.8819449525454,-4659.5720562932247,-4653.9710174961638,-4650.0788285613608,-4647.8954894888175,-4647.421000278533,-4648.6553609305074,-4651.5985714447406,-4656.2506318212327,-4662.6115420599835,-4670.6813021609933,-4680.4599121242627,-4691.947371949791,-4705.1436816375781,-4720.048841187624,-4736.6628505999288,-4754.9857098744924,-4775.0174190113148],[-4784.9487202900136,-4766.9705376606262,-4750.5864954238623,-4735.796593579722,-4722.6008321282052,-4710.9992110693111,-4700.9917304030414,-4692.5783901293944,-4685.7591902483709,-4680.534130759972,-4676.9032116641956,-4674.8664329610428,-4674.4237946505127,-4675.5752967326071,-4678.320939207324,-4682.6607220746655,-4688.5946453346296,-4696.1227089872173,-4705.2449130324285,-4715.9612574702633,-4728.2717423007216,-4742.1763675238026,-4757.675133139508,-4774.7680391478361,-4793.4550855487878],[-4804.7841116520822,-4787.973566863011,-4772.6536270490205,-4758.8242922101099,-4746.485562346279,-4735.6374374575289,-4726.2799175438586,-4718.413002605268,-4712.0366926417582,-4707.1509876533282,-4703.755887639978,-4701.8513926017085,-4701.4375025385189,-4702.514217450409,-4705.0815373373789,-4709.1394621994295,-4714.6879920365609,-4721.7271268487711,-4730.2568666360621,-4740.2772113984329,-4751.7881611358844,-4764.7897158484157,-4779.2818755360267,-4795.2646401987176,-4812.7380098364893],[-4825.2218265170231,-4809.4687537078662,-4795.1125189546292,-4782.1531222573121,-4770.5905636159168,-4760.4248430304406,-4751.6559605008852,-4744.2839160272506,-4738.308709609536,-4733.7303412477422,-4730.5488109418684,-4728.7641186919154,-4728.3762644978833,-4729.3852483597711,-4731.7910702775789,-4735.5937302513075,-4740.793228280957,-4747.3895643665264,-4755.3827385080167,-4764.7727507054269,-4775.5596009587571,-4787.743289268009,-4801.3238156331809,-4816.3011800542727,-4832.6753825312853],[-4846.1117354014305,-4831.3194038758611,-4817.8387206782736,-4805.6696858086671,-4794.8122992670433,-4785.2665610534004,-4777.0324711677404,-4770.1100296100612,-4764.499236380364,-4760.2000914786495,-4757.2125949049159,-4755.5367466591642,-4755.1725467413944,-4756.1199951516073,-4758.3790918898012,-4761.9498369559769,-4766.8322303501345,-4773.026272072274,-4780.5319621223953,-4789.3493005004993,-4799.4782872065844,-4810.9189222406512,-4823.6712056027,-4837.7351372927305,-4853.1107173107421],[-4867.3305269502716,-4853.4136538268031,-4840.7308014073442,-4829.281969691895,-4819.0671586804565,-4810.0863683730277,-4802.3395987696094,-4795.8268498702,-4790.5481216748012,-4786.503414183413,-4783.6927273960346,-4782.1160613126658,-4781.7734159333068,-4782.6647912579583,-4784.7901872866196,-4788.1496040192915,-4792.7430414559731,-4798.5704995966644,-4805.6319784413654,-4813.927477990077,-4823.4569982427993,-4834.2205391995303,-4846.218100860272,-4859.4496832250234,-4873.9152862937854],[-4888.7766808495689,-4875.6597863183188,-4863.7059777245686,-4852.9152550683184,-4843.2876183495682,-4834.8230675683189,-4827.5216027245688,-4821.3832238183186,-4816.4079308495684,-4812.5957238183182,-4809.9466027245689,-4808.4605675683188,-4808.1376183495686,-4808.9777550683184,-4810.9809777245682,-4814.1472863183189,-4818.4766808495688,-4823.9691613183186,-4830.6247277245684,-4838.4433800683182,-4847.4251183495689,-4857.5699425683188,-4868.8778527245686,-4881.3488488183184,-4894.9829308495682]],"type":"surface","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
@@ -2848,6 +3009,9 @@ Dobson, Annette J, and Adrian G Barnett. 2018. <em>An Introduction to Generalize
 <div id="ref-efron1978assessing" class="csl-entry" role="listitem">
 Efron, Bradley, and David V Hinkley. 1978. <span>“Assessing the Accuracy of the Maximum Likelihood Estimator: Observed Versus Expected Fisher Information.”</span> <em>Biometrika</em> 65 (3): 457–83.
 </div>
+<div id="ref-hoggtanis2015" class="csl-entry" role="listitem">
+Hogg, Robert V., Elliot A. Tanis, and Dale L. Zimmerman. 2015. <em>Probability and Statistical Inference</em>. Ninth edition. Boston: Pearson.
+</div>
 <div id="ref-HulleyStephen1998RToE" class="csl-entry" role="listitem">
 Hulley, Stephen, Deborah Grady, Trudy Bush, Curt Furberg, David Herrington, Betty Riggs, Eric Vittinghoff, for the Heart, and Estrogen/progestin Replacement Study (HERS) Research Group. 1998. <span>“Randomized Trial of Estrogen Plus Progestin for Secondary Prevention of Coronary Heart Disease in Postmenopausal Women.”</span> <em>JAMA : The Journal of the American Medical Association</em> 280 (7): 605–13.
 </div>
@@ -2865,8 +3029,7 @@ Newey, Whitney K, and Daniel McFadden. 1994. <span>“Large Sample Estimation an
 <ol>
 <li id="fn1"><p> <a href="https://en.wikipedia.org/wiki/Does_exactly_what_it_says_on_the_tin" class="uri">https://en.wikipedia.org/wiki/Does_exactly_what_it_says_on_the_tin</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>a.k.a. the <a href="https://en.wikipedia.org/wiki/Gradient">gradient</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>I might sometimes switch the order of <span class="math inline">\(x,\)</span> <span class="math inline">\(\theta\)</span>; this is unintentional and not meaningful.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>named after mathematician <a href="https://en.wikipedia.org/wiki/Otto_Hesse">Otto Hesse</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>named after mathematician <a href="https://en.wikipedia.org/wiki/Otto_Hesse">Otto Hesse</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     // Ensure there is a toggle, if there isn't float one in the top right
@@ -3368,458 +3531,391 @@ Newey, Whitney K, and Daniel McFadden. 1994. <span>“Large Sample Estimation an
 <span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a>over a range of input values $\rangef{x}$ can be found either:</span>
 <span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>at the edges of the range of input values, *OR*:</span>
-<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>where the function is flat (i.e. where the gradient function $f'(x) = 0$) </span>
-<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a>*AND* the second derivative is negative definite ($f''(x) &lt; 0$).</span>
-<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-30"><a href="#cb52-30" aria-hidden="true" tabindex="-1"></a><span class="fu">### Directly maximizing the likelihood function for independent data</span></span>
-<span id="cb52-31"><a href="#cb52-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-32"><a href="#cb52-32" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_mle_no_log.qmd &gt;}}</span>
-<span id="cb52-33"><a href="#cb52-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-34"><a href="#cb52-34" aria-hidden="true" tabindex="-1"></a><span class="fu">### The log-likelihood function</span></span>
-<span id="cb52-35"><a href="#cb52-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-36"><a href="#cb52-36" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb52-37"><a href="#cb52-37" aria-hidden="true" tabindex="-1"></a>It is typically easier to work with the log of the likelihood function:</span>
-<span id="cb52-38"><a href="#cb52-38" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb52-39"><a href="#cb52-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-40"><a href="#cb52-40" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def_loglik.qmd &gt;}}</span>
-<span id="cb52-41"><a href="#cb52-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-42"><a href="#cb52-42" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb52-43"><a href="#cb52-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-44"><a href="#cb52-44" aria-hidden="true" tabindex="-1"></a>:::{#thm-mle-use-log}</span>
-<span id="cb52-45"><a href="#cb52-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-46"><a href="#cb52-46" aria-hidden="true" tabindex="-1"></a>The likelihood and log-likelihood have the same maximizer:</span>
-<span id="cb52-47"><a href="#cb52-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-48"><a href="#cb52-48" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-49"><a href="#cb52-49" aria-hidden="true" tabindex="-1"></a>\am_\th \Lik(\th) = \am_\th \lik(\th)</span>
-<span id="cb52-50"><a href="#cb52-50" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-51"><a href="#cb52-51" aria-hidden="true" tabindex="-1"></a>::: </span>
+<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>where the function is flat </span>
+<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a>(i.e. where the gradient function $f'(x) = 0$) </span>
+<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a>*AND* the second derivative is negative definite ($f''(x) &lt; 0$).</span>
+<span id="cb52-30"><a href="#cb52-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-31"><a href="#cb52-31" aria-hidden="true" tabindex="-1"></a><span class="fu">### Directly maximizing the likelihood function for independent data</span></span>
+<span id="cb52-32"><a href="#cb52-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-33"><a href="#cb52-33" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_mle_no_log.qmd &gt;}}</span>
+<span id="cb52-34"><a href="#cb52-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-35"><a href="#cb52-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### The log-likelihood function</span></span>
+<span id="cb52-36"><a href="#cb52-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-37"><a href="#cb52-37" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec-loglik.qmd &gt;}}</span>
+<span id="cb52-38"><a href="#cb52-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-39"><a href="#cb52-39" aria-hidden="true" tabindex="-1"></a><span class="fu">### The score function</span></span>
+<span id="cb52-40"><a href="#cb52-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-41"><a href="#cb52-41" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec-score.qmd &gt;}}</span>
+<span id="cb52-42"><a href="#cb52-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-43"><a href="#cb52-43" aria-hidden="true" tabindex="-1"></a><span class="fu">### Asymptotic distribution of the maximum likelihood estimate</span></span>
+<span id="cb52-44"><a href="#cb52-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-45"><a href="#cb52-45" aria-hidden="true" tabindex="-1"></a>::: notes</span>
+<span id="cb52-46"><a href="#cb52-46" aria-hidden="true" tabindex="-1"></a>We learned how to quantify our uncertainty about these maximum likelihood estimates; </span>
+<span id="cb52-47"><a href="#cb52-47" aria-hidden="true" tabindex="-1"></a>with sufficient sample size, </span>
+<span id="cb52-48"><a href="#cb52-48" aria-hidden="true" tabindex="-1"></a>$\hthml$ has an approximately Gaussian distribution <span class="co">[</span><span class="ot">@newey1994large</span><span class="co">]</span>:</span>
+<span id="cb52-49"><a href="#cb52-49" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb52-50"><a href="#cb52-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-51"><a href="#cb52-51" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm_dist_mle.qmd &gt;}}</span>
 <span id="cb52-52"><a href="#cb52-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-53"><a href="#cb52-53" aria-hidden="true" tabindex="-1"></a>::: proof</span>
-<span id="cb52-54"><a href="#cb52-54" aria-hidden="true" tabindex="-1"></a>Left to the reader.</span>
-<span id="cb52-55"><a href="#cb52-55" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb52-53"><a href="#cb52-53" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb52-54"><a href="#cb52-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-55"><a href="#cb52-55" aria-hidden="true" tabindex="-1"></a>Recall:</span>
 <span id="cb52-56"><a href="#cb52-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-57"><a href="#cb52-57" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb52-57"><a href="#cb52-57" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def_oinf.qmd &gt;}}</span>
 <span id="cb52-58"><a href="#cb52-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-59"><a href="#cb52-59" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm_loglik_ind.qmd &gt;}}</span>
+<span id="cb52-59"><a href="#cb52-59" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def_einf.qmd &gt;}}</span>
 <span id="cb52-60"><a href="#cb52-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-61"><a href="#cb52-61" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb52-62"><a href="#cb52-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-63"><a href="#cb52-63" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb52-64"><a href="#cb52-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-65"><a href="#cb52-65" aria-hidden="true" tabindex="-1"></a>For $\iid$ data, we will have a much easier time taking the derivative of the log-likelihood:</span>
-<span id="cb52-66"><a href="#cb52-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-67"><a href="#cb52-67" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb52-68"><a href="#cb52-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-69"><a href="#cb52-69" aria-hidden="true" tabindex="-1"></a>:::{#thm-deriv-llik-iid}</span>
-<span id="cb52-70"><a href="#cb52-70" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Derivative of the log-likelihood function for $\iid$ data</span></span>
+<span id="cb52-61"><a href="#cb52-61" aria-hidden="true" tabindex="-1"></a>We can estimate $\einf(\th)$ using </span>
+<span id="cb52-62"><a href="#cb52-62" aria-hidden="true" tabindex="-1"></a>either $\einf(\hthml)$ or $\oinf(\vec x; \hthml)$.</span>
+<span id="cb52-63"><a href="#cb52-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-64"><a href="#cb52-64" aria-hidden="true" tabindex="-1"></a>So we can estimate the standard error of $\hth_k$ as:</span>
+<span id="cb52-65"><a href="#cb52-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-66"><a href="#cb52-66" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-67"><a href="#cb52-67" aria-hidden="true" tabindex="-1"></a>\HSE{\hth_k} = \sqrt{\sb{\inv{\heinff{\hthml}}}_{kk}}</span>
+<span id="cb52-68"><a href="#cb52-68" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-69"><a href="#cb52-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-70"><a href="#cb52-70" aria-hidden="true" tabindex="-1"></a><span class="fu">### The (Fisher) (expected) information matrix</span></span>
 <span id="cb52-71"><a href="#cb52-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-72"><a href="#cb52-72" aria-hidden="true" tabindex="-1"></a>For $\iid$ data:</span>
-<span id="cb52-73"><a href="#cb52-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-74"><a href="#cb52-74" aria-hidden="true" tabindex="-1"></a>$$\ell'(\theta) = \sumin \deriv{\theta} \log{\p(X=x_i|\theta)}$$ {#eq-deriv-llik}</span>
-<span id="cb52-75"><a href="#cb52-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-76"><a href="#cb52-76" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb52-72"><a href="#cb52-72" aria-hidden="true" tabindex="-1"></a>The variance of $\ell'(x,\theta)$,</span>
+<span id="cb52-73"><a href="#cb52-73" aria-hidden="true" tabindex="-1"></a>${Cov}\left<span class="sc">\{</span> \ell'(x,\theta) \right<span class="sc">\}</span>$, is also very</span>
+<span id="cb52-74"><a href="#cb52-74" aria-hidden="true" tabindex="-1"></a>important; we call it the "expected information matrix", "Fisher</span>
+<span id="cb52-75"><a href="#cb52-75" aria-hidden="true" tabindex="-1"></a>information matrix", or just "information matrix", and we represent it</span>
+<span id="cb52-76"><a href="#cb52-76" aria-hidden="true" tabindex="-1"></a>using the symbol $\einff{I}$ (<span class="in">`\scriptI`</span> in Unicode, <span class="in">`\mathcal{I}`</span> in LaTeX).</span>
 <span id="cb52-77"><a href="#cb52-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-78"><a href="#cb52-78" aria-hidden="true" tabindex="-1"></a>:::{.proof}</span>
-<span id="cb52-79"><a href="#cb52-79" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-80"><a href="#cb52-80" aria-hidden="true" tabindex="-1"></a>\ba</span>
-<span id="cb52-81"><a href="#cb52-81" aria-hidden="true" tabindex="-1"></a>\lik'(\th) </span>
-<span id="cb52-82"><a href="#cb52-82" aria-hidden="true" tabindex="-1"></a>&amp;= \deriv{\th} \lik(\th)</span>
-<span id="cb52-83"><a href="#cb52-83" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \deriv{\th} \sum_{i=1}^n \log{\p(X=x_i|\theta)}</span>
-<span id="cb52-84"><a href="#cb52-84" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \sum_{i=1}^n \deriv{\th} \log{\p(X=x_i|\theta)}</span>
-<span id="cb52-85"><a href="#cb52-85" aria-hidden="true" tabindex="-1"></a>\ea</span>
-<span id="cb52-86"><a href="#cb52-86" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-87"><a href="#cb52-87" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb52-78"><a href="#cb52-78" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-79"><a href="#cb52-79" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb52-80"><a href="#cb52-80" aria-hidden="true" tabindex="-1"></a>\einfm </span>
+<span id="cb52-81"><a href="#cb52-81" aria-hidden="true" tabindex="-1"></a>\eqdef \einfm(\theta) </span>
+<span id="cb52-82"><a href="#cb52-82" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;\eqdef \Covf{\score|\theta} </span>
+<span id="cb52-83"><a href="#cb52-83" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \Expp<span class="co">[</span><span class="ot"> \score{\score}\' </span><span class="co">]</span> - \Expp<span class="co">[</span><span class="ot">\score</span><span class="co">]</span> \ \Expp<span class="co">[</span><span class="ot">\score</span><span class="co">]</span>\'</span>
+<span id="cb52-84"><a href="#cb52-84" aria-hidden="true" tabindex="-1"></a>\ea</span>
+<span id="cb52-85"><a href="#cb52-85" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-86"><a href="#cb52-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-87"><a href="#cb52-87" aria-hidden="true" tabindex="-1"></a>The elements of $\einfm$ are:</span>
 <span id="cb52-88"><a href="#cb52-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-89"><a href="#cb52-89" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb52-90"><a href="#cb52-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-91"><a href="#cb52-91" aria-hidden="true" tabindex="-1"></a><span class="fu">### The score function</span></span>
-<span id="cb52-92"><a href="#cb52-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-93"><a href="#cb52-93" aria-hidden="true" tabindex="-1"></a>The first derivative^<span class="co">[</span><span class="ot">a.k.a. the [gradient](https://en.wikipedia.org/wiki/Gradient)</span><span class="co">]</span> of the log-likelihood, $\lik'(\th)$, is important enough to have its own name: the *score function*.</span>
-<span id="cb52-94"><a href="#cb52-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-95"><a href="#cb52-95" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def_score.qmd &gt;}}</span>
+<span id="cb52-89"><a href="#cb52-89" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-90"><a href="#cb52-90" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb52-91"><a href="#cb52-91" aria-hidden="true" tabindex="-1"></a>\einfm_{ij} </span>
+<span id="cb52-92"><a href="#cb52-92" aria-hidden="true" tabindex="-1"></a>&amp;\eqdef \Covf{{\ell'}_{i},{\ell'}_{j}}</span>
+<span id="cb52-93"><a href="#cb52-93" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \Expp<span class="co">[</span><span class="ot"> \ell_{i}'\ell_{j}' </span><span class="co">]</span> - \Expp<span class="co">[</span><span class="ot"> {\ell'}_{i} </span><span class="co">]</span> \Expp<span class="co">[</span><span class="ot"> {\ell'}_{j} </span><span class="co">]</span></span>
+<span id="cb52-94"><a href="#cb52-94" aria-hidden="true" tabindex="-1"></a>\ea</span>
+<span id="cb52-95"><a href="#cb52-95" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb52-96"><a href="#cb52-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-97"><a href="#cb52-97" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb52-98"><a href="#cb52-98" aria-hidden="true" tabindex="-1"></a>We often</span>
-<span id="cb52-99"><a href="#cb52-99" aria-hidden="true" tabindex="-1"></a>skip writing the arguments $x$ and/or $\theta)$, so</span>
-<span id="cb52-100"><a href="#cb52-100" aria-hidden="true" tabindex="-1"></a>$\ell' \eqdef \ell'(\vec x;\theta) \eqdef \ell'(\theta)$.<span class="ot">[^2]</span> </span>
-<span id="cb52-101"><a href="#cb52-101" aria-hidden="true" tabindex="-1"></a>Some statisticians</span>
-<span id="cb52-102"><a href="#cb52-102" aria-hidden="true" tabindex="-1"></a>use $U$ or $S$ instead of $\ell'$. </span>
-<span id="cb52-103"><a href="#cb52-103" aria-hidden="true" tabindex="-1"></a>I prefer $\ell'$.</span>
-<span id="cb52-104"><a href="#cb52-104" aria-hidden="true" tabindex="-1"></a>Why use up extra letters?</span>
-<span id="cb52-105"><a href="#cb52-105" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb52-106"><a href="#cb52-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-107"><a href="#cb52-107" aria-hidden="true" tabindex="-1"></a><span class="fu">### Asymptotic distribution of the maximum likelihood estimate</span></span>
-<span id="cb52-108"><a href="#cb52-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-109"><a href="#cb52-109" aria-hidden="true" tabindex="-1"></a>::: notes</span>
-<span id="cb52-110"><a href="#cb52-110" aria-hidden="true" tabindex="-1"></a>We learned how to quantify our uncertainty about these maximum likelihood estimates; </span>
-<span id="cb52-111"><a href="#cb52-111" aria-hidden="true" tabindex="-1"></a>with sufficient sample size, </span>
-<span id="cb52-112"><a href="#cb52-112" aria-hidden="true" tabindex="-1"></a>$\hthml$ has an approximately Gaussian distribution <span class="co">[</span><span class="ot">@newey1994large</span><span class="co">]</span>:</span>
-<span id="cb52-113"><a href="#cb52-113" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb52-114"><a href="#cb52-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-115"><a href="#cb52-115" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm_dist_mle.qmd &gt;}}</span>
-<span id="cb52-116"><a href="#cb52-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-117"><a href="#cb52-117" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb52-118"><a href="#cb52-118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-119"><a href="#cb52-119" aria-hidden="true" tabindex="-1"></a>Recall:</span>
-<span id="cb52-120"><a href="#cb52-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-121"><a href="#cb52-121" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def_oinf.qmd &gt;}}</span>
-<span id="cb52-122"><a href="#cb52-122" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-123"><a href="#cb52-123" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def_einf.qmd &gt;}}</span>
-<span id="cb52-124"><a href="#cb52-124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-125"><a href="#cb52-125" aria-hidden="true" tabindex="-1"></a>We can estimate $\einf(\th)$ using </span>
-<span id="cb52-126"><a href="#cb52-126" aria-hidden="true" tabindex="-1"></a>either $\einf(\hthml)$ or $\oinf(\vec x; \hthml)$.</span>
-<span id="cb52-127"><a href="#cb52-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-128"><a href="#cb52-128" aria-hidden="true" tabindex="-1"></a>So we can estimate the standard error of $\hth_k$ as:</span>
-<span id="cb52-129"><a href="#cb52-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-130"><a href="#cb52-130" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-131"><a href="#cb52-131" aria-hidden="true" tabindex="-1"></a>\HSE{\hth_k} = \sqrt{\sb{\inv{\heinff{\hthml}}}_{kk}}</span>
-<span id="cb52-132"><a href="#cb52-132" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-133"><a href="#cb52-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-134"><a href="#cb52-134" aria-hidden="true" tabindex="-1"></a><span class="fu">### The (Fisher) (expected) information matrix</span></span>
-<span id="cb52-135"><a href="#cb52-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-136"><a href="#cb52-136" aria-hidden="true" tabindex="-1"></a>The variance of $\ell'(x,\theta)$,</span>
-<span id="cb52-137"><a href="#cb52-137" aria-hidden="true" tabindex="-1"></a>${Cov}\left<span class="sc">\{</span> \ell'(x,\theta) \right<span class="sc">\}</span>$, is also very</span>
-<span id="cb52-138"><a href="#cb52-138" aria-hidden="true" tabindex="-1"></a>important; we call it the "expected information matrix", "Fisher</span>
-<span id="cb52-139"><a href="#cb52-139" aria-hidden="true" tabindex="-1"></a>information matrix", or just "information matrix", and we represent it</span>
-<span id="cb52-140"><a href="#cb52-140" aria-hidden="true" tabindex="-1"></a>using the symbol $\einff{I}$ (<span class="in">`\scriptI`</span> in Unicode, <span class="in">`\mathcal{I}`</span> in LaTeX).</span>
-<span id="cb52-141"><a href="#cb52-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-142"><a href="#cb52-142" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-143"><a href="#cb52-143" aria-hidden="true" tabindex="-1"></a>\ba</span>
-<span id="cb52-144"><a href="#cb52-144" aria-hidden="true" tabindex="-1"></a>\einfm </span>
-<span id="cb52-145"><a href="#cb52-145" aria-hidden="true" tabindex="-1"></a>\eqdef \einfm(\theta) </span>
-<span id="cb52-146"><a href="#cb52-146" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;\eqdef \Covf{\score|\theta} </span>
-<span id="cb52-147"><a href="#cb52-147" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \Expp<span class="co">[</span><span class="ot"> \score{\score}\' </span><span class="co">]</span> - \Expp<span class="co">[</span><span class="ot">\score</span><span class="co">]</span> \ \Expp<span class="co">[</span><span class="ot">\score</span><span class="co">]</span>\'</span>
-<span id="cb52-148"><a href="#cb52-148" aria-hidden="true" tabindex="-1"></a>\ea</span>
-<span id="cb52-149"><a href="#cb52-149" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-97"><a href="#cb52-97" aria-hidden="true" tabindex="-1"></a>Here, </span>
+<span id="cb52-98"><a href="#cb52-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-99"><a href="#cb52-99" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-100"><a href="#cb52-100" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb52-101"><a href="#cb52-101" aria-hidden="true" tabindex="-1"></a>\E{\ell'}</span>
+<span id="cb52-102"><a href="#cb52-102" aria-hidden="true" tabindex="-1"></a>&amp;\eqdef \int_{x \in \rangef{x}}</span>
+<span id="cb52-103"><a href="#cb52-103" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb52-104"><a href="#cb52-104" aria-hidden="true" tabindex="-1"></a>\ell'(x,\th) \p(X = x | \th) dx</span>
+<span id="cb52-105"><a href="#cb52-105" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-106"><a href="#cb52-106" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \int_{x \in \rangef{X}}</span>
+<span id="cb52-107"><a href="#cb52-107" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb52-108"><a href="#cb52-108" aria-hidden="true" tabindex="-1"></a>\paren</span>
+<span id="cb52-109"><a href="#cb52-109" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb52-110"><a href="#cb52-110" aria-hidden="true" tabindex="-1"></a>\deriv{\th}</span>
+<span id="cb52-111"><a href="#cb52-111" aria-hidden="true" tabindex="-1"></a>\log{\p(X = x | \th)}</span>
+<span id="cb52-112"><a href="#cb52-112" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-113"><a href="#cb52-113" aria-hidden="true" tabindex="-1"></a>\p(X = x | \theta) dx</span>
+<span id="cb52-114"><a href="#cb52-114" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-115"><a href="#cb52-115" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= </span>
+<span id="cb52-116"><a href="#cb52-116" aria-hidden="true" tabindex="-1"></a>\int_{x \in \rangef{X}}</span>
+<span id="cb52-117"><a href="#cb52-117" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb52-118"><a href="#cb52-118" aria-hidden="true" tabindex="-1"></a>\frac</span>
+<span id="cb52-119"><a href="#cb52-119" aria-hidden="true" tabindex="-1"></a>{\deriv{\theta} \p(X = x | \th)}</span>
+<span id="cb52-120"><a href="#cb52-120" aria-hidden="true" tabindex="-1"></a>{\p(X = x | \theta)}</span>
+<span id="cb52-121"><a href="#cb52-121" aria-hidden="true" tabindex="-1"></a>\p(X = x | \theta) dx</span>
+<span id="cb52-122"><a href="#cb52-122" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-123"><a href="#cb52-123" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= </span>
+<span id="cb52-124"><a href="#cb52-124" aria-hidden="true" tabindex="-1"></a>\int_{x \in \rangef{X}}</span>
+<span id="cb52-125"><a href="#cb52-125" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb52-126"><a href="#cb52-126" aria-hidden="true" tabindex="-1"></a>\deriv{\theta} \p(X = x | \th) dx</span>
+<span id="cb52-127"><a href="#cb52-127" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-128"><a href="#cb52-128" aria-hidden="true" tabindex="-1"></a>\ea</span>
+<span id="cb52-129"><a href="#cb52-129" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-130"><a href="#cb52-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-131"><a href="#cb52-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-132"><a href="#cb52-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-133"><a href="#cb52-133" aria-hidden="true" tabindex="-1"></a>And similarly</span>
+<span id="cb52-134"><a href="#cb52-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-135"><a href="#cb52-135" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-136"><a href="#cb52-136" aria-hidden="true" tabindex="-1"></a>\Exp{\ell' \ell'^{\top}} </span>
+<span id="cb52-137"><a href="#cb52-137" aria-hidden="true" tabindex="-1"></a>\eqdef </span>
+<span id="cb52-138"><a href="#cb52-138" aria-hidden="true" tabindex="-1"></a>\int_{x \in R(x)}</span>
+<span id="cb52-139"><a href="#cb52-139" aria-hidden="true" tabindex="-1"></a>{\ell'(x,\theta)\ell'(x,\theta)^{\top}\ </span>
+<span id="cb52-140"><a href="#cb52-140" aria-hidden="true" tabindex="-1"></a>\pf{X = x | \th}\ dx}</span>
+<span id="cb52-141"><a href="#cb52-141" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-142"><a href="#cb52-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-143"><a href="#cb52-143" aria-hidden="true" tabindex="-1"></a>Note that $\Exp{\ell'}$ and</span>
+<span id="cb52-144"><a href="#cb52-144" aria-hidden="true" tabindex="-1"></a>$\Exp{\ell'{\ell'}^{\top}}$</span>
+<span id="cb52-145"><a href="#cb52-145" aria-hidden="true" tabindex="-1"></a>are functions of $\theta$ but not of $x$; </span>
+<span id="cb52-146"><a href="#cb52-146" aria-hidden="true" tabindex="-1"></a>the expectation operator removed $x$.</span>
+<span id="cb52-147"><a href="#cb52-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-148"><a href="#cb52-148" aria-hidden="true" tabindex="-1"></a>Also note that for most of the distributions you are familiar with</span>
+<span id="cb52-149"><a href="#cb52-149" aria-hidden="true" tabindex="-1"></a>(including Gaussian, binomial, Poisson, exponential):</span>
 <span id="cb52-150"><a href="#cb52-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-151"><a href="#cb52-151" aria-hidden="true" tabindex="-1"></a>The elements of $\einfm$ are:</span>
+<span id="cb52-151"><a href="#cb52-151" aria-hidden="true" tabindex="-1"></a>$$\Exp{\ell'} = 0$$</span>
 <span id="cb52-152"><a href="#cb52-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-153"><a href="#cb52-153" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-154"><a href="#cb52-154" aria-hidden="true" tabindex="-1"></a>\ba</span>
-<span id="cb52-155"><a href="#cb52-155" aria-hidden="true" tabindex="-1"></a>\einfm_{ij} </span>
-<span id="cb52-156"><a href="#cb52-156" aria-hidden="true" tabindex="-1"></a>&amp;\eqdef \Covf{{\ell'}_{i},{\ell'}_{j}}</span>
-<span id="cb52-157"><a href="#cb52-157" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \Expp<span class="co">[</span><span class="ot"> \ell_{i}'\ell_{j}' </span><span class="co">]</span> - \Expp<span class="co">[</span><span class="ot"> {\ell'}_{i} </span><span class="co">]</span> \Expp<span class="co">[</span><span class="ot"> {\ell'}_{j} </span><span class="co">]</span></span>
-<span id="cb52-158"><a href="#cb52-158" aria-hidden="true" tabindex="-1"></a>\ea</span>
-<span id="cb52-159"><a href="#cb52-159" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-160"><a href="#cb52-160" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-161"><a href="#cb52-161" aria-hidden="true" tabindex="-1"></a>Here, </span>
-<span id="cb52-162"><a href="#cb52-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-153"><a href="#cb52-153" aria-hidden="true" tabindex="-1"></a>So</span>
+<span id="cb52-154"><a href="#cb52-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-155"><a href="#cb52-155" aria-hidden="true" tabindex="-1"></a>$$\einff{\theta} = \Exp{\ell'{\ell'}^{\top} }$$</span>
+<span id="cb52-156"><a href="#cb52-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-157"><a href="#cb52-157" aria-hidden="true" tabindex="-1"></a>Moreover, for those distributions (called the "exponential family"), we</span>
+<span id="cb52-158"><a href="#cb52-158" aria-hidden="true" tabindex="-1"></a>have:</span>
+<span id="cb52-159"><a href="#cb52-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-160"><a href="#cb52-160" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-161"><a href="#cb52-161" aria-hidden="true" tabindex="-1"></a>\einf = -\Exp{\ell''}</span>
+<span id="cb52-162"><a href="#cb52-162" aria-hidden="true" tabindex="-1"></a>= \Exp{- \score \score\'}</span>
 <span id="cb52-163"><a href="#cb52-163" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-164"><a href="#cb52-164" aria-hidden="true" tabindex="-1"></a>\ba</span>
-<span id="cb52-165"><a href="#cb52-165" aria-hidden="true" tabindex="-1"></a>\E{\ell'}</span>
-<span id="cb52-166"><a href="#cb52-166" aria-hidden="true" tabindex="-1"></a>&amp;\eqdef \int_{x \in \rangef{x}}</span>
-<span id="cb52-167"><a href="#cb52-167" aria-hidden="true" tabindex="-1"></a>{</span>
-<span id="cb52-168"><a href="#cb52-168" aria-hidden="true" tabindex="-1"></a>\ell'(x,\th) \p(X = x | \th) dx</span>
-<span id="cb52-169"><a href="#cb52-169" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb52-170"><a href="#cb52-170" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \int_{x \in \rangef{X}}</span>
-<span id="cb52-171"><a href="#cb52-171" aria-hidden="true" tabindex="-1"></a>{</span>
-<span id="cb52-172"><a href="#cb52-172" aria-hidden="true" tabindex="-1"></a>\paren</span>
-<span id="cb52-173"><a href="#cb52-173" aria-hidden="true" tabindex="-1"></a>{</span>
-<span id="cb52-174"><a href="#cb52-174" aria-hidden="true" tabindex="-1"></a>\deriv{\th}</span>
-<span id="cb52-175"><a href="#cb52-175" aria-hidden="true" tabindex="-1"></a>\log{\p(X = x | \th)}</span>
-<span id="cb52-176"><a href="#cb52-176" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb52-177"><a href="#cb52-177" aria-hidden="true" tabindex="-1"></a>\p(X = x | \theta) dx</span>
-<span id="cb52-178"><a href="#cb52-178" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb52-179"><a href="#cb52-179" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= </span>
-<span id="cb52-180"><a href="#cb52-180" aria-hidden="true" tabindex="-1"></a>\int_{x \in \rangef{X}}</span>
-<span id="cb52-181"><a href="#cb52-181" aria-hidden="true" tabindex="-1"></a>{</span>
-<span id="cb52-182"><a href="#cb52-182" aria-hidden="true" tabindex="-1"></a>\frac</span>
-<span id="cb52-183"><a href="#cb52-183" aria-hidden="true" tabindex="-1"></a>{\deriv{\theta} \p(X = x | \th)}</span>
-<span id="cb52-184"><a href="#cb52-184" aria-hidden="true" tabindex="-1"></a>{\p(X = x | \theta)}</span>
-<span id="cb52-185"><a href="#cb52-185" aria-hidden="true" tabindex="-1"></a>\p(X = x | \theta) dx</span>
-<span id="cb52-186"><a href="#cb52-186" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb52-187"><a href="#cb52-187" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= </span>
-<span id="cb52-188"><a href="#cb52-188" aria-hidden="true" tabindex="-1"></a>\int_{x \in \rangef{X}}</span>
-<span id="cb52-189"><a href="#cb52-189" aria-hidden="true" tabindex="-1"></a>{</span>
-<span id="cb52-190"><a href="#cb52-190" aria-hidden="true" tabindex="-1"></a>\deriv{\theta} \p(X = x | \th) dx</span>
-<span id="cb52-191"><a href="#cb52-191" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb52-192"><a href="#cb52-192" aria-hidden="true" tabindex="-1"></a>\ea</span>
-<span id="cb52-193"><a href="#cb52-193" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-164"><a href="#cb52-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-165"><a href="#cb52-165" aria-hidden="true" tabindex="-1"></a>(see @dobson4e, §3.17).</span>
+<span id="cb52-166"><a href="#cb52-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-167"><a href="#cb52-167" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb52-168"><a href="#cb52-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-169"><a href="#cb52-169" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def_hessian.qmd &gt;}}</span>
+<span id="cb52-170"><a href="#cb52-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-171"><a href="#cb52-171" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb52-172"><a href="#cb52-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-173"><a href="#cb52-173" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm_hessian_elements.qmd &gt;}}</span>
+<span id="cb52-174"><a href="#cb52-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-175"><a href="#cb52-175" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb52-176"><a href="#cb52-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-177"><a href="#cb52-177" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm_hessian_score.qmd &gt;}}</span>
+<span id="cb52-178"><a href="#cb52-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-179"><a href="#cb52-179" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb52-180"><a href="#cb52-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-181"><a href="#cb52-181" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Observed information</span></span>
+<span id="cb52-182"><a href="#cb52-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-183"><a href="#cb52-183" aria-hidden="true" tabindex="-1"></a>Sometimes, we use $I(\theta;x) \eqdef - hess$ (note the</span>
+<span id="cb52-184"><a href="#cb52-184" aria-hidden="true" tabindex="-1"></a>standard-font "I" here). </span>
+<span id="cb52-185"><a href="#cb52-185" aria-hidden="true" tabindex="-1"></a>$I(\theta;x)$ is the observed information, precision, or concentration</span>
+<span id="cb52-186"><a href="#cb52-186" aria-hidden="true" tabindex="-1"></a>matrix (Negative Hessian).</span>
+<span id="cb52-187"><a href="#cb52-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-188"><a href="#cb52-188" aria-hidden="true" tabindex="-1"></a>:::{.callout-important}</span>
+<span id="cb52-189"><a href="#cb52-189" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Key point</span></span>
+<span id="cb52-190"><a href="#cb52-190" aria-hidden="true" tabindex="-1"></a> The asymptotics of MLEs gives us</span>
+<span id="cb52-191"><a href="#cb52-191" aria-hidden="true" tabindex="-1"></a>${\widehat{\theta}}_{ML} \sim N\left( \theta,\mathfrak{I}^{- 1}(\theta) \right)$,</span>
+<span id="cb52-192"><a href="#cb52-192" aria-hidden="true" tabindex="-1"></a>approximately, for large sample sizes.</span>
+<span id="cb52-193"><a href="#cb52-193" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb52-194"><a href="#cb52-194" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-195"><a href="#cb52-195" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-196"><a href="#cb52-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-197"><a href="#cb52-197" aria-hidden="true" tabindex="-1"></a>And similarly</span>
-<span id="cb52-198"><a href="#cb52-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-199"><a href="#cb52-199" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-200"><a href="#cb52-200" aria-hidden="true" tabindex="-1"></a>\Exp{\ell' \ell'^{\top}} </span>
-<span id="cb52-201"><a href="#cb52-201" aria-hidden="true" tabindex="-1"></a>\eqdef </span>
-<span id="cb52-202"><a href="#cb52-202" aria-hidden="true" tabindex="-1"></a>\int_{x \in R(x)}</span>
-<span id="cb52-203"><a href="#cb52-203" aria-hidden="true" tabindex="-1"></a>{\ell'(x,\theta)\ell'(x,\theta)^{\top}\ </span>
-<span id="cb52-204"><a href="#cb52-204" aria-hidden="true" tabindex="-1"></a>\pf{X = x | \th}\ dx}</span>
-<span id="cb52-205"><a href="#cb52-205" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-206"><a href="#cb52-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-207"><a href="#cb52-207" aria-hidden="true" tabindex="-1"></a>Note that $\Exp{\ell'}$ and</span>
-<span id="cb52-208"><a href="#cb52-208" aria-hidden="true" tabindex="-1"></a>$\Exp{\ell'{\ell'}^{\top}}$</span>
-<span id="cb52-209"><a href="#cb52-209" aria-hidden="true" tabindex="-1"></a>are functions of $\theta$ but not of $x$; </span>
-<span id="cb52-210"><a href="#cb52-210" aria-hidden="true" tabindex="-1"></a>the expectation operator removed $x$.</span>
+<span id="cb52-195"><a href="#cb52-195" aria-hidden="true" tabindex="-1"></a>We can estimate $\einf^{- 1}(\theta)$ by working out</span>
+<span id="cb52-196"><a href="#cb52-196" aria-hidden="true" tabindex="-1"></a>$\Ef{-\ell''}$ or</span>
+<span id="cb52-197"><a href="#cb52-197" aria-hidden="true" tabindex="-1"></a>$\Ef{\ell'{\ell'}^{\top}}$</span>
+<span id="cb52-198"><a href="#cb52-198" aria-hidden="true" tabindex="-1"></a>and plugging in $\hthml$, but sometimes we instead use</span>
+<span id="cb52-199"><a href="#cb52-199" aria-hidden="true" tabindex="-1"></a>$\oinf(\hthml,\vx)$ for convenience; there are</span>
+<span id="cb52-200"><a href="#cb52-200" aria-hidden="true" tabindex="-1"></a>some cases where it’s provably better according to some criteria (@efron1978assessing).</span>
+<span id="cb52-201"><a href="#cb52-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-202"><a href="#cb52-202" aria-hidden="true" tabindex="-1"></a><span class="fu">### Quantifying (un)certainty of MLEs</span></span>
+<span id="cb52-203"><a href="#cb52-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-204"><a href="#cb52-204" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Confidence intervals for MLEs</span></span>
+<span id="cb52-205"><a href="#cb52-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-206"><a href="#cb52-206" aria-hidden="true" tabindex="-1"></a>An asymptotic approximation of a 95% confidence interval for $\theta_k$ is</span>
+<span id="cb52-207"><a href="#cb52-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-208"><a href="#cb52-208" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-209"><a href="#cb52-209" aria-hidden="true" tabindex="-1"></a>\hthml \pm z_{0.975} \times \HSE{\hth_k}</span>
+<span id="cb52-210"><a href="#cb52-210" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb52-211"><a href="#cb52-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-212"><a href="#cb52-212" aria-hidden="true" tabindex="-1"></a>Also note that for most of the distributions you are familiar with</span>
-<span id="cb52-213"><a href="#cb52-213" aria-hidden="true" tabindex="-1"></a>(including Gaussian, binomial, Poisson, exponential):</span>
-<span id="cb52-214"><a href="#cb52-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-215"><a href="#cb52-215" aria-hidden="true" tabindex="-1"></a>$$\Exp{\ell'} = 0$$</span>
-<span id="cb52-216"><a href="#cb52-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-217"><a href="#cb52-217" aria-hidden="true" tabindex="-1"></a>So</span>
-<span id="cb52-218"><a href="#cb52-218" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-219"><a href="#cb52-219" aria-hidden="true" tabindex="-1"></a>$$\einff{\theta} = \Exp{\ell'{\ell'}^{\top} }$$</span>
-<span id="cb52-220"><a href="#cb52-220" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-221"><a href="#cb52-221" aria-hidden="true" tabindex="-1"></a>Moreover, for those distributions (called the "exponential family"), we</span>
-<span id="cb52-222"><a href="#cb52-222" aria-hidden="true" tabindex="-1"></a>have:</span>
+<span id="cb52-212"><a href="#cb52-212" aria-hidden="true" tabindex="-1"></a>where $z_\beta$ the $\beta$ quantile of the standard Gaussian distribution.</span>
+<span id="cb52-213"><a href="#cb52-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-214"><a href="#cb52-214" aria-hidden="true" tabindex="-1"></a><span class="fu">#### p-values and hypothesis tests for MLEs</span></span>
+<span id="cb52-215"><a href="#cb52-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-216"><a href="#cb52-216" aria-hidden="true" tabindex="-1"></a>(to add)</span>
+<span id="cb52-217"><a href="#cb52-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-218"><a href="#cb52-218" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Likelihood ratio tests for MLEs</span></span>
+<span id="cb52-219"><a href="#cb52-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-220"><a href="#cb52-220" aria-hidden="true" tabindex="-1"></a>log(likelihood ratio) tests <span class="co">[</span><span class="ot">c.f. @dobson4e §5.7</span><span class="co">]</span>:</span>
+<span id="cb52-221"><a href="#cb52-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-222"><a href="#cb52-222" aria-hidden="true" tabindex="-1"></a>$$2\paren{\llik - \llik_{\text{H0}}} \sim \chi^{2}(p - q)$$</span>
 <span id="cb52-223"><a href="#cb52-223" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-224"><a href="#cb52-224" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-225"><a href="#cb52-225" aria-hidden="true" tabindex="-1"></a>\einf = -\Exp{\ell''}</span>
-<span id="cb52-226"><a href="#cb52-226" aria-hidden="true" tabindex="-1"></a>= \Exp{- \score \score\'}</span>
-<span id="cb52-227"><a href="#cb52-227" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-228"><a href="#cb52-228" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-229"><a href="#cb52-229" aria-hidden="true" tabindex="-1"></a>(see @dobson4e, §3.17).</span>
-<span id="cb52-230"><a href="#cb52-230" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-231"><a href="#cb52-231" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb52-232"><a href="#cb52-232" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-233"><a href="#cb52-233" aria-hidden="true" tabindex="-1"></a>{{&lt; include _def_hessian.qmd &gt;}}</span>
-<span id="cb52-234"><a href="#cb52-234" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-235"><a href="#cb52-235" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb52-236"><a href="#cb52-236" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-237"><a href="#cb52-237" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm_hessian_elements.qmd &gt;}}</span>
-<span id="cb52-238"><a href="#cb52-238" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-239"><a href="#cb52-239" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb52-240"><a href="#cb52-240" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-241"><a href="#cb52-241" aria-hidden="true" tabindex="-1"></a>{{&lt; include _thm_hessian_score.qmd &gt;}}</span>
-<span id="cb52-242"><a href="#cb52-242" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-243"><a href="#cb52-243" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb52-244"><a href="#cb52-244" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-245"><a href="#cb52-245" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Observed information</span></span>
+<span id="cb52-224"><a href="#cb52-224" aria-hidden="true" tabindex="-1"></a>See also <span class="ot">&lt;https://online.stat.psu.edu/stat504/book/export/html/657&gt;</span></span>
+<span id="cb52-225"><a href="#cb52-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-226"><a href="#cb52-226" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Prediction intervals for MLEs</span></span>
+<span id="cb52-227"><a href="#cb52-227" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-228"><a href="#cb52-228" aria-hidden="true" tabindex="-1"></a>$$\overline{X} \in <span class="co">[</span><span class="ot"> \widehat{\mu} \pm z_{1 - \alpha\text{/}2}\frac{\sigma}{m} </span><span class="co">]</span>$$</span>
+<span id="cb52-229"><a href="#cb52-229" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-230"><a href="#cb52-230" aria-hidden="true" tabindex="-1"></a>Where $m$ is the sample size of the new data to be predicted (typically</span>
+<span id="cb52-231"><a href="#cb52-231" aria-hidden="true" tabindex="-1"></a>1, except for binary outcomes, where it needs to be bigger for</span>
+<span id="cb52-232"><a href="#cb52-232" aria-hidden="true" tabindex="-1"></a>prediction intervals to make sense).</span>
+<span id="cb52-233"><a href="#cb52-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-234"><a href="#cb52-234" aria-hidden="true" tabindex="-1"></a><span class="fu">## Example: Maximum likelihood for Tropical Cyclones in Australia</span></span>
+<span id="cb52-235"><a href="#cb52-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-236"><a href="#cb52-236" aria-hidden="true" tabindex="-1"></a>{{&lt; include dobson-cyclone-example.qmd &gt;}}</span>
+<span id="cb52-237"><a href="#cb52-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-238"><a href="#cb52-238" aria-hidden="true" tabindex="-1"></a><span class="fu">## Maximum likelihood inference for univariate Gaussian models</span></span>
+<span id="cb52-239"><a href="#cb52-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-240"><a href="#cb52-240" aria-hidden="true" tabindex="-1"></a>Suppose $X_{1}, ..., X_{n} \siid N(\mu, \sigma^{2})$.</span>
+<span id="cb52-241"><a href="#cb52-241" aria-hidden="true" tabindex="-1"></a>Let $X = (X_{1},\ldots,X_{n})^{\top}$ be these random</span>
+<span id="cb52-242"><a href="#cb52-242" aria-hidden="true" tabindex="-1"></a>variables in vector format. Let $x_{i}$ and $x$ denote the corresponding</span>
+<span id="cb52-243"><a href="#cb52-243" aria-hidden="true" tabindex="-1"></a>observed data. Then $\theta = (\mu,\sigma^{2})$ is</span>
+<span id="cb52-244"><a href="#cb52-244" aria-hidden="true" tabindex="-1"></a>the vector of true parameters, and $\Theta = (\Mu, \Sigma^2)$ is the vector of parameters as a random</span>
+<span id="cb52-245"><a href="#cb52-245" aria-hidden="true" tabindex="-1"></a>vector.</span>
 <span id="cb52-246"><a href="#cb52-246" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-247"><a href="#cb52-247" aria-hidden="true" tabindex="-1"></a>Sometimes, we use $I(\theta;x) \eqdef - hess$ (note the</span>
-<span id="cb52-248"><a href="#cb52-248" aria-hidden="true" tabindex="-1"></a>standard-font "I" here). </span>
-<span id="cb52-249"><a href="#cb52-249" aria-hidden="true" tabindex="-1"></a>$I(\theta;x)$ is the observed information, precision, or concentration</span>
-<span id="cb52-250"><a href="#cb52-250" aria-hidden="true" tabindex="-1"></a>matrix (Negative Hessian).</span>
+<span id="cb52-247"><a href="#cb52-247" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-248"><a href="#cb52-248" aria-hidden="true" tabindex="-1"></a>\mathcal{L} = \prod_{i=1}^n (2\sigma^2\pi)^{-1/2} </span>
+<span id="cb52-249"><a href="#cb52-249" aria-hidden="true" tabindex="-1"></a>\expf{-\frac{1}{2} \frac{(x_i - \mu)^2}{\sigma^2}}</span>
+<span id="cb52-250"><a href="#cb52-250" aria-hidden="true" tabindex="-1"></a>$$</span>
 <span id="cb52-251"><a href="#cb52-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-252"><a href="#cb52-252" aria-hidden="true" tabindex="-1"></a>:::{.callout-important}</span>
-<span id="cb52-253"><a href="#cb52-253" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Key point</span></span>
-<span id="cb52-254"><a href="#cb52-254" aria-hidden="true" tabindex="-1"></a> The asymptotics of MLEs gives us</span>
-<span id="cb52-255"><a href="#cb52-255" aria-hidden="true" tabindex="-1"></a>${\widehat{\theta}}_{ML} \sim N\left( \theta,\mathfrak{I}^{- 1}(\theta) \right)$,</span>
-<span id="cb52-256"><a href="#cb52-256" aria-hidden="true" tabindex="-1"></a>approximately, for large sample sizes.</span>
-<span id="cb52-257"><a href="#cb52-257" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb52-258"><a href="#cb52-258" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-259"><a href="#cb52-259" aria-hidden="true" tabindex="-1"></a>We can estimate $\einf^{- 1}(\theta)$ by working out</span>
-<span id="cb52-260"><a href="#cb52-260" aria-hidden="true" tabindex="-1"></a>$\Ef{-\ell''}$ or</span>
-<span id="cb52-261"><a href="#cb52-261" aria-hidden="true" tabindex="-1"></a>$\Ef{\ell'{\ell'}^{\top}}$</span>
-<span id="cb52-262"><a href="#cb52-262" aria-hidden="true" tabindex="-1"></a>and plugging in $\hthml$, but sometimes we instead use</span>
-<span id="cb52-263"><a href="#cb52-263" aria-hidden="true" tabindex="-1"></a>$\oinf(\hthml,\vx)$ for convenience; there are</span>
-<span id="cb52-264"><a href="#cb52-264" aria-hidden="true" tabindex="-1"></a>some cases where it’s provably better according to some criteria (@efron1978assessing).</span>
+<span id="cb52-252"><a href="#cb52-252" aria-hidden="true" tabindex="-1"></a>Then the log-likelihood</span>
+<span id="cb52-253"><a href="#cb52-253" aria-hidden="true" tabindex="-1"></a>is:</span>
+<span id="cb52-254"><a href="#cb52-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-255"><a href="#cb52-255" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-256"><a href="#cb52-256" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb52-257"><a href="#cb52-257" aria-hidden="true" tabindex="-1"></a>\ell </span>
+<span id="cb52-258"><a href="#cb52-258" aria-hidden="true" tabindex="-1"></a>&amp;\propto - \frac{n}{2}\log{\sigma^{2}} - \frac{1}{2}\sum_{i = 1}^{n}\frac{( x_{i} - \mu)^{2}}{\sigma^{2}}<span class="sc">\\</span></span>
+<span id="cb52-259"><a href="#cb52-259" aria-hidden="true" tabindex="-1"></a>&amp;= - \frac{n}{2}\log{\sigma^{2}} - \frac{1}{2\sigma^{2}}\sum_{i = 1}^{n}{x_{i}^{2} - 2x_{i}\mu + \mu^{2}}</span>
+<span id="cb52-260"><a href="#cb52-260" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb52-261"><a href="#cb52-261" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-262"><a href="#cb52-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-263"><a href="#cb52-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-264"><a href="#cb52-264" aria-hidden="true" tabindex="-1"></a><span class="fu">### The score function</span></span>
 <span id="cb52-265"><a href="#cb52-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-266"><a href="#cb52-266" aria-hidden="true" tabindex="-1"></a><span class="fu">### Quantifying (un)certainty of MLEs</span></span>
-<span id="cb52-267"><a href="#cb52-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-268"><a href="#cb52-268" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Confidence intervals for MLEs</span></span>
-<span id="cb52-269"><a href="#cb52-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-270"><a href="#cb52-270" aria-hidden="true" tabindex="-1"></a>An asymptotic approximation of a 95% confidence interval for $\theta_k$ is</span>
-<span id="cb52-271"><a href="#cb52-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-272"><a href="#cb52-272" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-273"><a href="#cb52-273" aria-hidden="true" tabindex="-1"></a>\hthml \pm z_{0.975} \times \HSE{\hth_k}</span>
-<span id="cb52-274"><a href="#cb52-274" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-275"><a href="#cb52-275" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-276"><a href="#cb52-276" aria-hidden="true" tabindex="-1"></a>where $z_\beta$ the $\beta$ quantile of the standard Gaussian distribution.</span>
-<span id="cb52-277"><a href="#cb52-277" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-278"><a href="#cb52-278" aria-hidden="true" tabindex="-1"></a><span class="fu">#### p-values and hypothesis tests for MLEs</span></span>
-<span id="cb52-279"><a href="#cb52-279" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-280"><a href="#cb52-280" aria-hidden="true" tabindex="-1"></a>(to add)</span>
-<span id="cb52-281"><a href="#cb52-281" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-282"><a href="#cb52-282" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Likelihood ratio tests for MLEs</span></span>
-<span id="cb52-283"><a href="#cb52-283" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-284"><a href="#cb52-284" aria-hidden="true" tabindex="-1"></a>log(likelihood ratio) tests <span class="co">[</span><span class="ot">c.f. @dobson4e §5.7</span><span class="co">]</span>:</span>
-<span id="cb52-285"><a href="#cb52-285" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-286"><a href="#cb52-286" aria-hidden="true" tabindex="-1"></a>$$2\paren{\llik - \llik_{\text{H0}}} \sim \chi^{2}(p - q)$$</span>
-<span id="cb52-287"><a href="#cb52-287" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-288"><a href="#cb52-288" aria-hidden="true" tabindex="-1"></a>See also <span class="ot">&lt;https://online.stat.psu.edu/stat504/book/export/html/657&gt;</span></span>
-<span id="cb52-289"><a href="#cb52-289" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-290"><a href="#cb52-290" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Prediction intervals for MLEs</span></span>
-<span id="cb52-291"><a href="#cb52-291" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-292"><a href="#cb52-292" aria-hidden="true" tabindex="-1"></a>$$\overline{X} \in <span class="co">[</span><span class="ot"> \widehat{\mu} \pm z_{1 - \alpha\text{/}2}\frac{\sigma}{m} </span><span class="co">]</span>$$</span>
-<span id="cb52-293"><a href="#cb52-293" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-294"><a href="#cb52-294" aria-hidden="true" tabindex="-1"></a>Where $m$ is the sample size of the new data to be predicted (typically</span>
-<span id="cb52-295"><a href="#cb52-295" aria-hidden="true" tabindex="-1"></a>1, except for binary outcomes, where it needs to be bigger for</span>
-<span id="cb52-296"><a href="#cb52-296" aria-hidden="true" tabindex="-1"></a>prediction intervals to make sense)</span>
-<span id="cb52-297"><a href="#cb52-297" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-298"><a href="#cb52-298" aria-hidden="true" tabindex="-1"></a><span class="ot">[^2]: </span>I might sometimes switch the order of $x,$ $\theta$; this is</span>
-<span id="cb52-299"><a href="#cb52-299" aria-hidden="true" tabindex="-1"></a>    unintentional and not meaningful.</span>
+<span id="cb52-266"><a href="#cb52-266" aria-hidden="true" tabindex="-1"></a>$$\ell'(x,\theta) \eqdef \deriv{\theta}\ell(x,\theta) = \left( \begin{array}{r}</span>
+<span id="cb52-267"><a href="#cb52-267" aria-hidden="true" tabindex="-1"></a>\deriv{\mu}\ell(\theta;x) <span class="sc">\\</span></span>
+<span id="cb52-268"><a href="#cb52-268" aria-hidden="true" tabindex="-1"></a>\deriv{\sigma^{2}}\ell(\theta;x)</span>
+<span id="cb52-269"><a href="#cb52-269" aria-hidden="true" tabindex="-1"></a>\end{array} \right) = \left( \begin{array}{r}</span>
+<span id="cb52-270"><a href="#cb52-270" aria-hidden="true" tabindex="-1"></a>\ell_{\mu}'(\theta;x) <span class="sc">\\</span></span>
+<span id="cb52-271"><a href="#cb52-271" aria-hidden="true" tabindex="-1"></a>\ell_{\sigma^{2}}'(\theta;x)</span>
+<span id="cb52-272"><a href="#cb52-272" aria-hidden="true" tabindex="-1"></a>\end{array} \right)$$.</span>
+<span id="cb52-273"><a href="#cb52-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-274"><a href="#cb52-274" aria-hidden="true" tabindex="-1"></a>$\ell'(x,\theta)$ is the function we set equal to 0 and solve</span>
+<span id="cb52-275"><a href="#cb52-275" aria-hidden="true" tabindex="-1"></a>to find the MLE:</span>
+<span id="cb52-276"><a href="#cb52-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-277"><a href="#cb52-277" aria-hidden="true" tabindex="-1"></a>$${\widehat{\theta}}_{ML} = \left<span class="sc">\{</span> \theta:\ell'(x,\theta) = 0 \right<span class="sc">\}</span>$$</span>
+<span id="cb52-278"><a href="#cb52-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-279"><a href="#cb52-279" aria-hidden="true" tabindex="-1"></a><span class="fu">### MLE of $\mu$</span></span>
+<span id="cb52-280"><a href="#cb52-280" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-281"><a href="#cb52-281" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-282"><a href="#cb52-282" aria-hidden="true" tabindex="-1"></a>\ba</span>
+<span id="cb52-283"><a href="#cb52-283" aria-hidden="true" tabindex="-1"></a>\frac{d\ell}{d\mu} </span>
+<span id="cb52-284"><a href="#cb52-284" aria-hidden="true" tabindex="-1"></a>&amp;= - \frac{1}{2}\sum_{i = 1}^{n}</span>
+<span id="cb52-285"><a href="#cb52-285" aria-hidden="true" tabindex="-1"></a>\frac{- 2(x_{i} - \mu)}{\sigma^{2}}</span>
+<span id="cb52-286"><a href="#cb52-286" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \frac{1}{\sigma^{2}}</span>
+<span id="cb52-287"><a href="#cb52-287" aria-hidden="true" tabindex="-1"></a>\sb{</span>
+<span id="cb52-288"><a href="#cb52-288" aria-hidden="true" tabindex="-1"></a>    \paren{</span>
+<span id="cb52-289"><a href="#cb52-289" aria-hidden="true" tabindex="-1"></a>        \sum_{i = 1}^{n}x_{i}</span>
+<span id="cb52-290"><a href="#cb52-290" aria-hidden="true" tabindex="-1"></a>    } </span>
+<span id="cb52-291"><a href="#cb52-291" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>n\mu</span>
+<span id="cb52-292"><a href="#cb52-292" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-293"><a href="#cb52-293" aria-hidden="true" tabindex="-1"></a>\ea</span>
+<span id="cb52-294"><a href="#cb52-294" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-295"><a href="#cb52-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-296"><a href="#cb52-296" aria-hidden="true" tabindex="-1"></a>If $\frac{d\ell}{d\mu} = 0$, then</span>
+<span id="cb52-297"><a href="#cb52-297" aria-hidden="true" tabindex="-1"></a>$\mu = \overline{x} \eqdef \frac{1}{n}\sum_{i = 1}^{n}x_{i}$.</span>
+<span id="cb52-298"><a href="#cb52-298" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-299"><a href="#cb52-299" aria-hidden="true" tabindex="-1"></a>$$\frac{d^{2}\ell}{(d\mu)^{2}} = \frac{- n}{\sigma^{2}} &lt; 0$$</span>
 <span id="cb52-300"><a href="#cb52-300" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-301"><a href="#cb52-301" aria-hidden="true" tabindex="-1"></a><span class="fu">## Example: Maximum likelihood for Tropical Cyclones in Australia</span></span>
+<span id="cb52-301"><a href="#cb52-301" aria-hidden="true" tabindex="-1"></a>So ${\widehat{\mu}}_{ML} = \overline{x}$.</span>
 <span id="cb52-302"><a href="#cb52-302" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-303"><a href="#cb52-303" aria-hidden="true" tabindex="-1"></a>{{&lt; include dobson-cyclone-example.qmd &gt;}}</span>
+<span id="cb52-303"><a href="#cb52-303" aria-hidden="true" tabindex="-1"></a><span class="fu">### MLE of $\sigma^{2}$</span></span>
 <span id="cb52-304"><a href="#cb52-304" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-305"><a href="#cb52-305" aria-hidden="true" tabindex="-1"></a><span class="fu">## Maximum likelihood inference for univariate Gaussian models</span></span>
-<span id="cb52-306"><a href="#cb52-306" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-307"><a href="#cb52-307" aria-hidden="true" tabindex="-1"></a>Suppose $X_{1}, ..., X_{n} \siid N(\mu, \sigma^{2})$.</span>
-<span id="cb52-308"><a href="#cb52-308" aria-hidden="true" tabindex="-1"></a>Let $X = (X_{1},\ldots,X_{n})^{\top}$ be these random</span>
-<span id="cb52-309"><a href="#cb52-309" aria-hidden="true" tabindex="-1"></a>variables in vector format. Let $x_{i}$ and $x$ denote the corresponding</span>
-<span id="cb52-310"><a href="#cb52-310" aria-hidden="true" tabindex="-1"></a>observed data. Then $\theta = (\mu,\sigma^{2})$ is</span>
-<span id="cb52-311"><a href="#cb52-311" aria-hidden="true" tabindex="-1"></a>the vector of true parameters, and $\Theta = (\Mu, \Sigma^2)$ is the vector of parameters as a random</span>
-<span id="cb52-312"><a href="#cb52-312" aria-hidden="true" tabindex="-1"></a>vector.</span>
-<span id="cb52-313"><a href="#cb52-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-314"><a href="#cb52-314" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-315"><a href="#cb52-315" aria-hidden="true" tabindex="-1"></a>\mathcal{L} = \prod_{i=1}^n (2\sigma^2\pi)^{-1/2} </span>
-<span id="cb52-316"><a href="#cb52-316" aria-hidden="true" tabindex="-1"></a>\expf{-\frac{1}{2} \frac{(x_i - \mu)^2}{\sigma^2}}</span>
-<span id="cb52-317"><a href="#cb52-317" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-305"><a href="#cb52-305" aria-hidden="true" tabindex="-1"></a>:::{.callout-tip}</span>
+<span id="cb52-306"><a href="#cb52-306" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Reparametrizing the Gaussian distribution</span></span>
+<span id="cb52-307"><a href="#cb52-307" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-308"><a href="#cb52-308" aria-hidden="true" tabindex="-1"></a>When solving for ${\widehat{\sigma}}_{ML}$, you can treat</span>
+<span id="cb52-309"><a href="#cb52-309" aria-hidden="true" tabindex="-1"></a>$\sigma^{2}$ as an atomic variable (don’t differentiate with respect to</span>
+<span id="cb52-310"><a href="#cb52-310" aria-hidden="true" tabindex="-1"></a>$\sigma$ or things get messy). In fact, you can replace $\sigma^{2}$</span>
+<span id="cb52-311"><a href="#cb52-311" aria-hidden="true" tabindex="-1"></a>with $1/\tau$ and differentiate with respect to $\tau$ instead, and the</span>
+<span id="cb52-312"><a href="#cb52-312" aria-hidden="true" tabindex="-1"></a>process might be even easier.</span>
+<span id="cb52-313"><a href="#cb52-313" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb52-314"><a href="#cb52-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-315"><a href="#cb52-315" aria-hidden="true" tabindex="-1"></a>$$\frac{d\ell}{d\sigma^{2}} = \deriv{\sigma^{2}}\left( - \frac{n}{2}\log{\sigma^{2}} - \frac{1}{2}\sum_{i = 1}^{n}\frac{\left( x_{i} - \mu \right)^{2}}{\sigma^{2}} \right)\ $$</span>
+<span id="cb52-316"><a href="#cb52-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-317"><a href="#cb52-317" aria-hidden="true" tabindex="-1"></a>$$= - \frac{n}{2}\left( \sigma^{2} \right)^{- 1} + \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2}$$</span>
 <span id="cb52-318"><a href="#cb52-318" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-319"><a href="#cb52-319" aria-hidden="true" tabindex="-1"></a>Then the log-likelihood</span>
-<span id="cb52-320"><a href="#cb52-320" aria-hidden="true" tabindex="-1"></a>is:</span>
-<span id="cb52-321"><a href="#cb52-321" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-322"><a href="#cb52-322" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-323"><a href="#cb52-323" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb52-324"><a href="#cb52-324" aria-hidden="true" tabindex="-1"></a>\ell </span>
-<span id="cb52-325"><a href="#cb52-325" aria-hidden="true" tabindex="-1"></a>&amp;\propto - \frac{n}{2}\log{\sigma^{2}} - \frac{1}{2}\sum_{i = 1}^{n}\frac{( x_{i} - \mu)^{2}}{\sigma^{2}}<span class="sc">\\</span></span>
-<span id="cb52-326"><a href="#cb52-326" aria-hidden="true" tabindex="-1"></a>&amp;= - \frac{n}{2}\log{\sigma^{2}} - \frac{1}{2\sigma^{2}}\sum_{i = 1}^{n}{x_{i}^{2} - 2x_{i}\mu + \mu^{2}}</span>
-<span id="cb52-327"><a href="#cb52-327" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb52-328"><a href="#cb52-328" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-319"><a href="#cb52-319" aria-hidden="true" tabindex="-1"></a>If $\frac{d\ell}{d\sigma^{2}} = 0$, then:</span>
+<span id="cb52-320"><a href="#cb52-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-321"><a href="#cb52-321" aria-hidden="true" tabindex="-1"></a>$$\frac{n}{2}\left( \sigma^{2} \right)^{- 1} = \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2}$$</span>
+<span id="cb52-322"><a href="#cb52-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-323"><a href="#cb52-323" aria-hidden="true" tabindex="-1"></a>$$\sigma^{2} = \frac{1}{n}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2}$$</span>
+<span id="cb52-324"><a href="#cb52-324" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-325"><a href="#cb52-325" aria-hidden="true" tabindex="-1"></a>We plug in ${\widehat{\mu}}_{ML} = \overline{x}$ to maximize globally (a</span>
+<span id="cb52-326"><a href="#cb52-326" aria-hidden="true" tabindex="-1"></a>technique called profiling):</span>
+<span id="cb52-327"><a href="#cb52-327" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-328"><a href="#cb52-328" aria-hidden="true" tabindex="-1"></a>$$\hat{\sigma}_{ML}^{2} = \frac{1}{n}\sum_{i = 1}^{n}\left( x_{i} - \overline{x} \right)^{2}$$</span>
 <span id="cb52-329"><a href="#cb52-329" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-330"><a href="#cb52-330" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-331"><a href="#cb52-331" aria-hidden="true" tabindex="-1"></a><span class="fu">### The score function</span></span>
-<span id="cb52-332"><a href="#cb52-332" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-333"><a href="#cb52-333" aria-hidden="true" tabindex="-1"></a>$$\ell'(x,\theta) \eqdef \deriv{\theta}\ell(x,\theta) = \left( \begin{array}{r}</span>
-<span id="cb52-334"><a href="#cb52-334" aria-hidden="true" tabindex="-1"></a>\deriv{\mu}\ell(\theta;x) <span class="sc">\\</span></span>
-<span id="cb52-335"><a href="#cb52-335" aria-hidden="true" tabindex="-1"></a>\deriv{\sigma^{2}}\ell(\theta;x)</span>
-<span id="cb52-336"><a href="#cb52-336" aria-hidden="true" tabindex="-1"></a>\end{array} \right) = \left( \begin{array}{r}</span>
-<span id="cb52-337"><a href="#cb52-337" aria-hidden="true" tabindex="-1"></a>\ell_{\mu}'(\theta;x) <span class="sc">\\</span></span>
-<span id="cb52-338"><a href="#cb52-338" aria-hidden="true" tabindex="-1"></a>\ell_{\sigma^{2}}'(\theta;x)</span>
-<span id="cb52-339"><a href="#cb52-339" aria-hidden="true" tabindex="-1"></a>\end{array} \right)$$.</span>
-<span id="cb52-340"><a href="#cb52-340" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-341"><a href="#cb52-341" aria-hidden="true" tabindex="-1"></a>$\ell'(x,\theta)$ is the function we set equal to 0 and solve</span>
-<span id="cb52-342"><a href="#cb52-342" aria-hidden="true" tabindex="-1"></a>to find the MLE:</span>
-<span id="cb52-343"><a href="#cb52-343" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-344"><a href="#cb52-344" aria-hidden="true" tabindex="-1"></a>$${\widehat{\theta}}_{ML} = \left<span class="sc">\{</span> \theta:\ell'(x,\theta) = 0 \right<span class="sc">\}</span>$$</span>
+<span id="cb52-330"><a href="#cb52-330" aria-hidden="true" tabindex="-1"></a>Now:</span>
+<span id="cb52-331"><a href="#cb52-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-332"><a href="#cb52-332" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-333"><a href="#cb52-333" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb52-334"><a href="#cb52-334" aria-hidden="true" tabindex="-1"></a>\frac{d^{2}\ell}{\left( d\sigma^{2} \right)^{2}} </span>
+<span id="cb52-335"><a href="#cb52-335" aria-hidden="true" tabindex="-1"></a>&amp;= \deriv{\sigma^{2}}\left<span class="sc">\{</span> - \frac{n}{2}\left( \sigma^{2} \right)^{- 1} + \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}\\</span></span>
+<span id="cb52-336"><a href="#cb52-336" aria-hidden="true" tabindex="-1"></a>&amp;= \left<span class="sc">\{</span> - \frac{n}{2}\deriv{\sigma^{2}}\left( \sigma^{2} \right)^{- 1} + \frac{1}{2}\deriv{\sigma^{2}}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}\\</span></span>
+<span id="cb52-337"><a href="#cb52-337" aria-hidden="true" tabindex="-1"></a>&amp;= \left<span class="sc">\{</span> \frac{n}{2}\left( \sigma^{2} \right)^{- 2} - \left( \sigma^{2} \right)^{- 3}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}\\</span></span>
+<span id="cb52-338"><a href="#cb52-338" aria-hidden="true" tabindex="-1"></a>&amp;= \left( \sigma^{2} \right)^{- 2}\left<span class="sc">\{</span> \frac{n}{2} - \left( \sigma^{2} \right)^{- 1}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}</span></span>
+<span id="cb52-339"><a href="#cb52-339" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb52-340"><a href="#cb52-340" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-341"><a href="#cb52-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-342"><a href="#cb52-342" aria-hidden="true" tabindex="-1"></a>Evaluated at</span>
+<span id="cb52-343"><a href="#cb52-343" aria-hidden="true" tabindex="-1"></a>$\mu = \overline{x},\sigma^{2} = \frac{1}{n}\sum_{i = 1}^{n}\left( x_{i} - \overline{x} \right)^{2}$,</span>
+<span id="cb52-344"><a href="#cb52-344" aria-hidden="true" tabindex="-1"></a>we have:</span>
 <span id="cb52-345"><a href="#cb52-345" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-346"><a href="#cb52-346" aria-hidden="true" tabindex="-1"></a><span class="fu">### MLE of $\mu$</span></span>
-<span id="cb52-347"><a href="#cb52-347" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-348"><a href="#cb52-348" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-349"><a href="#cb52-349" aria-hidden="true" tabindex="-1"></a>\ba</span>
-<span id="cb52-350"><a href="#cb52-350" aria-hidden="true" tabindex="-1"></a>\frac{d\ell}{d\mu} </span>
-<span id="cb52-351"><a href="#cb52-351" aria-hidden="true" tabindex="-1"></a>&amp;= - \frac{1}{2}\sum_{i = 1}^{n}</span>
-<span id="cb52-352"><a href="#cb52-352" aria-hidden="true" tabindex="-1"></a>\frac{- 2(x_{i} - \mu)}{\sigma^{2}}</span>
-<span id="cb52-353"><a href="#cb52-353" aria-hidden="true" tabindex="-1"></a><span class="sc">\\</span> &amp;= \frac{1}{\sigma^{2}}</span>
-<span id="cb52-354"><a href="#cb52-354" aria-hidden="true" tabindex="-1"></a>\sb{</span>
-<span id="cb52-355"><a href="#cb52-355" aria-hidden="true" tabindex="-1"></a>    \paren{</span>
-<span id="cb52-356"><a href="#cb52-356" aria-hidden="true" tabindex="-1"></a>        \sum_{i = 1}^{n}x_{i}</span>
-<span id="cb52-357"><a href="#cb52-357" aria-hidden="true" tabindex="-1"></a>    } </span>
-<span id="cb52-358"><a href="#cb52-358" aria-hidden="true" tabindex="-1"></a><span class="ss">    - </span>n\mu</span>
-<span id="cb52-359"><a href="#cb52-359" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb52-360"><a href="#cb52-360" aria-hidden="true" tabindex="-1"></a>\ea</span>
-<span id="cb52-361"><a href="#cb52-361" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-362"><a href="#cb52-362" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-363"><a href="#cb52-363" aria-hidden="true" tabindex="-1"></a>If $\frac{d\ell}{d\mu} = 0$, then</span>
-<span id="cb52-364"><a href="#cb52-364" aria-hidden="true" tabindex="-1"></a>$\mu = \overline{x} \eqdef \frac{1}{n}\sum_{i = 1}^{n}x_{i}$.</span>
-<span id="cb52-365"><a href="#cb52-365" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-366"><a href="#cb52-366" aria-hidden="true" tabindex="-1"></a>$$\frac{d^{2}\ell}{(d\mu)^{2}} = \frac{- n}{\sigma^{2}} &lt; 0$$</span>
-<span id="cb52-367"><a href="#cb52-367" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-368"><a href="#cb52-368" aria-hidden="true" tabindex="-1"></a>So ${\widehat{\mu}}_{ML} = \overline{x}$.</span>
-<span id="cb52-369"><a href="#cb52-369" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-370"><a href="#cb52-370" aria-hidden="true" tabindex="-1"></a><span class="fu">### MLE of $\sigma^{2}$</span></span>
-<span id="cb52-371"><a href="#cb52-371" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-372"><a href="#cb52-372" aria-hidden="true" tabindex="-1"></a>:::{.callout-tip}</span>
-<span id="cb52-373"><a href="#cb52-373" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Reparametrizing the Gaussian distribution</span></span>
+<span id="cb52-346"><a href="#cb52-346" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-347"><a href="#cb52-347" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb52-348"><a href="#cb52-348" aria-hidden="true" tabindex="-1"></a>\frac{d^{2}\ell}{\left( d\sigma^{2} \right)^{2}} </span>
+<span id="cb52-349"><a href="#cb52-349" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}\left<span class="sc">\{</span> \frac{n}{2} - \left( {\widehat{\sigma}}^{2} \right)^{- 1}\sum_{i = 1}^{n}\left( x_{i} - \overline{x} \right)^{2} \right<span class="sc">\}\\</span></span>
+<span id="cb52-350"><a href="#cb52-350" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}\left<span class="sc">\{</span> \frac{n}{2} - \left( {\widehat{\sigma}}^{2} \right)^{- 1}n{\widehat{\sigma}}^{2} \right<span class="sc">\}\\</span></span>
+<span id="cb52-351"><a href="#cb52-351" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}\left<span class="sc">\{</span> \frac{n}{2} - n \right<span class="sc">\}\\</span></span>
+<span id="cb52-352"><a href="#cb52-352" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}n\left<span class="sc">\{</span> \frac{1}{2} - 1 \right<span class="sc">\}\\</span></span>
+<span id="cb52-353"><a href="#cb52-353" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}n\left( - \frac{1}{2} \right) &lt; 0</span>
+<span id="cb52-354"><a href="#cb52-354" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb52-355"><a href="#cb52-355" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-356"><a href="#cb52-356" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-357"><a href="#cb52-357" aria-hidden="true" tabindex="-1"></a>Finally, we have:</span>
+<span id="cb52-358"><a href="#cb52-358" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-359"><a href="#cb52-359" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-360"><a href="#cb52-360" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
+<span id="cb52-361"><a href="#cb52-361" aria-hidden="true" tabindex="-1"></a>\frac{d^{2}\ell}{d\mu\ d\sigma^{2}} </span>
+<span id="cb52-362"><a href="#cb52-362" aria-hidden="true" tabindex="-1"></a>&amp;= \deriv{\mu}\left<span class="sc">\{</span> - \frac{n}{2}\left( \sigma^{2} \right)^{- 1} + \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}\\</span></span>
+<span id="cb52-363"><a href="#cb52-363" aria-hidden="true" tabindex="-1"></a>&amp;= \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\deriv{\mu}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2}<span class="sc">\\</span></span>
+<span id="cb52-364"><a href="#cb52-364" aria-hidden="true" tabindex="-1"></a>&amp;= \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}{- 2(x_{i} - \mu)}<span class="sc">\\</span></span>
+<span id="cb52-365"><a href="#cb52-365" aria-hidden="true" tabindex="-1"></a>&amp;= - \left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}{(x_{i} - \mu)}</span>
+<span id="cb52-366"><a href="#cb52-366" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
+<span id="cb52-367"><a href="#cb52-367" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb52-368"><a href="#cb52-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-369"><a href="#cb52-369" aria-hidden="true" tabindex="-1"></a>Evaluated at</span>
+<span id="cb52-370"><a href="#cb52-370" aria-hidden="true" tabindex="-1"></a>$\mu = \widehat{\mu} = \overline{x},\sigma^{2} = {\widehat{\sigma}}^{2} = \frac{1}{n}\sum_{i = 1}^{n}\left( x_{i} - \overline{x} \right)^{2}$,</span>
+<span id="cb52-371"><a href="#cb52-371" aria-hidden="true" tabindex="-1"></a>we have:</span>
+<span id="cb52-372"><a href="#cb52-372" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-373"><a href="#cb52-373" aria-hidden="true" tabindex="-1"></a>$$\frac{d^{2}\ell}{d\mu\ d\sigma^{2}} = - \left( {\widehat{\sigma}}^{2} \right)^{- 2}\left( n\overline{x} - n\overline{x} \right) = 0$$</span>
 <span id="cb52-374"><a href="#cb52-374" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-375"><a href="#cb52-375" aria-hidden="true" tabindex="-1"></a>When solving for ${\widehat{\sigma}}_{ML}$, you can treat</span>
-<span id="cb52-376"><a href="#cb52-376" aria-hidden="true" tabindex="-1"></a>$\sigma^{2}$ as an atomic variable (don’t differentiate with respect to</span>
-<span id="cb52-377"><a href="#cb52-377" aria-hidden="true" tabindex="-1"></a>$\sigma$ or things get messy). In fact, you can replace $\sigma^{2}$</span>
-<span id="cb52-378"><a href="#cb52-378" aria-hidden="true" tabindex="-1"></a>with $1/\tau$ and differentiate with respect to $\tau$ instead, and the</span>
-<span id="cb52-379"><a href="#cb52-379" aria-hidden="true" tabindex="-1"></a>process might be even easier.</span>
-<span id="cb52-380"><a href="#cb52-380" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb52-381"><a href="#cb52-381" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-382"><a href="#cb52-382" aria-hidden="true" tabindex="-1"></a>$$\frac{d\ell}{d\sigma^{2}} = \deriv{\sigma^{2}}\left( - \frac{n}{2}\log{\sigma^{2}} - \frac{1}{2}\sum_{i = 1}^{n}\frac{\left( x_{i} - \mu \right)^{2}}{\sigma^{2}} \right)\ $$</span>
-<span id="cb52-383"><a href="#cb52-383" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-384"><a href="#cb52-384" aria-hidden="true" tabindex="-1"></a>$$= - \frac{n}{2}\left( \sigma^{2} \right)^{- 1} + \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2}$$</span>
-<span id="cb52-385"><a href="#cb52-385" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-386"><a href="#cb52-386" aria-hidden="true" tabindex="-1"></a>If $\frac{d\ell}{d\sigma^{2}} = 0$, then:</span>
-<span id="cb52-387"><a href="#cb52-387" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-388"><a href="#cb52-388" aria-hidden="true" tabindex="-1"></a>$$\frac{n}{2}\left( \sigma^{2} \right)^{- 1} = \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2}$$</span>
-<span id="cb52-389"><a href="#cb52-389" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-390"><a href="#cb52-390" aria-hidden="true" tabindex="-1"></a>$$\sigma^{2} = \frac{1}{n}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2}$$</span>
-<span id="cb52-391"><a href="#cb52-391" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-392"><a href="#cb52-392" aria-hidden="true" tabindex="-1"></a>We plug in ${\widehat{\mu}}_{ML} = \overline{x}$ to maximize globally (a</span>
-<span id="cb52-393"><a href="#cb52-393" aria-hidden="true" tabindex="-1"></a>technique called profiling):</span>
+<span id="cb52-375"><a href="#cb52-375" aria-hidden="true" tabindex="-1"></a><span class="fu">### Covariance matrix {#sec-covariance-matrix}</span></span>
+<span id="cb52-376"><a href="#cb52-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-377"><a href="#cb52-377" aria-hidden="true" tabindex="-1"></a>$$I = \begin{bmatrix}</span>
+<span id="cb52-378"><a href="#cb52-378" aria-hidden="true" tabindex="-1"></a>\frac{n}{\widehat{\sigma}^{2}} &amp; 0 <span class="sc">\\</span></span>
+<span id="cb52-379"><a href="#cb52-379" aria-hidden="true" tabindex="-1"></a>0 &amp; \left( {\widehat{\sigma}}^{2} \right)^{- 2}n\left(\frac{1}{2} \right)</span>
+<span id="cb52-380"><a href="#cb52-380" aria-hidden="true" tabindex="-1"></a>\end{bmatrix} = \begin{bmatrix}</span>
+<span id="cb52-381"><a href="#cb52-381" aria-hidden="true" tabindex="-1"></a>a &amp; 0 <span class="sc">\\</span></span>
+<span id="cb52-382"><a href="#cb52-382" aria-hidden="true" tabindex="-1"></a>0 &amp; d</span>
+<span id="cb52-383"><a href="#cb52-383" aria-hidden="true" tabindex="-1"></a>\end{bmatrix}$$</span>
+<span id="cb52-384"><a href="#cb52-384" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-385"><a href="#cb52-385" aria-hidden="true" tabindex="-1"></a>So:</span>
+<span id="cb52-386"><a href="#cb52-386" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-387"><a href="#cb52-387" aria-hidden="true" tabindex="-1"></a>$$I^{- 1} = \frac{1}{ad}\begin{bmatrix}</span>
+<span id="cb52-388"><a href="#cb52-388" aria-hidden="true" tabindex="-1"></a>d &amp; 0 <span class="sc">\\</span></span>
+<span id="cb52-389"><a href="#cb52-389" aria-hidden="true" tabindex="-1"></a>0 &amp; a</span>
+<span id="cb52-390"><a href="#cb52-390" aria-hidden="true" tabindex="-1"></a>\end{bmatrix} = \begin{bmatrix}</span>
+<span id="cb52-391"><a href="#cb52-391" aria-hidden="true" tabindex="-1"></a>\frac{1}{a} &amp; 0 <span class="sc">\\</span></span>
+<span id="cb52-392"><a href="#cb52-392" aria-hidden="true" tabindex="-1"></a>0 &amp; \frac{1}{d}</span>
+<span id="cb52-393"><a href="#cb52-393" aria-hidden="true" tabindex="-1"></a>\end{bmatrix}$$</span>
 <span id="cb52-394"><a href="#cb52-394" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-395"><a href="#cb52-395" aria-hidden="true" tabindex="-1"></a>$$\hat{\sigma}_{ML}^{2} = \frac{1}{n}\sum_{i = 1}^{n}\left( x_{i} - \overline{x} \right)^{2}$$</span>
-<span id="cb52-396"><a href="#cb52-396" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-397"><a href="#cb52-397" aria-hidden="true" tabindex="-1"></a>Now:</span>
-<span id="cb52-398"><a href="#cb52-398" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-399"><a href="#cb52-399" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-400"><a href="#cb52-400" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb52-401"><a href="#cb52-401" aria-hidden="true" tabindex="-1"></a>\frac{d^{2}\ell}{\left( d\sigma^{2} \right)^{2}} </span>
-<span id="cb52-402"><a href="#cb52-402" aria-hidden="true" tabindex="-1"></a>&amp;= \deriv{\sigma^{2}}\left<span class="sc">\{</span> - \frac{n}{2}\left( \sigma^{2} \right)^{- 1} + \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}\\</span></span>
-<span id="cb52-403"><a href="#cb52-403" aria-hidden="true" tabindex="-1"></a>&amp;= \left<span class="sc">\{</span> - \frac{n}{2}\deriv{\sigma^{2}}\left( \sigma^{2} \right)^{- 1} + \frac{1}{2}\deriv{\sigma^{2}}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}\\</span></span>
-<span id="cb52-404"><a href="#cb52-404" aria-hidden="true" tabindex="-1"></a>&amp;= \left<span class="sc">\{</span> \frac{n}{2}\left( \sigma^{2} \right)^{- 2} - \left( \sigma^{2} \right)^{- 3}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}\\</span></span>
-<span id="cb52-405"><a href="#cb52-405" aria-hidden="true" tabindex="-1"></a>&amp;= \left( \sigma^{2} \right)^{- 2}\left<span class="sc">\{</span> \frac{n}{2} - \left( \sigma^{2} \right)^{- 1}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}</span></span>
-<span id="cb52-406"><a href="#cb52-406" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb52-407"><a href="#cb52-407" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-408"><a href="#cb52-408" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-409"><a href="#cb52-409" aria-hidden="true" tabindex="-1"></a>Evaluated at</span>
-<span id="cb52-410"><a href="#cb52-410" aria-hidden="true" tabindex="-1"></a>$\mu = \overline{x},\sigma^{2} = \frac{1}{n}\sum_{i = 1}^{n}\left( x_{i} - \overline{x} \right)^{2}$,</span>
-<span id="cb52-411"><a href="#cb52-411" aria-hidden="true" tabindex="-1"></a>we have:</span>
-<span id="cb52-412"><a href="#cb52-412" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-413"><a href="#cb52-413" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-414"><a href="#cb52-414" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb52-415"><a href="#cb52-415" aria-hidden="true" tabindex="-1"></a>\frac{d^{2}\ell}{\left( d\sigma^{2} \right)^{2}} </span>
-<span id="cb52-416"><a href="#cb52-416" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}\left<span class="sc">\{</span> \frac{n}{2} - \left( {\widehat{\sigma}}^{2} \right)^{- 1}\sum_{i = 1}^{n}\left( x_{i} - \overline{x} \right)^{2} \right<span class="sc">\}\\</span></span>
-<span id="cb52-417"><a href="#cb52-417" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}\left<span class="sc">\{</span> \frac{n}{2} - \left( {\widehat{\sigma}}^{2} \right)^{- 1}n{\widehat{\sigma}}^{2} \right<span class="sc">\}\\</span></span>
-<span id="cb52-418"><a href="#cb52-418" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}\left<span class="sc">\{</span> \frac{n}{2} - n \right<span class="sc">\}\\</span></span>
-<span id="cb52-419"><a href="#cb52-419" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}n\left<span class="sc">\{</span> \frac{1}{2} - 1 \right<span class="sc">\}\\</span></span>
-<span id="cb52-420"><a href="#cb52-420" aria-hidden="true" tabindex="-1"></a>&amp;= \left( {\widehat{\sigma}}^{2} \right)^{- 2}n\left( - \frac{1}{2} \right) &lt; 0</span>
-<span id="cb52-421"><a href="#cb52-421" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb52-422"><a href="#cb52-422" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-423"><a href="#cb52-423" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-424"><a href="#cb52-424" aria-hidden="true" tabindex="-1"></a>Finally, we have:</span>
-<span id="cb52-425"><a href="#cb52-425" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-426"><a href="#cb52-426" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-427"><a href="#cb52-427" aria-hidden="true" tabindex="-1"></a>\begin{aligned}</span>
-<span id="cb52-428"><a href="#cb52-428" aria-hidden="true" tabindex="-1"></a>\frac{d^{2}\ell}{d\mu\ d\sigma^{2}} </span>
-<span id="cb52-429"><a href="#cb52-429" aria-hidden="true" tabindex="-1"></a>&amp;= \deriv{\mu}\left<span class="sc">\{</span> - \frac{n}{2}\left( \sigma^{2} \right)^{- 1} + \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2} \right<span class="sc">\}\\</span></span>
-<span id="cb52-430"><a href="#cb52-430" aria-hidden="true" tabindex="-1"></a>&amp;= \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\deriv{\mu}\sum_{i = 1}^{n}\left( x_{i} - \mu \right)^{2}<span class="sc">\\</span></span>
-<span id="cb52-431"><a href="#cb52-431" aria-hidden="true" tabindex="-1"></a>&amp;= \frac{1}{2}\left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}{- 2(x_{i} - \mu)}<span class="sc">\\</span></span>
-<span id="cb52-432"><a href="#cb52-432" aria-hidden="true" tabindex="-1"></a>&amp;= - \left( \sigma^{2} \right)^{- 2}\sum_{i = 1}^{n}{(x_{i} - \mu)}</span>
-<span id="cb52-433"><a href="#cb52-433" aria-hidden="true" tabindex="-1"></a>\end{aligned}</span>
-<span id="cb52-434"><a href="#cb52-434" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb52-435"><a href="#cb52-435" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-436"><a href="#cb52-436" aria-hidden="true" tabindex="-1"></a>Evaluated at</span>
-<span id="cb52-437"><a href="#cb52-437" aria-hidden="true" tabindex="-1"></a>$\mu = \widehat{\mu} = \overline{x},\sigma^{2} = {\widehat{\sigma}}^{2} = \frac{1}{n}\sum_{i = 1}^{n}\left( x_{i} - \overline{x} \right)^{2}$,</span>
-<span id="cb52-438"><a href="#cb52-438" aria-hidden="true" tabindex="-1"></a>we have:</span>
-<span id="cb52-439"><a href="#cb52-439" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-440"><a href="#cb52-440" aria-hidden="true" tabindex="-1"></a>$$\frac{d^{2}\ell}{d\mu\ d\sigma^{2}} = - \left( {\widehat{\sigma}}^{2} \right)^{- 2}\left( n\overline{x} - n\overline{x} \right) = 0$$</span>
-<span id="cb52-441"><a href="#cb52-441" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-442"><a href="#cb52-442" aria-hidden="true" tabindex="-1"></a><span class="fu">### Covariance matrix {#sec-covariance-matrix}</span></span>
-<span id="cb52-443"><a href="#cb52-443" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-444"><a href="#cb52-444" aria-hidden="true" tabindex="-1"></a>$$I = \begin{bmatrix}</span>
-<span id="cb52-445"><a href="#cb52-445" aria-hidden="true" tabindex="-1"></a>\frac{n}{\widehat{\sigma}^{2}} &amp; 0 <span class="sc">\\</span></span>
-<span id="cb52-446"><a href="#cb52-446" aria-hidden="true" tabindex="-1"></a>0 &amp; \left( {\widehat{\sigma}}^{2} \right)^{- 2}n\left(\frac{1}{2} \right)</span>
-<span id="cb52-447"><a href="#cb52-447" aria-hidden="true" tabindex="-1"></a>\end{bmatrix} = \begin{bmatrix}</span>
-<span id="cb52-448"><a href="#cb52-448" aria-hidden="true" tabindex="-1"></a>a &amp; 0 <span class="sc">\\</span></span>
-<span id="cb52-449"><a href="#cb52-449" aria-hidden="true" tabindex="-1"></a>0 &amp; d</span>
-<span id="cb52-450"><a href="#cb52-450" aria-hidden="true" tabindex="-1"></a>\end{bmatrix}$$</span>
-<span id="cb52-451"><a href="#cb52-451" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-452"><a href="#cb52-452" aria-hidden="true" tabindex="-1"></a>So:</span>
-<span id="cb52-453"><a href="#cb52-453" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-454"><a href="#cb52-454" aria-hidden="true" tabindex="-1"></a>$$I^{- 1} = \frac{1}{ad}\begin{bmatrix}</span>
-<span id="cb52-455"><a href="#cb52-455" aria-hidden="true" tabindex="-1"></a>d &amp; 0 <span class="sc">\\</span></span>
-<span id="cb52-456"><a href="#cb52-456" aria-hidden="true" tabindex="-1"></a>0 &amp; a</span>
-<span id="cb52-457"><a href="#cb52-457" aria-hidden="true" tabindex="-1"></a>\end{bmatrix} = \begin{bmatrix}</span>
-<span id="cb52-458"><a href="#cb52-458" aria-hidden="true" tabindex="-1"></a>\frac{1}{a} &amp; 0 <span class="sc">\\</span></span>
-<span id="cb52-459"><a href="#cb52-459" aria-hidden="true" tabindex="-1"></a>0 &amp; \frac{1}{d}</span>
-<span id="cb52-460"><a href="#cb52-460" aria-hidden="true" tabindex="-1"></a>\end{bmatrix}$$</span>
-<span id="cb52-461"><a href="#cb52-461" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-462"><a href="#cb52-462" aria-hidden="true" tabindex="-1"></a>$$I^{- 1} = \begin{bmatrix}</span>
-<span id="cb52-463"><a href="#cb52-463" aria-hidden="true" tabindex="-1"></a>\frac{{\widehat{\sigma}}^{2}}{n} &amp; 0 <span class="sc">\\</span></span>
-<span id="cb52-464"><a href="#cb52-464" aria-hidden="true" tabindex="-1"></a>0 &amp; \frac{{2\left( {\widehat{\sigma}}^{2} \right)}^{2}}{n}</span>
-<span id="cb52-465"><a href="#cb52-465" aria-hidden="true" tabindex="-1"></a>\end{bmatrix}$$</span>
-<span id="cb52-466"><a href="#cb52-466" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-467"><a href="#cb52-467" aria-hidden="true" tabindex="-1"></a>See @CaseBerg01 p322, example 7.2.12.</span>
-<span id="cb52-468"><a href="#cb52-468" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-469"><a href="#cb52-469" aria-hidden="true" tabindex="-1"></a>To prove it’s a maximum, we need:</span>
-<span id="cb52-470"><a href="#cb52-470" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-471"><a href="#cb52-471" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$\ell' = 0$</span>
-<span id="cb52-472"><a href="#cb52-472" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-473"><a href="#cb52-473" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>At least one diagonal element of $\ell''$ is negative.</span>
-<span id="cb52-474"><a href="#cb52-474" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-475"><a href="#cb52-475" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Determinant of $\ell''$ is positive.</span>
-<span id="cb52-476"><a href="#cb52-476" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-477"><a href="#cb52-477" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-478"><a href="#cb52-478" aria-hidden="true" tabindex="-1"></a>{{&lt; include HERS-example.qmd &gt;}}</span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+<span id="cb52-395"><a href="#cb52-395" aria-hidden="true" tabindex="-1"></a>$$I^{- 1} = \begin{bmatrix}</span>
+<span id="cb52-396"><a href="#cb52-396" aria-hidden="true" tabindex="-1"></a>\frac{{\widehat{\sigma}}^{2}}{n} &amp; 0 <span class="sc">\\</span></span>
+<span id="cb52-397"><a href="#cb52-397" aria-hidden="true" tabindex="-1"></a>0 &amp; \frac{{2\left( {\widehat{\sigma}}^{2} \right)}^{2}}{n}</span>
+<span id="cb52-398"><a href="#cb52-398" aria-hidden="true" tabindex="-1"></a>\end{bmatrix}$$</span>
+<span id="cb52-399"><a href="#cb52-399" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-400"><a href="#cb52-400" aria-hidden="true" tabindex="-1"></a>See @CaseBerg01 p322, example 7.2.12.</span>
+<span id="cb52-401"><a href="#cb52-401" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-402"><a href="#cb52-402" aria-hidden="true" tabindex="-1"></a>To prove it’s a maximum, we need:</span>
+<span id="cb52-403"><a href="#cb52-403" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-404"><a href="#cb52-404" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$\ell' = 0$</span>
+<span id="cb52-405"><a href="#cb52-405" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-406"><a href="#cb52-406" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>At least one diagonal element of $\ell''$ is negative.</span>
+<span id="cb52-407"><a href="#cb52-407" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-408"><a href="#cb52-408" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Determinant of $\ell''$ is positive.</span>
+<span id="cb52-409"><a href="#cb52-409" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-410"><a href="#cb52-410" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-411"><a href="#cb52-411" aria-hidden="true" tabindex="-1"></a>{{&lt; include HERS-example.qmd &gt;}}</span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer"><div class="nav-footer">
