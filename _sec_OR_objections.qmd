@@ -1,5 +1,6 @@
 {{< include macros.qmd >}}
 
+::: notes
 Some scholars have raised objections to the use of odds ratios as 
 an effect measurement [@sackett1996down; @norton2024requiem]. 
 One objection is that odds ratios depend on the set of covariates
@@ -7,6 +8,8 @@ in a model,
 even when those covariates are independent of the exposure of interest
 and do not interact with that exposure.
 For example, consider the following model:
+
+:::
 
 $$\P(Y=y|X=x,C=c) = \red{\pi(x,c)}^y (1-\red{\pi(x,c)})^{1-y}$$
 
@@ -16,17 +19,30 @@ Then:
 
 $$
 \ba
-\Ef{Y|X=x} &= \Expf{\Ef{Y | X, C} | X}
-\\ &= \Expf{\expitf{\eta_0 + \b_X X + \b_C C} | X}
+\Ef{Y|X=x} &= \Expf{\Ef{Y | X, C} | X=x}
+\\ &= \Expf{\pi(X,C) | X=x}
+\\ &= \Expf{\expitf{\eta_0 + \b_X X + \b_C C} | X=x}
+\\ &= \int_c{\expitf{\eta_0 + \b_X x + \b_C c} ~\p(C=c|X=x)~ \partial c}
+\\ &= \int_c{\pi(x,c)~ \p(C=c|X=x)~ \partial c}
 \ea
 $$
 
+::: notes
 Since the $\expitf{}$ function is nonlinear, 
 we can't change the order of the expectation and $\expitf{}$ operators:
+:::
 
 $$\Expf{\expitf{\eta_0 + \b_XX + \b_CC} | X} \neq \expitf{\Expf{\eta_0 + \b_XX + \b_CC} | X}$$
 
-In contrast, with a linear link function:
+---
+
+In contrast, consider a model with an identity link function:
+
+$$\P(Y=y|X=x,C=c) = \red{\pi(x,c)}^y (1-\red{\pi(x,c)})^{1-y}$$
+
+$$\red{\pi(x,c)} = \eta_0 + \b_Xx + \b_Cc$$
+
+Then:
 
 $$
 \ba
@@ -54,6 +70,6 @@ So:
 
 $$
 \ba
-\deriv{x} \Ef{Y|X=x} = \blue{\b_XX} = \deriv{x} \Ef{Y|X=x,C=c}
+\deriv{x} \Ef{Y|X=x} = \blue{\b_X x} = \deriv{x} \Ef{Y|X=x,C=c}
 \ea
 $$
