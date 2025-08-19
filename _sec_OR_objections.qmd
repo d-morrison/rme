@@ -2,11 +2,24 @@
 
 Some scholars have raised objections to the use of odds ratios as 
 an effect measurement [@sackett1996down; @norton2024requiem]. 
-One objection is that odds ratios depend on the set of covariates
-in a model,
+
+As we saw in @fig-rd-rr-or, 
+the odds ratio is not very closely correlated with the risk difference, 
+and the risk difference is typically the metric 
+that ultimately matters for policy decisions.
+
+---
+
+::: notes
+
+Another objection is that odds ratios (and risk ratios, and risk differences) 
+depend on the set of covariates
+in a logistic regression model,
 even when those covariates are independent of the exposure of interest
 and do not interact with that exposure.
 For example, consider the following model:
+
+:::
 
 $$\P(Y=y|X=x,C=c) = \red{\pi(x,c)}^y (1-\red{\pi(x,c)})^{1-y}$$
 
@@ -16,44 +29,103 @@ Then:
 
 $$
 \ba
-\Ef{Y|X=x} &= \Expf{\Ef{Y | X, C} | X}
-\\ &= \Expf{\expitf{\eta_0 + \b_X X + \b_C C} | X}
+\Ef{Y|X=x} &= \Expf{\Ef{Y | X, C} | X=x}
+\\ &= \Expf{\pi(X,C) | X=x}
+\\ &= \Expf{\expitf{\eta_0 + \b_X X + \b_C C} | X=x}
+\\ &= \int_c{\expitf{\eta_0 + \b_X x + \b_C c} ~\p(C=c|X=x)~ \partial c}
+\\ &= \int_c{\pi(x,c)~ \p(C=c|X=x)~ \partial c}
 \ea
 $$
 
+::: notes
 Since the $\expitf{}$ function is nonlinear, 
 we can't change the order of the expectation and $\expitf{}$ operators:
+:::
 
 $$\Expf{\expitf{\eta_0 + \b_XX + \b_CC} | X} \neq \expitf{\Expf{\eta_0 + \b_XX + \b_CC} | X}$$
 
-In contrast, with a linear link function:
+---
+
+In contrast, consider a model with an identity link function:
+
+$$\P(Y=y|X=x,C=c) = \red{\pi(x,c)}^y (1-\red{\pi(x,c)})^{1-y}$$
+
+$$\red{\pi(x,c)} = \eta_0 + \b_Xx + \b_Cc$$
+
+Then:
 
 $$
 \ba
-\Ef{Y|X} &= \Expf{\Ef{Y | X, C} | X}
+\Ef{Y|X=x} &= \Expf{\Ef{Y | X, C} | X=x}
 \\ &= \Expf{\eta_0 + \b_X X + \b_C C | X=x}
-\\ &= \eta_0 + \b_X X +  \red{\Expf{ \b_C C | X}}
+\\ &= \Expf{\eta_0 | X=x} + \Expf{\b_X X | X=x} + \Expf{\b_C C | X=x}
+\\ &= \red{\eta_0} + \blue{\b_X x} +  \red{ \b_C\Expf{ C | X=x}}
+\\ &= \red{(\eta_0 + \b_C \Ef{C|X=x})} + \blue{\b_Xx}
 \ea
 $$
 
-If $C \ind X$,
-then:
-
-$$\red{\Expf{ \b_CC | X}} = \b_C \Ef{C}$$
-
-and 
+If $C \ind X$, then $\Ef{C|X=x} = \Ef{C}$,
+and we can simplify further:
 
 $$
 \ba
-\Ef{Y|X} &= \red{(\eta_0 + \b_C \Ef{C})} + \blue{\b_XX}
-\\ &= \red{\eta_0^*}  + \blue{\b_XX}
+\Ef{Y|X=x} &= \red{(\eta_0 + \b_C \Ef{C|X=x})} + \blue{\b_Xx}
+\\
+&= \red{(\eta_0 + \b_C \Ef{C})} + \blue{\b_Xx}
+\\&= \red{\eta_0^*}  + \blue{\b_Xx}
 \ea
 $$
 
-So:
+Then:
 
 $$
 \ba
-\deriv{x} \Ef{Y|X=x} = \blue{\b_XX} = \deriv{x} \Ef{Y|X=x,C=c}
+\deriv{x} \Ef{Y|X=x} = \blue{\b_X} = \deriv{x} \Ef{Y|X=x,C=c}
 \ea
 $$
+
+In other words, for a model with an identity link function,
+if covariates $X$ and $C$ are independent, 
+then the slope with respect to $X$ doesn't depend on 
+whether $C$ is included in the model
+(and an analogous result holds if $X$ is discrete or categorical).
+
+---
+
+:::{#exr-marginal-model-non-indep}
+
+What are the expressions for $\Ef{Y|X=x}$ and $\deriv{x} \Ef{Y|X=x}$
+for the model above, 
+if $\Ef{C|X=x} = \gamma_0 + \gamma_x x$?
+
+:::
+
+---
+
+:::{#sol-marginal-model-non-indep}
+
+Left to the reader.
+
+:::
+
+---
+
+:::{#exr-marginal-model-non-indep-interaction}
+
+What are the expressions for $\Ef{Y|X=x}$ and $\deriv{x} \Ef{Y|X=x}$,
+if instead of the model above,
+$$\pi(x,c) = \eta_0 + \b_Xx + \b_Cc +\b_{XC}xc$$
+and $\Ef{C|X=x} = \gamma_0 + \gamma_x x$?
+
+
+:::
+
+---
+
+:::{#sol-marginal-model-non-indep-interaction}
+
+Left to the reader. 
+
+Hint: does adding the interaction term change the functional form of $\Ef{Y|X=x}$?
+
+:::
