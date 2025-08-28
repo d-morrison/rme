@@ -10,156 +10,28 @@ When does $(a^b)^c = a^{(b^c)}$?
 
 :::{#sol-double-exponential}
 
-If $(a^b)^c = a^{(b^c)}$, then since $(a^b)^c = a^{bc}$,
-we have:
-$$a^{bc} = a^{(b^c)}$$
-$$\logf{a^{bc}} = \logf{a^{(b^c)}}$$
-$$bc \cdot \logf{a} = b^c\cdot \logf{a}$$
-$$bc = b^c$$ or $\logf{a} = 0$ or $a=0$.
+Short answer: rarely (that's is all you need to know for this course).
 
-Hence, 
-this relationship only holds for 
-$a=0$ and $c\neq 0$,
-or $a=1$, or $b=c=2$, or $c = 1$, or $b=0$.
+Long answer: 
 
-
-:::{#fig-double-exponential}
-
-```{R}
-#| label: graph-double-exponential
-{
-  `b*c_f` <- function(b, c) b*c
-  `b^c_f` <- function(b, c) b^c
-  
-  values <- seq(0, 3, by = .01)
-  `b*c` <- outer(values, values, `b*c_f`)
-  `b^c` <- outer(values, values, `b^c_f`)
-  
-  opacity <- .3
-  z_min <- 0
-  z_max <- 5
-  plotly::plot_ly(
-    x = ~values,
-    y = ~values
-  ) |>
-    plotly::add_surface(
-      z = ~ t(`b*c`),
-      contours = list(
-        z = list(
-          show = TRUE,
-          start = -1,
-          end = 1,
-          size = .1
-        )
-      ),
-      name = "b*c",
-      showscale = FALSE,
-      opacity = opacity,
-      colorscale = list(c(0, 1), c("green", "green"))
-    ) |>
-    plotly::add_surface(
-      opacity = opacity,
-      colorscale = list(c(0, 1), c("red", "red")),
-      z = ~ t(`b^c`),
-      contours = list(
-        z = list(
-          show = TRUE,
-          start = z_min,
-          end = z_max,
-          size = .2
-        )
-      ),
-      showscale = FALSE,
-      name = "b^c"
-    ) |>
-    plotly::layout(
-      scene = list(
-        xaxis = list(
-          # type = "log",
-          title = "b"
-        ),
-        yaxis = list(
-          # type = "log",
-          title = "c"
-        ),
-        zaxis = list(
-          # type = "log",
-          range = c(z_min, z_max),
-          title = "outcome"
-        ),
-        camera = list(eye = list(x = -1.25, y = -1.25, z = 0.5)),
-        aspectratio = list(x = .9, y = .8, z = 0.7)
-      )
-    )
-}
-```
-
-Graph of $b*c$ and $b^c$
+{{< include _sol-double-exponential.qmd >}}
 
 :::
 
+---
 
+:::{#exr-exp-vs-mult}
 
-
-:::{#fig-double-exponential2}
-
-```{R}
-#| label: graph-double-exponential2
-{
-  `b*c_f` <- function(b, c) b*c
-  `b^c_f` <- function(b, c) b^c
-  `b^c - b*c_f` <- function(b, c) `b^c_f`(b,c) - `b*c_f`(b,c)
-  
-  values <- seq(0, 3, by = .01)
-  mat1 <- outer(values, values, `b^c - b*c_f`)
-  
-  opacity <- .3
-  z_min <- min(mat1)
-  z_max <- max(mat1)
-  plotly::plot_ly(
-    x = ~values,
-    y = ~values
-  ) |>
-    plotly::add_surface(
-      z = ~ t(mat1),
-      contours = list(
-        z = list(
-          show = TRUE,
-          start = z_min,
-          end = z_max,
-          size = 1
-        )
-      ),
-      name = "b^c - b*c",
-      showscale = TRUE,
-      opacity = opacity
-    ) |>
-    plotly::layout(
-      scene = list(
-        xaxis = list(
-          # type = "log",
-          title = "b"
-        ),
-        yaxis = list(
-          # type = "log",
-          title = "c"
-        ),
-        zaxis = list(
-          # type = "log",
-          range = c(z_min, z_max),
-          title = "outcome"
-        ),
-        camera = list(eye = list(x = -1.25, y = -1.25, z = 0.5)),
-        aspectratio = list(x = .9, y = .8, z = 0.7)
-      )
-    )
-}
-```
-
-Graph of $b^c - b*c$
+When does $b^c = bc$?
 
 :::
 
+---
+
+:::{#sol-exp-vs-mult}
+
+{{< include _sol-exp-vs-mult.qmd >}}
 
 :::
+
 
