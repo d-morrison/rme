@@ -60,12 +60,13 @@ $$\P(Y \le y) = e^{-\mu} \sum_{j=0}^{\floor{y}}\frac{\mu^j}{j!}$$ {#eq-pois-cdf}
 #| fig-cap: "Poisson PMFs, by mean parameter $\\mu$"
 
 library(dplyr)
-pois_dists = tibble(
-  mu = c(0.5, 1, 2, 5, 10, 20)) |> 
+pois_dists <- tibble(
+  mu = c(0.5, 1, 2, 5, 10, 20)
+) |>
   reframe(
     .by = mu,
     x = 0:30
-  ) |> 
+  ) |>
   mutate(
     `P(X = x)` = dpois(x, lambda = mu),
     `P(X <= x)` = ppois(x, lambda = mu),
@@ -75,26 +76,27 @@ pois_dists = tibble(
 library(ggplot2)
 library(latex2exp)
 
-plot0 = pois_dists |> 
+plot0 <- pois_dists |>
   ggplot(
     aes(
       x = x,
       y = `P(X = x)`,
       fill = mu,
-      col = mu)) +
+      col = mu
+    )
+  ) +
   theme(legend.position = "bottom") +
   labs(
     fill = latex2exp::TeX("$\\mu$"),
     col = latex2exp::TeX("$\\mu$"),
-    y = latex2exp::TeX("$\\Pr_{\\mu}(X = x)$"))
+    y = latex2exp::TeX("$\\Pr_{\\mu}(X = x)$")
+  )
 
-plot1 = plot0 + 
-  geom_col(position = "identity", alpha  = .5) +
+plot1 <- plot0 +
+  geom_segment(yend = 0) +
   facet_wrap(~mu)
-  # geom_point(alpha = 0.75) +
-  # geom_line(alpha = 0.75)
-print(plot1)
 
+print(plot1)
 ```
 
 ---
@@ -104,14 +106,13 @@ print(plot1)
 #| fig-cap: "Poisson CDFs"
 library(ggplot2)
 
-plot2 = 
-  plot0 + 
+plot2 <-
+  plot0 +
   geom_step(alpha = 0.75) +
-  aes(y = `P(X <= x)`) + 
+  aes(y = `P(X <= x)`) +
   labs(y = latex2exp::TeX("$\\Pr_{\\mu}(X \\leq x)$"))
 
 print(plot2)
-
 ```
 
 ---
@@ -122,7 +123,7 @@ print(plot2)
 ```{r}
 #| label: def-mu-exr-pois
 #| include: false
-mu = 3.75
+mu <- 3.75
 ```
 
 Let $X \sim \Pois(\mu = `r mu`)$.
