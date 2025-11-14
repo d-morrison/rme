@@ -2,50 +2,112 @@
 
 ## Introduction to classification {#sec-classification}
 
-### Positive predictive value
+Classification is a fundamental concept in epidemiology and diagnostic medicine, where we need to determine whether an individual has a particular disease or condition based on test results or other indicators. Understanding how to interpret diagnostic tests requires knowledge of key statistical concepts including sensitivity, specificity, and predictive values.
 
-Suppose a test is 99 sensitive, 99 specific;
+In this section, we explore how Bayes' theorem allows us to calculate the probability that a person has a disease given a positive test result. This is particularly important in public health decision-making, where we must understand not just how accurate a test is in general, but how to interpret test results for individuals in specific populations.
 
-99% Sensitive means if the person has disease, the test is positive, 99% of
-time:
+### Diagnostic test characteristics
 
-$$\pmf{ + | D} = .99$$
+When evaluating a diagnostic test, we consider several key performance measures:
 
-99% specific means if they don't have covid, the test says no covid, 99%
-time
+- **Sensitivity**: The probability that the test is positive given that the person has the disease, denoted $\Pr(\text{positive} \mid \text{disease})$
+- **Specificity**: The probability that the test is negative given that the person does not have the disease, denoted $\Pr(\text{negative} \mid \text{no disease})$
+- **Positive Predictive Value (PPV)**: The probability that a person has the disease given that their test is positive, denoted $\Pr(\text{disease} \mid \text{positive})$
+- **Negative Predictive Value (NPV)**: The probability that a person does not have the disease given that their test is negative, denoted $\Pr(\text{no disease} \mid \text{negative})$
 
-7% of people actually have covid: 
+### Example: COVID-19 testing
 
-$$\mass(A) = 0.07$$ 
+Suppose we have a COVID-19 test with the following characteristics:
 
-$$\mass(\neg A) = .93$$
+- **99% sensitive**: If a person has COVID-19, the test will be positive 99% of the time
+- **99% specific**: If a person does not have COVID-19, the test will be negative 99% of the time
 
+Let's define our events:
 
+- Let $D$ denote the event "person has COVID-19"
+- Let $+$ denote the event "test is positive"
 
-$p\left( negative \middle| no\ covid \right) = .99$:
-$p\left( B \middle| !A \right)$
+Then our test characteristics can be written as:
 
-$$p\left( Covid \middle| positive \right) = ?$$
-
-$$p\left( A \middle| B \right) = \frac{p\left( B \middle| A \right)p(A)}{p(B)}$$
-
-$$p(B) = p\left( B \middle| A \right)p(A) + p\left( B \middle| !A \right)p(!A)$$
-
-$$p\left( B \middle| A \right)p(A) = .99*\ .07 = .0693$$
-
-$$\ p\left( B \middle| !A \right)p(!A) = .01*.93 = .0093$$
-
-$$p(B) = .0693 + .0093 = .0786$$
-
-$$p\left( A \middle| B \right) = .0693/.0786$$
-
-$$= .88$$
-
-$${p\left( A \middle| B \right) = \frac{p\left( B \middle| A \right)p(A)}{p(B)}
-}{= p\left( B \middle| A \right)\frac{p(A)}{p(B)}
-}{= p\left( B \middle| A \right)\frac{p(A)}{p\left( B \middle| A \right)p(A) + p\left( B \middle| !A \right)p(!A)}}$$
-
-$$= \frac{p(A)}{p(A) + \frac{p\left( B \middle| !A \right)}{p\left( B \middle| A \right)}p(!A)}$$
-
-$$= \frac{1}{1 + \frac{p\left( B \middle| !A \right)}{p\left( B \middle| A \right)}\frac{p(!A)}{p(A)}}
 $$
+\Pr(+ \mid D) = 0.99 \quad \text{(sensitivity)}
+$$
+
+$$
+\Pr(- \mid \neg D) = 0.99 \quad \text{(specificity)}
+$$
+
+Note that if specificity is 0.99, then the false positive rate is:
+$$
+\Pr(+ \mid \neg D) = 1 - 0.99 = 0.01
+$$
+
+Suppose the **prevalence** of COVID-19 in the population is 7%:
+
+$$
+\Pr(D) = 0.07
+$$
+
+$$
+\Pr(\neg D) = 0.93
+$$
+
+### Calculating positive predictive value
+
+The key question we want to answer is: **If someone tests positive, what is the probability they actually have COVID-19?**
+
+This is the positive predictive value:
+$$
+\Pr(D \mid +) = \, ?
+$$
+
+We can use **Bayes' theorem** to calculate this:
+
+$$
+\Pr(D \mid +) = \frac{\Pr(+ \mid D) \cdot \Pr(D)}{\Pr(+)}
+$$
+
+To find $\Pr(+)$, we use the **law of total probability**:
+
+$$
+\Pr(+) = \Pr(+ \mid D) \cdot \Pr(D) + \Pr(+ \mid \neg D) \cdot \Pr(\neg D)
+$$
+
+Now we can calculate each component:
+
+**Probability of being positive with disease:**
+$$
+\Pr(+ \mid D) \cdot \Pr(D) = 0.99 \times 0.07 = 0.0693
+$$
+
+**Probability of being positive without disease (false positive):**
+$$
+\Pr(+ \mid \neg D) \cdot \Pr(\neg D) = 0.01 \times 0.93 = 0.0093
+$$
+
+**Total probability of positive test:**
+$$
+\Pr(+) = 0.0693 + 0.0093 = 0.0786
+$$
+
+**Positive predictive value:**
+$$
+\Pr(D \mid +) = \frac{0.0693}{0.0786} = 0.88
+$$
+
+Therefore, even with a highly accurate test (99% sensitive and 99% specific), only about 88% of people who test positive actually have COVID-19. This is because the disease prevalence is relatively low (7%), so false positives make up a meaningful fraction of all positive tests.
+
+### Alternative formulation
+
+We can rearrange Bayes' theorem to express the positive predictive value in terms of the sensitivity, specificity, and disease prevalence:
+
+$$
+\begin{align}
+\Pr(D \mid +) &= \frac{\Pr(+ \mid D) \cdot \Pr(D)}{\Pr(+)} \\
+&= \frac{\Pr(+ \mid D) \cdot \Pr(D)}{\Pr(+ \mid D) \cdot \Pr(D) + \Pr(+ \mid \neg D) \cdot \Pr(\neg D)} \\
+&= \frac{\Pr(D)}{\Pr(D) + \frac{\Pr(+ \mid \neg D)}{\Pr(+ \mid D)} \cdot \Pr(\neg D)} \\
+&= \frac{1}{1 + \frac{\Pr(+ \mid \neg D)}{\Pr(+ \mid D)} \cdot \frac{\Pr(\neg D)}{\Pr(D)}}
+\end{align}
+$$
+
+This final form emphasizes the ratio of the false positive rate to the sensitivity, weighted by the ratio of non-diseased to diseased individuals in the population. It shows that even with a very high sensitivity and specificity, the positive predictive value depends strongly on disease prevalence.
