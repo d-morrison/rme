@@ -33,10 +33,12 @@ logistic regression model for beetles data with grouped (binomial) data
 
 #### Fitted values
 
-```{r}
-#| label: beetles-model-fitted-values
+Fitted values are provided on the probability scale (@tbl-beetles-model-fitted-values)
 
-# 
+```{r}
+#| label: tbl-beetles-model-fitted-values
+#| code-fold: show
+
 fitted(beetles_glm_grouped)
 predict(beetles_glm_grouped, type = "response")
 ```
@@ -44,6 +46,9 @@ predict(beetles_glm_grouped, type = "response")
 ---
 
 #### count scale
+
+For grouped data, 
+we can convert to the count scale by multiplying by the group size:
 
 ```{r}
 beetles$n * fitted(beetles_glm_grouped)
@@ -61,10 +66,14 @@ predict(beetles_glm_grouped, type = "link")
 
 ---
 
-Converting from logit to probability scale works as expected:
+Converting between logit and probability scales works as expected:
 
 ```{R}
 predict(beetles_glm_grouped, type = "link") |> arm::invlogit()
+predict(beetles_glm_grouped, type = "response")
+
+predict(beetles_glm_grouped, type = "response") |> arm::logit()
+predict(beetles_glm_grouped, type = "link")
 ```
 
 ---
