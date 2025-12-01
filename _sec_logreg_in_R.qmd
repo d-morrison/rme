@@ -1,7 +1,17 @@
 :::{#tbl-beetles-model-grouped}
 
 ```{r}
-#| label: beetles-model-grouped-
+#| label: beetles-model-grouped-tbl
+
+library(glmx)
+library(dplyr)
+data(BeetleMortality)
+beetles <- BeetleMortality |>
+  mutate(
+    pct = died / n,
+    survived = n - died
+  )
+
 beetles_glm_grouped <-
   beetles |>
   glm(
@@ -21,15 +31,59 @@ logistic regression model for beetles data with grouped (binomial) data
 
 ---
 
-Fitted values:
+#### Fitted values
 
 ```{r}
 #| label: beetles-model-fitted-values
-fitted.values(beetles_glm_grouped)
+
+# 
+fitted(beetles_glm_grouped)
 predict(beetles_glm_grouped, type = "response")
+```
+
+---
+
+#### count scale
+
+```{r}
+beetles$n * fitted(beetles_glm_grouped)
+```
+
+---
+
+
+#### logit scale
+
+```{r}
 predict(beetles_glm_grouped, type = "link")
 
-fit_y <- beetles$n * fitted.values(beetles_glm_grouped)
+```
+
+---
+
+Converting from logit to probability scale works as expected:
+
+```{R}
+predict(beetles_glm_grouped, type = "link") |> arm::invlogit()
+```
+
+---
+
+`type = "terms"` is confusing, because the variables get centered:
+
+```{r}
+predict(beetles_glm_grouped, type = "terms")
+coef(beetles_glm_grouped)["dose"] * beetles$dose
+```
+
+---
+
+We can construct the link-scale predictions from the terms:
+
+```{r}
+predict(beetles_glm_grouped, type = "terms") +
+  predict(beetles_glm_grouped, type = "terms") |> attr("constant")
+predict(beetles_glm_grouped, type = "link")
 ```
 
 ---
