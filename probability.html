@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.26">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Appendix C — Probability – Regression Models for Epidemiology</title>
 <style>
@@ -85,18 +85,19 @@ div.csl-indent {
 <link href="./math-prereqs.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-befe23ebd2f54d8af2c8a89d1a1611f1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-23102fe0f0b5b1a9f09cc09ebcc8fe5b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-11608ecab0b4e008b87a77b96745bd9e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-23102fe0f0b5b1a9f09cc09ebcc8fe5b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-0dd2bd5de344125cf763a379ddc3eb04.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-7e34ecb6a0e7991f0346b0751d4a7c3f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-0dd2bd5de344125cf763a379ddc3eb04.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
@@ -153,7 +154,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -597,7 +598,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-09-07: 20:23:52 (PM)</p>
+      <p class="date">Last modified: 2025-12-02: 0:31:57 (AM)</p>
     </div>
   </div>
   
@@ -610,12 +611,11 @@ window.Quarto = {
 <section id="configuring-r" class="level3 unnumbered"><h3 class="unnumbered anchored" data-anchor-id="configuring-r">Configuring R</h3>
 <p>Functions from these packages will be used throughout this document:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://conflicted.r-lib.org/">conflicted</a></span><span class="op">)</span> <span class="co"># check for conflicting function definitions</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://conflicted.r-lib.org/">conflicted</a></span><span class="op">)</span> <span class="co"># check for conflicting function definitions</span></span>
 <span><span class="co"># library(printr) # inserts help-file output into markdown output</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/rmarkdown">rmarkdown</a></span><span class="op">)</span> <span class="co"># Convert R Markdown documents into a variety of formats.</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rapporter.github.io/pander/">pander</a></span><span class="op">)</span> <span class="co"># format tables for markdown</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span> <span class="co"># graphics</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jonocarroll/ggeasy">ggeasy</a></span><span class="op">)</span> <span class="co"># help with graphics</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span> <span class="co"># help with graphics</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span> <span class="co"># manipulate data</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span> <span class="co"># `tibble`s extend `data.frame`s</span></span>
@@ -636,15 +636,15 @@ window.Quarto = {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/webshot2/">webshot2</a></span><span class="op">)</span> <span class="co"># convert interactive content to static for pdf</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://forcats.tidyverse.org/">forcats</a></span><span class="op">)</span> <span class="co"># functions for categorical variables ("factors")</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org">stringr</a></span><span class="op">)</span> <span class="co"># functions for dealing with strings</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span> <span class="co"># functions for dealing with dates and times</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span> <span class="co"># functions for dealing with dates and times</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Here are some R settings I use in this document:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span>list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># delete any data that's already loaded into R</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span>list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># delete any data that's already loaded into R</span></span>
 <span></span>
 <span><span class="fu"><a href="https://conflicted.r-lib.org/reference/conflicts_prefer.html">conflicts_prefer</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">)</span></span>
-<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html">theme_set</a></span><span class="op">(</span></span>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/get_theme.html">theme_set</a></span><span class="op">(</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>        <span class="co"># ggplot2::labs(col = "") +</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span></span>
@@ -659,7 +659,7 @@ window.Quarto = {
 <span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/panderOptions.html">panderOptions</a></span><span class="op">(</span><span class="st">"table.split.table"</span>, <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://conflicted.r-lib.org/reference/conflicts_prefer.html">conflicts_prefer</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">)</span> <span class="co"># use the `filter()` function from dplyr() by default</span></span>
 <span><span class="va">legend_text_size</span> <span class="op">=</span> <span class="fl">9</span></span>
-<span><span class="va">run_graphs</span> <span class="op">=</span> <span class="cn">TRUE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">run_graphs</span> <span class="op">=</span> <span class="cn">TRUE</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <!-- ::: -->
@@ -998,26 +998,44 @@ Figure&nbsp;C.1: “Les Poissons”
 </figure>
 </div>
 <hr>
+<div id="exr-def-poisson" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise C.4</strong></span> Define the Poisson distribution.</p>
+</div>
+<hr>
+<div id="sol-def-poisson" class="proof solution">
+<p><span class="proof-title"><em>Solution C.1</em>. </span></p>
 <div id="def-poisson" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition C.7 (Poisson distribution)</strong></span> <span class="math display">\[\mathcal{R}(Y) = {\left\{0, 1, 2, ...\right\}} = \text{N}\]</span></p>
-<p><span id="eq-pois-pmf"><span class="math display">\[\text{P}(Y = y) = \frac{\mu^{y} e^{-\mu}}{y!}, y \in \text{N} \tag{C.3}\]</span></span></p>
+<p><span class="theorem-title"><strong>Definition C.7 (Poisson distribution)</strong></span> <span id="eq-pois-pmf"><span class="math display">\[\text{P}(Y = y) = \frac{\mu^{y} e^{-\mu}}{y!}, y \in \text{N} \tag{C.3}\]</span></span></p>
+</div>
+</div>
 <div class="notes">
 <p>(see <a href="#fig-pois-pmf" class="quarto-xref">Figure&nbsp;<span>C.2</span></a>)</p>
 </div>
-<p><span id="eq-pois-cdf"><span class="math display">\[\text{P}(Y \le y) = e^{-\mu} \sum_{j=0}^{\left \lfloor{y}\right \rfloor}\frac{\mu^j}{j!} \tag{C.4}\]</span></span></p>
+<hr>
+<div id="exr-range-poisson" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise C.5</strong></span> What is the range of possible values for a Poisson distribution?</p>
+</div>
+<hr>
+<div id="sol-range-poisson" class="proof solution">
+<p><span class="proof-title"><em>Solution C.2</em>. </span><span class="math display">\[\mathcal{R}(Y) = {\left\{0, 1, 2, ...\right\}} = \text{N}\]</span></p>
+</div>
+<hr>
+<div id="thm-cdf-pois" class="theorem">
+<p><span class="theorem-title"><strong>Theorem C.5 (CDF of Poisson distribution)</strong></span> <span id="eq-pois-cdf"><span class="math display">\[\text{P}(Y \le y) = e^{-\mu} \sum_{j=0}^{\left \lfloor{y}\right \rfloor}\frac{\mu^j}{j!} \tag{C.4}\]</span></span></p>
+</div>
 <div class="notes">
 <p>(see <a href="#fig-pois-cdfs" class="quarto-xref">Figure&nbsp;<span>C.3</span></a>)</p>
 </div>
-</div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
-<span><span class="va">pois_dists</span> <span class="op">=</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
-<span>  mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span><span class="va">pois_dists</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/reframe.html">reframe</a></span><span class="op">(</span></span>
 <span>    .by <span class="op">=</span> <span class="va">mu</span>,</span>
 <span>    x <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">30</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    `P(X = x)` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">dpois</a></span><span class="op">(</span><span class="va">x</span>, lambda <span class="op">=</span> <span class="va">mu</span><span class="op">)</span>,</span>
 <span>    `P(X &lt;= x)` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">ppois</a></span><span class="op">(</span><span class="va">x</span>, lambda <span class="op">=</span> <span class="va">mu</span><span class="op">)</span>,</span>
@@ -1027,25 +1045,27 @@ Figure&nbsp;C.1: “Les Poissons”
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://www.stefanom.io/latex2exp/">latex2exp</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">plot0</span> <span class="op">=</span> <span class="va">pois_dists</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">plot0</span> <span class="op">&lt;-</span> <span class="va">pois_dists</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
 <span>      x <span class="op">=</span> <span class="va">x</span>,</span>
 <span>      y <span class="op">=</span> <span class="va">`P(X = x)`</span>,</span>
 <span>      fill <span class="op">=</span> <span class="va">mu</span>,</span>
-<span>      col <span class="op">=</span> <span class="va">mu</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>      col <span class="op">=</span> <span class="va">mu</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
 <span>    fill <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\mu$"</span><span class="op">)</span>,</span>
 <span>    col <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\mu$"</span><span class="op">)</span>,</span>
-<span>    y <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\Pr_{\\mu}(X = x)$"</span><span class="op">)</span><span class="op">)</span></span>
+<span>    y <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\Pr_{\\mu}(X = x)$"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">plot1</span> <span class="op">=</span> <span class="va">plot0</span> <span class="op">+</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>position <span class="op">=</span> <span class="st">"identity"</span>, alpha  <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="va">plot1</span> <span class="op">&lt;-</span> <span class="va">plot0</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span>yend <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">mu</span><span class="op">)</span></span>
-<span>  <span class="co"># geom_point(alpha = 0.75) +</span></span>
-<span>  <span class="co"># geom_line(alpha = 0.75)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot1</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-pois-pmf" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-pois-pmf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1059,15 +1079,15 @@ Figure&nbsp;C.2: Poisson PMFs, by mean parameter <span class="math inline">\(\mu
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">plot2</span> <span class="op">=</span> </span>
-<span>  <span class="va">plot0</span> <span class="op">+</span> </span>
+<span><span class="va">plot2</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">plot0</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_step</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.75</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">`P(X &lt;= x)`</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">`P(X &lt;= x)`</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu">latex2exp</span><span class="fu">::</span><span class="fu"><a href="https://www.stefanom.io/latex2exp/reference/TeX.html">TeX</a></span><span class="op">(</span><span class="st">"$\\Pr_{\\mu}(X \\leq x)$"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">plot2</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-pois-cdfs" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-pois-cdfs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1081,7 +1101,7 @@ Figure&nbsp;C.3: Poisson CDFs
 </div>
 <hr>
 <div id="exr-pois-dist-funs" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise C.4 (Poisson distribution functions)</strong></span> Let <span class="math inline">\(X \sim \text{Pois}(\mu = 3.75)\)</span>.</p>
+<p><span class="theorem-title"><strong>Exercise C.6 (Poisson distribution functions)</strong></span> Let <span class="math inline">\(X \sim \text{Pois}(\mu = 3.75)\)</span>.</p>
 <p>Compute:</p>
 <ul>
 <li><span class="math inline">\(\text{P}(X = 4 | \mu = 3.75)\)</span></li>
@@ -1100,7 +1120,7 @@ Figure&nbsp;C.3: Poisson CDFs
 </div>
 <hr>
 <div id="thm-poisson-properties" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.5 (Properties of the Poisson distribution)</strong></span> If <span class="math inline">\(X \sim \text{Pois}(\mu)\)</span>, then:</p>
+<p><span class="theorem-title"><strong>Theorem C.6 (Properties of the Poisson distribution)</strong></span> If <span class="math inline">\(X \sim \text{Pois}(\mu)\)</span>, then:</p>
 <ul>
 <li><span class="math inline">\(\text{E}[X] = \mu\)</span></li>
 <li><span class="math inline">\(\text{Var}(X) = \mu\)</span></li>
@@ -1115,7 +1135,7 @@ Figure&nbsp;C.3: Poisson CDFs
 </ul>
 </div>
 <div id="exr-poisson-properties" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise C.5</strong></span> Prove <a href="#thm-poisson-properties" class="quarto-xref">Theorem&nbsp;<span>C.5</span></a>.</p>
+<p><span class="theorem-title"><strong>Exercise C.7</strong></span> Prove <a href="#thm-poisson-properties" class="quarto-xref">Theorem&nbsp;<span>C.6</span></a>.</p>
 </div>
 <hr>
 <div class="smaller proof solution">
@@ -1159,7 +1179,7 @@ Important
 </div>
 </div>
 <div id="thm-exposure-log-scale" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.6</strong></span> If <span class="math inline">\(\mu = \lambda\cdot t\)</span>, then:</p>
+<p><span class="theorem-title"><strong>Theorem C.7</strong></span> If <span class="math inline">\(\mu = \lambda\cdot t\)</span>, then:</p>
 <p><span class="math display">\[\log{\mu} = \log{\lambda} + \log{t}\]</span></p>
 </div>
 <div id="def-offset" class="theorem definition">
@@ -1167,7 +1187,7 @@ Important
 </div>
 <hr>
 <div id="thm-sum-pois" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.7</strong></span> If <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are independent Poisson random variables with means <span class="math inline">\(\mu_X\)</span> and <span class="math inline">\(\mu_Y\)</span>, their sum, <span class="math inline">\(Z=X+Y\)</span>, is also a Poisson random variable, with mean <span class="math inline">\(\mu_Z = \mu_X + \mu_Y\)</span>.</p>
+<p><span class="theorem-title"><strong>Theorem C.8</strong></span> If <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are independent Poisson random variables with means <span class="math inline">\(\mu_X\)</span> and <span class="math inline">\(\mu_Y\)</span>, their sum, <span class="math inline">\(Z=X+Y\)</span>, is also a Poisson random variable, with mean <span class="math inline">\(\mu_Z = \mu_X + \mu_Y\)</span>.</p>
 </div>
 <hr>
 <div class="proof">
@@ -1190,7 +1210,7 @@ Important
 </div>
 <hr>
 <div id="thm-nb" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.8</strong></span> If <span class="math inline">\(Y \sim \text{NegBin}(\mu, \rho)\)</span>, then:</p>
+<p><span class="theorem-title"><strong>Theorem C.9</strong></span> If <span class="math inline">\(Y \sim \text{NegBin}(\mu, \rho)\)</span>, then:</p>
 <ul>
 <li><span class="math inline">\(\text{E}[Y] = \mu\)</span></li>
 <li><span class="math inline">\(\text{Var}{\left(Y\right)} = \mu + \frac{\mu^2}{\rho} &gt; \mu\)</span></li>
@@ -1226,12 +1246,12 @@ f(x) &amp;\stackrel{\text{def}}{=}\lim_{\Delta \rightarrow 0}
 </div>
 <hr>
 <div id="thm-density-vs-CDF" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.9 (Density function is derivative of CDF)</strong></span> The density function <span class="math inline">\(f(t)\)</span> or <span class="math inline">\(\text{p}(T=t)\)</span> for a random variable <span class="math inline">\(T\)</span> at value <span class="math inline">\(t\)</span> is equal to the derivative of the cumulative probability function <span class="math inline">\(F(t) \stackrel{\text{def}}{=}P(T\le t)\)</span>; that is:</p>
+<p><span class="theorem-title"><strong>Theorem C.10 (Density function is derivative of CDF)</strong></span> The density function <span class="math inline">\(f(t)\)</span> or <span class="math inline">\(\text{p}(T=t)\)</span> for a random variable <span class="math inline">\(T\)</span> at value <span class="math inline">\(t\)</span> is equal to the derivative of the cumulative probability function <span class="math inline">\(F(t) \stackrel{\text{def}}{=}P(T\le t)\)</span>; that is:</p>
 <p><span class="math display">\[f(t) \stackrel{\text{def}}{=}\frac{\partial}{\partial t} F(t)\]</span></p>
 </div>
 <hr>
 <div id="thm-density-sums-to-one" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.10 (Density functions integrate to 1)</strong></span> For any density function <span class="math inline">\(f(x)\)</span>,</p>
+<p><span class="theorem-title"><strong>Theorem C.11 (Density functions integrate to 1)</strong></span> For any density function <span class="math inline">\(f(x)\)</span>,</p>
 <p><span class="math display">\[\int_{x \in \mathcal{R}(X)} f(x) dx = 1\]</span></p>
 </div>
 <hr></section><section id="sec-prob-haz" class="level3" data-number="C.4.2"><h3 data-number="C.4.2" class="anchored" data-anchor-id="sec-prob-haz">
@@ -1335,7 +1355,7 @@ Table&nbsp;C.4: Probability distribution functions
 </div>
 <hr>
 <div id="thm-bernoulli-mean" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.11 (Expectation of the Bernoulli distribution)</strong></span> The expectation of a Bernoulli random variable with parameter <span class="math inline">\(\pi\)</span> is:</p>
+<p><span class="theorem-title"><strong>Theorem C.12 (Expectation of the Bernoulli distribution)</strong></span> The expectation of a Bernoulli random variable with parameter <span class="math inline">\(\pi\)</span> is:</p>
 <p><span class="math display">\[\text{E}{\left[X\right]} = \pi\]</span></p>
 </div>
 <hr>
@@ -1354,7 +1374,7 @@ Table&nbsp;C.4: Probability distribution functions
 </div>
 <hr>
 <div id="thm-surv-mean" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.12 (Expectation of time-to-event variables)</strong></span> If <span class="math inline">\(T\)</span> is a non-negative random variable, then:</p>
+<p><span class="theorem-title"><strong>Theorem C.13 (Expectation of time-to-event variables)</strong></span> If <span class="math inline">\(T\)</span> is a non-negative random variable, then:</p>
 <p><span class="math display">\[\mu(T|\tilde{X}= \tilde{x}) = \int_{t=0}^{\infty}\text{S}(t)dt\]</span></p>
 </div>
 <hr></section><section id="variance-and-related-characteristics" class="level3" data-number="C.4.4"><h3 data-number="C.4.4" class="anchored" data-anchor-id="variance-and-related-characteristics">
@@ -1367,7 +1387,7 @@ Table&nbsp;C.4: Probability distribution functions
 </div>
 <hr>
 <div id="thm-variance" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.13 (Simplified expression for variance)</strong></span> <span class="math display">\[\text{Var}{\left(X\right)}=\text{E}{\left[X^2\right]} - {\left(\text{E}{\left[X\right]}\right)}^2\]</span></p>
+<p><span class="theorem-title"><strong>Theorem C.14 (Simplified expression for variance)</strong></span> <span class="math display">\[\text{Var}{\left(X\right)}=\text{E}{\left[X^2\right]} - {\left(\text{E}{\left[X\right]}\right)}^2\]</span></p>
 <hr>
 <div class="proof">
 <p><span class="proof-title"><em>Proof</em>. </span>By linearity of expectation, we have:</p>
@@ -1399,7 +1419,7 @@ Table&nbsp;C.4: Probability distribution functions
 </div>
 <hr>
 <div id="thm-alt-cov" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.14</strong></span> <span class="math display">\[\text{Cov}{\left(X,Y\right)}= \text{E}{\left[XY\right]} - \text{E}{\left[X\right]} \text{E}{\left[Y\right]}\]</span></p>
+<p><span class="theorem-title"><strong>Theorem C.15</strong></span> <span class="math display">\[\text{Cov}{\left(X,Y\right)}= \text{E}{\left[XY\right]} - \text{E}{\left[X\right]} \text{E}{\left[Y\right]}\]</span></p>
 </div>
 <hr>
 <div class="proof">
@@ -1433,7 +1453,7 @@ Table&nbsp;C.4: Probability distribution functions
 </div>
 <hr>
 <div id="thm-vcov-vec" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.15 (Alternate expression for variance of a random vector)</strong></span> <span class="math display">\[
+<p><span class="theorem-title"><strong>Theorem C.16 (Alternate expression for variance of a random vector)</strong></span> <span class="math display">\[
 \begin{aligned}
 \text{Var}{\left(X\right)}
 &amp;= E[ X^{\top}X ] - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack
@@ -1455,7 +1475,7 @@ Table&nbsp;C.4: Probability distribution functions
 </div>
 <hr>
 <div id="thm-var-lincom" class="theorem">
-<p><span class="theorem-title"><strong>Theorem C.16 (Variance of a linear combination)</strong></span> For any vector of random variables <span class="math inline">\(\tilde{X}= (X_1, \ldots, X_n)\)</span> and corresponding vector of constants <span class="math inline">\(\tilde{a}= (a_1, ... ,a_n)\)</span>, the variance of their linear combination is:</p>
+<p><span class="theorem-title"><strong>Theorem C.17 (Variance of a linear combination)</strong></span> For any vector of random variables <span class="math inline">\(\tilde{X}= (X_1, \ldots, X_n)\)</span> and corresponding vector of constants <span class="math inline">\(\tilde{a}= (a_1, ... ,a_n)\)</span>, the variance of their linear combination is:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \text{Var}{\left(\tilde{a}\cdot \tilde{X}\right)}
@@ -1476,7 +1496,7 @@ Table&nbsp;C.4: Probability distribution functions
 </div>
 <hr>
 <div class="proof">
-<p><span class="proof-title"><em>Proof</em>. </span>Apply <a href="#thm-var-lincom" class="quarto-xref">Theorem&nbsp;<span>C.16</span></a> with <span class="math inline">\(n=2\)</span>, <span class="math inline">\(X_1 = X\)</span>, and <span class="math inline">\(X_2 = Y\)</span>.</p>
+<p><span class="proof-title"><em>Proof</em>. </span>Apply <a href="#thm-var-lincom" class="quarto-xref">Theorem&nbsp;<span>C.17</span></a> with <span class="math inline">\(n=2\)</span>, <span class="math inline">\(X_1 = X\)</span>, and <span class="math inline">\(X_2 = Y\)</span>.</p>
 <p>Or, see <a href="https://statproofbook.github.io/P/var-lincomb.html" class="uri">https://statproofbook.github.io/P/var-lincomb.html</a></p>
 </div>
 <hr>
@@ -1537,7 +1557,7 @@ Tip
 <p>The sum of many independent or nearly-independent random variables with small variances (relative to the number of RVs being summed) produces bell-shaped distributions.</p>
 <p>For example, consider the sum of five dice (<a href="#fig-clt-5d6" class="quarto-xref">Figure&nbsp;<span>C.4</span></a>).</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="va">dist</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html">expand.grid</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1557,7 +1577,7 @@ Tip
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expand_limits.html">expand_limits</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
 <span>  </span>
-<span>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-clt-5d6" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-clt-5d6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1571,7 +1591,7 @@ Figure&nbsp;C.4: Distribution of the sum of five dice
 </div>
 <p>In comparison, the outcome of just one die is not bell-shaped (<a href="#fig-clt-1d6" class="quarto-xref">Figure&nbsp;<span>C.5</span></a>).</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="va">dist</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html">expand.grid</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1591,7 +1611,7 @@ Figure&nbsp;C.4: Distribution of the sum of five dice
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expand_limits.html">expand_limits</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
 <span>  </span>
-<span>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-clt-1d6" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-clt-1d6-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1705,13 +1725,14 @@ Vittinghoff, Eric, David V Glidden, Stephen C Shiboski, and Charles E McCulloch.
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
@@ -2116,7 +2137,7 @@ Vittinghoff, Eric, David V Glidden, Stephen C Shiboski, and Charles E McCulloch.
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb7" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Probability</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Probability</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>{{&lt; include shared-config.qmd &gt;}}</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2645,7 +2666,7 @@ Vittinghoff, Eric, David V Glidden, Stephen C Shiboski, and Charles E McCulloch.
 <span id="cb7-527"><a href="#cb7-527" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-528"><a href="#cb7-528" aria-hidden="true" tabindex="-1"></a><span class="fu">## Additional resources</span></span>
 <span id="cb7-529"><a href="#cb7-529" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-530"><a href="#cb7-530" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@problifesaver</span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+<span id="cb7-530"><a href="#cb7-530" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@problifesaver</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer"><div class="nav-footer">

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.26">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>7&nbsp; Proportional Hazards Models – Regression Models for Epidemiology</title>
 <style>
@@ -85,18 +85,19 @@ div.csl-indent {
 <link href="./intro-to-survival-analysis.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-befe23ebd2f54d8af2c8a89d1a1611f1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b758ccaa5987ceb1b75504551e579abf.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-23102fe0f0b5b1a9f09cc09ebcc8fe5b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-11608ecab0b4e008b87a77b96745bd9e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-23102fe0f0b5b1a9f09cc09ebcc8fe5b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-0dd2bd5de344125cf763a379ddc3eb04.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-7e34ecb6a0e7991f0346b0751d4a7c3f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-0dd2bd5de344125cf763a379ddc3eb04.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
@@ -153,7 +154,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -664,7 +665,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2025-09-07: 20:23:52 (PM)</p>
+      <p class="date">Last modified: 2025-12-02: 0:31:57 (AM)</p>
     </div>
   </div>
   
@@ -678,12 +679,11 @@ window.Quarto = {
 <section id="configuring-r" class="level3 unnumbered"><h3 class="unnumbered anchored" data-anchor-id="configuring-r">Configuring R</h3>
 <p>Functions from these packages will be used throughout this document:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://conflicted.r-lib.org/">conflicted</a></span><span class="op">)</span> <span class="co"># check for conflicting function definitions</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://conflicted.r-lib.org/">conflicted</a></span><span class="op">)</span> <span class="co"># check for conflicting function definitions</span></span>
 <span><span class="co"># library(printr) # inserts help-file output into markdown output</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/rmarkdown">rmarkdown</a></span><span class="op">)</span> <span class="co"># Convert R Markdown documents into a variety of formats.</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rapporter.github.io/pander/">pander</a></span><span class="op">)</span> <span class="co"># format tables for markdown</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span> <span class="co"># graphics</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jonocarroll/ggeasy">ggeasy</a></span><span class="op">)</span> <span class="co"># help with graphics</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span> <span class="co"># help with graphics</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span> <span class="co"># manipulate data</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span> <span class="co"># `tibble`s extend `data.frame`s</span></span>
@@ -704,15 +704,15 @@ window.Quarto = {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/webshot2/">webshot2</a></span><span class="op">)</span> <span class="co"># convert interactive content to static for pdf</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://forcats.tidyverse.org/">forcats</a></span><span class="op">)</span> <span class="co"># functions for categorical variables ("factors")</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org">stringr</a></span><span class="op">)</span> <span class="co"># functions for dealing with strings</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span> <span class="co"># functions for dealing with dates and times</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span> <span class="co"># functions for dealing with dates and times</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Here are some R settings I use in this document:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span>list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># delete any data that's already loaded into R</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span>list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># delete any data that's already loaded into R</span></span>
 <span></span>
 <span><span class="fu"><a href="https://conflicted.r-lib.org/reference/conflicts_prefer.html">conflicts_prefer</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">)</span></span>
-<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html">theme_set</a></span><span class="op">(</span></span>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/get_theme.html">theme_set</a></span><span class="op">(</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>        <span class="co"># ggplot2::labs(col = "") +</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span></span>
@@ -727,7 +727,7 @@ window.Quarto = {
 <span><span class="fu">pander</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pander/man/panderOptions.html">panderOptions</a></span><span class="op">(</span><span class="st">"table.split.table"</span>, <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://conflicted.r-lib.org/reference/conflicts_prefer.html">conflicts_prefer</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="va"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">)</span> <span class="co"># use the `filter()` function from dplyr() by default</span></span>
 <span><span class="va">legend_text_size</span> <span class="op">=</span> <span class="fl">9</span></span>
-<span><span class="va">run_graphs</span> <span class="op">=</span> <span class="cn">TRUE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">run_graphs</span> <span class="op">=</span> <span class="cn">TRUE</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <!-- ::: -->
@@ -1198,7 +1198,7 @@ text-align: center;
 <p>If the hazards of the three groups are proportional, that means that the ratio of the hazards is constant over <span class="math inline">\(t\)</span>. We can test this using the ratios of the estimated cumulative hazards, which also would be proportional, as shown above.</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jun-yan/KMsurv">KMsurv</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jun-yan/KMsurv">KMsurv</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival">survival</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">bmt</span><span class="op">)</span></span>
@@ -1227,11 +1227,11 @@ text-align: center;
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    cumhaz1 <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fu">sf1</span><span class="op">(</span><span class="va">timevec</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    cumhaz2 <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fu">sf2</span><span class="op">(</span><span class="va">timevec</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    cumhaz3 <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fu">sf3</span><span class="op">(</span><span class="va">timevec</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>    cumhaz3 <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fu">sf3</span><span class="op">(</span><span class="va">timevec</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="va">bmt_rel_hazard_plot</span> <span class="op">=</span></span>
 <span>  <span class="va">bmt_curves</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span></span>
@@ -1249,7 +1249,7 @@ text-align: center;
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"Comparison"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">"bottom"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">bmt_rel_hazard_plot</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">bmt_rel_hazard_plot</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-HR-bmt" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-HR-bmt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1264,7 +1264,7 @@ Figure&nbsp;7.1: Hazard Ratios by Disease Group for <code>bmt</code> data
 <hr>
 <p>We can zoom in on the first 300 days to take a closer look:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt_rel_hazard_plot</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">300</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt_rel_hazard_plot</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">300</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-HR-bmt-inset" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-HR-bmt-inset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1279,7 +1279,7 @@ Figure&nbsp;7.2: Hazard Ratios by Disease Group (0-300 Days)
 <hr>
 <p>The cumulative hazard curves should also be proportional</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
 <span><span class="va">plot_cuhaz_bmt</span> <span class="op">=</span></span>
 <span>  <span class="va">bmt</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>, <span class="va">d3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1287,7 +1287,7 @@ Figure&nbsp;7.2: Hazard Ratios by Disease Group (0-300 Days)
 <span>           mark.time <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Cumulative hazard"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">plot_cuhaz_bmt</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">plot_cuhaz_bmt</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-cuhaz-bmt" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cuhaz-bmt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1301,9 +1301,9 @@ Figure&nbsp;7.3: Disease-Free Cumulative Hazard by Disease Group
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plot_cuhaz_bmt</span> <span class="op">+</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plot_cuhaz_bmt</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_log10</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-cuhaz-bmt-loglog" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cuhaz-bmt-loglog-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1322,12 +1322,12 @@ Figure&nbsp;7.4: Disease-Free Cumulative Hazard by Disease Group (log-scale)
 <p>The R package <code>muhaz</code> handles this for us. What we are looking for is whether the hazard function is more or less the same shape, increasing, decreasing, constant, etc. Are the hazards “proportional”?</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">muhaz</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">muhaz</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/muhaz/man/muhaz.html">muhaz</a></span><span class="op">(</span><span class="va">bmt</span><span class="op">$</span><span class="va">t2</span>,<span class="va">bmt</span><span class="op">$</span><span class="va">d3</span>,<span class="va">bmt</span><span class="op">$</span><span class="va">group</span><span class="op">==</span><span class="st">"High Risk AML"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span>lwd<span class="op">=</span><span class="fl">2</span>,col<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/muhaz/man/muhaz.html">muhaz</a></span><span class="op">(</span><span class="va">bmt</span><span class="op">$</span><span class="va">t2</span>,<span class="va">bmt</span><span class="op">$</span><span class="va">d3</span>,<span class="va">bmt</span><span class="op">$</span><span class="va">group</span><span class="op">==</span><span class="st">"ALL"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span><span class="op">(</span>lwd<span class="op">=</span><span class="fl">2</span>,col<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/muhaz/man/muhaz.html">muhaz</a></span><span class="op">(</span><span class="va">bmt</span><span class="op">$</span><span class="va">t2</span>,<span class="va">bmt</span><span class="op">$</span><span class="va">d3</span>,<span class="va">bmt</span><span class="op">$</span><span class="va">group</span><span class="op">==</span><span class="st">"Low Risk AML"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span><span class="op">(</span>lwd<span class="op">=</span><span class="fl">2</span>,col<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"topright"</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"ALL"</span>,<span class="st">"Low Risk AML"</span>,<span class="st">"High Risk AML"</span><span class="op">)</span>,col<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,lwd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html">legend</a></span><span class="op">(</span><span class="st">"topright"</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"ALL"</span>,<span class="st">"Low Risk AML"</span>,<span class="st">"High Risk AML"</span><span class="op">)</span>,col<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,lwd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-smoothed-hazard-bmt" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-smoothed-hazard-bmt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1404,7 +1404,7 @@ Figure&nbsp;7.5: Smoothed Hazard Rate Estimates by Disease Group
 <section id="fit-the-model" class="level3" data-number="7.5.1"><h3 data-number="7.5.1" class="anchored" data-anchor-id="fit-the-model">
 <span class="header-section-number">7.5.1</span> Fit the model</h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival">survival</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival">survival</a></span><span class="op">)</span></span>
 <span><span class="va">bmt.cox</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>, <span class="va">d3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data <span class="op">=</span> <span class="va">bmt</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">bmt.cox</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
@@ -1425,7 +1425,7 @@ Figure&nbsp;7.5: Smoothed Hazard Rate Estimates by Disease Group
 <span><span class="co">#&gt; Concordance= 0.625  (se = 0.03 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 13.4  on 2 df,   p=0.001</span></span>
 <span><span class="co">#&gt; Wald test            = 13  on 2 df,   p=0.001</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 13.8  on 2 df,   p=0.001</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 13.8  on 2 df,   p=0.001</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>The table provides hypothesis tests comparing groups 2 and 3 to group 1. Group 3 has the highest hazard, so the most significant comparison is not directly shown.</p>
@@ -1450,7 +1450,7 @@ Figure&nbsp;7.5: Smoothed Hazard Rate Estimates by Disease Group
 <span class="header-section-number">7.5.3</span> Survival Curves from the Cox Model</h3>
 <p>We can take a look at the resulting group-specific curves:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">km_fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>, <span class="va">d3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">bmt</span><span class="op">)</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">km_fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>, <span class="va">d3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">bmt</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cox_fit</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
 <span>  <span class="va">bmt.cox</span>,</span>
@@ -1472,7 +1472,7 @@ Figure&nbsp;7.5: Smoothed Hazard Rate Estimates by Disease Group
 <span>    ggtheme <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    conf.int <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    censor <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># ggsurvplot() throws some warnings that aren't too worrying</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># ggsurvplot() throws some warnings that aren't too worrying</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-surv-bmt-km-cph" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-surv-bmt-km-cph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1494,17 +1494,17 @@ Figure&nbsp;7.6: Survival Functions for Three Groups by KM and Cox Model
 <span class="header-section-number">7.5.4</span> Examining <code>survfit</code>
 </h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>, <span class="va">d3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data <span class="op">=</span> <span class="va">bmt</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>, <span class="va">d3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data <span class="op">=</span> <span class="va">bmt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call: survfit(formula = Surv(t2, d3) ~ group, data = bmt)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                      n events median 0.95LCL 0.95UCL</span></span>
 <span><span class="co">#&gt; group=ALL           38     24    418     194      NA</span></span>
 <span><span class="co">#&gt; group=Low Risk AML  54     25   2204     704      NA</span></span>
-<span><span class="co">#&gt; group=High Risk AML 45     34    183     115     456</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; group=High Risk AML 45     34    183     115     456</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>, <span class="va">d3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data <span class="op">=</span> <span class="va">bmt</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>, <span class="va">d3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data <span class="op">=</span> <span class="va">bmt</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call: survfit(formula = Surv(t2, d3) ~ group, data = bmt)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                 group=ALL </span></span>
@@ -1595,11 +1595,11 @@ Figure&nbsp;7.6: Survival Functions for Three Groups by KM and Cox Model
 <span><span class="co">#&gt;   456     15       1    0.311  0.0690        0.201        0.481</span></span>
 <span><span class="co">#&gt;   467     14       1    0.289  0.0676        0.183        0.457</span></span>
 <span><span class="co">#&gt;   625     13       1    0.267  0.0659        0.164        0.433</span></span>
-<span><span class="co">#&gt;   677     12       1    0.244  0.0641        0.146        0.409</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;   677     12       1    0.244  0.0641        0.146        0.409</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span><span class="va">bmt.cox</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span><span class="va">bmt.cox</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call: survfit(formula = bmt.cox)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;        n events median 0.95LCL 0.95UCL</span></span>
@@ -1610,11 +1610,11 @@ Figure&nbsp;7.6: Survival Functions for Three Groups by KM and Cox Model
 <span><span class="co">#&gt;     n events median 0.95LCL 0.95UCL</span></span>
 <span><span class="co">#&gt; 1 137     83    422     268      NA</span></span>
 <span><span class="co">#&gt; 2 137     83     NA     625      NA</span></span>
-<span><span class="co">#&gt; 3 137     83    268     162     467</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 3 137     83    268     162     467</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt.cox</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt.cox</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span>newdata <span class="op">=</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">bmt</span><span class="op">$</span><span class="va">group</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call: survfit(formula = bmt.cox, newdata = tibble(group = unique(bmt$group)))</span></span>
@@ -1695,7 +1695,7 @@ Figure&nbsp;7.6: Survival Functions for Three Groups by KM and Cox Model
 <span><span class="co">#&gt;   748     56       1     0.374     0.575     0.237</span></span>
 <span><span class="co">#&gt;  1063     47       1     0.365     0.567     0.228</span></span>
 <span><span class="co">#&gt;  1074     46       1     0.356     0.559     0.220</span></span>
-<span><span class="co">#&gt;  2204      9       1     0.313     0.520     0.182</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;  2204      9       1     0.313     0.520     0.182</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section><section id="adjustment-for-ties-optional" class="level2" data-number="7.6"><h2 data-number="7.6" class="anchored" data-anchor-id="adjustment-for-ties-optional">
@@ -1782,7 +1782,7 @@ L(\beta|T) &amp;=
 <li>10–60: Unable to care for self; requires equivalent of institutional or hospital care; disease may be progressing rapidly.</li>
 </ul></section><section id="data" class="level4"><h4 class="anchored" data-anchor-id="data">Data</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival">survival</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">hodg</span>, package <span class="op">=</span> <span class="st">"KMsurv"</span><span class="op">)</span></span>
 <span><span class="va">hodg2</span> <span class="op">=</span> <span class="va">hodg</span> <span class="op">|&gt;</span> </span>
@@ -1821,7 +1821,7 @@ L(\beta|T) &amp;=
 <span><span class="co">#&gt;  8 Allogenic Non-Hodgkins  1183 alive    90    16  1183+</span></span>
 <span><span class="co">#&gt;  9 Allogenic Non-Hodgkins  1560 alive    80    20  1560+</span></span>
 <span><span class="co">#&gt; 10 Allogenic Non-Hodgkins  2114 alive    80    27  2114+</span></span>
-<span><span class="co">#&gt; # ℹ 33 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; # ℹ 33 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section><section id="proportional-hazards-model-1" class="level3" data-number="7.7.2"><h3 data-number="7.7.2" class="anchored" data-anchor-id="proportional-hazards-model-1">
@@ -1830,7 +1830,7 @@ L(\beta|T) &amp;=
 <figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-summary-hodg.cox1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;7.1: Summary of Proportional Hazards model for Hodgkins Lymphoma data
 </figcaption><div aria-describedby="tbl-summary-hodg.cox1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="va">gtype</span> <span class="op">*</span> <span class="va">dtype</span> <span class="op">+</span> <span class="va">score</span> <span class="op">+</span> <span class="va">wtime</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">hodg2</span><span class="op">)</span></span>
 <span></span>
@@ -1859,7 +1859,7 @@ Table&nbsp;7.1: Summary of Proportional Hazards model for Hodgkins Lymphoma data
 <span><span class="co">#&gt; Concordance= 0.776  (se = 0.059 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 32.1  on 5 df,   p=6e-06</span></span>
 <span><span class="co">#&gt; Wald test            = 27.2  on 5 df,   p=5e-05</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 37.7  on 5 df,   p=4e-07</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 37.7  on 5 df,   p=4e-07</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </figure>
@@ -1878,7 +1878,7 @@ Table&nbsp;7.1: Summary of Proportional Hazards model for Hodgkins Lymphoma data
 </ul></section><section id="kaplan-meier-survival-functions" class="level3" data-number="7.8.2"><h3 data-number="7.8.2" class="anchored" data-anchor-id="kaplan-meier-survival-functions">
 <span class="header-section-number">7.8.2</span> Kaplan-Meier survival functions</h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">km_model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">km_model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="va">dtype</span> <span class="op">+</span> <span class="va">gtype</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">hodg2</span><span class="op">)</span></span>
 <span></span>
@@ -1893,7 +1893,7 @@ Table&nbsp;7.1: Summary of Proportional Hazards model for Hodgkins Lymphoma data
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>col<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html">guide_legend</a></span><span class="op">(</span>ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">'Survival probability, S(t)'</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Time since transplant (days)"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Time since transplant (days)"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-km-hodg2" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-km-hodg2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1908,7 +1908,7 @@ Figure&nbsp;7.7: Kaplan-Meier Survival Curves for HOD/NHL and Allo/Auto Grafts
 </section><section id="observed-and-expected-survival-curves" class="level3" data-number="7.8.3"><h3 data-number="7.8.3" class="anchored" data-anchor-id="observed-and-expected-survival-curves">
 <span class="header-section-number">7.8.3</span> Observed and expected survival curves</h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># we need to create a tibble of covariate patterns;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># we need to create a tibble of covariate patterns;</span></span>
 <span><span class="co"># we will set score and wtime to mean values for disease and graft types:</span></span>
 <span><span class="va">means</span> <span class="op">=</span> <span class="va">hodg2</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span></span>
@@ -1927,11 +1927,11 @@ Figure&nbsp;7.7: Kaplan-Meier Survival Curves for HOD/NHL and Allo/Auto Grafts
 <span>  <span class="va">hodg.cox1</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
 <span>    data <span class="op">=</span> <span class="va">hodg2</span>, <span class="co"># ggsurvplot() will need this</span></span>
-<span>    newdata <span class="op">=</span> <span class="va">means</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>    newdata <span class="op">=</span> <span class="va">means</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># I couldn't find a good function to reformat `cox_model` for ggplot, </span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># I couldn't find a good function to reformat `cox_model` for ggplot, </span></span>
 <span><span class="co"># so I made my own:</span></span>
 <span><span class="va">stack_surv_ph</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">cox_model</span><span class="op">)</span></span>
 <span><span class="op">{</span></span>
@@ -1954,18 +1954,18 @@ Figure&nbsp;7.7: Kaplan-Meier Survival Curves for HOD/NHL and Allo/Auto Grafts
 <span>    strata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html">trimws</a></span><span class="op">(</span><span class="va">strata</span><span class="op">)</span>,</span>
 <span>    model <span class="op">=</span> <span class="st">"Kaplan-Meier"</span>,</span>
 <span>    cumhaz <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">surv</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="fu">stack_surv_ph</span><span class="op">(</span><span class="va">cox_model</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="fu">stack_surv_ph</span><span class="op">(</span><span class="va">cox_model</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">km_and_cph</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">km_and_cph</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">surv</span>, col <span class="op">=</span> <span class="va">model</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_step</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">strata</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"S(t) = P(T&gt;=t)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Survival time (t, days)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>Observed and expected survival curves for <code>bmt</code> data</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Observed and expected survival curves for bmt data"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672" alt="Observed and expected survival curves for bmt data"></a></p>
@@ -1977,7 +1977,7 @@ Figure&nbsp;7.7: Kaplan-Meier Survival Curves for HOD/NHL and Allo/Auto Grafts
 <span class="header-section-number">7.8.4</span> Cumulative hazard (log-scale) curves</h3>
 <p>Also known as “complementary log-log (clog-log) survival curves”.</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">na_model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">na_model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="va">dtype</span> <span class="op">+</span> <span class="va">gtype</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">hodg2</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"fleming"</span><span class="op">)</span></span>
@@ -2000,7 +2000,7 @@ Figure&nbsp;7.7: Kaplan-Meier Survival Curves for HOD/NHL and Allo/Auto Grafts
 <span>        ncol <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>        label.theme <span class="op">=</span> </span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span></span>
-<span>            size <span class="op">=</span> <span class="va">legend_text_size</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>            size <span class="op">=</span> <span class="va">legend_text_size</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-cloglog-na" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cloglog-na-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -2014,7 +2014,7 @@ Figure&nbsp;7.8: Complementary log-log survival curves - Nelson-Aalen estimates
 </div>
 <p>Let’s compare these empirical (i.e., non-parametric) curves with the fitted curves from our <code><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph()</a></code> model:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cox_model</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cox_model</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">survminer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggsurvplot.html">ggsurvplot</a></span><span class="op">(</span></span>
 <span>    facet_by <span class="op">=</span> <span class="st">""</span>,</span>
 <span>    legend <span class="op">=</span> <span class="st">"bottom"</span>, </span>
@@ -2033,7 +2033,7 @@ Figure&nbsp;7.8: Complementary log-log survival curves - Nelson-Aalen estimates
 <span>        ncol <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>        label.theme <span class="op">=</span> </span>
 <span>          <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span></span>
-<span>            size <span class="op">=</span> <span class="va">legend_text_size</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>            size <span class="op">=</span> <span class="va">legend_text_size</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-cloglog-ph" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cloglog-ph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -2047,7 +2047,7 @@ Figure&nbsp;7.9: Complementary log-log survival curves - PH estimates
 </div>
 <p>Now let’s overlay these cumulative hazard curves:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">na_and_cph</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">na_and_cph</span> <span class="op">=</span> </span>
 <span>  <span class="va">na_model</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/fortify.html">fortify</a></span><span class="op">(</span>fun <span class="op">=</span> <span class="st">"cumhaz"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="co"># `fortify.survfit()` doesn't name cumhaz correctly:</span></span>
@@ -2073,7 +2073,7 @@ Figure&nbsp;7.9: Complementary log-log survival curves - PH estimates
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span></span>
 <span>    trans <span class="op">=</span> <span class="st">"log10"</span>,</span>
 <span>    name <span class="op">=</span> <span class="st">"Survival time (t, days, log-scale)"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-bmt-cumhaz" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bmt-cumhaz-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -2159,7 +2159,7 @@ x_{ik}-\frac{\sum_{k\in R}x_{jk}\theta_k}{\sum_{k\in R}\theta_k}
 <p>The default is to use the KM curve as a transform, which is similar to the rank but deals better with censoring.</p>
 <p>The <code><a href="https://rdrr.io/pkg/survival/man/cox.zph.html">cox.zph()</a></code> function implements a score test proposed in <span class="citation" data-cites="grambsch1994proportional">Grambsch and Therneau (<a href="references.html#ref-grambsch1994proportional" role="doc-biblioref">1994</a>)</span>.</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">hodg.zph</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/cox.zph.html">cox.zph</a></span><span class="op">(</span><span class="va">hodg.cox1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">hodg.zph</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               chisq df     p</span></span>
@@ -2168,12 +2168,12 @@ x_{ik}-\frac{\sum_{k\in R}x_{jk}\theta_k}{\sum_{k\in R}\theta_k}
 <span><span class="co">#&gt; score        3.8805  1 0.049</span></span>
 <span><span class="co">#&gt; wtime        0.0173  1 0.895</span></span>
 <span><span class="co">#&gt; gtype:dtype  4.0474  1 0.044</span></span>
-<span><span class="co">#&gt; GLOBAL      13.7573  5 0.017</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; GLOBAL      13.7573  5 0.017</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="gtype" class="level4"><h4 class="anchored" data-anchor-id="gtype"><code>gtype</code></h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"gtype"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"gtype"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure class="figure"><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-8-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></a></p>
@@ -2183,7 +2183,7 @@ x_{ik}-\frac{\sum_{k\in R}x_{jk}\theta_k}{\sum_{k\in R}\theta_k}
 </div>
 </section><section id="dtype" class="level4"><h4 class="anchored" data-anchor-id="dtype"><code>dtype</code></h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"dtype"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"dtype"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure class="figure"><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-9-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></a></p>
@@ -2193,7 +2193,7 @@ x_{ik}-\frac{\sum_{k\in R}x_{jk}\theta_k}{\sum_{k\in R}\theta_k}
 </div>
 </section><section id="score" class="level4"><h4 class="anchored" data-anchor-id="score"><code>score</code></h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"score"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"score"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure class="figure"><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-10-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></a></p>
@@ -2203,7 +2203,7 @@ x_{ik}-\frac{\sum_{k\in R}x_{jk}\theta_k}{\sum_{k\in R}\theta_k}
 </div>
 </section><section id="wtime" class="level4"><h4 class="anchored" data-anchor-id="wtime"><code>wtime</code></h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"wtime"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"wtime"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure class="figure"><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-11-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></a></p>
@@ -2213,7 +2213,7 @@ x_{ik}-\frac{\sum_{k\in R}x_{jk}\theta_k}{\sum_{k\in R}\theta_k}
 </div>
 </section><section id="gtypedtype" class="level4"><h4 class="anchored" data-anchor-id="gtypedtype"><code>gtype:dtype</code></h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"gtype:dtype"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survminer/man/ggcoxzph.html">ggcoxzph</a></span><span class="op">(</span><span class="va">hodg.zph</span>, var <span class="op">=</span> <span class="st">"gtype:dtype"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure class="figure"><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-12-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></a></p>
@@ -2271,7 +2271,7 @@ r^{CS}_i \stackrel{\text{def}}{=}\hat {\Lambda}(t_i|\tilde{x}_i)
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span> <span class="op">=</span> <span class="va">hodg2</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span> <span class="op">=</span> <span class="va">hodg2</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>cs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">hodg.cox1</span>, type <span class="op">=</span> <span class="st">"expected"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">surv.csr</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
@@ -2281,7 +2281,7 @@ r^{CS}_i \stackrel{\text{def}}{=}\hat {\Lambda}(t_i|\tilde{x}_i)
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">surv.csr</span>, fun <span class="op">=</span> <span class="st">"cumhaz"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_abline</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>intercept <span class="op">=</span> <span class="fl">0</span>, slope <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-cox-snell-cuhaz-hodg2" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cox-snell-cuhaz-hodg2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -2308,7 +2308,7 @@ Figure&nbsp;7.11: Cumulative Hazard of Cox-Snell Residuals
 <p>Let’s use this to examine the <code>score</code> and <code>wtime</code> variables in the <code>wtime</code> data set.</p>
 <section id="karnofsky-score" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="karnofsky-score">Karnofsky score</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span> <span class="op">=</span> <span class="va">hodg2</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span> <span class="op">=</span> <span class="va">hodg2</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    mres <span class="op">=</span> </span>
 <span>      <span class="va">hodg.cox1</span> <span class="op">|&gt;</span> </span>
@@ -2323,7 +2323,7 @@ Figure&nbsp;7.11: Cumulative Hazard of Cox-Snell Residuals
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_classic</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Karnofsky Score"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Martingale Residuals"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>col<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html">guide_legend</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>col<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html">guide_legend</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>Martingale Residuals vs.&nbsp;Karnofsky Score</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-13-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18" title="Martingale Residuals vs.&nbsp;Karnofsky Score"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672" alt="Martingale Residuals vs.&nbsp;Karnofsky Score"></a></p>
@@ -2334,7 +2334,7 @@ Figure&nbsp;7.11: Cumulative Hazard of Cox-Snell Residuals
 <p>The line is almost straight. It could be some modest transformation of the Karnofsky score would help, but it might not make much difference.</p>
 </section><section id="waiting-time" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="waiting-time">Waiting time</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span><span class="op">$</span><span class="va">mres</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span><span class="op">$</span><span class="va">mres</span> <span class="op">=</span> </span>
 <span>  <span class="va">hodg.cox1</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">-</span> <span class="va">wtime</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span>type<span class="op">=</span><span class="st">"martingale"</span><span class="op">)</span></span>
@@ -2347,7 +2347,7 @@ Figure&nbsp;7.11: Cumulative Hazard of Cox-Snell Residuals
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_classic</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Waiting Time"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Martingale Residuals"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>col<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html">guide_legend</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>col<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html">guide_legend</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>Martingale Residuals vs.&nbsp;Waiting Time</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-14-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-19" title="Martingale Residuals vs.&nbsp;Waiting Time"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672" alt="Martingale Residuals vs.&nbsp;Waiting Time"></a></p>
@@ -2360,7 +2360,7 @@ Figure&nbsp;7.11: Cumulative Hazard of Cox-Snell Residuals
 </section><section id="updating-the-model" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="updating-the-model">Updating the model</h4>
 <p>Let’s reformulate the model with dichotomized <code>wtime</code>.</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span> <span class="op">=</span> </span>
 <span>  <span class="va">hodg2</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    wt2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html">cut</a></span><span class="op">(</span></span>
@@ -2372,11 +2372,11 @@ Figure&nbsp;7.11: Cumulative Hazard of Cox-Snell Residuals
 <span>    formula <span class="op">=</span> </span>
 <span>      <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">time</span>, event <span class="op">=</span> <span class="va">delta</span> <span class="op">==</span> <span class="st">"dead"</span><span class="op">)</span> <span class="op">~</span> </span>
 <span>      <span class="va">gtype</span><span class="op">*</span><span class="va">dtype</span> <span class="op">+</span> <span class="va">score</span> <span class="op">+</span> <span class="va">wt2</span>,</span>
-<span>    data <span class="op">=</span> <span class="va">hodg2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>    data <span class="op">=</span> <span class="va">hodg2</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell" data-tbl-cap="Model summary table with waiting time on continuous scale">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox1</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/add1.html">drop1</a></span><span class="op">(</span>test<span class="op">=</span><span class="st">"Chisq"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox1</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/add1.html">drop1</a></span><span class="op">(</span>test<span class="op">=</span><span class="st">"Chisq"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false"> <div class="table-caption"><p>Model summary table with waiting time on continuous scale</p></div>
   <script data-pagedtable-source="" type="application/json">
@@ -2386,7 +2386,7 @@ Figure&nbsp;7.11: Cumulative Hazard of Cox-Snell Residuals
 </div>
 </div>
 <div class="cell" data-tbl-cap="Model summary table with dichotomized waiting time">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox2</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/add1.html">drop1</a></span><span class="op">(</span>test<span class="op">=</span><span class="st">"Chisq"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox2</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/add1.html">drop1</a></span><span class="op">(</span>test<span class="op">=</span><span class="st">"Chisq"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false"> <div class="table-caption"><p>Model summary table with dichotomized waiting time</p></div>
   <script data-pagedtable-source="" type="application/json">
@@ -2411,17 +2411,17 @@ r_i^D &amp;= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \ri
 </section><section id="section" class="level3" data-number="7.12.2"><h3 data-number="7.12.2" class="anchored" data-anchor-id="section">
 <span class="header-section-number">7.12.2</span> </h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.mart</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">hodg.cox2</span>,type<span class="op">=</span><span class="st">"martingale"</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.mart</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">hodg.cox2</span>,type<span class="op">=</span><span class="st">"martingale"</span><span class="op">)</span></span>
 <span><span class="va">hodg.dev</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">hodg.cox2</span>,type<span class="op">=</span><span class="st">"deviance"</span><span class="op">)</span></span>
 <span><span class="va">hodg.dfb</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">hodg.cox2</span>,type<span class="op">=</span><span class="st">"dfbeta"</span><span class="op">)</span></span>
-<span><span class="va">hodg.preds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">hodg.cox2</span><span class="op">)</span>                   <span class="co">#linear predictor</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">hodg.preds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">hodg.cox2</span><span class="op">)</span>                   <span class="co">#linear predictor</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.preds</span>,</span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.preds</span>,</span>
 <span>     <span class="va">hodg.mart</span>,</span>
 <span>     xlab<span class="op">=</span><span class="st">"Linear Predictor"</span>,</span>
-<span>     ylab<span class="op">=</span><span class="st">"Martingale Residual"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>     ylab<span class="op">=</span><span class="st">"Martingale Residual"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>Martingale Residuals vs.&nbsp;Linear Predictor</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-19-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-20" title="Martingale Residuals vs.&nbsp;Linear Predictor"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672" alt="Martingale Residuals vs.&nbsp;Linear Predictor"></a></p>
@@ -2431,7 +2431,7 @@ r_i^D &amp;= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \ri
 </div>
 <p>The smallest three martingale residuals in order are observations 1, 29, and 18.</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.preds</span>,<span class="va">hodg.dev</span>,xlab<span class="op">=</span><span class="st">"Linear Predictor"</span>,ylab<span class="op">=</span><span class="st">"Deviance Residual"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.preds</span>,<span class="va">hodg.dev</span>,xlab<span class="op">=</span><span class="st">"Linear Predictor"</span>,ylab<span class="op">=</span><span class="st">"Deviance Residual"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>Deviance Residuals vs.&nbsp;Linear Predictor</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-20-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-21" title="Deviance Residuals vs.&nbsp;Linear Predictor"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672" alt="Deviance Residuals vs.&nbsp;Linear Predictor"></a></p>
@@ -2448,7 +2448,7 @@ r_i^D &amp;= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \ri
 </ul>
 <section id="graft-type" class="level4"><h4 class="anchored" data-anchor-id="graft-type">Graft type</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,xlab<span class="op">=</span><span class="st">"Observation Order"</span>,ylab<span class="op">=</span><span class="st">"dfbeta for Graft Type"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,xlab<span class="op">=</span><span class="st">"Observation Order"</span>,ylab<span class="op">=</span><span class="st">"dfbeta for Graft Type"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>dfbeta Values by Observation Order for Graft Type</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-21-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-22" title="dfbeta Values by Observation Order for Graft Type"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672" alt="dfbeta Values by Observation Order for Graft Type"></a></p>
@@ -2459,9 +2459,9 @@ r_i^D &amp;= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \ri
 <p>The smallest dfbeta for graft type is observation 1.</p>
 </section><section id="disease-type" class="level4"><h4 class="anchored" data-anchor-id="disease-type">Disease type</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>,</span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>,</span>
 <span>     xlab<span class="op">=</span><span class="st">"Observation Order"</span>,</span>
-<span>     ylab<span class="op">=</span><span class="st">"dfbeta for Disease Type"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>     ylab<span class="op">=</span><span class="st">"dfbeta for Disease Type"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>dfbeta Values by Observation Order for Disease Type</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-22-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-23" title="dfbeta Values by Observation Order for Disease Type"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672" alt="dfbeta Values by Observation Order for Disease Type"></a></p>
@@ -2472,9 +2472,9 @@ r_i^D &amp;= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \ri
 <p>The smallest two dfbeta values for disease type are observations 1 and 16.</p>
 </section><section id="karnofsky-score-1" class="level4"><h4 class="anchored" data-anchor-id="karnofsky-score-1">Karnofsky score</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">3</span><span class="op">]</span>,</span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">3</span><span class="op">]</span>,</span>
 <span>     xlab<span class="op">=</span><span class="st">"Observation Order"</span>,</span>
-<span>     ylab<span class="op">=</span><span class="st">"dfbeta for Karnofsky Score"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>     ylab<span class="op">=</span><span class="st">"dfbeta for Karnofsky Score"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>dfbeta Values by Observation Order for Karnofsky Score</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-23-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-24" title="dfbeta Values by Observation Order for Karnofsky Score"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672" alt="dfbeta Values by Observation Order for Karnofsky Score"></a></p>
@@ -2485,10 +2485,10 @@ r_i^D &amp;= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \ri
 <p>The two highest dfbeta values for score are observations 1 and 18. The next three are observations 17, 29, and 19. The smallest value is observation 2.</p>
 </section><section id="waiting-time-dichotomized" class="level4"><h4 class="anchored" data-anchor-id="waiting-time-dichotomized">Waiting time (dichotomized)</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb42"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">4</span><span class="op">]</span>,</span>
 <span>  xlab<span class="op">=</span><span class="st">"Observation Order"</span>,</span>
-<span>  ylab<span class="op">=</span><span class="st">"dfbeta for `Waiting Time &lt; 80`"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  ylab<span class="op">=</span><span class="st">"dfbeta for `Waiting Time &lt; 80`"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>dfbeta Values by Observation Order for Waiting Time (dichotomized)</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-24-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-25" title="dfbeta Values by Observation Order for Waiting Time (dichotomized)"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672" alt="dfbeta Values by Observation Order for Waiting Time (dichotomized)"></a></p>
@@ -2499,9 +2499,9 @@ r_i^D &amp;= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \ri
 <p>The two large values of dfbeta for dichotomized waiting time are observations 15 and 16. This may have to do with the discretization of waiting time.</p>
 </section><section id="interaction-graft-type-and-disease-type" class="level4"><h4 class="anchored" data-anchor-id="interaction-graft-type-and-disease-type">Interaction: graft type and disease type</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">5</span><span class="op">]</span>,</span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hodg.dfb</span><span class="op">[</span>,<span class="fl">5</span><span class="op">]</span>,</span>
 <span>     xlab<span class="op">=</span><span class="st">"Observation Order"</span>,</span>
-<span>     ylab<span class="op">=</span><span class="st">"dfbeta for dtype:gtype"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>     ylab<span class="op">=</span><span class="st">"dfbeta for dtype:gtype"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>dfbeta Values by Observation Order for dtype:gtype</figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-25-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-26" title="dfbeta Values by Observation Order for dtype:gtype"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672" alt="dfbeta Values by Observation Order for dtype:gtype"></a></p>
@@ -2557,25 +2557,25 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 </section></section><section id="section-1" class="level3" data-number="7.12.4"><h3 data-number="7.12.4" class="anchored" data-anchor-id="section-1">
 <span class="header-section-number">7.12.4</span> </h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb44"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">hodg</span>,<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">delta</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">hodg</span>,<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">delta</span><span class="op">==</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">#&gt;     2.0    41.2    62.5    97.6    83.2   524.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;     2.0    41.2    62.5    97.6    83.2   524.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb45"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">hodg</span>,<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">wtime</span><span class="op">)</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">hodg</span>,<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">wtime</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">#&gt;     5.0    16.0    24.0    37.7    55.5   171.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;     5.0    16.0    24.0    37.7    55.5   171.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb46"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">hodg</span>,<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">score</span><span class="op">)</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">hodg</span>,<span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">score</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">#&gt;    20.0    60.0    80.0    76.3    90.0   100.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;    20.0    60.0    80.0    76.3    90.0   100.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox2</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox2</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; coxph(formula = Surv(time, event = delta == "dead") ~ gtype * </span></span>
 <span><span class="co">#&gt;     dtype + score + wt2, data = hodg2)</span></span>
@@ -2588,11 +2588,11 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <span><span class="co">#&gt; gtypeAutologous:dtypeHodgkins -2.0668    0.1266   0.9258 -2.23  0.0256</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Likelihood ratio test=35.5  on 5 df, p=1.21e-06</span></span>
-<span><span class="co">#&gt; n= 43, number of events= 26</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; n= 43, number of events= 26</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb48"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">15</span>,<span class="fl">16</span>,<span class="fl">18</span>,<span class="fl">29</span><span class="op">)</span>,<span class="op">]</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg2</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">15</span>,<span class="fl">16</span>,<span class="fl">18</span>,<span class="fl">29</span><span class="op">)</span>,<span class="op">]</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">gtype</span>, <span class="va">dtype</span>, <span class="va">time</span>, <span class="va">delta</span>, <span class="va">score</span>, <span class="va">wtime</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    comment <span class="op">=</span> </span>
@@ -2602,7 +2602,7 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <span>        <span class="st">"high risk grp, short wait, poor score"</span>,</span>
 <span>        <span class="st">"early death, good score, med risk grp"</span>,</span>
 <span>        <span class="st">"early death, good score, med risk grp"</span></span>
-<span>      <span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>      <span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -2620,7 +2620,7 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <li>A main point that we want to be sure of is the relative risk difference by disease type and graft type.</li>
 </ul>
 <div class="cell" data-tbl-cap="Linear Risk Predictors for Lymphoma">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb49"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox2</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hodg.cox2</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span></span>
 <span>    reference <span class="op">=</span> <span class="st">"zero"</span>,</span>
 <span>    newdata <span class="op">=</span> <span class="va">means</span> <span class="op">|&gt;</span> </span>
@@ -2629,7 +2629,7 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <span>        score <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>, </span>
 <span>    type <span class="op">=</span> <span class="st">"lp"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="st">'linear predictor'</span> <span class="op">=</span> <span class="va">_</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html">pander</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html">pander</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Linear Risk Predictors for Lymphoma</caption>
@@ -2670,7 +2670,7 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <p>We will analyze remission survival times on 42 leukemia patients, half on new treatment, half on standard treatment.</p>
 <p>This is the same data as the <code>drug6mp</code> data from <code>KMsurv</code>, but with two other variables and without the pairing. This version comes from <span class="citation" data-cites="kleinbaum2012survival">Kleinbaum and Klein (<a href="references.html#ref-kleinbaum2012survival" role="doc-biblioref">2012</a>)</span> (e.g., p281):</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb50"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">anderson</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span></span>
 <span>    <span class="st">"http://web1.sph.emory.edu/dkleinb/allDatasets/"</span>,</span>
@@ -2703,13 +2703,13 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <span>      event <span class="op">=</span> <span class="op">(</span><span class="va">status</span> <span class="op">==</span> <span class="st">"relapse"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">anderson</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">anderson</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section id="cox-semi-parametric-proportional-hazards-model" class="level3" data-number="7.13.2"><h3 data-number="7.13.2" class="anchored" data-anchor-id="cox-semi-parametric-proportional-hazards-model">
 <span class="header-section-number">7.13.2</span> Cox semi-parametric proportional hazards model</h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb51"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">anderson.cox1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="va">rx</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">logwbc</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">anderson</span><span class="op">)</span></span>
@@ -2735,22 +2735,22 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <span><span class="co">#&gt; Concordance= 0.851  (se = 0.041 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 47.2  on 3 df,   p=3e-10</span></span>
 <span><span class="co">#&gt; Wald test            = 33.5  on 3 df,   p=2e-07</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 48  on 3 df,   p=2e-10</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 48  on 3 df,   p=2e-10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="test-the-proportional-hazards-assumption" class="level4"><h4 class="anchored" data-anchor-id="test-the-proportional-hazards-assumption">Test the proportional hazards assumption</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb52"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/cox.zph.html">cox.zph</a></span><span class="op">(</span><span class="va">anderson.cox1</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/cox.zph.html">cox.zph</a></span><span class="op">(</span><span class="va">anderson.cox1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        chisq df    p</span></span>
 <span><span class="co">#&gt; rx     0.036  1 0.85</span></span>
 <span><span class="co">#&gt; sex    5.420  1 0.02</span></span>
 <span><span class="co">#&gt; logwbc 0.142  1 0.71</span></span>
-<span><span class="co">#&gt; GLOBAL 5.879  3 0.12</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; GLOBAL 5.879  3 0.12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section id="graph-the-k-m-survival-curves" class="level4"><h4 class="anchored" data-anchor-id="graph-the-k-m-survival-curves">Graph the K-M survival curves</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb53"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">anderson_km_model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="va">sex</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">anderson</span><span class="op">)</span></span>
@@ -2758,7 +2758,7 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <span><span class="va">anderson_km_model</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span>conf.int <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">"bottom"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">"bottom"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure class="figure"><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-36-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-27"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid figure-img" width="672"></a></p>
@@ -2771,7 +2771,7 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <span class="header-section-number">7.13.3</span> Graph the Nelson-Aalen cumulative hazard</h3>
 <p>We can also look at the log-hazard (“cloglog survival”) plots:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb54"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">anderson_na_model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">anderson_na_model</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html">survfit</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="va">sex</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">anderson</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"fleming"</span><span class="op">)</span></span>
@@ -2789,7 +2789,7 @@ Table&nbsp;7.2: Observations to Examine by Residuals and Influence
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span></span>
 <span>    breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">5</span>,<span class="fl">10</span>,<span class="fl">20</span>,<span class="fl">50</span><span class="op">)</span>,</span>
 <span>    trans <span class="op">=</span> <span class="st">"log"</span></span>
-<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-cuhaz-anderson" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cuhaz-anderson-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -2811,7 +2811,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <li>Since the <code>sex</code> variable shows possible non-proportionality, we try stratifying on <code>sex</code>.</li>
 </ul>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb55"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">anderson.coxph.strat</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>    formula <span class="op">=</span> </span>
@@ -2837,12 +2837,12 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.812  (se = 0.059 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 32.1  on 2 df,   p=1e-07</span></span>
 <span><span class="co">#&gt; Wald test            = 22.8  on 2 df,   p=1e-05</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 30.8  on 2 df,   p=2e-07</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 30.8  on 2 df,   p=2e-07</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Let’s compare this to a model fit only on the subset of males:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb56"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb56"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">anderson.coxph.male</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>    formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="va">rx</span> <span class="op">+</span> <span class="va">logwbc</span>,</span>
@@ -2869,11 +2869,11 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.905  (se = 0.043 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 29.2  on 2 df,   p=5e-07</span></span>
 <span><span class="co">#&gt; Wald test            = 15.3  on 2 df,   p=5e-04</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 26.4  on 2 df,   p=2e-06</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 26.4  on 2 df,   p=2e-06</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb57"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">anderson.coxph.female</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb57"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">anderson.coxph.female</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>    formula <span class="op">=</span> </span>
 <span>      <span class="va">surv</span> <span class="op">~</span> <span class="va">rx</span> <span class="op">+</span> <span class="va">logwbc</span>,</span>
@@ -2900,12 +2900,12 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.692  (se = 0.085 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 6.65  on 2 df,   p=0.04</span></span>
 <span><span class="co">#&gt; Wald test            = 6.36  on 2 df,   p=0.04</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 6.74  on 2 df,   p=0.03</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 6.74  on 2 df,   p=0.03</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>The coefficients of treatment look different. Are they statistically different?</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb58"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb58"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">anderson.coxph.strat.intxn</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>    formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html">strata</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">rx</span> <span class="op">+</span> <span class="va">logwbc</span><span class="op">)</span>,</span>
@@ -2934,13 +2934,13 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.797  (se = 0.058 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 35.8  on 4 df,   p=3e-07</span></span>
 <span><span class="co">#&gt; Wald test            = 21.7  on 4 df,   p=2e-04</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 33.1  on 4 df,   p=1e-06</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 33.1  on 4 df,   p=1e-06</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb59"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb59"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span></span>
 <span>  <span class="va">anderson.coxph.strat.intxn</span>,</span>
-<span>  <span class="va">anderson.coxph.strat</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="va">anderson.coxph.strat</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -2964,7 +2964,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <li>Either approach may work.</li>
 </ul>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb60"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">anderson.coxph.intxn</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>    formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="op">(</span><span class="va">rx</span> <span class="op">+</span> <span class="va">logwbc</span><span class="op">)</span> <span class="op">*</span> <span class="va">sex</span>,</span>
@@ -2995,18 +2995,18 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.861  (se = 0.036 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 57  on 5 df,   p=5e-11</span></span>
 <span><span class="co">#&gt; Wald test            = 35.6  on 5 df,   p=1e-06</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 57.1  on 5 df,   p=5e-11</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 57.1  on 5 df,   p=5e-11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb61"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/cox.zph.html">cox.zph</a></span><span class="op">(</span><span class="va">anderson.coxph.intxn</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb61"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/cox.zph.html">cox.zph</a></span><span class="op">(</span><span class="va">anderson.coxph.intxn</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            chisq df    p</span></span>
 <span><span class="co">#&gt; rx         0.136  1 0.71</span></span>
 <span><span class="co">#&gt; logwbc     1.652  1 0.20</span></span>
 <span><span class="co">#&gt; sex        1.266  1 0.26</span></span>
 <span><span class="co">#&gt; rx:sex     0.149  1 0.70</span></span>
 <span><span class="co">#&gt; logwbc:sex 0.102  1 0.75</span></span>
-<span><span class="co">#&gt; GLOBAL     3.747  5 0.59</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; GLOBAL     3.747  5 0.59</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section><section id="time-varying-covariates" class="level2" data-number="7.14"><h2 data-number="7.14" class="anchored" data-anchor-id="time-varying-covariates">
@@ -3015,7 +3015,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <section id="motivating-example-back-to-the-leukemia-dataset" class="level3" data-number="7.14.1"><h3 data-number="7.14.1" class="anchored" data-anchor-id="motivating-example-back-to-the-leukemia-dataset">
 <span class="header-section-number">7.14.1</span> Motivating example: back to the leukemia dataset</h3>
 <div class="cell">
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># load the data:</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># load the data:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">bmt</span>, package <span class="op">=</span> <span class="st">'KMsurv'</span><span class="op">)</span></span>
 <span><span class="va">bmt</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 137 × 22</span></span>
@@ -3028,7 +3028,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; 5     1  1433  1433     0     0     0  1433     0   236     1    12     1    32</span></span>
 <span><span class="co">#&gt; # ℹ 132 more rows</span></span>
 <span><span class="co">#&gt; # ℹ 9 more variables: z2 &lt;int&gt;, z3 &lt;int&gt;, z4 &lt;int&gt;, z5 &lt;int&gt;, z6 &lt;int&gt;,</span></span>
-<span><span class="co">#&gt; #   z7 &lt;int&gt;, z8 &lt;int&gt;, z9 &lt;int&gt;, z10 &lt;int&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; #   z7 &lt;int&gt;, z8 &lt;int&gt;, z9 &lt;int&gt;, z10 &lt;int&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This dataset comes from the <span class="citation" data-cites="copelan1991treatment">Copelan et al. (<a href="references.html#ref-copelan1991treatment" role="doc-biblioref">1991</a>)</span> study of allogenic bone marrow transplant therapy for acute myeloid leukemia (AML) and acute lymphoblastic leukemia (ALL).</p>
 <section id="outcomes-endpoints" class="level5"><h5 class="anchored" data-anchor-id="outcomes-endpoints">Outcomes (endpoints)</h5>
@@ -3049,7 +3049,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 </ul></section><section id="preprocessing" class="level4"><h4 class="anchored" data-anchor-id="preprocessing">Preprocessing</h4>
 <p>We reformat the data before analysis:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb63"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># reformat the data:</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># reformat the data:</span></span>
 <span><span class="va">bmt1</span> <span class="op">=</span> </span>
 <span>  <span class="va">bmt</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -3128,7 +3128,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; 10 ALL      10            24          40 Male          Male       </span></span>
 <span><span class="co">#&gt; # ℹ 127 more rows</span></span>
 <span><span class="co">#&gt; # ℹ 6 more variables: `Patient CMV Status` &lt;chr&gt;, `Donor CMV Status` &lt;chr&gt;,</span></span>
-<span><span class="co">#&gt; #   `Waiting Time to Transplant` &lt;int&gt;, FAB &lt;fct&gt;, hospital &lt;fct&gt;, MTX &lt;lgl&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; #   `Waiting Time to Transplant` &lt;int&gt;, FAB &lt;fct&gt;, hospital &lt;fct&gt;, MTX &lt;lgl&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section><section id="time-dependent-covariates" class="level3" data-number="7.14.2"><h3 data-number="7.14.2" class="anchored" data-anchor-id="time-dependent-covariates">
@@ -3146,7 +3146,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <li>For each record, the covariates are constant.</li>
 </ul>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb64"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">bmt2</span> <span class="op">=</span> <span class="va">bmt1</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="co">#set up new long-format data set:</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/tmerge.html">tmerge</a></span><span class="op">(</span><span class="va">bmt1</span>, id <span class="op">=</span> <span class="va">id</span>, tstop <span class="op">=</span> <span class="va">t2</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -3163,15 +3163,15 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="va">bmt2</span> <span class="op">=</span> <span class="va">bmt2</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>status <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="op">(</span><span class="va">tstop</span> <span class="op">==</span> <span class="va">t2</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">d3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co"># status only = 1 if at end of t2 and not censored</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># status only = 1 if at end of t2 and not censored</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Let’s see how we’ve rearranged the first row of the data:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb65"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">bmt1</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">t1</span>, <span class="va">d1</span>, <span class="va">t2</span>, <span class="va">d2</span>, <span class="va">d3</span>, <span class="va">ta</span>, <span class="va">da</span>, <span class="va">tc</span>, <span class="va">dc</span>, <span class="va">tp</span>, <span class="va">dp</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">t1</span>, <span class="va">d1</span>, <span class="va">t2</span>, <span class="va">d2</span>, <span class="va">d3</span>, <span class="va">ta</span>, <span class="va">da</span>, <span class="va">tc</span>, <span class="va">dc</span>, <span class="va">tp</span>, <span class="va">dp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -3195,7 +3195,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 </ul>
 <p>After converting the data to long-format, we have:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb66"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt2</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb66"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt2</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span></span>
 <span>    <span class="va">id</span>,</span>
 <span>    <span class="va">tstart</span>,</span>
@@ -3205,7 +3205,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span>    <span class="va">precovery</span>,</span>
 <span>    <span class="va">status</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -3236,7 +3236,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 </ul></section><section id="model-with-time-fixed-covariates" class="level3" data-number="7.14.5"><h3 data-number="7.14.5" class="anchored" data-anchor-id="model-with-time-fixed-covariates">
 <span class="header-section-number">7.14.5</span> Model with Time-Fixed Covariates</h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb67"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt1</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb67"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt1</span> <span class="op">=</span> </span>
 <span>  <span class="va">bmt1</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>surv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html">Surv</a></span><span class="op">(</span><span class="va">t2</span>,<span class="va">d3</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -3272,7 +3272,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Likelihood ratio test= 32.8  on 6 df,   p=1e-05</span></span>
 <span><span class="co">#&gt; Wald test            = 33  on 6 df,   p=1e-05</span></span>
 <span><span class="co">#&gt; Score (logrank) test = 35.8  on 6 df,   p=3e-06</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/add1.html">drop1</a></span><span class="op">(</span><span class="va">bmt_coxph_TF</span>, test <span class="op">=</span> <span class="st">"Chisq"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/add1.html">drop1</a></span><span class="op">(</span><span class="va">bmt_coxph_TF</span>, test <span class="op">=</span> <span class="st">"Chisq"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -3282,7 +3282,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb68"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt1</span><span class="op">$</span><span class="va">mres</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb68"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt1</span><span class="op">$</span><span class="va">mres</span> <span class="op">=</span> </span>
 <span>  <span class="va">bmt_coxph_TF</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">-</span> <span class="va">`donor age`</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span>type<span class="op">=</span><span class="st">"martingale"</span><span class="op">)</span></span>
@@ -3295,7 +3295,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_classic</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Donor age"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Martingale Residuals"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>col<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html">guide_legend</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>col<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_legend.html">guide_legend</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">""</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><figcaption>Martingale residuals for <code>Donor age</code></figcaption><p><a href="proportional-hazards-models_files/figure-html/unnamed-chunk-50-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-29" title="Martingale residuals for Donor age"><img src="proportional-hazards-models_files/figure-html/unnamed-chunk-50-1.png" class="img-fluid figure-img" width="672" alt="Martingale residuals for Donor age"></a></p>
@@ -3306,7 +3306,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <p>A more complex functional form for <code>donor age</code> seems warranted; left as an exercise for the reader.</p>
 <p>Now we will add the time-varying covariates:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb69"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb69"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="co"># add counting process formulation of Surv():</span></span>
 <span><span class="va">bmt2</span> <span class="op">=</span> </span>
 <span>  <span class="va">bmt2</span> <span class="op">|&gt;</span> </span>
@@ -3316,12 +3316,12 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span>        time <span class="op">=</span> <span class="va">tstart</span>,</span>
 <span>        time2 <span class="op">=</span> <span class="va">tstop</span>,</span>
 <span>        event <span class="op">=</span> <span class="va">status</span>,</span>
-<span>        type <span class="op">=</span> <span class="st">"counting"</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>        type <span class="op">=</span> <span class="st">"counting"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Let’s see how the data looks for patient 15:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb70"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt1</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="fl">15</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">tp</span>, <span class="va">dp</span>, <span class="va">tc</span>,<span class="va">dc</span>, <span class="va">ta</span>, <span class="va">da</span>, <span class="va">FAB</span>, <span class="va">surv</span>, <span class="va">t1</span>, <span class="va">d1</span>, <span class="va">t2</span>, <span class="va">d2</span>, <span class="va">d3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb70"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt1</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="fl">15</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">tp</span>, <span class="va">dp</span>, <span class="va">tc</span>,<span class="va">dc</span>, <span class="va">ta</span>, <span class="va">da</span>, <span class="va">FAB</span>, <span class="va">surv</span>, <span class="va">t1</span>, <span class="va">d1</span>, <span class="va">t2</span>, <span class="va">d2</span>, <span class="va">d3</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -3329,7 +3329,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
   </script>
 </div>
 </div>
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb71"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt2</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="fl">15</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">agvhd</span>, <span class="va">cgvhd</span>, <span class="va">precovery</span>, <span class="va">surv</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt2</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="fl">15</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">agvhd</span>, <span class="va">cgvhd</span>, <span class="va">precovery</span>, <span class="va">surv</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -3341,7 +3341,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 </section><section id="model-with-time-dependent-covariates" class="level3" data-number="7.14.6"><h3 data-number="7.14.6" class="anchored" data-anchor-id="model-with-time-dependent-covariates">
 <span class="header-section-number">7.14.6</span> Model with Time-Dependent Covariates</h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb72"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt_coxph_TV</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb72"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt_coxph_TV</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> </span>
 <span>    <span class="va">surv</span> <span class="op">~</span> </span>
 <span>    <span class="va">group</span> <span class="op">+</span> <span class="va">`patient age`</span><span class="op">*</span><span class="va">`donor age`</span> <span class="op">+</span> <span class="va">FAB</span> <span class="op">+</span> <span class="va">agvhd</span> <span class="op">+</span> <span class="va">cgvhd</span> <span class="op">+</span> <span class="va">precovery</span>,</span>
@@ -3381,13 +3381,13 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.702  (se = 0.028 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 40.3  on 9 df,   p=7e-06</span></span>
 <span><span class="co">#&gt; Wald test            = 42.4  on 9 df,   p=3e-06</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 47.2  on 9 df,   p=4e-07</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 47.2  on 9 df,   p=4e-07</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Platelet recovery is highly significant.</p>
 <p>Neither acute GVHD (<code>agvhd</code>) nor chronic GVHD (<code>cgvhd</code>) has a statistically significant effect here, nor are they significant in models with the other one removed.</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb73"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">bmt_coxph_TV</span>, <span class="va">.</span><span class="op">~</span><span class="va">.</span><span class="op">-</span><span class="va">agvhd</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; coxph(formula = surv ~ group + `patient age` + `donor age` + </span></span>
@@ -3453,12 +3453,12 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.701  (se = 0.027 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 40.1  on 8 df,   p=3e-06</span></span>
 <span><span class="co">#&gt; Wald test            = 42.1  on 8 df,   p=1e-06</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 47.1  on 8 df,   p=1e-07</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 47.1  on 8 df,   p=1e-07</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Let’s drop them both:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb74"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt_coxph_TV2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">bmt_coxph_TV</span>, <span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">-</span> <span class="va">agvhd</span> <span class="op">-</span><span class="va">cgvhd</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb74"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bmt_coxph_TV2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">bmt_coxph_TV</span>, <span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">-</span> <span class="va">agvhd</span> <span class="op">-</span><span class="va">cgvhd</span><span class="op">)</span></span>
 <span><span class="va">bmt_coxph_TV2</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; coxph(formula = surv ~ group + `patient age` + `donor age` + </span></span>
@@ -3489,7 +3489,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.7  (se = 0.027 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 39.9  on 7 df,   p=1e-06</span></span>
 <span><span class="co">#&gt; Wald test            = 42.2  on 7 df,   p=5e-07</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 47.1  on 7 df,   p=5e-08</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 47.1  on 7 df,   p=5e-08</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section><section id="recurrent-events" class="level2" data-number="7.15"><h2 data-number="7.15" class="anchored" data-anchor-id="recurrent-events">
@@ -3564,7 +3564,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <li><p>What happens if I have 5 treatment and 5 control values and want to do a t-test and I then duplicate the 10 values as if the sample size was 20? This falsely narrows confidence intervals by a factor of <span class="math inline">\(\sqrt{2}=1.41\)</span>.</p></li>
 </ul>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb75"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bladder</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb75"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bladder</span> <span class="op">=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span></span>
 <span>    <span class="st">"http://web1.sph.emory.edu/dkleinb/allDatasets"</span>,</span>
 <span>    <span class="st">"/surv2datasets/bladder.dta"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -3572,11 +3572,11 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bladder</span> <span class="op">=</span> <span class="va">bladder</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>,<span class="op">]</span>  <span class="co">#remove subject with 0 observation time</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">bladder</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">bladder</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb76"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb76"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">bladder</span> <span class="op">=</span> </span>
 <span>  <span class="va">bladder</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
@@ -3613,7 +3613,7 @@ Figure&nbsp;7.12: Cumulative hazard (cloglog scale) for <code>anderson</code> da
 <span><span class="co">#&gt; Concordance= 0.624  (se = 0.032 )</span></span>
 <span><span class="co">#&gt; Likelihood ratio test= 14.7  on 3 df,   p=0.002</span></span>
 <span><span class="co">#&gt; Wald test            = 15.9  on 3 df,   p=0.001</span></span>
-<span><span class="co">#&gt; Score (logrank) test = 16.2  on 3 df,   p=0.001</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Score (logrank) test = 16.2  on 3 df,   p=0.001</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -3633,7 +3633,7 @@ Note
 </h4>
 <p>If we add <code>cluster= id</code> to the call to <code>coxph</code>, the coefficient estimates don’t change, but we get an additional column in the <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> output: <code>robust se</code>:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb77"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb77"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">bladder.cox2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html">coxph</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">surv</span> <span class="op">~</span> <span class="va">tx</span> <span class="op">+</span> <span class="va">num</span> <span class="op">+</span> <span class="va">size</span>,</span>
 <span>  cluster <span class="op">=</span> <span class="va">id</span>,</span>
@@ -3664,12 +3664,12 @@ Note
 <span><span class="co">#&gt; Score (logrank) test = 16.2  on 3 df,   p=0.001,   Robust = 10.8  p=0.01</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   (Note: the likelihood ratio and score tests assume independence of</span></span>
-<span><span class="co">#&gt;      observations within a cluster, the Wald and robust score tests do not).</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;      observations within a cluster, the Wald and robust score tests do not).</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p><code>robust se</code> is larger than <code>se</code>, and accounts for the repeated observations from the same individuals:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb78"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">bladder.cox2</span><span class="op">$</span><span class="va">naive.var</span>, <span class="fl">4</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb78"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">bladder.cox2</span><span class="op">$</span><span class="va">naive.var</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         [,1]    [,2]   [,3]</span></span>
 <span><span class="co">#&gt; [1,]  0.0400 -0.0014 0.0000</span></span>
 <span><span class="co">#&gt; [2,] -0.0014  0.0023 0.0007</span></span>
@@ -3678,18 +3678,18 @@ Note
 <span><span class="co">#&gt;         [,1]    [,2]    [,3]</span></span>
 <span><span class="co">#&gt; [1,]  0.0619 -0.0026 -0.0004</span></span>
 <span><span class="co">#&gt; [2,] -0.0026  0.0034  0.0013</span></span>
-<span><span class="co">#&gt; [3,] -0.0004  0.0013  0.0055</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [3,] -0.0004  0.0013  0.0055</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>These are the ratios of correct confidence intervals to naive ones:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb79"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">bladder.cox2</span>, <span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">naive.var</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1.24449 1.22309 1.05576</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb79"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">bladder.cox2</span>, <span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">naive.var</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 1.24449 1.22309 1.05576</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>We might try dropping the non-significant <code>size</code> variable:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="sourceCode" id="cb80"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">#remove non-significant size variable:</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb80"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">#remove non-significant size variable:</span></span>
 <span><span class="va">bladder.cox3</span> <span class="op">=</span> <span class="va">bladder.cox2</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">-</span> <span class="va">size</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">bladder.cox3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
@@ -3713,7 +3713,7 @@ Note
 <span><span class="co">#&gt; Score (logrank) test = 15.8  on 2 df,   p=4e-04,   Robust = 10.6  p=0.005</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   (Note: the likelihood ratio and score tests assume independence of</span></span>
-<span><span class="co">#&gt;      observations within a cluster, the Wald and robust score tests do not).</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;      observations within a cluster, the Wald and robust score tests do not).</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="hidden">
@@ -3815,13 +3815,14 @@ Kleinbaum, David G, and Mitchel Klein. 2012. <em>Survival Analysis: A Self-Learn
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
@@ -4226,7 +4227,7 @@ Kleinbaum, David G, and Mitchel Klein. 2012. <em>Survival Analysis: A Self-Learn
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb81" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Proportional Hazards Models</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb81" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Proportional Hazards Models</span></span>
 <span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>---</span>
 <span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -4257,7 +4258,7 @@ Kleinbaum, David G, and Mitchel Klein. 2012. <em>Survival Analysis: A Self-Learn
 <span id="cb81-29"><a href="#cb81-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb81-30"><a href="#cb81-30" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_coxph-adjust_ties.qmd &gt;}}</span>
 <span id="cb81-31"><a href="#cb81-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-32"><a href="#cb81-32" aria-hidden="true" tabindex="-1"></a>{{&lt; include coxph-model-building.qmd &gt;}}</span></code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+<span id="cb81-32"><a href="#cb81-32" aria-hidden="true" tabindex="-1"></a>{{&lt; include coxph-model-building.qmd &gt;}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 <footer class="footer"><div class="nav-footer">
