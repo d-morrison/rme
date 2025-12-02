@@ -45,7 +45,7 @@ predict(beetles_glm_grouped, type = "response")
 
 ---
 
-#### count scale
+#### Count scale
 
 For grouped data, 
 we can convert to the count scale by multiplying by the group size:
@@ -57,7 +57,7 @@ beetles$n * fitted(beetles_glm_grouped)
 ---
 
 
-#### logit scale
+#### Logit scale
 
 ```{r}
 predict(beetles_glm_grouped, type = "link")
@@ -68,7 +68,7 @@ predict(beetles_glm_grouped, type = "link")
 
 Converting between logit and probability scales works as expected:
 
-```{R}
+```{r}
 predict(beetles_glm_grouped, type = "link") |> arm::invlogit()
 predict(beetles_glm_grouped, type = "response")
 
@@ -90,8 +90,8 @@ coef(beetles_glm_grouped)["dose"] * beetles$dose
 We can construct the link-scale predictions from the terms:
 
 ```{r}
-predict(beetles_glm_grouped, type = "terms") +
-  predict(beetles_glm_grouped, type = "terms") |> attr("constant")
+terms_pred <- predict(beetles_glm_grouped, type = "terms")
+terms_pred + attr(terms_pred, "constant")
 predict(beetles_glm_grouped, type = "link")
 ```
 
