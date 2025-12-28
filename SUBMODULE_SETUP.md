@@ -6,10 +6,10 @@ The LaTeX macros have been extracted from this repository into a separate reposi
 
 ### 1. Create the GitHub Repository
 
-You need to create a new GitHub repository named `rme-latex-macros` under your account (`d-morrison`).
+You need to create a new GitHub repository named `macros` under your account (`d-morrison`).
 
 1. Go to https://github.com/new
-2. Create a repository named `rme-latex-macros`
+2. Create a repository named `macros`
 3. Do NOT initialize it with a README (we already have content)
 
 ### 2. Push the Macros Repository
@@ -18,7 +18,7 @@ The macros have been prepared in the `latex-macros/` directory with their own gi
 
 ```bash
 cd latex-macros
-git remote add origin https://github.com/d-morrison/rme-latex-macros.git
+git remote add origin https://github.com/d-morrison/macros.git
 git branch -M main  # Optional: rename master to main
 git push -u origin main  # or master if you kept that branch name
 cd ..
@@ -39,7 +39,7 @@ git commit -m "Add latex-macros as a submodule"
 
 - ✅ Created `latex-macros/` directory with macros.qmd and README.md
 - ✅ Initialized it as a git repository with an initial commit
-- ✅ Created `.gitmodules` file pointing to `https://github.com/d-morrison/rme-latex-macros.git`
+- ✅ Created `.gitmodules` file pointing to `https://github.com/d-morrison/macros.git`
 - ✅ Updated all 52 `.qmd` files to reference `latex-macros/macros.qmd` instead of `macros.qmd`
 - ✅ Removed the old `macros.qmd` file from the root directory
 - ✅ Updated GitHub Actions workflows (preview.yml and publish.yml) to checkout submodules
