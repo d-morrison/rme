@@ -42,6 +42,7 @@ git commit -m "Add latex-macros as a submodule"
 - ✅ Created `.gitmodules` file pointing to `https://github.com/d-morrison/rme-latex-macros.git`
 - ✅ Updated all 52 `.qmd` files to reference `latex-macros/macros.qmd` instead of `macros.qmd`
 - ✅ Removed the old `macros.qmd` file from the root directory
+- ✅ Updated GitHub Actions workflows (preview.yml and publish.yml) to checkout submodules
 
 ## For Future Clones
 
