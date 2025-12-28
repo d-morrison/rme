@@ -1,48 +1,16 @@
-# LaTeX Macros Submodule Setup Instructions
+# LaTeX Macros Submodule Setup
 
-The LaTeX macros have been extracted from this repository into a separate repository to be used as a git submodule.
+## ✅ Setup Complete!
 
-## Setup Steps Required
+The LaTeX macros submodule has been successfully configured and is now tracking the remote repository at https://github.com/d-morrison/macros.git.
 
-### 1. Create the GitHub Repository
+### Current Status
 
-You need to create a new GitHub repository named `macros` under your account (`d-morrison`).
-
-1. Go to https://github.com/new
-2. Create a repository named `macros`
-3. Do NOT initialize it with a README (we already have content)
-
-### 2. Push the Macros Repository
-
-The macros have been prepared in the `latex-macros/` directory with their own git history. Push this to GitHub:
-
-```bash
-cd latex-macros
-git remote add origin https://github.com/d-morrison/macros.git
-git branch -M main  # Optional: rename master to main
-git push -u origin main  # or master if you kept that branch name
-cd ..
-```
-
-### 3. Initialize the Submodule
-
-After pushing the macros repository, initialize it as a proper submodule in the main repository:
-
-```bash
-# The .gitmodules file has already been created and configured
-git add .gitmodules
-git add latex-macros
-git commit -m "Add latex-macros as a submodule"
-```
-
-## What Has Been Done
-
-- ✅ Created `latex-macros/` directory with macros.qmd and README.md
-- ✅ Initialized it as a git repository with an initial commit
-- ✅ Created `.gitmodules` file pointing to `https://github.com/d-morrison/macros.git`
-- ✅ Updated all 52 `.qmd` files to reference `latex-macros/macros.qmd` instead of `macros.qmd`
-- ✅ Removed the old `macros.qmd` file from the root directory
-- ✅ Updated GitHub Actions workflows (preview.yml and publish.yml) to checkout submodules
+- ✅ Submodule URL: https://github.com/d-morrison/macros.git
+- ✅ Submodule path: `latex-macros/`
+- ✅ Current commit: 902bab8
+- ✅ All 52 `.qmd` files updated to reference `latex-macros/macros.qmd`
+- ✅ GitHub Actions workflows configured to checkout submodules
 
 ## For Future Clones
 
