@@ -6,10 +6,22 @@
 
 ## Code Formatting Guidelines
 
-When adding or editing text in source code:
-- Add a newline at the end of every phrase
+When adding or editing text in source code (such as comments, documentation strings, or error messages):
+- Add a newline at the end of every phrase or logical unit of text
 - Each phrase should be on its own line in the source code
+- A phrase is typically a complete thought, clause, or sentence
 - This improves readability and makes diffs clearer
+
+Example:
+```r
+# Good: Each instruction on its own line
+# First, check if the input is valid.
+# Then, process the data.
+# Finally, return the result.
+
+# Avoid: Multiple phrases on one line
+# First, check if the input is valid. Then, process the data. Finally, return the result.
+```
 
 ## CI/CD Workflow Debugging
 
