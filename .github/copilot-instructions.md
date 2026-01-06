@@ -62,3 +62,11 @@ This repository uses JAGS (Just Another Gibbs Sampler) for Bayesian analysis:
 - JAGS must be installed in workflows that render Quarto documents (using `sudo apt-get install -y jags`)
 - R packages `rjags` and `runjags` depend on JAGS being installed
 - The lint workflow also needs these packages installed to avoid false positives
+
+## Quarto Rendering
+
+Before requesting code review:
+- **ALWAYS** run `quarto render` yourself locally and ensure it passes
+- Do NOT rely solely on CI workflows to catch rendering issues
+- This ensures all dependencies are properly configured and all documents render successfully
+- If quarto render fails locally, investigate and fix the issue before pushing changes
