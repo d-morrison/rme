@@ -4,6 +4,13 @@
 
 - Always ensure that PR branch is up to date with main branch before requesting PR review
 
+## Code Formatting Guidelines
+
+When adding or editing text in source code:
+- Add a newline at the end of every phrase
+- Each phrase should be on its own line in the source code
+- This improves readability and makes diffs clearer
+
 ## CI/CD Workflow Debugging
 
 When investigating CI/CD failures (build, test, or lint workflow issues):
