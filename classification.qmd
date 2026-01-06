@@ -2,8 +2,12 @@
 
 ## Introduction to classification {#sec-classification}
 
+---
+
 Classification problems occur frequently in epidemiology and diagnostic medicine.
 For example, we may need to determine whether an individual has a particular disease or condition based on test results or other indicators.
+
+---
 
 :::{#def-classification}
 
@@ -14,10 +18,14 @@ In the binary case, we assign each observation to one of two classes, often labe
 
 :::
 
+---
+
 Understanding how to interpret diagnostic tests requires knowledge of key statistical concepts including sensitivity, specificity, and predictive values.
 
 In this section, we explore how Bayes' theorem allows us to calculate the probability that a person has a disease given a positive test result.
 This is particularly important in public health decision-making, where we must understand not just how accurate a test is in general, but how to interpret test results for individuals in specific populations.
+
+---
 
 ### Diagnostic test characteristics
 
@@ -28,12 +36,16 @@ When evaluating a diagnostic test, we consider several key performance measures:
 - **Positive Predictive Value (PPV)**: The probability that a person has the disease given that their test is positive, denoted $\pmf{\text{disease} \mid \text{positive}}$
 - **Negative Predictive Value (NPV)**: The probability that a person does not have the disease given that their test is negative, denoted $\pmf{\text{no disease} \mid \text{negative}}$
 
+---
+
 ### Example: COVID-19 testing
 
 Suppose we have a COVID-19 test with the following characteristics:
 
 - **99% sensitive**: If a person has COVID-19, the test will be positive 99% of the time
 - **99% specific**: If a person does not have COVID-19, the test will be negative 99% of the time
+
+---
 
 Let's define our events:
 
@@ -50,6 +62,8 @@ $$
 \pmf{- \mid \neg D} = 0.99 \quad \text{(specificity)}
 $$
 
+---
+
 Note that if specificity is 0.99, then the false positive rate is:
 $$
 \pmf{+ \mid \neg D} = 1 - 0.99 = 0.01
@@ -65,6 +79,8 @@ $$
 \pmf{\neg D} = 0.93
 $$
 
+---
+
 ### Calculating positive predictive value
 
 The key question we want to answer is: **If someone tests positive, what is the probability they actually have COVID-19?**
@@ -73,6 +89,8 @@ This is the positive predictive value:
 $$
 \pmf{D \mid +} = \, ?
 $$
+
+---
 
 We can use **Bayes' theorem** to calculate this:
 
@@ -86,6 +104,8 @@ $$
 \pmf{+} = \pmf{+ \mid D} \cd \pmf{D} + \pmf{+ \mid \neg D} \cd \pmf{\neg D}
 $$
 
+---
+
 Now we can calculate each component:
 
 **Probability of being positive with disease:**
@@ -98,6 +118,8 @@ $$
 \pmf{+ \mid \neg D} \cd \pmf{\neg D} = 0.01 \times 0.93 = 0.0093
 $$
 
+---
+
 **Total probability of positive test:**
 $$
 \pmf{+} = 0.0693 + 0.0093 = 0.0786
@@ -108,8 +130,17 @@ $$
 \pmf{D \mid +} = \frac{0.0693}{0.0786} = 0.88
 $$
 
+---
+
 Therefore, even with a highly accurate test (99% sensitive and 99% specific), only about 88% of people who test positive actually have COVID-19.
 This is because the disease prevalence is relatively low (7%), so false positives make up a meaningful fraction of all positive tests.
+
+::: notes
+This counterintuitive result demonstrates the importance of considering disease prevalence when interpreting test results.
+Even highly accurate tests can have relatively low positive predictive values when the disease is rare.
+:::
+
+---
 
 ### Alternative formulation
 
@@ -124,5 +155,13 @@ $$
 \end{align}
 $$
 
+---
+
 This final form emphasizes the ratio of the false positive rate to the sensitivity, weighted by the ratio of non-diseased to diseased individuals in the population.
 It shows that even with a very high sensitivity and specificity, the positive predictive value depends strongly on disease prevalence.
+
+::: notes
+This algebraic form is useful for understanding how the different parameters interact.
+Notice how the prevalence ratio $\pmf{\neg D}/\pmf{D}$ appears explicitly in the denominator.
+When the disease is rare, this ratio is large, which reduces the positive predictive value.
+:::
