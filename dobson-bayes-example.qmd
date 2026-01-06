@@ -1,0 +1,56 @@
+---
+title: "Bayesian Analysis with JAGS: Dobson Example"
+---
+
+{{< include shared-config.qmd >}}
+
+This example demonstrates Bayesian inference using JAGS (Just Another Gibbs Sampler) for a simple binomial model from Dobson's text.
+
+## Load Required Packages
+
+```{r}
+library(rjags)
+library(runjags)
+runjags::findJAGS()
+```
+
+## Run the JAGS Model
+
+We'll use a simple Bernoulli model to estimate a probability parameter using Bayesian inference.
+
+```{r}
+#| label: run-dobson-model
+#| warning: false
+#| message: false
+
+# JAGS chain initialization function
+initsfunction <- function(chain) {
+  stopifnot(chain %in% (1:4)) # max 4 chains allowed
+  rng_seed <- (1:4)[chain]
+  rng_name <- c(
+    "base::Wichmann-Hill", "base::Marsaglia-Multicarry",
+    "base::Super-Duper", "base::Mersenne-Twister"
+  )[chain]
+  return(list(".RNG.seed" = rng_seed, ".RNG.name" = rng_name))
+}
+
+# Generate sample data
+set.seed(1)
+data1 <- rbinom(n = 91, size = 1, prob = .6)
+
+# Run JAGS model
+jags_post0 <- run.jags(
+  n.chains = 2,
+  inits = initsfunction,
+  model = "inst/extdata/model.dobson.jags",
+  data = list(r = data1, N = length(data1)),
+  monitor = "p"
+)
+```
+
+## Examine Results
+
+```{r}
+jags_post0$mcmc |> as.array() |> head()
+```
+
