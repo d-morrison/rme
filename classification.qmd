@@ -1,51 +1,195 @@
 {{< include macros.qmd >}}
 
-## Introduction to classification {#sec-classification}
+# Classification {#sec-classification}
 
-### Positive predictive value
+---
 
-Suppose a test is 99% sensitive, 99% specific;
+Classification problems occur frequently in epidemiology and diagnostic medicine.
+For example, we may need to determine whether an individual has a particular disease or condition based on test results or other indicators.
 
-99% Sensitive means if the person has disease, the test is positive, 99% of
-the time:
+---
 
-$$\pmf{ + | D} = .99$$
+:::{#def-classification}
 
-99% specific means if they don't have covid, the test says no covid, 99%
-of the time:
+#### Classification
 
-7% of people actually have covid: 
+A **classification problem** is a statistical problem in which we seek to assign observations to one of two or more discrete categories (classes) based on observed features or predictors.
+In the binary case, we assign each observation to one of two classes, often labeled as "positive" or "negative", "diseased" or "healthy", etc.
 
-$$\mass(A) = 0.07$$ 
+:::
 
-$$\mass(\neg A) = .93$$
+---
 
+Understanding how to interpret diagnostic tests requires knowledge of key statistical concepts including sensitivity, specificity, and predictive values.
 
+In this section, we explore how Bayes' theorem allows us to calculate the probability that a person has a disease given a positive test result.
+This is particularly important in public health decision-making, where we must understand not just how accurate a test is in general, but how to interpret test results for individuals in specific populations.
 
-$p\left( negative \middle| no\ covid \right) = .99$:
-$p\left( B \middle| !A \right)$
+---
 
-$$p\left( Covid \middle| positive \right) = ?$$
+### Diagnostic test characteristics
 
-$$p\left( A \middle| B \right) = \frac{p\left( B \middle| A \right)p(A)}{p(B)}$$
+When evaluating a diagnostic test, we consider several key performance measures:
 
-$$p(B) = p\left( B \middle| A \right)p(A) + p\left( B \middle| !A \right)p(!A)$$
+:::{#def-sensitivity}
 
-$$p\left( B \middle| A \right)p(A) = .99*\ .07 = .0693$$
+#### Sensitivity
 
-$$\ p\left( B \middle| !A \right)p(!A) = .01*.93 = .0093$$
+The probability that the test is positive given that the person has the disease, denoted $\pmf{\text{positive} \mid \text{disease}}$.
 
-$$p(B) = .0693 + .0093 = .0786$$
+:::
 
-$$p\left( A \middle| B \right) = .0693/.0786$$
+:::{#def-specificity}
 
-$$= .88$$
+#### Specificity
 
-$${p\left( A \middle| B \right) = \frac{p\left( B \middle| A \right)p(A)}{p(B)}
-}{= p\left( B \middle| A \right)\frac{p(A)}{p(B)}
-}{= p\left( B \middle| A \right)\frac{p(A)}{p\left( B \middle| A \right)p(A) + p\left( B \middle| !A \right)p(!A)}}$$
+The probability that the test is negative given that the person does not have the disease, denoted $\pmf{\text{negative} \mid \text{no disease}}$.
 
-$$= \frac{p(A)}{p(A) + \frac{p\left( B \middle| !A \right)}{p\left( B \middle| A \right)}p(!A)}$$
+:::
 
-$$= \frac{1}{1 + \frac{p\left( B \middle| !A \right)}{p\left( B \middle| A \right)}\frac{p(!A)}{p(A)}}
+:::{#def-ppv}
+
+#### Positive Predictive Value (PPV)
+
+The probability that a person has the disease given that their test is positive, denoted $\pmf{\text{disease} \mid \text{positive}}$.
+
+:::
+
+:::{#def-npv}
+
+#### Negative Predictive Value (NPV)
+
+The probability that a person does not have the disease given that their test is negative, denoted $\pmf{\text{no disease} \mid \text{negative}}$.
+
+:::
+
+---
+
+### Example: COVID-19 testing
+
+Suppose we have a COVID-19 test with the following characteristics:
+
+- **99% sensitive**: If a person has COVID-19, the test will be positive 99% of the time
+- **99% specific**: If a person does not have COVID-19, the test will be negative 99% of the time
+
+---
+
+Let's define our events:
+
+- Let $D$ denote the event "person has COVID-19"
+- Let $+$ denote the event "test is positive"
+
+Then our test characteristics can be written as:
+
 $$
+\pmf{+ \mid D} = 0.99 \quad \text{(sensitivity)}
+$$
+
+$$
+\pmf{- \mid \neg D} = 0.99 \quad \text{(specificity)}
+$$
+
+---
+
+Note that if specificity is 0.99, then the false positive rate is:
+$$
+\pmf{+ \mid \neg D} = 1 - 0.99 = 0.01
+$$
+
+Suppose the **prevalence** of COVID-19 in the population is 7%:
+
+$$
+\pmf{D} = 0.07
+$$
+
+$$
+\pmf{\neg D} = 0.93
+$$
+
+---
+
+### Calculating positive predictive value
+
+The key question we want to answer is: **If someone tests positive, what is the probability they actually have COVID-19?**
+
+This is the positive predictive value:
+$$
+\pmf{D \mid +} = \, ?
+$$
+
+---
+
+We can use **Bayes' theorem** to calculate this:
+
+$$
+\pmf{D \mid +} = \frac{\pmf{+ \mid D} \cd \pmf{D}}{\pmf{+}}
+$$
+
+To find $\pmf{+}$, we use the **law of total probability**:
+
+$$
+\pmf{+} = \pmf{+ \mid D} \cd \pmf{D} + \pmf{+ \mid \neg D} \cd \pmf{\neg D}
+$$
+
+---
+
+Now we can calculate each component:
+
+**Probability of being positive with disease:**
+$$
+\pmf{+ \mid D} \cd \pmf{D} = 0.99 \times 0.07 = 0.0693
+$$
+
+**Probability of being positive without disease (false positive):**
+$$
+\pmf{+ \mid \neg D} \cd \pmf{\neg D} = 0.01 \times 0.93 = 0.0093
+$$
+
+---
+
+**Total probability of positive test:**
+$$
+\pmf{+} = 0.0693 + 0.0093 = 0.0786
+$$
+
+**Positive predictive value:**
+$$
+\pmf{D \mid +} = \frac{0.0693}{0.0786} = 0.88
+$$
+
+---
+
+Therefore, even with a highly accurate test (99% sensitive and 99% specific), only about 88% of people who test positive actually have COVID-19.
+This is because the disease prevalence is relatively low (7%), so false positives make up a meaningful fraction of all positive tests.
+
+::: notes
+This counterintuitive result demonstrates the importance of considering disease prevalence when interpreting test results.
+Even highly accurate tests can have relatively low positive predictive values when the disease is rare.
+:::
+
+---
+
+### Alternative formulation
+
+We can rearrange Bayes' theorem to express the positive predictive value in terms of the sensitivity, specificity, and disease prevalence:
+
+$$
+\begin{aligned}
+\pmf{D \mid +} &= \frac{\pmf{+ \mid D} \cd \pmf{D}}{\pmf{+}} \\
+&= \frac{\pmf{+ \mid D} \cd \pmf{D}}{\pmf{+ \mid D} \cd \pmf{D} + \pmf{+ \mid \neg D} \cd \pmf{\neg D}} \\
+&= \frac{\pmf{D}}{\pmf{D} + \frac{\pmf{+ \mid \neg D}}{\pmf{+ \mid D}} \cd \pmf{\neg D}} \\
+&= \frac{1}{1 + \frac{\pmf{+ \mid \neg D}}{\pmf{+ \mid D}} \cd \frac{\pmf{\neg D}}{\pmf{D}}} \\
+&= \frac{1}{1 + \frac{1 - \text{spec}}{\text{sens}} \cd \frac{1 - \text{prev}}{\text{prev}}}
+\end{aligned}
+$$
+
+---
+
+This final form emphasizes the ratio of the false positive rate to the sensitivity, weighted by the ratio of non-diseased to diseased individuals in the population.
+It shows that even with a very high sensitivity and specificity, the positive predictive value depends strongly on disease prevalence.
+
+::: notes
+This algebraic form is useful for understanding how the different parameters interact.
+Notice how the prevalence ratio $\pmf{\neg D}/\pmf{D}$ appears explicitly in the denominator.
+When the disease is rare, this ratio is large, which reduces the positive predictive value.
+:::
