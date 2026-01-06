@@ -22,4 +22,5 @@ This repository uses `renv` for reproducible R package environments:
 Some R packages require system-level libraries to compile from source:
 - `curl` package requires `libcurl4-openssl-dev`
 - `png` package requires `libpng-dev`
+- `systemfonts` package requires `libfontconfig1-dev`
 - Consider using `rocker/verse` Docker image for workflows to reduce installation requirements
