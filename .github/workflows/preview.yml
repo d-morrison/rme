@@ -39,19 +39,17 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Install JAGS
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jags
+          sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev
 
-      - uses: r-lib/actions/setup-r-dependencies@HEAD
-        with:
-          needs: |
-            connect
-            website
-          extra-packages: |
-            local::.
-            any::pkgdown
+      - uses: r-lib/actions/setup-renv@v2
+
+      - name: Install local package
+        run: |
+          R CMD INSTALL .
+        shell: bash
 
       - name: Render
         if: github.event.action != 'closed' # skip the build if the PR has been closed
