@@ -1,15 +1,16 @@
-# GitHub Copilot Setup Steps for RME (Regression Models for Epidemiology)
+# GitHub Copilot Setup Steps for rme
 #
 # This workflow configures the GitHub Copilot coding agent's environment
-# by preinstalling R, Quarto, TinyTeX, JAGS, and all required dependencies.
+# by preinstalling R, Quarto, TinyTeX, and all required dependencies.
 #
 # See: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment
+# For detailed setup instructions, see .github/copilot-instructions.md
 #
-# This workflow aligns with setup requirements:
-# - R version (as specified in DESCRIPTION)
+# This workflow aligns with the setup requirements documented in .github/copilot-instructions.md:
+# - R version >= 3.5 (as specified in DESCRIPTION, prefer latest release)
 # - Quarto CLI for rendering the website
 # - TinyTeX for PDF output
-# - JAGS for Bayesian analysis
+# - JAGS for Bayesian analysis (rjags and runjags packages)
 # - All package dependencies managed via renv
 
 name: "Copilot Setup Steps"
@@ -44,11 +45,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # Install system dependencies required for R packages and JAGS
+      # Install system dependencies required for R packages
+      # See .github/copilot-instructions.md "System Dependencies" and "JAGS Dependencies" sections
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            jags \
             libcurl4-openssl-dev \
             libssl-dev \
             libxml2-dev \
@@ -58,14 +61,15 @@ jobs:
             libfreetype6-dev \
             libpng-dev \
             libtiff5-dev \
-            libjpeg-dev \
-            jags
+            libjpeg-dev
       
       # Set up pandoc for documentation
       - name: Set up Pandoc
         uses: r-lib/actions/setup-pandoc@v2
       
       # Set up R using the standard GitHub Actions setup
+      # R version >= 3.5 required (see DESCRIPTION and .github/copilot-instructions.md)
+      # Using 'release' to get the latest R version
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
         with:
@@ -73,6 +77,7 @@ jobs:
           use-public-rspm: true
       
       # Set up Quarto - required for rendering the website
+      # See .github/copilot-instructions.md "Quarto Rendering" section
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
@@ -80,22 +85,38 @@ jobs:
       
       # Install R dependencies using renv
       # This project uses renv for package management
+      # See .github/copilot-instructions.md "R Package Management" section
       - name: Install R dependencies via renv
         uses: r-lib/actions/setup-renv@v2
         with:
           cache-version: 1
       
       # Verify R environment is properly configured
+      # See .github/copilot-instructions.md sections on development setup
       - name: Verify development environment
         run: |
           echo "=== R Development Environment Status ==="
           Rscript -e '
             cat("R version:", R.version.string, "\n\n")
             
+            # Check R version meets minimum requirement (>= 3.5)
+            r_version <- paste(R.version$major, R.version$minor, sep = ".")
+            cat("Checking R version >= 3.5... ")
+            if (getRversion() >= "3.5") {
+              cat("PASSED (", r_version, ")\n\n", sep = "")
+            } else {
+              cat("FAILED (", r_version, ")\n\n", sep = "")
+              stop("R version must be >= 3.5")
+            }
+            
             # Display key installed packages from DESCRIPTION
             cat("Key installed packages:\n")
-            key_packages <- c("renv", "knitr", "rmarkdown", "ggplot2", 
-                            "dplyr", "tidyr", "lintr", "spelling", "rjags", "runjags")
+            key_packages <- c("arm", "arsenal", "cards", "cardx", "cvTools", "dobson",
+                            "forcats", "fs", "glmmTMB", "glmnet", "gtsummary", "here",
+                            "insight", "knitr", "latex2exp", "olsrr", "pander", "printr",
+                            "reactable", "rlang", "rmarkdown", "stringr", "table1", "tibble",
+                            "webshot2", "tidyverse", "rjags", "runjags", "ggplot2", "dplyr",
+                            "tidyr", "spelling", "gh", "lintr", "purrr", "pkgdown")
             for (pkg in key_packages) {
               if (requireNamespace(pkg, quietly = TRUE)) {
                 cat("  -", pkg, ":", as.character(packageVersion(pkg)), "\n")
@@ -116,12 +137,17 @@ jobs:
           # Verify JAGS is installed
           echo ""
           echo "=== JAGS Status ==="
-          jags --version || echo "JAGS not found in PATH"
+          if which jags > /dev/null 2>&1; then
+            echo "JAGS found in PATH"
+            jags -v 2>&1 || echo "JAGS installed but version check failed"
+          else
+            echo "JAGS not found in PATH"
+          fi
           
           # Verify renv is active
           echo ""
           echo "=== renv Status ==="
-          Rscript -e 'cat("renv active:", renv:::renv_project_initialized(getwd()), "\n")'
+          Rscript -e 'cat("renv active:", !is.null(renv::project()), "\n")'
           Rscript -e 'cat("renv library path:", .libPaths()[1], "\n")'
           
           echo ""
