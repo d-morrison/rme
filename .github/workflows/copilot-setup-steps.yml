@@ -137,7 +137,12 @@ jobs:
           # Verify JAGS is installed
           echo ""
           echo "=== JAGS Status ==="
-          jags -v || echo "JAGS not found in PATH but may be installed"
+          if which jags > /dev/null 2>&1; then
+            echo "JAGS found in PATH"
+            jags -v 2>&1 || echo "JAGS installed but version check failed"
+          else
+            echo "JAGS not found in PATH"
+          fi
           
           # Verify renv is active
           echo ""
