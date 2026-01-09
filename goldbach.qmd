@@ -1,0 +1,173 @@
+# Goldbach's Conjecture
+
+{{< include latex-macros/macros.qmd >}}
+
+## Statement of the Conjecture
+
+**Goldbach's Conjecture** is one of the oldest and most famous unsolved problems in number theory.
+It was first proposed by the German mathematician Christian Goldbach in a letter to Leonhard Euler in 1742.
+
+### Strong Goldbach Conjecture
+
+::: {#def-goldbach-strong}
+#### Strong Goldbach Conjecture
+
+Every even integer greater than 2 can be expressed as the sum of two prime numbers.
+:::
+
+Formally, for every even integer $n > 2$, there exist prime numbers $p$ and $q$ such that:
+
+$$
+n = p + q
+$$
+
+### Weak Goldbach Conjecture
+
+::: {#def-goldbach-weak}
+#### Weak Goldbach Conjecture
+
+Every odd integer greater than 5 can be expressed as the sum of three prime numbers.
+:::
+
+Formally, for every odd integer $n > 5$, there exist prime numbers $p$, $q$, and $r$ such that:
+
+$$
+n = p + q + r
+$$
+
+## Historical Context
+
+- **1742**: Christian Goldbach proposed the conjecture in a letter to Leonhard Euler
+- **1937**: Ivan Vinogradov proved that every sufficiently large odd integer can be expressed as the sum of three primes,
+making significant progress toward the weak conjecture
+- **2013**: Harald Helfgott completed the proof of the weak Goldbach conjecture
+- **Present**: The strong Goldbach conjecture remains unproven,
+though it has been verified computationally for all even numbers up to extremely large values
+
+## Examples
+
+::: {#exm-goldbach-small}
+#### Small even numbers
+
+Here are some examples of even numbers expressed as the sum of two primes:
+
+- $4 = 2 + 2$
+- $6 = 3 + 3$
+- $8 = 3 + 5$
+- $10 = 3 + 7 = 5 + 5$
+- $12 = 5 + 7$
+- $14 = 3 + 11 = 7 + 7$
+- $16 = 3 + 13 = 5 + 11$
+- $18 = 5 + 13 = 7 + 11$
+- $20 = 3 + 17 = 7 + 13$
+
+Note that for most even numbers,
+there are multiple ways to express them as the sum of two primes.
+:::
+
+## Computational Verification
+
+```{r}
+#| label: goldbach-verification
+#| echo: true
+#| code-fold: show
+
+# Function to check if a number is prime
+is_prime <- function(n) {
+  if (n < 2) return(FALSE)
+  if (n == 2) return(TRUE)
+  if (n %% 2 == 0) return(FALSE)
+  if (n == 3) return(TRUE)
+  
+  # Check odd divisors from 3 to sqrt(n)
+  i <- 3
+  while (i * i <= n) {
+    if (n %% i == 0) return(FALSE)
+    i <- i + 2
+  }
+  return(TRUE)
+}
+
+# Function to find Goldbach pairs for an even number
+find_goldbach_pairs <- function(n) {
+  if (n <= 2 || n %% 2 != 0) {
+    return(NULL)
+  }
+  
+  pairs <- list()
+  for (p in 2:(n / 2)) {
+    q <- n - p
+    if (is_prime(p) && is_prime(q)) {
+      pairs[[length(pairs) + 1]] <- c(p, q)
+    }
+  }
+  return(pairs)
+}
+
+# Test the conjecture for even numbers from 4 to 100
+verify_goldbach <- function(max_n = 100) {
+  results <- data.frame(
+    n = integer(),
+    num_pairs = integer(),
+    first_pair = character(),
+    stringsAsFactors = FALSE
+  )
+  
+  for (n in seq(4, max_n, by = 2)) {
+    pairs <- find_goldbach_pairs(n)
+    if (length(pairs) > 0) {
+      first_pair_str <- paste(pairs[[1]], collapse = " + ")
+      results <- rbind(results, data.frame(
+        n = n,
+        num_pairs = length(pairs),
+        first_pair = first_pair_str,
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+  
+  return(results)
+}
+
+# Verify for even numbers up to 100
+goldbach_results <- verify_goldbach(100)
+print(goldbach_results)
+```
+
+::: {.callout-note}
+## Computational Evidence
+
+The strong Goldbach conjecture has been verified computationally for all even integers up to at least $4 \times 10^{18}$ (as of 2020).
+While this provides strong empirical evidence,
+it does not constitute a mathematical proof.
+:::
+
+## Current Status
+
+- **Weak Goldbach Conjecture**: **Proven** (Harald Helfgott, 2013)
+- **Strong Goldbach Conjecture**: **Unproven** (remains an open problem)
+
+The strong Goldbach conjecture is considered one of the most important unsolved problems in mathematics.
+Despite centuries of effort by mathematicians and extensive computational verification,
+a general proof remains elusive.
+
+## Relevance to Applied Mathematics
+
+While Goldbach's conjecture itself is a problem in pure mathematics (number theory),
+studying such problems develops important skills:
+
+- Understanding the relationship between conjectures and proofs
+- Distinguishing between empirical evidence and mathematical proof
+- Working with number-theoretic concepts
+- Developing computational verification methods
+
+These skills are valuable in applied mathematics and statistics,
+where we often work with theoretical results that must be verified empirically.
+
+## References
+
+Additional resources on Goldbach's conjecture:
+
+- @hardy2008introduction
+- <https://en.wikipedia.org/wiki/Goldbach%27s_conjecture>
+- <https://mathworld.wolfram.com/GoldbachConjecture.html>
