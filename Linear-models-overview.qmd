@@ -1078,6 +1078,15 @@ BIC(bw_lm2)
 Large values of AIC and BIC are worse than small values. 
 There are no hypothesis tests or p-values associated with these criteria.
 
+::: notes
+To compare models using AIC or BIC, 
+calculate the criterion for each model and choose the model with the smallest value.
+A difference of more than 2 units in AIC is often considered meaningful, 
+though this is just a rough guideline.
+BIC tends to favor simpler models than AIC, 
+especially when the sample size is large.
+:::
+
 ### (Residual) Deviance
 
 Let $q$ be the number of distinct covariate combinations in a data set.
@@ -1858,7 +1867,7 @@ $$
 #### Characteristics of residuals in Gaussian models
 
 With enough data and a correct model, 
-the residuals will be approximately Guassian distributed, 
+the residuals will be approximately Gaussian distributed, 
 with variance $\sigma^2$, 
 which we can estimate using $\hat\sigma^2$;
 that is:
@@ -2851,4 +2860,21 @@ hers |> head()
 
 ---
 
-Check out `?codingMatrices::contr.diff`
+::: notes
+For ordinal variables, 
+we might want to use contrasts that respect the ordering of the categories.
+The default treatment contrasts don't account for ordering.
+:::
+
+::: {.callout-note}
+## Working with ordinal variables
+
+When working with ordinal covariates in linear models:
+
+1. Use `ordered()` or `factor(ordered = TRUE)` to create the variable
+2. Consider using polynomial contrasts (`contr.poly`) which respect ordering
+3. Alternatively, treat the ordinal variable as numeric if equal spacing is reasonable
+4. Check `?codingMatrices::contr.diff` for additional contrast options
+
+See @dobson4e §6.4.2 for more details on contrasts for ordinal variables.
+:::
