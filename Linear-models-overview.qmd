@@ -51,7 +51,7 @@ so everyone here should have some understanding of linear regression already.
 
 * We will review linear regression to:
 - make sure everyone is caught up
-- to provide an epidemiological perspective on model interpretation.
+- provide an epidemiological perspective on model interpretation.
 
 :::
 
@@ -564,7 +564,7 @@ pred_female <- coef(bw_lm2)["(Intercept)"] + coef(bw_lm2)["age"] * 36
 ```
 
 $$
-E[Y|M = 0, X_2 = 36] = 
+E[Y|M = 0, A = 36] = 
 \beta_0 + \beta_M \cdot 0+ \beta_A \cdot 36 + \beta_{AM} \cdot (0 * 36) 
 =  `r pred_female`
 $$ 
@@ -615,7 +615,7 @@ pred_male <-
 
 $$
 \ba
-E[Y|M = 1, X_2 = 36]
+E[Y|M = 1, A = 36]
 &= \beta_0 + \beta_M \cdot 1+ \beta_A \cdot 36 + \beta_{AM} \cdot 1 \cdot 36\\
 &= `r pred_male`
 \ea
@@ -638,7 +638,7 @@ $$
 & E[Y|M = 1, A = 36] - E[Y|M = 0, A = 36]\\ 
 &= (\beta_0 + \beta_M \cdot 1+ \beta_A \cdot 36 + \beta_{AM} \cdot 1 \cdot 36)\\ 
 &\ \ \ \ \  -(\beta_0 + \beta_M \cdot 0+ \beta_A \cdot 36 + \beta_{AM} \cdot 0 \cdot 36) \\
-&= \beta_{S} + \beta_{AM}\cdot 36\\
+&= \beta_M + \beta_{AM}\cdot 36\\
 &=  `r pred_male - pred_female`
 \end{aligned}
 $$
@@ -903,13 +903,13 @@ bw_lm2 |>
 
 ```{r}
 #| label: confint-t
-q_t <- qt(
+q_t_upper <- qt(
   p = 0.975,
   df = dfresid,
   lower.tail = TRUE
 )
 
-q_t <- qt(
+q_t_lower <- qt(
   p = 0.025,
   df = dfresid,
   lower.tail = TRUE
@@ -917,7 +917,7 @@ q_t <- qt(
 
 
 confint_radius_t <-
-  se_hat * q_t
+  se_hat * q_t_upper
 
 confint_t <- beta_hat + c(-1, 1) * confint_radius_t
 
@@ -1077,6 +1077,15 @@ BIC(bw_lm2)
 
 Large values of AIC and BIC are worse than small values. 
 There are no hypothesis tests or p-values associated with these criteria.
+
+::: notes
+To compare models using AIC or BIC, 
+calculate the criterion for each model and choose the model with the smallest value.
+A difference of more than 2 units in AIC is often considered meaningful, 
+though this is just a rough guideline.
+BIC tends to favor simpler models than AIC, 
+especially when the sample size is large.
+:::
 
 ### (Residual) Deviance
 
@@ -1318,7 +1327,23 @@ This log-likelihood ratio statistic is called the **null deviance**. It tells us
 
 ## Rescaling
 
+::: notes
+Centering covariates (subtracting a constant from them) 
+can make coefficient interpretations more meaningful, 
+particularly for the intercept and main effect terms in models with interactions.
+:::
+
 ### Rescale age {.smaller}
+
+::: notes
+For example, 
+the intercept $\beta_0$ in our interaction model represents 
+the mean birthweight for females at age = 0 weeks, 
+which is not a biologically plausible scenario.
+If we center age at 36 weeks instead, 
+$\beta_0$ will represent the mean birthweight for females at 36 weeks, 
+which is more interpretable.
+:::
 
 ```{r}
 bw <-
@@ -1340,6 +1365,13 @@ Compare with what we got without rescaling:
 ```{r}
 parameters(bw_lm2, ci_method = "wald") |> print_md()
 ```
+
+::: notes
+Notice that the slope coefficients (`age - 36wks` and `sexmale:age - 36wks`) 
+remain the same, 
+but the intercept and `sexmale` coefficient have changed 
+to reflect means at age = 36 weeks rather than age = 0 weeks.
+:::
 
 ## Prediction
 
@@ -1835,7 +1867,7 @@ $$
 #### Characteristics of residuals in Gaussian models
 
 With enough data and a correct model, 
-the residuals will be approximately Guassian distributed, 
+the residuals will be approximately Gaussian distributed, 
 with variance $\sigma^2$, 
 which we can estimate using $\hat\sigma^2$;
 that is:
@@ -2551,6 +2583,21 @@ anova(full_model, reduced_model)
 
 #### stepwise regression
 
+::: {.callout-warning}
+## Caution about stepwise selection
+
+Stepwise regression has several known problems:
+
+- It tends to select too many variables (overfitting)
+- P-values and confidence intervals are biased after selection
+- It ignores model uncertainty
+- Results can be unstable across different samples
+
+Consider using cross-validation, penalized methods (like Lasso), 
+or subject-matter knowledge instead.
+See @rms2e and @heinze2018variable for more discussion.
+:::
+
 ```{r}
 library(olsrr)
 olsrr:::ols_step_both_aic(full_model)
@@ -2813,4 +2860,21 @@ hers |> head()
 
 ---
 
-Check out `?codingMatrices::contr.diff`
+::: notes
+For ordinal variables, 
+we might want to use contrasts that respect the ordering of the categories.
+The default treatment contrasts don't account for ordering.
+:::
+
+::: {.callout-note}
+## Working with ordinal variables
+
+When working with ordinal covariates in linear models:
+
+1. Use `ordered()` or `factor(ordered = TRUE)` to create the variable
+2. Consider using polynomial contrasts (`contr.poly`) which respect ordering
+3. Alternatively, treat the ordinal variable as numeric if equal spacing is reasonable
+4. Check `?codingMatrices::contr.diff` for additional contrast options
+
+See @dobson4e §2.4.4 for more details on contrasts for ordinal variables.
+:::
