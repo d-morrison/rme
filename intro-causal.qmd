@@ -1,10 +1,85 @@
-# Causal-Inference
+# Causal Inference
 
-Statistical models can only tell us about differences in real-world distributions. But causal inference is about
-comparisons between potential-world distributions.
+Statistical models can only tell us about differences in real-world distributions.
+But causal inference is about comparisons between potential-world distributions.
 
 ![An illustrative example](correlation-causation.png){#fig-cor-caus-death}
 
-@fig-cor-caus-death is a bit misleading; there isn't even a correlation between (confusing correlation and causation) and dying. This (and the usual milk-criminal example) are both more about predictive accuracy and lack of specificity.
+@fig-cor-caus-death is a bit misleading;
+there isn't even a correlation between (confusing correlation and causation) and dying.
+This (and the usual milk-criminal example) are both more about predictive accuracy and lack of specificity.
 
 No causes in, no causes out.
+
+## Common Biases in Epidemiologic Research
+
+Understanding and avoiding bias is fundamental to drawing valid causal conclusions from epidemiologic studies.
+The [Catalog of Bias](https://catalogofbias.org/) provides a comprehensive resource for learning about various types of bias that can affect health research.
+This collaborative project, led by the Centre for Evidence-Based Medicine at the University of Oxford,
+defines, explains, and provides examples of research biases.
+
+### Collider Bias {#sec-collider-bias}
+
+**Collider bias** (also called **collider stratification bias** or **selection on a collider**)
+is a type of bias that occurs when an analysis inappropriately controls for, conditions on, or restricts the sample to a variable that is influenced by both the exposure and the outcome being studied.
+
+#### What is a Collider?
+
+A **collider** is a variable that is caused by (or influenced by) both the exposure and the outcome of interest.
+In causal diagrams (Directed Acyclic Graphs or DAGs), a collider appears as a variable where arrows from both the exposure and outcome point into it.
+
+For example:
+
+- Exposure → Collider ← Outcome
+
+#### How Collider Bias Occurs
+
+Controlling for or selecting based on a collider can:
+
+- Create a spurious association between the exposure and outcome when none exists
+- Distort or mask an existing association
+- Lead to misleading conclusions about causal relationships
+
+This is distinct from **confounding**, where a third variable influences both the exposure and the outcome.
+With colliders, the problematic variable is a *consequence*, not a cause, of both exposure and outcome.
+
+#### Classic Examples
+
+1. **Hospital Admission Bias**:
+When studying the relationship between two diseases using only hospitalized patients,
+hospitalization itself becomes a collider (both diseases increase the likelihood of hospitalization).
+This can create false associations between diseases that don't exist in the general population.
+
+2. **The Obesity Paradox**:
+Some studies restricted to patients with cardiovascular disease (CVD) have found that obese patients appear to have lower mortality than non-obese patients—a reversed association compared to the general population.
+This can result from collider bias:
+both obesity and other risk factors increase the likelihood of developing CVD,
+and restricting analysis to those with CVD induces spurious associations.
+
+3. **Birth Weight Paradox**:
+Studies of infant mortality restricted to low birth weight infants can show paradoxical protective effects of maternal smoking,
+because birth weight is a collider affected by both smoking and other causes of low birth weight.
+
+#### How to Avoid Collider Bias
+
+- Use causal diagrams (DAGs) to visualize potential colliders in your study design
+- Carefully consider which variables to control for—controlling for colliders introduces bias
+- Avoid restricting your sample based on variables affected by both exposure and outcome
+- When possible, analyze the full population rather than selected subgroups
+
+#### Further Reading
+
+For more detailed information about collider bias, including additional examples and technical details, see:
+
+- [Collider Bias - Catalog of Bias](https://catalogofbias.org/biases/collider-bias/)
+- The general [Catalog of Bias](https://catalogofbias.org/) for other types of bias in health research
+
+::: {.callout-note}
+## Relationship to Model Building
+
+When building regression models, it's important to think carefully about which covariates to include.
+Adding a collider as a covariate can introduce bias rather than reduce it.
+This is why subject matter knowledge and causal reasoning,
+not just statistical considerations,
+should guide variable selection in causal analyses.
+:::
