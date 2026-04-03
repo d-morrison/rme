@@ -62,6 +62,29 @@ jobs:
           ls _site/
           echo "contents of .:\n"
           ls .
+      - name: Delete old preview comments
+        if: github.event.action != 'closed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            // Find and delete comments from pr-preview-action
+            for (const comment of comments.data) {
+              if (comment.user.login === 'github-actions[bot]' && 
+                  comment.body.includes('preview of')) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id,
+                });
+              }
+            }
+      
       - name: Deploy PR Preview
         uses: rossjrw/pr-preview-action@main
         with:
