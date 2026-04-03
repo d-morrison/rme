@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.27">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Appendix J — Statistical computing in R – Regression Models for Epidemiology</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -56,7 +59,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
-  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -85,19 +87,18 @@ div.csl-indent {
 <link href="./notation.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-4d9afe2b8d18ee9fa5d0d57b5ed4214d.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-0dd2bd5de344125cf763a379ddc3eb04.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-7e34ecb6a0e7991f0346b0751d4a7c3f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="site_libs/bootstrap/bootstrap-0dd2bd5de344125cf763a379ddc3eb04.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="site_libs/bootstrap/bootstrap-66c9649715f74f1e4324758aa2390964.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-b44ccea540e06768bee7c3f9d372997f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-66c9649715f74f1e4324758aa2390964.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -140,7 +141,7 @@ gtag('config', 'G-VS314RJ2KP', { 'anonymize_ip': true});
     document.body.classList.add('hypothesis-enabled');
   });
 </script><link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
-<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
 const typesetMath = (el) => {
   if (window.MathJax) {
     // MathJax Typeset
@@ -595,7 +596,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2026-02-02: 4:42:09 (AM)</p>
+      <p class="date">Last modified: 2026-04-03: 20:54:59 (PM)</p>
     </div>
   </div>
   
@@ -622,7 +623,7 @@ window.Quarto = {
 <li>
 <em>Practical R for Epidemiologists</em> (<span class="citation" data-cites="practicalr4epi">Myatt (<a href="references.html#ref-practicalr4epi" role="doc-biblioref">2022</a>)</span>)</li>
 <li>
-<em>R for Data Science</em> (<span class="citation" data-cites="r4ds">Wickham, Çetinkaya-Rundel, and Grolemund (<a href="references.html#ref-r4ds" role="doc-biblioref">2023</a>)</span>)</li>
+<em>R for Data Science</em> (<span class="citation" data-cites="r4ds">Wickham et al. (<a href="references.html#ref-r4ds" role="doc-biblioref">2023</a>)</span>)</li>
 <li>
 <em>Advanced R</em> (<span class="citation" data-cites="wickham2019advanced">Wickham (<a href="references.html#ref-wickham2019advanced" role="doc-biblioref">2019</a>)</span>)</li>
 <li>
@@ -682,15 +683,9 @@ window.Quarto = {
 <a href="https://statistics.ucdavis.edu/expanded-descriptions/242">STA 242</a>: Introduction to Statistical Programming</li>
 <li>
 <a href="https://catalog.ucdavis.edu/search/?q=ABG+250">ABG 250</a>: Mathematical Modeling in Biological Systems</li>
-<li><dl>
-<dt><a href="https://catalog.ucdavis.edu/search/?q=PSC+203A">PSC 203A</a></dt>
-<dd>
-“Data Cleaning &amp; Management in the Social Sciences”
-</dd>
-</dl></li>
-<li>
-<a href="https://catalog.ucdavis.edu/search/?q=PSC+203B">PSC 203B</a> “Data Visualization in the Social Sciences”</li>
+<li><a href="https://catalog.ucdavis.edu/search/?q=PSC+203A">PSC 203A</a></li>
 </ul>
+<p>: “Data Cleaning &amp; Management in the Social Sciences” - <a href="https://catalog.ucdavis.edu/search/?q=PSC+203B">PSC 203B</a> “Data Visualization in the Social Sciences”</p>
 <p><a href="https://datalab.ucdavis.edu/">DataLab</a> maintains another list of courses: <a href="https://datalab.ucdavis.edu/courses/" class="uri">https://datalab.ucdavis.edu/courses/</a></p>
 <p>DataLab also provides short-form workshops on R programming and data science: <a href="https://datalab.ucdavis.edu/workshops/" class="uri">https://datalab.ucdavis.edu/workshops/</a></p>
 </section><section id="demographics-tables" class="level2" data-number="J.3"><h2 data-number="J.3" class="anchored" data-anchor-id="demographics-tables">
@@ -738,11 +733,11 @@ window.Quarto = {
 <p>Details:</p>
 <ul>
 <li><span class="citation" data-cites="welcometidyverse">Wickham et al. (<a href="references.html#ref-welcometidyverse" role="doc-biblioref">2019</a>)</span></li>
-<li><span class="citation" data-cites="r4ds">Wickham, Çetinkaya-Rundel, and Grolemund (<a href="references.html#ref-r4ds" role="doc-biblioref">2023</a>)</span></li>
+<li><span class="citation" data-cites="r4ds">Wickham et al. (<a href="references.html#ref-r4ds" role="doc-biblioref">2023</a>)</span></li>
 <li><span class="citation" data-cites="kuhn2022tidy">Kuhn and Silge (<a href="references.html#ref-kuhn2022tidy" role="doc-biblioref">2022</a>)</span></li>
 </ul></section><section id="piping" class="level2" data-number="J.7"><h2 data-number="J.7" class="anchored" data-anchor-id="piping">
 <span class="header-section-number">J.7</span> Piping</h2>
-<p>See <a href="https://r4ds.hadley.nz/data-transform.html#sec-the-pipe"><span class="citation" data-cites="r4ds">Wickham, Çetinkaya-Rundel, and Grolemund (<span>2023</span>)</span></a> for details.</p>
+<p>See <a href="https://r4ds.hadley.nz/data-transform.html#sec-the-pipe"><span class="citation" data-cites="r4ds">Wickham et al. (<span>2023</span>)</span></a> for details.</p>
 <p>There are currently (2025) two commonly-used pipe operators in R:</p>
 <ul>
 <li><p><code>%&gt;%</code>: the “<code>magrittr</code> pipe”, from the <a href="https://cran.r-project.org/web/packages/magrittr/index.html"><code>magrittr</code></a> package (<span class="citation" data-cites="magrittr">Bache and Wickham (<a href="references.html#ref-magrittr" role="doc-biblioref">2022</a>)</span>; <a href="https://r-pkgs.org/dependencies-in-practice.html#re-exporting">re-exported</a> by <a href="https://cran.r-project.org/web/packages/dplyr/index.html"><code>dplyr</code></a> and others) .</p></li>
@@ -751,7 +746,7 @@ window.Quarto = {
 <p>See <a href="https://www.tidyverse.org/blog/2023/04/base-vs-magrittr-pipe" class="uri">https://www.tidyverse.org/blog/2023/04/base-vs-magrittr-pipe</a> for a comparison of their behavior.</p>
 <section id="which-pipe-should-i-use" class="level3" data-number="J.7.1"><h3 data-number="J.7.1" class="anchored" data-anchor-id="which-pipe-should-i-use">
 <span class="header-section-number">J.7.1</span> Which pipe should I use?</h3>
-<p><span class="citation" data-cites="r4ds">Wickham, Çetinkaya-Rundel, and Grolemund (<a href="references.html#ref-r4ds" role="doc-biblioref">2023</a>)</span> <a href="https://r4ds.hadley.nz/data-transform.html#sec-the-pipe:~:text=So%20why%20do%20we%20recommend%20the%20base%20pipe%3F">recommends the native pipe</a>:</p>
+<p><span class="citation" data-cites="r4ds">Wickham et al. (<a href="references.html#ref-r4ds" role="doc-biblioref">2023</a>)</span> <a href="https://r4ds.hadley.nz/data-transform.html#sec-the-pipe:~:text=So%20why%20do%20we%20recommend%20the%20base%20pipe%3F">recommends the native pipe</a>:</p>
 <blockquote class="blockquote">
 <p>For simple cases, |&gt; and %&gt;% behave identically. So why do we recommend the base pipe? Firstly, because it’s part of base R, it’s always available for you to use, even when you’re not using the tidyverse. Secondly, |&gt; is quite a bit simpler than %&gt;%: in the time between the invention of %&gt;% in 2014 and the inclusion of |&gt; in R 4.1.0 in 2021, we gained a better understanding of the pipe. This allowed the base implementation to jettison infrequently used and less important features.</p>
 </blockquote>
@@ -853,12 +848,12 @@ window.Quarto = {
 
 <!-- -->
 
-<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
 <div id="ref-appliedepiusingR" class="csl-entry" role="listitem">
 Aragon, Tomas J. 2013. <em>Applied Epidemiology Using <span>R</span></em>. Online. <a href="https://tbrieder.org/epidata/course_reading/e_aragon.pdf">https://tbrieder.org/epidata/course_reading/e_aragon.pdf</a>.
 </div>
 <div id="ref-phdswR" class="csl-entry" role="listitem">
-———. 2017. <em>Population Health Data Science with <span>R</span>: Transforming Data into Actionable Knowledge</em>. Online. <a href="https://bookdown.org/medepi/phds/">https://bookdown.org/medepi/phds/</a>.
+Aragon, Tomas J. 2017. <em>Population Health Data Science with <span>R</span>: Transforming Data into Actionable Knowledge</em>. Online. <a href="https://bookdown.org/medepi/phds/">https://bookdown.org/medepi/phds/</a>.
 </div>
 <div id="ref-magrittr" class="csl-entry" role="listitem">
 Bache, Stefan Milton, and Hadley Wickham. 2022. <em>Magrittr: A Forward-Pipe Operator for r</em>. <a href="https://CRAN.R-project.org/package=magrittr">https://CRAN.R-project.org/package=magrittr</a>.
@@ -879,7 +874,7 @@ Fay, Colin, Sébastien Rochette, Vincent Guyader, and Cervan Girard. 2021. <em>E
 Kleinman, Ken, and Nicholas J Horton. 2009. <em>SAS and r: Data Management, Statistical Analysis, and Graphics</em>. Chapman; Hall/CRC. <a href="https://www.routledge.com/SAS-and-R-Data-Management-Statistical-Analysis-and-Graphics-Second-Edition/Kleinman-Horton/p/book/9781466584495">https://www.routledge.com/SAS-and-R-Data-Management-Statistical-Analysis-and-Graphics-Second-Edition/Kleinman-Horton/p/book/9781466584495</a>.
 </div>
 <div id="ref-knuth84" class="csl-entry" role="listitem">
-Knuth, Donald E. 1984. <span>“Literate Programming.”</span> <em>Comput. J.</em> 27 (2): 97–111. <a href="https://doi.org/10.1093/comjnl/27.2.97">https://doi.org/10.1093/comjnl/27.2.97</a>.
+Knuth, Donald E. 1984. <span>“Literate Programming.”</span> <em>Comput. J.</em> (USA) 27 (2): 97–111. <a href="https://doi.org/10.1093/comjnl/27.2.97">https://doi.org/10.1093/comjnl/27.2.97</a>.
 </div>
 <div id="ref-kuhn2022tidy" class="csl-entry" role="listitem">
 Kuhn, Max, and Julia Silge. 2022. <em>Tidy Modeling with r</em>. " O’Reilly Media, Inc.". <a href="https://www.tmwr.org/">https://www.tmwr.org/</a>.
@@ -894,10 +889,10 @@ Myatt, Mark. 2022. <em>Practical <span>R</span> for Epidemiologists</em>. Online
 Nahhas, Ramzi W. 2023. <em>An Introduction to r for Research</em>. <a href="https://bookdown.org/rwnahhas/IntroToR/">https://bookdown.org/rwnahhas/IntroToR/</a>.
 </div>
 <div id="ref-NahhasIRMPHR" class="csl-entry" role="listitem">
-———. 2024. <em>Introduction to Regression Methods for Public Health Using <span>R</span></em>. CRC Press. <a href="https://www.bookdown.org/rwnahhas/RMPH/">https://www.bookdown.org/rwnahhas/RMPH/</a>.
+Nahhas, Ramzi W. 2024. <em>Introduction to Regression Methods for Public Health Using <span>R</span></em>. CRC Press. <a href="https://www.bookdown.org/rwnahhas/RMPH/">https://www.bookdown.org/rwnahhas/RMPH/</a>.
 </div>
 <div id="ref-spatialds" class="csl-entry" role="listitem">
-Pebesma, Edzer, and Roger Bivand. 2023. <em>Spatial Data Science: With Applications in <span>R</span></em>. Boca Raton: Chapman; Hall/CRC. <a href="https://doi.org/10.1201/9780429459016">https://doi.org/10.1201/9780429459016</a>.
+Pebesma, Edzer, and Roger Bivand. 2023. <em>Spatial Data Science: With Applications in <span>R</span></em>. Chapman; Hall/CRC. <a href="https://doi.org/10.1201/9780429459016">https://doi.org/10.1201/9780429459016</a>.
 </div>
 <div id="ref-rapR" class="csl-entry" role="listitem">
 Rodrigues, Bruno. 2023. <em>Building Reproducible Analytical Pipelines with r</em>. Online. <a href="https://raps-with-r.dev/">https://raps-with-r.dev/</a>.
@@ -906,10 +901,10 @@ Rodrigues, Bruno. 2023. <em>Building Reproducible Analytical Pipelines with r</e
 Wickham, Hadley. 2019. <em>Advanced r</em>. Chapman; Hall/CRC. <a href="https://adv-r.hadley.nz/index.html">https://adv-r.hadley.nz/index.html</a>.
 </div>
 <div id="ref-masteringshiny" class="csl-entry" role="listitem">
-———. 2021. <em>Mastering Shiny</em>. " O’Reilly Media, Inc.". <a href="https://mastering-shiny.org/">https://mastering-shiny.org/</a>.
+Wickham, Hadley. 2021. <em>Mastering Shiny</em>. " O’Reilly Media, Inc.". <a href="https://mastering-shiny.org/">https://mastering-shiny.org/</a>.
 </div>
 <div id="ref-welcometidyverse" class="csl-entry" role="listitem">
-Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy D’Agostino McGowan, Romain François, Garrett Grolemund, et al. 2019. <span>“Welcome to the <span class="nocase">tidyverse</span>.”</span> <em>Journal of Open Source Software</em> 4 (43): 1686. <a href="https://doi.org/10.21105/joss.01686">https://doi.org/10.21105/joss.01686</a>.
+Wickham, Hadley, Mara Averick, Jennifer Bryan, et al. 2019. <span>“Welcome to the <span class="nocase">tidyverse</span>.”</span> <em>Journal of Open Source Software</em> 4 (43): 1686. <a href="https://doi.org/10.21105/joss.01686">https://doi.org/10.21105/joss.01686</a>.
 </div>
 <div id="ref-rpkgs" class="csl-entry" role="listitem">
 Wickham, Hadley, and Jennifer Bryan. 2023. <em><span>R</span> Packages</em>. O’Reilly Media, Inc. <a href="https://r-pkgs.org/">https://r-pkgs.org/</a>.
