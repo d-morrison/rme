@@ -8,9 +8,6 @@ format:
     output-file: Linear-models-overview-handout.pdf
 ---
 
-# Linear (Gaussian) Models
-
----
 
 {{< include shared-config.qmd >}}
 
@@ -43,9 +40,9 @@ For more recommendations, see the discussion on [Reddit](https://www.reddit.com/
 
 :::
 
-## Overview
+# Overview
 
-### Why this course includes linear regression {.smaller}
+## Why this course includes linear regression {.smaller}
 
 :::{.fragment .fade-in-then-semi-out}
 * This course is about *generalized linear models* (for non-Gaussian outcomes)
@@ -65,7 +62,7 @@ so everyone here should have some understanding of linear regression already.
 
 :::
 
-### Chapter overview
+## Chapter overview
 
 * @sec-understand-LMs: how to interpret linear regression models
 
@@ -76,19 +73,19 @@ so everyone here should have some understanding of linear regression already.
 * @sec-diagnose-LMs: how to tell if your model is insufficiently complex
 
 
-## Understanding Gaussian Linear Regression Models {#sec-understand-LMs}
+# Understanding Gaussian Linear Regression Models {#sec-understand-LMs}
 
-### Motivating example: birthweights and gestational age {.smaller}
+## Motivating example: birthweights and gestational age {.smaller}
 
 Suppose we want to learn about the distributions of birthweights (*outcome* $Y$) 
 for (human) babies born at different gestational ages (*covariate* $A$) 
 and with different chromosomal sexes (*covariate* $S$) (@dobson4e Example 2.2.2).
 
-### Dobson `birthweight` data {.smaller}
+## Dobson `birthweight` data {.smaller}
 
 ::::: {.panel-tabset}
 
-#### Data as table
+### Data as table
 
 ```{r}
 #| label: tbl-birthweight-data1
@@ -98,7 +95,7 @@ data("birthweight", package = "dobson")
 birthweight
 ```
 
-#### Reshape data for graphing
+### Reshape data for graphing
 
 ```{r}
 #| label: tbl-birthweight-data2
@@ -127,7 +124,7 @@ bw <-
 bw
 ```
 
-#### Data as graph
+### Data as graph
 
 ```{r}
 #| label: fig-plot-birthweight1
@@ -154,7 +151,7 @@ print(plot1 + facet_wrap(~sex))
 
 ---
 
-#### Data notation {.smaller}
+### Data notation {.smaller}
 
 ::: notes
 Let's define some notation to represent this data:
@@ -186,7 +183,7 @@ such as using the values -1 and 1
 (see @dobson4e §2.4 for details).
 :::
 
-### Parallel lines regression {.smaller}
+## Parallel lines regression {.smaller}
 
 (c.f. @dunn2018generalized 
 [§2.10.3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_2#Sec31))
@@ -267,7 +264,7 @@ Graph of [Model @eq-lm-parallel] for `birthweight` data
 
 ---
 
-#### Model assumptions and predictions
+### Model assumptions and predictions
 
 ::: notes
 To learn what this model is assuming, let's plug in a few values.
@@ -310,7 +307,7 @@ bw_lm1 |>
 
 ```{r}
 pred_female <- coef(bw_lm1)["(Intercept)"] + coef(bw_lm1)["age"] * 36
-### or using built-in prediction:
+## or using built-in prediction:
 pred_female_alt <- predict(bw_lm1, newdata = tibble(sex = "female", age = 36))
 ```
 
@@ -432,11 +429,11 @@ even before we estimated values for those parameters.
 
 ---
 
-#### Coefficient Interpretation
+### Coefficient Interpretation
 
 {{< include _sec_linear_coef_interp_no_intxn.qmd >}}
 
-### Interactions {.smaller}
+## Interactions {.smaller}
 
 ::: notes
 What if we don't like that parallel lines assumption?
@@ -663,13 +660,13 @@ That's how the lines in the graph ended up non-parallel.
 
 ---
 
-#### Coefficient Interpretation
+### Coefficient Interpretation
 
 {{< include _sec_linear_coef_interp_intxn.qmd >}}
 
 --- 
 
-#### Compare coefficient interpretations
+### Compare coefficient interpretations
 
 :::{#tbl-compare-coef-interps}
   $\mu(m,a)$    | $\beta_0 + \beta_M m + \beta_A a$  | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
@@ -689,7 +686,7 @@ the interpretation of $\b_A$ involves the reference level of $M$,
 and interpretation of $\beta_M$ involves the reference level of $A$ (@tbl-compare-coef-interps).
 :::
 
-### Stratified regression {.smaller}
+## Stratified regression {.smaller}
 
 :::{.notes}
 We could re-write the interaction model as a stratified model, with a slope and intercept for each sex:
@@ -755,7 +752,7 @@ bw_lm_strat |>
 
 :::
 
-### Curved-line regression
+## Curved-line regression
 
 ::: notes
 If we transform some of our covariates ($X$s) 
@@ -824,7 +821,7 @@ ggpenguins2 <- ggpenguins +
 ggpenguins2 |> print()
 ```
 
-## Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}
+# Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}
 
 {{< include _sec_linreg_mle_est.qmd >}}
 
@@ -832,9 +829,9 @@ ggpenguins2 |> print()
 
 {{< include _sec_bw_vcov.qmd >}}
 
-## Inference about Gaussian Linear Regression Models {#sec-infer-LMs}
+# Inference about Gaussian Linear Regression Models {#sec-infer-LMs}
 
-### Motivating example: `birthweight` data
+## Motivating example: `birthweight` data
 
 Research question: is there really an interaction between sex and age?
 
@@ -844,7 +841,7 @@ $H_A: \beta_{AM} \neq 0$
 
 $P(|\hat\beta_{AM}| > |`r coef(bw_lm2)["sexmale:age"]`| \mid H_0)$ = ?
 
-### Wald tests and CIs {.smaller}
+## Wald tests and CIs {.smaller}
 
 R can give you Wald tests for single coefficients and corresponding CIs:
 
@@ -858,7 +855,7 @@ bw_lm2 |>
 
 To understand what's happening, let's replicate these results by hand for the interaction term.
 
-### P-values {.smaller}
+## P-values {.smaller}
 
 ```{r}
 bw_lm2 |>
@@ -901,7 +898,7 @@ $$
 This matches the result in the table above.
 :::
 
-### Confidence intervals
+## Confidence intervals
 
 ```{r}
 bw_lm2 |>
@@ -938,11 +935,11 @@ print(confint_t)
 This also matches.
 :::
 
-### Gaussian approximations
+## Gaussian approximations
 
 Here are the asymptotic (Gaussian approximation) equivalents:
 
-### P-values {.smaller}
+## P-values {.smaller}
 
 ```{r}
 bw_lm2 |>
@@ -958,7 +955,7 @@ pval_z <- pnorm(abs(t_stat), lower = FALSE) * 2
 print(pval_z)
 ```
 
-### Confidence intervals  {.smaller}
+## Confidence intervals  {.smaller}
 
 ```{r}
 bw_lm2 |>
@@ -975,7 +972,7 @@ confint_z <-
 print(confint_z)
 ```
 
-### Likelihood ratio statistics
+## Likelihood ratio statistics
 
 ```{r}
 logLik(bw_lm2)
@@ -1047,9 +1044,9 @@ library(lmtest)
 lrtest(bw_lm2, bw_lm1)
 ```
 
-## Goodness of fit
+# Goodness of fit
 
-### AIC and BIC
+## AIC and BIC
 
 ::: notes
 When we use likelihood ratio tests, we are comparing how well different models fit the data.
@@ -1067,7 +1064,7 @@ where $\ell$ is the log-likelihood of the data evaluated using the parameter est
 
 You can calculate these criteria using the `logLik()` function, or use the built-in R functions:
 
-#### AIC in R
+### AIC in R
 
 ```{r}
 -2 * logLik(bw_lm2) |> as.numeric() +
@@ -1076,7 +1073,7 @@ You can calculate these criteria using the `logLik()` function, or use the built
 AIC(bw_lm2)
 ```
 
-#### BIC in R
+### BIC in R
 
 ```{r}
 -2 * logLik(bw_lm2) |> as.numeric() +
@@ -1097,7 +1094,7 @@ BIC tends to favor simpler models than AIC,
 especially when the sample size is large.
 :::
 
-### (Residual) Deviance
+## (Residual) Deviance
 
 Let $q$ be the number of distinct covariate combinations in a data set.
 
@@ -1125,7 +1122,7 @@ Unique covariate combinations in the `birthweight` data, with replicate counts
 ---
 
 ::: {#def-replicates}
-#### Replicates
+### Replicates
 If a given covariate pattern has more than one observation in a dataset, 
 those observations are called **replicates**.
 :::
@@ -1134,7 +1131,7 @@ those observations are called **replicates**.
 
 ::: {#exm-replicate-bw}
 
-#### Replicates in the `birthweight` data
+### Replicates in the `birthweight` data
 
 In the `birthweight` dataset, there are 2 replicates of the combination "female, age 36" (@tbl-bw-x-combos).
 
@@ -1144,7 +1141,7 @@ In the `birthweight` dataset, there are 2 replicates of the combination "female,
 
 ::: {#exr-replicate-bw}
 
-#### Replicates in the `birthweight` data
+### Replicates in the `birthweight` data
 
 Which covariate pattern(s) in the `birthweight` data has the most replicates?
 
@@ -1154,7 +1151,7 @@ Which covariate pattern(s) in the `birthweight` data has the most replicates?
 
 ::: {#sol-replicate-bw}
 
-#### Replicates in the `birthweight` data
+### Replicates in the `birthweight` data
 
 Two covariate patterns are tied for most replicates: males at age 40 weeks 
 and females at age 40 weeks.
@@ -1168,7 +1165,7 @@ bw_X_unique |> dplyr::filter(n == max(n))
 
 ---
 
-#### Saturated models {.smaller}
+### Saturated models {.smaller}
 
 The most complicated model we could fit would have one parameter (a mean) for each covariate pattern, plus a variance parameter:
 
@@ -1283,7 +1280,7 @@ This statistic is called the **deviance** or **residual deviance** for our two-s
 
 The corresponding p-value tells us whether there we have enough evidence to detect that our two-slopes, two-intercepts model is a worse fit for the data than the maximal model; in other words, it tells us if there's evidence that we missed any important patterns. (Remember, a nonsignificant p-value could mean that we didn't miss anything and a more complicated model is unnecessary, or it could mean we just don't have enough data to tell the difference between these models.)
 
-### Null Deviance
+## Null Deviance
 
 Similarly, the *least* complicated model we could fit would have only one mean parameter, an intercept:
 
@@ -1335,7 +1332,7 @@ lrtest(lm_max, lm0)
 
 This log-likelihood ratio statistic is called the **null deviance**. It tells us whether we have enough data to detect a difference between the null and full models.
 
-## Rescaling
+# Rescaling
 
 ::: notes
 Centering covariates (subtracting a constant from them) 
@@ -1343,7 +1340,7 @@ can make coefficient interpretations more meaningful,
 particularly for the intercept and main effect terms in models with interactions.
 :::
 
-### Rescale age {.smaller}
+## Rescale age {.smaller}
 
 ::: notes
 For example, 
@@ -1383,12 +1380,12 @@ but the intercept and `sexmale` coefficient have changed
 to reflect means at age = 36 weeks rather than age = 0 weeks.
 :::
 
-## Prediction
+# Prediction
 
-### Prediction for linear models
+## Prediction for linear models
 
 :::{#def-predicted-value}
-#### Predicted value
+### Predicted value
 
 In a regression model $\p(y|\vx)$, 
 the **predicted value** of $y$ given $\vx$ is the estimated mean of $Y$ given $\vX=\vx$:
@@ -1413,7 +1410,7 @@ $$
 
 ---
 
-### Example: prediction for the `birthweight` data
+## Example: prediction for the `birthweight` data
 
 ```{r}
 x <- c(1, 1, 40)
@@ -1450,7 +1447,7 @@ R has an extra function to get these values:
 fitted(bw_lm1)
 ```
 
-### Confidence intervals {#sec-se-fitted}
+## Confidence intervals {#sec-se-fitted}
 
 Use `predict(se.fit = TRUE)` to compute SEs for predicted values:
 
@@ -1526,7 +1523,7 @@ Predicted values and confidence bands for the `birthweight` model with interacti
 :::
 
 
-### Prediction intervals {#sec-se-pred}
+## Prediction intervals {#sec-se-pred}
 
 We can also construct **prediction intervals** for 
 the value of a new observation $Y^*$,
@@ -1580,18 +1577,18 @@ Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact
 
 :::
 
-## Diagnostics {#sec-diagnose-LMs}
+# Diagnostics {#sec-diagnose-LMs}
 
 :::{.callout-tip}
 This section is adapted from @dobson4e [§6.2-6.3] and 
 @dunn2018generalized [Chapter 3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_3).
 :::
 
-### Assumptions in linear regression models {.smaller .scrollable}
+## Assumptions in linear regression models {.smaller .scrollable}
 
 {{< include _sec-linreg-assumptions.qmd >}}
 
-### Direct visualization
+## Direct visualization
 
 ::: notes
 The most direct way to examine the fit of a model is 
@@ -1623,7 +1620,7 @@ it becomes even harder to visualize the raw data.
 
 ---
 
-#### Fitted model for `hers` data {.smaller}
+### Fitted model for `hers` data {.smaller}
 
 ::: notes
 Consider the `hers` data from @vittinghoff2e.
@@ -1751,7 +1748,7 @@ With intercept
 
 :::
 
-### Residuals
+## Residuals
 
 ::: notes
 Maybe we can transform the data and model in some way 
@@ -1763,7 +1760,7 @@ to make it easier to inspect.
 ---
 
 :::{#thm-gaussian-resid-noise}
-#### Residuals in Gaussian models
+### Residuals in Gaussian models
 
 If $Y$ has a Gaussian distribution, 
 then $\err(Y)$ also has a Gaussian distribution, and vice versa.
@@ -1776,7 +1773,7 @@ Left to the reader.
 ---
 
 :::{#def-resid-fitted}
-#### Residuals of a fitted model value
+### Residuals of a fitted model value
 
 The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error) relative to the observed data:
 $$
@@ -1791,7 +1788,7 @@ $$
 
 :::{#exm-resid-bw}
 
-#### residuals in `birthweight` data
+### residuals in `birthweight` data
 
 :::{#fig-bw-resids1}
 
@@ -1819,7 +1816,7 @@ Fitted values and residuals for interaction model for `birthweight` data
 
 ---
 
-#### Residuals of fitted values vs residual noise
+### Residuals of fitted values vs residual noise
 
 $e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
 
@@ -1832,7 +1829,7 @@ $$
 
 ---
 
-#### General characteristics of residuals
+### General characteristics of residuals
 
 :::{#thm-resid-unbiased}
 If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
@@ -1874,7 +1871,7 @@ $$
 
 ---
 
-#### Characteristics of residuals in Gaussian models
+### Characteristics of residuals in Gaussian models
 
 With enough data and a correct model, 
 the residuals will be approximately Gaussian distributed, 
@@ -1888,7 +1885,7 @@ $$
 
 ---
 
-#### Computing residuals in R
+### Computing residuals in R
 
 R provides a function for residuals:
 
@@ -1914,7 +1911,7 @@ This matches R's output!
 
 ---
 
-#### Graphing the residuals
+### Graphing the residuals
 
 :::{#fig-resid-bw layout-ncol=2}
 
@@ -1986,7 +1983,7 @@ Fitted values and residuals for interaction model for `birthweight` data
 
 ---
 
-#### Residuals versus predictors
+### Residuals versus predictors
 
 ```{r}
 hers <- hers |>
@@ -2041,7 +2038,7 @@ Residuals of `hers` data vs predictors
 
 ---
 
-#### Residuals versus fitted values
+### Residuals versus fitted values
 
 ::: notes
 If the model contains multiple continuous covariates,
@@ -2127,7 +2124,7 @@ Residuals of interaction model for `hers` data, with and without intercept term
 
 :::{#def-stred}
 
-#### Standardized residuals
+### Standardized residuals
 
 $$r_i = \frac{e_i}{\widehat{SD}(e_i)}$$
 
@@ -2139,13 +2136,13 @@ $$
 r_i \siid N(0,1)
 $$
 
-### Marginal distributions of residuals
+## Marginal distributions of residuals
 
 To look for problems with our model, we can check whether the residuals $e_i$ and standardized residuals $r_i$ look like they have the distributions that they are supposed to have, according to the model.
 
 ---
 
-#### Standardized residuals in R
+### Standardized residuals in R
 
 ```{r}
 rstandard(bw_lm2)
@@ -2257,7 +2254,7 @@ Still hard to tell if the distribution is Gaussian.
 
 ---
 
-### QQ plot of standardized residuals
+## QQ plot of standardized residuals
 
 ::: notes
 Another way to assess normality is the QQ plot of the standardized residuals versus normal quantiles:
@@ -2290,7 +2287,7 @@ See also @dunn2018generalized [§3.5.4](https://link.springer.com/chapter/10.100
 
 ---
 
-#### QQ plot - how it's built
+### QQ plot - how it's built
 
 ::: notes
 Let's construct it by hand:
@@ -2338,7 +2335,7 @@ print(qqplot_lm2)
 
 ---
 
-### Conditional distributions of residuals
+## Conditional distributions of residuals
 
 If our Gaussian linear regression model is correct, the residuals $e_i$ and standardized residuals $r_i$ should have:
 
@@ -2359,7 +2356,7 @@ Regardless of whether we guessed the mean function correctly, ther the variance 
 
 ---
 
-#### Residuals versus fitted values
+### Residuals versus fitted values
 
 ::: notes
 To look for these issues, we can plot the residuals $e_i$ against the fitted values $\hat y_i$ (@fig-bw_lm2-resid-vs-fitted).
@@ -2386,7 +2383,7 @@ If not, we probably need to change the functional form of linear component of th
 {{< include exm-plot-fits.qmd >}}
 ---
 
-#### Scale-location plot
+### Scale-location plot
 
 ::: notes
 We can also plot the square roots of the absolute values of the standardized residuals against the fitted values (@fig-bw-scale-loc).
@@ -2408,7 +2405,7 @@ and we might need to transform our outcome $Y$
 
 ---
 
-#### Residuals versus leverage
+### Residuals versus leverage
 
 ::: notes
 
@@ -2431,7 +2428,7 @@ The blue line should be relatively flat and close to 0 here.
 
 ---
 
-### Diagnostics constructed by hand
+## Diagnostics constructed by hand
 
 ```{r}
 bw <-
@@ -2445,7 +2442,7 @@ bw <-
   )
 ```
 
-##### Residuals vs fitted
+#### Residuals vs fitted
 
 ```{r}
 resid_vs_fit <- bw |>
@@ -2460,7 +2457,7 @@ print(resid_vs_fit)
 ```
 
 
-##### Standardized residuals vs fitted
+#### Standardized residuals vs fitted
 
 ```{r}
 bw |>
@@ -2472,7 +2469,7 @@ bw |>
   geom_hline(yintercept = 0)
 ```
 
-##### Standardized residuals vs gestational age
+#### Standardized residuals vs gestational age
 
 ```{r}
 bw |>
@@ -2484,7 +2481,7 @@ bw |>
   geom_hline(yintercept = 0)
 ```
 
-##### `sqrt(abs(rstandard()))` vs fitted
+#### `sqrt(abs(rstandard()))` vs fitted
 
 Compare with `autoplot(bw_lm2, 3)`
 
@@ -2498,7 +2495,7 @@ bw |>
   geom_hline(yintercept = 0)
 ```
 
-## Model selection
+# Model selection
 
 (adapted from @dobson4e §6.3.3; for more information on prediction, see @james2013introduction and @rms2e).
 
@@ -2508,7 +2505,7 @@ If we have a lot of covariates in our dataset, we might want to choose a small s
 There are a few possible metrics to consider for choosing a "best" model.
 :::
 
-### Mean squared error
+## Mean squared error
 
 We might want to minimize the **mean squared error**, $\text E[(y-\hat y)^2]$, for new observations that weren't in our data set when we fit the model.
 
@@ -2516,7 +2513,7 @@ Unfortunately, $$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$ gives a biased estim
 
 ---
 
-#### Cross-validation
+### Cross-validation
 
 ```{r}
 data("carbohydrate", package = "dobson")
@@ -2561,7 +2558,7 @@ cv_results |>
 
 ---
 
-##### comparing metrics
+#### comparing metrics
 
 ```{r}
 compare_results <- tribble(
@@ -2591,10 +2588,10 @@ anova(full_model, reduced_model)
 
 ---
 
-#### stepwise regression
+### stepwise regression
 
 ::: {.callout-warning}
-## Caution about stepwise selection
+# Caution about stepwise selection
 
 Stepwise regression has several known problems:
 
@@ -2615,7 +2612,7 @@ olsrr:::ols_step_both_aic(full_model)
 
 ---
 
-#### Lasso
+### Lasso
 
 $$\am_{\theta} \cb{\llik(\th) - \lambda \sum_{j=1}^p|\beta_j|}$$
 
@@ -2650,9 +2647,9 @@ coef(cvfit, s = "lambda.1se")
 ```
 
 
-## Categorical covariates with more than two levels
+# Categorical covariates with more than two levels
 
-### Example: `birthweight`
+## Example: `birthweight`
 
 In the birthweight example, the variable `sex` had only two observed values:
 
@@ -2662,7 +2659,7 @@ unique(bw$sex)
 
 If there are more than two observed values, we can't just use a single variable with 0s and 1s.
 
-### 
+## 
 
 :::{.notes}
 For example, @tbl-iris-data shows the 
@@ -2726,7 +2723,7 @@ iris_lm1 |>
   print_md()
 ```
 
-### Let's see how that model looks:
+## Let's see how that model looks:
 
 ```{r}
 #| label: fig-iris-numeric-species-model
@@ -2749,7 +2746,7 @@ print(iris_plot1)
 
 We have forced the model to use a straight line for the three estimated means. Maybe not a good idea?
 
-### Let's see what R does with categorical variables by default:
+## Let's see what R does with categorical variables by default:
 
 ```{r}
 #| label: tbl-iris-model-factor1
@@ -2760,7 +2757,7 @@ iris_lm2 |>
   print_md()
 ```
 
-### Re-parametrize with no intercept
+## Re-parametrize with no intercept
 
 If you don't want the default and offset option, you can use "-1" like we've seen previously:
 
@@ -2772,7 +2769,7 @@ iris_lm2_no_int |>
   print_md()
 ```
 
-### Let's see what these new models look like:
+## Let's see what these new models look like:
 
 ```{r}
 #| label: fig-iris-no-intcpt
@@ -2794,7 +2791,7 @@ iris_plot2 <-
 print(iris_plot2)
 ```
 
-### Let's see how R did that:
+## Let's see how R did that:
 
 ```{r}
 #| label: tbl-iris-model-matrix-factor
@@ -2832,7 +2829,7 @@ There are more options; see @dobson4e §6.4.1 and the
 [vignette](https://cran.r-project.org/web/packages/codingMatrices/vignettes/codingMatrices.pdf) 
 (@venablescodingMatrices).
 
-## Ordinal covariates
+# Ordinal covariates
 
 (c.f. @dobson4e §2.4.4)
 
@@ -2877,7 +2874,7 @@ The default treatment contrasts don't account for ordering.
 :::
 
 ::: {.callout-note}
-## Working with ordinal variables
+# Working with ordinal variables
 
 When working with ordinal covariates in linear models:
 
