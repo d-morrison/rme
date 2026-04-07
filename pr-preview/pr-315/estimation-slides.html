@@ -6,10 +6,10 @@
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.9.36">
 
-  <title>Regression Models for Epidemiology – Estimation</title>
+  <title>Regression Models for Epidemiology – 1 Probabilistic models</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -50,7 +50,7 @@
     div.csl-indent {
       margin-left: 2em;
     }  </style>
-  <link rel="stylesheet" href="site_libs/revealjs/dist/theme/quarto-2740581606dc327e82f18f789b69d8a0.css">
+  <link rel="stylesheet" href="site_libs/revealjs/dist/theme/quarto-4df01d85d5cf19cc6202400f4f043f84.css">
   <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-VS314RJ2KP"></script>
 
   <script type="text/javascript">
@@ -88,6 +88,7 @@
     }
     .reveal .slide:not(.center) {
       height: 100%;
+      overflow-y: auto;
     }
     .reveal .slide.scrollable {
       overflow-y: auto;
@@ -165,20 +166,19 @@
     }
   </style>
 </head>
-<body class="quarto-light">
+<body class="quarto-dark">
   <div class="reveal">
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Estimation</h1>
+  <h1 class="title"><span class="header-section-number">1</span> Probabilistic models</h1>
 
 <div class="quarto-title-authors">
 </div>
 
 </section>
-<section>
-<section id="probabilistic-models" class="title-slide slide level1 scrollable center">
-<h1>Probabilistic models</h1>
+<section class="slide level2">
+
 <!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
 <!-- \def\or{\theta}  -->
 <!-- doesn't work for some reason -->
@@ -192,8 +192,8 @@
 <p><span class="theorem-title"><strong>Example 1 (Scientific models in epidemiology)</strong></span> Epidemiologists typically study <em>biological conditions and changes</em>, such as the spread of infectious diseases through populations, or the effects of environmental factors on individuals.</p>
 </div>
 </section>
-<section id="all-models-are-wrong-some-are-useful" class="slide level2">
-<h2>All models are wrong, some are useful</h2>
+<section id="all-models-are-wrong-some-are-useful" class="title-slide slide level1 center" data-number="1.1">
+<h1><span class="header-section-number">1.1</span> All models are wrong, some are useful</h1>
 <p><span class="citation" data-cites="box_draper_1987">Box and Draper (<a href="#/references" role="doc-biblioref" onclick="">1987</a>)</span>, p424 (emphasis added):</p>
 <blockquote>
 <p>…Essentially, all models are wrong, but some are useful. <strong>However, the approximate nature of the model must always be borne in mind.</strong></p>
@@ -212,20 +212,18 @@
           display:block!important;
       }</style></aside>
 </section>
-<section id="statistical-analysis-of-scientific-models" class="slide level2">
-<h2>Statistical analysis of scientific models</h2>
+
+<section id="statistical-analysis-of-scientific-models" class="title-slide slide level1 center" data-number="1.2">
+<h1><span class="header-section-number">1.2</span> Statistical analysis of scientific models</h1>
 <p>When we perform statistical analyses, we use data to help us choose between models - specifically, to determine which models best explain that data.</p>
 <p>However, physical processes do not produce data on their own. Data is only produced when scientists implement an <em>observation process</em> (i.e., a <em>scientific study</em>), which is distinct from the underlying <em>physical process</em>. In some cases, the observation process and the physical process interact with each other. This phenomenon is called the <a href="https://en.wikipedia.org/wiki/Observer_effect">“observer effect”</a>.</p>
 <p>In order to learn about the physical processes we are ultimately interested in, we often need to make special considerations for the observation process that produced the data which we are analyzing. In particular, if some of the planned observations in the study design were not completed, we will likely need to account for the incompleteness of the resulting data set in our analysis. If we are not sure why some observations are incomplete, we may need to model the observation process in addition to the physical process we were originally interested in. For example, if some participants in a study dropped out part-way through the study, we may need investigate why those participants dropped out, as opposed to other participants who completed the study.</p>
 <p>These kinds of <em>missing data</em> issues are outside of the scope of this course; see <span class="citation" data-cites="van2018flexible">Van Buuren (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span> for more details.</p>
-</section></section>
-<section>
-<section id="estimands-estimates-and-estimators" class="title-slide slide level1 center">
-<h1>Estimands, estimates, and estimators</h1>
-
+<p><span class="header-section-number">2</span> Estimands, estimates, and estimators</p>
 </section>
-<section id="estimands" class="slide level2">
-<h2>Estimands</h2>
+
+<section id="estimands" class="title-slide slide level1 center" data-number="2.1">
+<h1><span class="header-section-number">2.1</span> Estimands</h1>
 <p></p>
 <div id="def-estimand" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 2 (Estimand)</strong></span> An <strong>estimand</strong> is an unknown quantity whose value we want to know <span class="citation" data-cites="pohl2021estimands lawrance2020estimand">(<a href="#/references" role="doc-biblioref" onclick="">Pohl et al. 2021</a>; <a href="#/references" role="doc-biblioref" onclick="">Lawrance et al. 2020</a>)</span>.</p>
@@ -248,8 +246,9 @@
 </div>
 </div>
 </section>
-<section id="estimates" class="slide level2">
-<h2>Estimates</h2>
+
+<section id="estimates" class="title-slide slide level1 center" data-number="2.2">
+<h1><span class="header-section-number">2.2</span> Estimates</h1>
 <p> </p>
 <div id="def-estimate" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 3 (Estimate/estimated value)</strong></span> In statistics, an <strong>estimate</strong> or <strong>estimated value</strong> is an informed guess of an estimand’s value, based on observed data.</p>
@@ -258,8 +257,9 @@
 <p><span class="theorem-title"><strong>Example 3 (Mean height of students)</strong></span> Suppose we measure the heights of 50 random students from our school, and the sample mean was 175cm. We might use 175cm as an <em>estimate</em> of the population mean.</p>
 </div>
 </section>
-<section id="estimators" class="slide level2">
-<h2>Estimators</h2>
+
+<section id="estimators" class="title-slide slide level1 center" data-number="2.3">
+<h1><span class="header-section-number">2.3</span> Estimators</h1>
 <p></p>
 <div id="def-estimator" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 4 (Estimator)</strong></span> An <strong>estimator</strong> is a function <span class="math inline">\(\hat\theta(x_1,...x_n)\)</span> that transforms data <span class="math inline">\(x_1,...x_n\)</span> into an estimate.</p>
@@ -303,44 +303,45 @@
 <p>Which of these estimators is best? It depends on how we evaluate them (see <a href="#/sec-est-accuracy" class="quarto-xref">Section&nbsp;3</a> below).</p>
 </div>
 </section>
-<section id="contrasting-estimands-estimates-and-estimators" class="slide level2">
-<h2>Contrasting estimands, estimates, and estimators</h2>
+
+<section id="contrasting-estimands-estimates-and-estimators" class="title-slide slide level1 center" data-number="2.4">
+<h1><span class="header-section-number">2.4</span> Contrasting estimands, estimates, and estimators</h1>
 <p>It’s helpful to keep in mind the mathematical type of each estimation concept:</p>
 <ul>
 <li>estimands are numbers (or vector of numbers)</li>
 <li>estimates are also numbers (or vectors)</li>
 <li>estimators are functions of random variables, so they are also random variables</li>
 </ul>
-</section></section>
-<section>
-<section id="sec-est-accuracy" class="title-slide slide level1 center">
-<h1>Accuracy of estimators</h1>
-
+<p><span class="header-section-number">3</span> Accuracy of estimators</p>
 </section>
-<section id="accuracy" class="slide level2">
-<h2>Accuracy</h2>
+
+<section id="accuracy" class="title-slide slide level1 center" data-number="3.1">
+<h1><span class="header-section-number">3.1</span> Accuracy</h1>
 <p>To determine which estimator is best, we need to define <em>best</em>. “Accuracy” is usually most important; easy computation is usually secondary.</p>
 <div id="def-accuracy" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 5 (Accuracy)</strong></span> The <strong>accuracy</strong> of an estimator for a given estimand does not have a consensus formal definition, but all of the usual candidates are related to the distributions of the <em>errors</em> made by the resulting estimates.</p>
 </div>
 </section>
-<section id="error" class="slide level2">
-<h2>Error</h2>
+
+<section id="error" class="title-slide slide level1 center" data-number="3.2">
+<h1><span class="header-section-number">3.2</span> Error</h1>
 <div id="def-error" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 6 (Error)</strong></span> The <strong>error</strong> of an estimate <span class="math inline">\(\hat\theta\)</span> of a true value <span class="math inline">\(\theta\)</span>, often denoted <span class="math inline">\(\varepsilon(\hat\theta)\)</span>, or more completely <span class="math inline">\(\varepsilon(\hat\theta, \theta)\)</span>, is the difference between the estimate and its estimand <span class="math inline">\(\theta\)</span>; that is:</p>
 <p><span class="math display">\[\varepsilon(\hat\theta) \stackrel{\text{def}}{=}\hat\theta- \theta\]</span></p>
 </div>
 <p>Some frequently-used measures of accuracy include:</p>
 </section>
-<section id="mean-squared-error" class="slide level2">
-<h2>Mean squared error</h2>
+
+<section id="mean-squared-error" class="title-slide slide level1 center scrollable" data-number="3.3">
+<h1><span class="header-section-number">3.3</span> Mean squared error</h1>
 <div id="def-mse" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 7 (Mean squared error)</strong></span> The <strong>mean squared error</strong> of an estimator <span class="math inline">\(\hat\theta\)</span>, denoted <span class="math inline">\(\text{MSE}{\left(\hat\theta\right)}\)</span>, is the expectation of the square of the error<sup>1</sup>:</p>
 <p><span class="math display">\[\text{MSE}{\left(\hat\theta\right)} \stackrel{\text{def}}{=}\text{E}{\left[(\varepsilon(\hat\theta))^2\right]}\]</span></p>
 </div>
 <aside><ol class="aside-footnotes"><li id="fn1"><p><a href="https://en.wikipedia.org/wiki/Does_exactly_what_it_says_on_the_tin" class="uri">https://en.wikipedia.org/wiki/Does_exactly_what_it_says_on_the_tin</a></p></li></ol></aside></section>
-<section id="mean-absolute-error" class="slide level2">
-<h2>Mean absolute error</h2>
+
+<section id="mean-absolute-error" class="title-slide slide level1 center" data-number="3.4">
+<h1><span class="header-section-number">3.4</span> Mean absolute error</h1>
 <div id="def-mae" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 8 (Mean absolute error)</strong></span> The <strong>mean absolute error</strong> of an estimator is the expectation of the absolute value of the error:</p>
 <p><span class="math display">\[
@@ -348,8 +349,10 @@
 \]</span></p>
 </div>
 </section>
-<section id="bias" class="slide level2">
-<h2>Bias</h2>
+
+<section>
+<section id="bias" class="title-slide slide level1 center" data-number="3.5">
+<h1><span class="header-section-number">3.5</span> Bias</h1>
 <div id="def-bias" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 9 (Bias)</strong></span> The <strong>bias</strong> of an estimator <span class="math inline">\(\hat\theta\)</span> for an estimand <span class="math inline">\(\theta\)</span> is the expected value of the error:</p>
 <p><span id="eq-bias-def"><span class="math display">\[\text{Bias}{\left(\hat\theta\right)} \stackrel{\text{def}}{=}\text{E}{\left[\varepsilon(\hat\theta)\right]} \tag{1}\]</span></span></p>
@@ -412,9 +415,8 @@
 <p><span class="math display">\[\text{MSE}{\left(\hat\theta\right)} = {\left(\text{Bias}{\left(\hat\theta\right)}\right)}^2 + \text{Var}{\left(\hat\theta\right)}\]</span></p>
 </div>
 </section>
-<section class="slide level2">
-
-<h3 id="sec-unbiased-estimators">Unbiased estimators</h3>
+<section id="sec-unbiased-estimators" class="slide level2">
+<h2>Unbiased estimators</h2>
 <div id="def-unbiased" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 10 (unbiased estimator)</strong></span> An estimator <span class="math inline">\(\hat\theta\)</span> is <strong>unbiased</strong> if <span class="math inline">\(\text{Bias}{\left(\hat\theta\right)} = 0\)</span>.</p>
 </div>
@@ -454,8 +456,12 @@
 \]</span></p>
 </div>
 </section>
-<section id="standard-error" class="slide level2">
-<h2>Standard error</h2>
+<section class="slide level2">
+
+</section></section>
+<section>
+<section id="standard-error" class="title-slide slide level1 center" data-number="3.6">
+<h1><span class="header-section-number">3.6</span> Standard error</h1>
 <div id="def-SE" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 11 (Standard error)</strong></span> The <strong>standard error</strong> of an estimator <span class="math inline">\(\hat\theta\)</span> is just the <a href="./probability.html#def-sd">standard deviation</a> of <span class="math inline">\(\hat\theta\)</span>; that is:</p>
 <p><span class="math display">\[\text{SE}{\left(\hat\theta\right)} \stackrel{\text{def}}{=}\text{SD}{\left(\hat\theta\right)}\]</span></p>
@@ -550,7 +556,7 @@ Van Buuren, Stef. 2018. <em>Flexible Imputation of Missing Data</em>. CRC press.
 'autoAnimateUnmatched': true,
 'jumpToSlide': true,
 'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
-'smaller': false,
+'smaller': true,
  
         // Display controls in the bottom right corner
         controls: false,
@@ -570,7 +576,7 @@ Van Buuren, Stef. 2018. <em>Flexible Imputation of Missing Data</em>. CRC press.
         progress: true,
 
         // Display the page number of the current slide
-        slideNumber: false,
+        slideNumber: 'c/t',
 
         // 'all', 'print', or 'speaker'
         showSlideNumber: 'all',
@@ -700,10 +706,10 @@ Van Buuren, Stef. 2018. <em>Flexible Imputation of Missing Data</em>. CRC press.
         height: 700,
 
         // Factor of the display size that should remain empty around the content
-        margin: 0.1,
+        margin: 0,
 
         math: {
-          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js',
           config: 'TeX-AMS_HTML-full',
           tex2jax: {
             inlineMath: [['\\(','\\)']],
