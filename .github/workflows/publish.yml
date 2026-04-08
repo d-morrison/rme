@@ -44,9 +44,11 @@ jobs:
           R CMD INSTALL .
         shell: bash
 
-      - name: Render and Publish
-        uses: quarto-dev/quarto-actions/publish@HEAD
+      - name: Render
+        uses: quarto-dev/quarto-actions/render@HEAD
+
+      - name: Deploy to gh-pages (preserving PR previews)
+        uses: JamesIves/github-pages-deploy-action@v4.6.9
         with:
-          target: gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          folder: _site
+          clean-exclude: pr-preview/
