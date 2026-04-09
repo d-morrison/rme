@@ -85,13 +85,13 @@ data(drug6mp)
 library(dplyr)
 library(survival)
 
-drug6mp_km_model1 <-
+km_model1 <-
   drug6mp |>
   mutate(surv = Surv(t2, relapse)) |>
   survfit(formula = surv ~ 1, data = _)
 
 library(ggfortify)
-drug6mp_km_model1 |>
+km_model1 |>
   autoplot(
     mark.time = TRUE,
     conf.int = FALSE
@@ -110,7 +110,7 @@ library(KMsurv)
 library(dplyr)
 data(drug6mp)
 
-drug6mp.v2 <-
+data_v2 <-
   drug6mp |>
   as_tibble() |>
   mutate(
@@ -127,8 +127,8 @@ drug6mp.v2 <-
       )
   )
 
-km.6mp <-
-  drug6mp.v2 |>
+km_table <-
+  data_v2 |>
   summarize(
     .by = t2,
     Relapses = sum(outcome == "relapsed"),
@@ -156,7 +156,7 @@ km.6mp <-
   )
 
 library(pander)
-pander(km.6mp)
+pander(km_table)
 ```
 
 ---
