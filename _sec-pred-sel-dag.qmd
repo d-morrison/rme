@@ -1,0 +1,267 @@
+{{< include latex-macros/macros.qmd >}}
+
+### Directed Acyclic Graphs (DAGs) {#sec-pred-sel-dag}
+
+A **Directed Acyclic Graph (DAG)** is a graphical model
+that encodes assumed causal relationships among variables.
+
+In a DAG:
+
+- **Nodes** represent variables.
+- **Directed edges** (arrows) represent direct causal effects.
+- The graph is **acyclic**: there are no directed cycles
+(a variable cannot cause itself, even indirectly).
+
+DAGs are used in causal inference to:
+
+- Identify **confounders** that must be adjusted for.
+- Identify **mediators** that should generally *not* be adjusted for
+when estimating the total causal effect.
+- Identify **colliders** that should *not* be adjusted for
+(adjusting for a collider opens a non-causal path).
+
+### Key concepts from DAG theory {#sec-pred-sel-dag-concepts}
+
+:::{#def-confounder}
+#### Confounder
+
+A **confounder** of the relationship between an exposure $X$ and
+outcome $Y$ is a variable $C$ that:
+
+1. Is associated with the exposure $X$.
+2. Is a cause of the outcome $Y$.
+3. Is not on the causal pathway from $X$ to $Y$.
+
+Adjusting for confounders removes confounding bias.
+:::
+
+---
+
+:::{#def-mediator}
+#### Mediator
+
+A **mediator** $M$ is a variable that lies on the causal pathway
+from the exposure $X$ to the outcome $Y$:
+$$X \to M \to Y$$
+
+Adjusting for a mediator blocks the indirect causal pathway
+through $M$,
+so the estimated coefficient for $X$ reflects only
+the *direct* effect of $X$ on $Y$ not through $M$.
+
+Whether to adjust for mediators depends on the research question:
+
+- If you want the **total causal effect** of $X$ on $Y$,
+do **not** adjust for $M$.
+- If you want the **direct effect** of $X$ on $Y$ not through $M$,
+adjust for $M$.
+:::
+
+---
+
+:::{#def-collider}
+#### Collider
+
+A **collider** is a variable $L$ that is caused by two or more
+variables on a path:
+$$X \to L \leftarrow Y$$
+
+Adjusting for a collider opens a non-causal (backdoor) path
+between $X$ and $Y$,
+introducing **collider bias**.
+:::
+
+### HERS study DAG {#sec-pred-sel-hers-dag}
+
+{{< include _sec_hers_intro.qmd >}}
+
+@fig-hers-dag shows a DAG for the HERS study,
+representing the assumed causal structure among key variables.
+
+The main causal question is:
+
+> What is the effect of hormone therapy (HT) on recurrent CHD events?
+
+```{r}
+#| label: fig-hers-dag
+#| fig-cap: "Directed Acyclic Graph (DAG) for the HERS study.
+#|   `HT` = hormone therapy (exposure);
+#|   `CHD` = recurrent coronary heart disease events (outcome);
+#|   `HDL` = high-density lipoprotein;
+#|   `LDL` = low-density lipoprotein;
+#|   `SBP` = systolic blood pressure."
+#| fig-width: 7
+#| fig-height: 5
+
+library(dagitty)
+
+hers_dag <- dagitty(
+  'dag {
+    HT [exposure, pos="0,0"]
+    CHD [outcome, pos="4,0"]
+    age [pos="2,2"]
+    smoking [pos="-1,-2"]
+    diabetes [pos="1,-1.5"]
+    BMI [pos="-1,1"]
+    LDL [pos="2,1"]
+    HDL [pos="2,-1"]
+    statins [pos="3,2"]
+    SBP [pos="3,-2"]
+
+    HT -> CHD
+    HT -> HDL
+    HT -> LDL
+    age -> CHD
+    age -> HT
+    smoking -> CHD
+    smoking -> HDL
+    BMI -> CHD
+    BMI -> diabetes
+    BMI -> SBP
+    BMI -> LDL
+    diabetes -> CHD
+    diabetes -> LDL
+    LDL -> CHD
+    HDL -> CHD
+    statins -> LDL
+    SBP -> CHD
+  }'
+)
+
+plot(hers_dag)
+```
+
+In @fig-hers-dag:
+
+- **`age`** is a confounder:
+older women were more likely to have CHD events and
+may differ in their hormone therapy assignment.
+- **`LDL`** and **`HDL`** are *mediators*:
+hormone therapy affects lipid levels,
+which in turn affect CHD risk.
+- **`BMI`** is a common cause of diabetes, SBP, and LDL.
+- **`statins`** and anti-hypertensive medications (`htnmeds`) are
+not in this DAG because they are
+additional treatments that affect the mediators independently of HT.
+
+### What variables should we adjust for? {#sec-pred-sel-hers-adjust}
+
+Using DAG theory,
+we can identify the minimum adjustment set
+needed to estimate the total causal effect of HT on CHD.
+
+```{r}
+#| label: tbl-hers-adj
+adjustmentSets(
+  hers_dag,
+  exposure = "HT",
+  outcome = "CHD",
+  type = "minimal"
+)
+```
+
+::: notes
+
+According to the DAG in @fig-hers-dag,
+adjusting for `age` alone is sufficient to close all backdoor paths
+from HT to CHD.
+
+The variables `LDL` and `HDL` are mediators on the path
+HT → LDL/HDL → CHD,
+so they should **not** be included
+when estimating the *total* causal effect of HT on CHD.
+
+Including `LDL` and `HDL` in the model would block
+a part of the causal effect of HT,
+giving us only the *direct* effect of HT on CHD
+(not through lipids).
+
+:::
+
+### Analyzing LDL in the HERS study {#sec-pred-sel-hers-ldl}
+
+::: notes
+
+The HERS baseline dataset includes LDL and HDL cholesterol,
+allowing us to examine the effect of hormone therapy on lipid levels.
+
+Here we build models to predict LDL cholesterol,
+illustrating how DAG thinking guides predictor selection.
+
+:::
+
+```{r}
+#| label: hers-data-setup
+
+library(haven)
+library(dplyr)
+
+hers <- read_stata(fs::path_package("rme", "extdata/hersdata.dta"))
+
+hers_ldl <-
+  hers |>
+  filter(!is.na(LDL)) |>
+  mutate(
+    HT = factor(HT, levels = c(0, 1), labels = c("Placebo", "HT")),
+    statins = factor(statins, levels = c(0, 1), labels = c("No", "Yes")),
+    diabetes = factor(diabetes, levels = c(0, 1), labels = c("No", "Yes")),
+    smoking = factor(smoking, levels = c(0, 1), labels = c("No", "Yes"))
+  )
+```
+
+```{r}
+#| label: tbl-hers-ldl-full
+#| tbl-cap: "Summary table for LDL analysis variables in HERS"
+
+library(gtsummary)
+
+hers_ldl |>
+  select(LDL, HT, age, BMI, diabetes, smoking, statins) |>
+  tbl_summary(by = HT) |>
+  add_overall() |>
+  bold_labels()
+```
+
+#### Unadjusted model
+
+```{r}
+#| label: tbl-hers-ldl-unadj
+#| tbl-cap: "Unadjusted linear regression for LDL in HERS"
+
+model_ldl_unadj <-
+  lm(LDL ~ HT, data = hers_ldl)
+
+model_ldl_unadj |>
+  tbl_regression() |>
+  bold_labels()
+```
+
+#### Adjusted model
+
+Based on the DAG in @fig-hers-dag,
+BMI is a common cause of LDL and other outcomes
+(but age does not confound the HT → LDL relationship,
+since HT was randomized).
+
+In a randomized trial,
+treatment assignment is independent of pre-treatment covariates,
+so confounding adjustment is not required to estimate the causal effect.
+However, adjusting for strong predictors of the outcome
+can improve precision.
+
+```{r}
+#| label: tbl-hers-ldl-adj
+#| tbl-cap: "Adjusted linear regression for LDL in HERS"
+
+model_ldl_adj <-
+  lm(LDL ~ HT + age + BMI + diabetes + statins, data = hers_ldl)
+
+model_ldl_adj |>
+  tbl_regression() |>
+  bold_labels()
+```
+
+Note that `statins` is a strong predictor of LDL
+(statin medications are prescribed specifically to lower LDL).
+Including `statins` substantially reduces residual variability,
+improving precision of the HT coefficient.

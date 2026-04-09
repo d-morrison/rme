@@ -1,0 +1,257 @@
+---
+title: "Predictor Selection"
+subtitle: "Choosing which variables to include in a regression model"
+format:
+  html: default
+  revealjs:
+    output-file: predictor-selection-slides.html
+  pdf:
+    output-file: predictor-selection-handout.pdf
+---
+
+{{< include shared-config.qmd >}}
+
+# Acknowledgements {.unnumbered}
+
+This content is adapted from:
+
+-   @vittinghoff2e, Chapter 10
+-   @heinze2018variable
+
+# Introduction {#sec-pred-sel-intro}
+
+{{< include _sec-pred-sel-overview.qmd >}}
+
+# Causal Thinking and DAGs {#sec-pred-sel-causal}
+
+{{< include _sec-pred-sel-dag.qmd >}}
+
+# Testing-based selection {#sec-pred-sel-stepwise}
+
+::: notes
+
+Testing-based selection methods use statistical tests
+(such as F-tests or likelihood ratio tests)
+to decide which predictors to include in a model.
+
+:::
+
+## Stepwise regression
+
+::: {.callout-warning}
+# Caution about stepwise selection
+
+Stepwise regression has well-known problems:
+
+- It tends to select too many variables (overfitting).
+- P-values and confidence intervals are biased after selection.
+- It ignores model uncertainty.
+- Results can be unstable across different samples.
+
+Consider using subject-matter knowledge (DAGs),
+cross-validation, or penalized methods (such as LASSO) instead.
+See @heinze2018variable for a thorough review.
+:::
+
+The basic idea of stepwise selection:
+
+- **Forward selection**: Start with no predictors;
+add the predictor that most improves model fit at each step.
+- **Backward elimination**: Start with all predictors;
+remove the predictor that least worsens model fit at each step.
+- **Bidirectional stepwise**: Combine forward and backward steps.
+
+## Example: stepwise selection for LDL
+
+```{r}
+#| label: stepwise-ldl
+
+# Full model with all candidate predictors
+full_model_ldl <- lm(
+  LDL ~ HT + age + BMI + diabetes + smoking + statins + SBP,
+  data = hers_ldl
+)
+
+# Backward elimination using AIC
+step_model_ldl <- step(
+  full_model_ldl,
+  direction = "backward",
+  trace = 0
+)
+
+summary(step_model_ldl)
+```
+
+# Criterion-based selection {#sec-pred-sel-aic-bic}
+
+## AIC and BIC
+
+When comparing non-nested models,
+we can use information criteria:
+
+- **AIC** (Akaike Information Criterion):
+$$\text{AIC} = -2\,\hat\ell + 2p$$
+- **BIC** (Bayesian Information Criterion):
+$$\text{BIC} = -2\,\hat\ell + p\log n$$
+
+where $\hat\ell$ is the maximized log-likelihood,
+$p$ is the number of model parameters,
+and $n$ is the sample size.
+
+Lower values of AIC or BIC indicate a better model.
+BIC applies a larger penalty for model complexity,
+especially for large $n$.
+
+## Comparing models for LDL
+
+```{r}
+#| label: tbl-model-comparison
+#| tbl-cap: "Comparison of LDL models by AIC and BIC"
+
+library(tibble)
+
+models_ldl <- list(
+  "HT only" = lm(LDL ~ HT, data = hers_ldl),
+  "HT + age" = lm(LDL ~ HT + age, data = hers_ldl),
+  "HT + statins" = lm(LDL ~ HT + statins, data = hers_ldl),
+  "HT + age + BMI + diabetes + statins" = lm(
+    LDL ~ HT + age + BMI + diabetes + statins,
+    data = hers_ldl
+  ),
+  "Full model" = lm(
+    LDL ~ HT + age + BMI + diabetes + smoking + statins + SBP,
+    data = hers_ldl
+  )
+)
+
+tibble(
+  Model = names(models_ldl),
+  AIC = sapply(models_ldl, AIC),
+  BIC = sapply(models_ldl, BIC),
+  Adj_R2 = sapply(
+    models_ldl,
+    function(m) summary(m)$adj.r.squared
+  )
+)
+```
+
+# Penalized regression {#sec-pred-sel-lasso}
+
+::: notes
+
+When there are many candidate predictors,
+penalized regression methods simultaneously
+estimate model coefficients and perform variable selection
+by shrinking small coefficients toward zero.
+
+:::
+
+## The LASSO
+
+The **LASSO** (Least Absolute Shrinkage and Selection Operator)
+adds an $\ell_1$ penalty to the log-likelihood:
+
+$$\hat\beta_\lambda = \arg\max_\beta \left\{
+\hat\ell(\beta) - \lambda \sum_{j=1}^p |\beta_j|
+\right\}$$
+
+The tuning parameter $\lambda$ controls the strength of the penalty:
+
+- $\lambda = 0$: no penalty (ordinary least squares).
+- $\lambda \to \infty$: all coefficients shrink to zero.
+
+For intermediate values of $\lambda$,
+some coefficients are exactly zero (excluded),
+while others are shrunk but non-zero.
+
+The optimal $\lambda$ is usually chosen by cross-validation.
+
+## Example: LASSO for LDL
+
+```{r}
+#| label: fig-lasso-ldl
+#| fig-cap: "LASSO coefficient paths for LDL predictors in HERS"
+
+library(glmnet)
+library(ggfortify)
+
+hers_ldl_complete <-
+  hers_ldl |>
+  select(LDL, HT, age, BMI, diabetes, smoking, statins, SBP) |>
+  tidyr::drop_na()
+
+y_ldl <- hers_ldl_complete$LDL
+x_ldl <-
+  hers_ldl_complete |>
+  select(-LDL) |>
+  mutate(
+    HT = as.integer(HT == "HT"),
+    statins = as.integer(statins == "Yes"),
+    diabetes = as.integer(diabetes == "Yes"),
+    smoking = as.integer(smoking == "Yes")
+  ) |>
+  as.matrix()
+
+lasso_fit <- glmnet(x_ldl, y_ldl)
+autoplot(lasso_fit, xvar = "lambda") +
+  theme_bw()
+```
+
+---
+
+```{r}
+#| label: fig-lasso-cv
+#| fig-cap: "Cross-validated LASSO for LDL: MSE vs. log(lambda)"
+
+cv_lasso <- cv.glmnet(x_ldl, y_ldl)
+plot(cv_lasso)
+```
+
+---
+
+```{r}
+#| label: tbl-lasso-coefs
+#| tbl-cap: "LASSO coefficients at lambda.1se (more regularized)
+#|   and lambda.min (least CV error)"
+
+data.frame(
+  lambda.min = as.vector(coef(cv_lasso, s = "lambda.min")),
+  lambda.1se = as.vector(coef(cv_lasso, s = "lambda.1se")),
+  row.names = rownames(coef(cv_lasso))
+)
+```
+
+::: notes
+
+The LASSO identifies `statins` and `HT` as the strongest predictors
+of LDL cholesterol in the HERS data,
+consistent with the biological knowledge encoded in the DAG
+in @fig-hers-dag.
+
+:::
+
+# Summary {#sec-pred-sel-summary}
+
+Key principles for predictor selection:
+
+1. **Start with subject-matter knowledge**.
+Draw a DAG to identify confounders, mediators, and colliders.
+
+2. **Adjust for confounders** to remove bias in causal effect estimates.
+
+3. **Do not adjust for mediators** if you want the total causal effect.
+
+4. **Do not adjust for colliders** to avoid introducing bias.
+
+5. **Use AIC/BIC** to compare models of similar types.
+
+6. **Be cautious with stepwise selection**.
+It tends to overfit and produces biased inference.
+
+7. **Consider penalized regression** (LASSO, ridge)
+when there are many candidate predictors.
+
+8. **In randomized trials** (like HERS),
+confounding adjustment is not required for causal inference,
+but adjusting for strong predictors of the outcome
+can improve precision.
