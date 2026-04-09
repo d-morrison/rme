@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@HEAD
+        with:
+          submodules: recursive
 
       - name: list files
         shell: bash
@@ -30,18 +32,23 @@ jobs:
         with:
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@HEAD
-        with:
-          needs: |
-            connect
-            website
-          extra-packages: |
-            local::.
-            any::pkgdown
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev
 
-      - name: Render and Publish
-        uses: quarto-dev/quarto-actions/publish@HEAD
+      - uses: r-lib/actions/setup-renv@v2
+
+      - name: Install local package
+        run: |
+          R CMD INSTALL .
+        shell: bash
+
+      - name: Render
+        uses: quarto-dev/quarto-actions/render@HEAD
+
+      - name: Deploy to gh-pages (preserving PR previews)
+        uses: JamesIves/github-pages-deploy-action@v4.6.9
         with:
-          target: gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          folder: _site
+          clean-exclude: pr-preview/

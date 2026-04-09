@@ -11,10 +11,11 @@ on:
       - 'man/**'
       - 'pkgdown/**'
       - 'vignettes/**'
-      - '_quarto.yml'
+      - '_quarto*.yml'
       - '.github/workflows/preview.yml'
       - '.github/workflows/publish.yml'
       - '*.qmd'
+      - '*.scss'
 
 concurrency: preview-${{ github.ref }}
 
@@ -27,6 +28,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
@@ -37,14 +40,17 @@ jobs:
         with:
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@HEAD
-        with:
-          needs: |
-            connect
-            website
-          extra-packages: |
-            local::.
-            any::pkgdown
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev
+
+      - uses: r-lib/actions/setup-renv@v2
+
+      - name: Install local package
+        run: |
+          R CMD INSTALL .
+        shell: bash
 
       - name: Render
         if: github.event.action != 'closed' # skip the build if the PR has been closed
@@ -53,12 +59,47 @@ jobs:
       - name: list files
         shell: bash
         run: |
-          echo "contents of _book:\n"
-          ls _book/
+          echo "contents of _site:\n"
+          ls _site/
           echo "contents of .:\n"
           ls .
+      
       - name: Deploy PR Preview
-        uses: rossjrw/pr-preview-action@main
+        uses: rossjrw/pr-preview-action@v1
+        id: preview
         with:
-          source-dir: _book/
+          source-dir: _site/
+          comment: false
+      
+      - name: Delete old preview comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: steps.preview.outputs.deployment-action == 'deploy'
+        with:
+          header: pr-preview
+          delete: true
+      
+      - name: Comment with preview link
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: steps.preview.outputs.deployment-action == 'deploy'
+        with:
+          header: pr-preview
+          recreate: true
+          message: |
+            [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview.outputs.action-version }}
+            :---:
+            :rocket: **Preview available at:** ${{ steps.preview.outputs.preview-url }}
+            
+            <sub>Built to branch [`gh-pages`](${{ github.server_url }}/${{ github.repository }}/tree/gh-pages) at ${{ steps.preview.outputs.action-start-time }}.</sub>
+      
+      - name: Remove preview comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: steps.preview.outputs.deployment-action == 'remove'
+        with:
+          header: pr-preview
+          message: |
+            [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview.outputs.action-version }}
+            :---:
+            Preview removed because the pull request was closed.
+            
+            <sub>${{ steps.preview.outputs.action-start-time }}</sub>
 
