@@ -823,6 +823,244 @@ ggpenguins2 |> print()
 
 {{< include _sec_linreg_rescaling.qmd >}}
 
+## Categorical covariates with more than two levels
+
+### Example: `birthweight`
+
+In the birthweight example, the variable `sex` had only two observed values:
+
+```{r}
+unique(bw$sex)
+```
+
+If there are more than two observed values, we can't just use a single variable with 0s and 1s.
+
+### 
+
+:::{.notes}
+For example, @tbl-iris-data shows the 
+[(in)famous](https://www.meganstodel.com/posts/no-to-iris/) 
+`iris` data (@anderson1935irises), 
+and @tbl-iris-summary provides summary statistics. 
+The data include three species: "setosa", "versicolor", and "virginica".
+:::
+
+```{r}
+#| tbl-cap: "The `iris` data"
+#| label: tbl-iris-data
+head(iris)
+```
+
+```{r}
+#| tbl-cap: "Summary statistics for the `iris` data"
+#| label: tbl-iris-summary
+
+library(table1)
+table1(
+  x = ~ . | Species,
+  data = iris,
+  overall = FALSE
+)
+```
+
+---
+
+If we want to model `Sepal.Length` by species, we could create a variable $X$ that represents "setosa" as $X=1$, "virginica" as $X=2$, and "versicolor" as $X=3$.
+
+```{r}
+#| label: tbl-numeric-coding
+#| tbl-cap: "`iris` data with numeric coding of species"
+data(iris) # this step is not always necessary, but ensures you're starting
+# from the original version of a dataset stored in a loaded package
+
+iris <-
+  iris |>
+  tibble() |>
+  mutate(
+    X = case_when(
+      Species == "setosa" ~ 1,
+      Species == "virginica" ~ 2,
+      Species == "versicolor" ~ 3
+    )
+  )
+
+iris |>
+  distinct(Species, X)
+```
+
+Then we could fit a model like:
+
+```{r}
+#| label: tbl-iris-numeric-species
+#| tbl-cap: "Model of `iris` data with numeric coding of `Species`"
+iris_lm1 <- lm(Sepal.Length ~ X, data = iris)
+iris_lm1 |>
+  parameters() |>
+  print_md()
+```
+
+### Let's see how that model looks:
+
+```{r}
+#| label: fig-iris-numeric-species-model
+#| fig-cap: "Model of `iris` data with numeric coding of `Species`"
+iris_plot1 <- iris |>
+  ggplot(
+    aes(
+      x = X,
+      y = Sepal.Length
+    )
+  ) +
+  geom_point(alpha = .1) +
+  geom_abline(
+    intercept = coef(iris_lm1)[1],
+    slope = coef(iris_lm1)[2]
+  ) +
+  theme_bw(base_size = 18)
+print(iris_plot1)
+```
+
+We have forced the model to use a straight line for the three estimated means. Maybe not a good idea?
+
+### Let's see what R does with categorical variables by default:
+
+```{r}
+#| label: tbl-iris-model-factor1
+#| tbl-cap: "Model of `iris` data with `Species` as a categorical variable"
+iris_lm2 <- lm(Sepal.Length ~ Species, data = iris)
+iris_lm2 |>
+  parameters() |>
+  print_md()
+```
+
+### Re-parametrize with no intercept
+
+If you don't want the default and offset option, you can use "-1" like we've seen previously:
+
+```{r}
+#| label: tbl-iris-no-intcpt
+iris_lm2_no_int <- lm(Sepal.Length ~ Species - 1, data = iris)
+iris_lm2_no_int |>
+  parameters() |>
+  print_md()
+```
+
+### Let's see what these new models look like:
+
+```{r}
+#| label: fig-iris-no-intcpt
+iris_plot2 <-
+  iris |>
+  mutate(
+    predlm2 = predict(iris_lm2)
+  ) |>
+  arrange(X) |>
+  ggplot(aes(x = X, y = Sepal.Length)) +
+  geom_point(alpha = .1) +
+  geom_line(aes(y = predlm2), col = "red") +
+  geom_abline(
+    intercept = coef(iris_lm1)[1],
+    slope = coef(iris_lm1)[2]
+  ) +
+  theme_bw(base_size = 18)
+
+print(iris_plot2)
+```
+
+### Let's see how R did that:
+
+```{r}
+#| label: tbl-iris-model-matrix-factor
+formula(iris_lm2)
+model.matrix(iris_lm2) |>
+  as_tibble() |>
+  unique()
+```
+
+This format is called a "corner point parametrization" 
+(e.g., in @dobson4e) or "treatment coding" (e.g., in @dunn2018generalized).
+
+The default contrasts are controlled by `options("contrasts")`:
+
+```{r}
+options("contrasts")
+```
+
+See `?options` for more details.
+
+---
+
+```{r}
+#| label: tbl-iris-group-point-parameterization
+formula(iris_lm2_no_int)
+model.matrix(iris_lm2_no_int) |>
+  as_tibble() |>
+  unique()
+```
+
+This format is called a "group point parametrization" (e.g., in @dobson4e).
+
+There are more options; see @dobson4e §6.4.1 and the 
+[`codingMatrices` package](https://CRAN.R-project.org/package=codingMatrices) 
+[vignette](https://cran.r-project.org/web/packages/codingMatrices/vignettes/codingMatrices.pdf) 
+(@venablescodingMatrices).
+
+## Ordinal covariates
+
+(c.f. @dobson4e §2.4.4)
+
+---
+
+::: notes
+We can create ordinal variables in R using the `ordered()` function^[or equivalently, `factor(ordered = TRUE)`].
+:::
+
+:::{#exm-ordinal-variable}
+
+```{r}
+#| eval: false
+url <- paste0(
+  "https://regression.ucsf.edu/sites/g/files/tkssra6706/",
+  "f/wysiwyg/home/data/hersdata.dta"
+)
+library(haven)
+hers <- read_dta(url)
+```
+
+```{r}
+#| include: false
+library(haven)
+hers <- read_stata(fs::path_package("rme", "extdata/hersdata.dta"))
+```
+
+```{r}
+#| tbl-cap: "HERS dataset"
+#| label: tbl-HERS
+hers |> head()
+```
+
+:::
+
+---
+
+::: notes
+For ordinal variables, 
+we might want to use contrasts that respect the ordering of the categories.
+The default treatment contrasts don't account for ordering.
+:::
+
+::: {.callout-note}
+## Working with ordinal variables
+
+When working with ordinal covariates in linear models:
+
+1. Use `ordered()` or `factor(ordered = TRUE)` to create the variable
+2. Consider using polynomial contrasts (`contr.poly`) which respect ordering
+3. Alternatively, treat the ordinal variable as numeric if equal spacing is reasonable
+4. Check `?codingMatrices::contr.diff` for additional contrast options
+
+See @dobson4e §2.4.4 for more details on contrasts for ordinal variables.
+:::
 # Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}
 
 {{< include _sec_linreg_mle_est.qmd >}}
@@ -928,296 +1166,6 @@ In practice you don't have to do this by hand; there are functions to do it for 
 library(lmtest)
 lrtest(bw_lm2, bw_lm1)
 ```
-
-# Goodness of fit
-
-## AIC and BIC
-
-::: notes
-When we use likelihood ratio tests, we are comparing how well different models fit the data.
-
-Likelihood ratio tests require "nested" models: one must be a special case of the other.
-
-If we have non-nested models, we can instead use the Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC):
-:::
-
--   AIC = $-2 * \ell(\hat\theta) + 2 * p$
-
--   BIC = $-2 * \ell(\hat\theta) + p * \text{log}(n)$
-
-where $\ell$ is the log-likelihood of the data evaluated using the parameter estimates $\hat\theta$, $p$ is the number of estimated parameters in the model (including $\hat\sigma^2$), and $n$ is the number of observations.
-
-You can calculate these criteria using the `logLik()` function, or use the built-in R functions:
-
-### AIC in R
-
-```{r}
--2 * logLik(bw_lm2) |> as.numeric() +
-  2 * (length(coef(bw_lm2)) + 1) # sigma counts as a parameter here
-
-AIC(bw_lm2)
-```
-
-### BIC in R
-
-```{r}
--2 * logLik(bw_lm2) |> as.numeric() +
-  (length(coef(bw_lm2)) + 1) * log(nobs(bw_lm2))
-
-BIC(bw_lm2)
-```
-
-Large values of AIC and BIC are worse than small values. 
-There are no hypothesis tests or p-values associated with these criteria.
-
-::: notes
-To compare models using AIC or BIC, 
-calculate the criterion for each model and choose the model with the smallest value.
-A difference of more than 2 units in AIC is often considered meaningful, 
-though this is just a rough guideline.
-BIC tends to favor simpler models than AIC, 
-especially when the sample size is large.
-:::
-
-## (Residual) Deviance
-
-Let $q$ be the number of distinct covariate combinations in a data set.
-
-```{r}
-bw_X_unique <-
-  bw |>
-  count(sex, age)
-
-n_unique_bw <- nrow(bw_X_unique)
-```
-
-For example, in the `birthweight` data, 
-there are $q = `r n_unique_bw`$ unique patterns (@tbl-bw-x-combos).
-
-::: {#tbl-bw-x-combos}
-
-```{r}
-bw_X_unique
-```
-
-Unique covariate combinations in the `birthweight` data, with replicate counts
-
-:::
-
----
-
-::: {#def-replicates}
-### Replicates
-If a given covariate pattern has more than one observation in a dataset, 
-those observations are called **replicates**.
-:::
-
----
-
-::: {#exm-replicate-bw}
-
-### Replicates in the `birthweight` data
-
-In the `birthweight` dataset, there are 2 replicates of the combination "female, age 36" (@tbl-bw-x-combos).
-
-:::
-
----
-
-::: {#exr-replicate-bw}
-
-### Replicates in the `birthweight` data
-
-Which covariate pattern(s) in the `birthweight` data has the most replicates?
-
-:::
-
----
-
-::: {#sol-replicate-bw}
-
-### Replicates in the `birthweight` data
-
-Two covariate patterns are tied for most replicates: males at age 40 weeks 
-and females at age 40 weeks.
-40 weeks is the usual length for human pregnancy (@polin2011fetal), so this result makes sense.
-
-```{r}
-bw_X_unique |> dplyr::filter(n == max(n))
-```
-
-:::
-
----
-
-### Saturated models {.smaller}
-
-The most complicated model we could fit would have one parameter (a mean) for each covariate pattern, plus a variance parameter:
-
-```{r}
-#| label: tbl-bw-model-sat
-#| tbl-cap: "Saturated model for the `birthweight` data"
-lm_max <-
-  bw |>
-  mutate(age = factor(age)) |>
-  lm(
-    formula = weight ~ sex:age - 1,
-    data = _
-  )
-
-lm_max |>
-  parameters() |>
-  print_md()
-```
-
-We call this model the **full**, **maximal**, or **saturated** model for this dataset.
-
----
-
-```{r}
-library(rlang) # defines the `.data` pronoun
-plot_PIs_and_CIs <- function(model, data) {
-  cis <- model |>
-    predict(interval = "confidence") |>
-    suppressWarnings() |>
-    tibble::as_tibble()
-  names(cis) <- paste("ci", names(cis), sep = "_")
-
-  preds <- model |>
-    predict(interval = "predict") |>
-    suppressWarnings() |>
-    tibble::as_tibble()
-  names(preds) <- paste("pred", names(preds), sep = "_")
-  dplyr::bind_cols(bw, cis, preds) |>
-    ggplot2::ggplot() +
-    ggplot2::aes(
-      x = .data$age, 
-      y = .data$weight, 
-      col = .data$sex
-    ) +
-    ggplot2::geom_point() +
-    ggplot2::theme(legend.position = "bottom") +
-    ggplot2::geom_line(ggplot2::aes(y = .data$ci_fit)) +
-    ggplot2::geom_ribbon(
-      ggplot2::aes(
-        ymin = .data$pred_lwr,
-        ymax = .data$pred_upr
-      ),
-      alpha = 0.2
-    ) +
-    ggplot2::geom_ribbon(
-      ggplot2::aes(
-        ymin = .data$ci_lwr,
-        ymax = .data$ci_upr
-      ),
-      alpha = 0.5
-    ) +
-    ggplot2::facet_wrap(~sex)
-}
-```
-
-:::{#fig-max-vs-intxn-fits layout-ncol=2}
-
-:::{#fig-fit-intxn}
-
-```{r}
-plot_PIs_and_CIs(bw_lm2, bw)
-```
-Model [-@eq-BW-lm-interact] (linear with age:sex interaction)
-:::
-
-:::{#fig-fit-max}
-
-```{r}
-plot_PIs_and_CIs(lm_max, bw)
-```
-Saturated model
-:::
-
-Model [-@eq-BW-lm-interact] and saturated model for `birthweight` data, 
-with confidence and prediction intervals
-
-:::
-
-
----
-
-We can calculate the log-likelihood of this model as usual:
-
-```{r}
-logLik(lm_max)
-```
-
-We can compare this model to our other models using chi-square tests, as usual:
-
-```{r}
-lrtest(lm_max, bw_lm2)
-```
-
-The likelihood ratio statistic for this test is 
-$$\lambda = 2 * (\ell_{\text{full}} - \ell) = `r 2 * (logLik(lm_max) - logLik(bw_lm2))`$$ 
-where:
-
--   $\ell_{\text{full}}$ is the log-likelihood of the full model: `r logLik(lm_max)`
--   $\ell$ is the log-likelihood of our comparison model (two slopes, two intercepts): `r logLik(bw_lm2)`
-
-This statistic is called the **deviance** or **residual deviance** for our two-slopes and two-intercepts model; it tells us how much the likelihood of that model deviates from the likelihood of the maximal model.
-
-The corresponding p-value tells us whether there we have enough evidence to detect that our two-slopes, two-intercepts model is a worse fit for the data than the maximal model; in other words, it tells us if there's evidence that we missed any important patterns. (Remember, a nonsignificant p-value could mean that we didn't miss anything and a more complicated model is unnecessary, or it could mean we just don't have enough data to tell the difference between these models.)
-
-## Null Deviance
-
-Similarly, the *least* complicated model we could fit would have only one mean parameter, an intercept:
-
-$$\text E[Y|X=x] = \beta_0$$ We can fit this model in R like so:
-
-```{r}
-lm0 <- lm(weight ~ 1, data = bw)
-
-lm0 |>
-  parameters() |>
-  print_md()
-```
-
----
-
-:::{#fig-null-model}
-```{r}
-lm0 |> plot_PIs_and_CIs()
-```
-
-Null model for birthweight data, with 95% confidence and prediction intervals.
-:::
-
-
----
-
-This model also has a likelihood:
-
-```{r}
-logLik(lm0)
-```
-
-And we can compare it to more complicated models using a likelihood ratio test:
-
-```{r}
-lrtest(bw_lm2, lm0)
-```
-
-The likelihood ratio statistic for the test comparing the null model to the maximal model is $$\lambda = 2 * (\ell_{\text{full}} - \ell_{0}) = `r 2 * (logLik(lm_max) - logLik(lm0))`$$ where:
-
--   $\ell_{\text{0}}$ is the log-likelihood of the null model: `r logLik(lm0)`
--   $\ell_{\text{full}}$ is the log-likelihood of the maximal model: `r logLik(lm_max)`
-
-In R, this test is:
-
-```{r}
-lrtest(lm_max, lm0)
-```
-
-This log-likelihood ratio statistic is called the **null deviance**. It tells us whether we have enough data to detect a difference between the null and full models.
-
-{{< include _sec_compare_lm_glm_deviance.qmd >}}
 
 # Prediction
 
@@ -1416,18 +1364,310 @@ Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact
 
 :::
 
-# Diagnostics {#sec-diagnose-LMs}
+# Assessing model fit
+
+## Goodness of fit
+
+### AIC and BIC
+
+::: notes
+When we use likelihood ratio tests, we are comparing how well different models fit the data.
+
+Likelihood ratio tests require "nested" models: one must be a special case of the other.
+
+If we have non-nested models, we can instead use the Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC):
+:::
+
+-   AIC = $-2 * \ell(\hat\theta) + 2 * p$
+
+-   BIC = $-2 * \ell(\hat\theta) + p * \text{log}(n)$
+
+where $\ell$ is the log-likelihood of the data evaluated using the parameter estimates $\hat\theta$, $p$ is the number of estimated parameters in the model (including $\hat\sigma^2$), and $n$ is the number of observations.
+
+You can calculate these criteria using the `logLik()` function, or use the built-in R functions:
+
+#### AIC in R
+
+```{r}
+-2 * logLik(bw_lm2) |> as.numeric() +
+  2 * (length(coef(bw_lm2)) + 1) # sigma counts as a parameter here
+
+AIC(bw_lm2)
+```
+
+#### BIC in R
+
+```{r}
+-2 * logLik(bw_lm2) |> as.numeric() +
+  (length(coef(bw_lm2)) + 1) * log(nobs(bw_lm2))
+
+BIC(bw_lm2)
+```
+
+Large values of AIC and BIC are worse than small values. 
+There are no hypothesis tests or p-values associated with these criteria.
+
+::: notes
+To compare models using AIC or BIC, 
+calculate the criterion for each model and choose the model with the smallest value.
+A difference of more than 2 units in AIC is often considered meaningful, 
+though this is just a rough guideline.
+BIC tends to favor simpler models than AIC, 
+especially when the sample size is large.
+:::
+
+### (Residual) Deviance
+
+Let $q$ be the number of distinct covariate combinations in a data set.
+
+```{r}
+bw_X_unique <-
+  bw |>
+  count(sex, age)
+
+n_unique_bw <- nrow(bw_X_unique)
+```
+
+For example, in the `birthweight` data, 
+there are $q = `r n_unique_bw`$ unique patterns (@tbl-bw-x-combos).
+
+::: {#tbl-bw-x-combos}
+
+```{r}
+bw_X_unique
+```
+
+Unique covariate combinations in the `birthweight` data, with replicate counts
+
+:::
+
+---
+
+::: {#def-replicates}
+#### Replicates
+If a given covariate pattern has more than one observation in a dataset, 
+those observations are called **replicates**.
+:::
+
+---
+
+::: {#exm-replicate-bw}
+
+#### Replicates in the `birthweight` data
+
+In the `birthweight` dataset, there are 2 replicates of the combination "female, age 36" (@tbl-bw-x-combos).
+
+:::
+
+---
+
+::: {#exr-replicate-bw}
+
+#### Replicates in the `birthweight` data
+
+Which covariate pattern(s) in the `birthweight` data has the most replicates?
+
+:::
+
+---
+
+::: {#sol-replicate-bw}
+
+#### Replicates in the `birthweight` data
+
+Two covariate patterns are tied for most replicates: males at age 40 weeks 
+and females at age 40 weeks.
+40 weeks is the usual length for human pregnancy (@polin2011fetal), so this result makes sense.
+
+```{r}
+bw_X_unique |> dplyr::filter(n == max(n))
+```
+
+:::
+
+---
+
+#### Saturated models {.smaller}
+
+The most complicated model we could fit would have one parameter (a mean) for each covariate pattern, plus a variance parameter:
+
+```{r}
+#| label: tbl-bw-model-sat
+#| tbl-cap: "Saturated model for the `birthweight` data"
+lm_max <-
+  bw |>
+  mutate(age = factor(age)) |>
+  lm(
+    formula = weight ~ sex:age - 1,
+    data = _
+  )
+
+lm_max |>
+  parameters() |>
+  print_md()
+```
+
+We call this model the **full**, **maximal**, or **saturated** model for this dataset.
+
+---
+
+```{r}
+library(rlang) # defines the `.data` pronoun
+plot_PIs_and_CIs <- function(model, data) {
+  cis <- model |>
+    predict(interval = "confidence") |>
+    suppressWarnings() |>
+    tibble::as_tibble()
+  names(cis) <- paste("ci", names(cis), sep = "_")
+
+  preds <- model |>
+    predict(interval = "predict") |>
+    suppressWarnings() |>
+    tibble::as_tibble()
+  names(preds) <- paste("pred", names(preds), sep = "_")
+  dplyr::bind_cols(bw, cis, preds) |>
+    ggplot2::ggplot() +
+    ggplot2::aes(
+      x = .data$age, 
+      y = .data$weight, 
+      col = .data$sex
+    ) +
+    ggplot2::geom_point() +
+    ggplot2::theme(legend.position = "bottom") +
+    ggplot2::geom_line(ggplot2::aes(y = .data$ci_fit)) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(
+        ymin = .data$pred_lwr,
+        ymax = .data$pred_upr
+      ),
+      alpha = 0.2
+    ) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(
+        ymin = .data$ci_lwr,
+        ymax = .data$ci_upr
+      ),
+      alpha = 0.5
+    ) +
+    ggplot2::facet_wrap(~sex)
+}
+```
+
+:::{#fig-max-vs-intxn-fits layout-ncol=2}
+
+:::{#fig-fit-intxn}
+
+```{r}
+plot_PIs_and_CIs(bw_lm2, bw)
+```
+Model [-@eq-BW-lm-interact] (linear with age:sex interaction)
+:::
+
+:::{#fig-fit-max}
+
+```{r}
+plot_PIs_and_CIs(lm_max, bw)
+```
+Saturated model
+:::
+
+Model [-@eq-BW-lm-interact] and saturated model for `birthweight` data, 
+with confidence and prediction intervals
+
+:::
+
+
+---
+
+We can calculate the log-likelihood of this model as usual:
+
+```{r}
+logLik(lm_max)
+```
+
+We can compare this model to our other models using chi-square tests, as usual:
+
+```{r}
+lrtest(lm_max, bw_lm2)
+```
+
+The likelihood ratio statistic for this test is 
+$$\lambda = 2 * (\ell_{\text{full}} - \ell) = `r 2 * (logLik(lm_max) - logLik(bw_lm2))`$$ 
+where:
+
+-   $\ell_{\text{full}}$ is the log-likelihood of the full model: `r logLik(lm_max)`
+-   $\ell$ is the log-likelihood of our comparison model (two slopes, two intercepts): `r logLik(bw_lm2)`
+
+This statistic is called the **deviance** or **residual deviance** for our two-slopes and two-intercepts model; it tells us how much the likelihood of that model deviates from the likelihood of the maximal model.
+
+The corresponding p-value tells us whether there we have enough evidence to detect that our two-slopes, two-intercepts model is a worse fit for the data than the maximal model; in other words, it tells us if there's evidence that we missed any important patterns. (Remember, a nonsignificant p-value could mean that we didn't miss anything and a more complicated model is unnecessary, or it could mean we just don't have enough data to tell the difference between these models.)
+
+### Null Deviance
+
+Similarly, the *least* complicated model we could fit would have only one mean parameter, an intercept:
+
+$$\text E[Y|X=x] = \beta_0$$ We can fit this model in R like so:
+
+```{r}
+lm0 <- lm(weight ~ 1, data = bw)
+
+lm0 |>
+  parameters() |>
+  print_md()
+```
+
+---
+
+:::{#fig-null-model}
+```{r}
+lm0 |> plot_PIs_and_CIs()
+```
+
+Null model for birthweight data, with 95% confidence and prediction intervals.
+:::
+
+
+---
+
+This model also has a likelihood:
+
+```{r}
+logLik(lm0)
+```
+
+And we can compare it to more complicated models using a likelihood ratio test:
+
+```{r}
+lrtest(bw_lm2, lm0)
+```
+
+The likelihood ratio statistic for the test comparing the null model to the maximal model is $$\lambda = 2 * (\ell_{\text{full}} - \ell_{0}) = `r 2 * (logLik(lm_max) - logLik(lm0))`$$ where:
+
+-   $\ell_{\text{0}}$ is the log-likelihood of the null model: `r logLik(lm0)`
+-   $\ell_{\text{full}}$ is the log-likelihood of the maximal model: `r logLik(lm_max)`
+
+In R, this test is:
+
+```{r}
+lrtest(lm_max, lm0)
+```
+
+This log-likelihood ratio statistic is called the **null deviance**. It tells us whether we have enough data to detect a difference between the null and full models.
+
+{{< include _sec_compare_lm_glm_deviance.qmd >}}
+
+## Diagnostics {#sec-diagnose-LMs}
 
 :::{.callout-tip}
 This section is adapted from @dobson4e [§6.2-6.3] and 
 @dunn2018generalized [Chapter 3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_3).
 :::
 
-## Assumptions in linear regression models {.smaller .scrollable}
+### Assumptions in linear regression models {.smaller .scrollable}
 
 {{< include _sec-linreg-assumptions.qmd >}}
 
-## Direct visualization
+### Direct visualization
 
 ::: notes
 The most direct way to examine the fit of a model is 
@@ -1459,7 +1699,7 @@ it becomes even harder to visualize the raw data.
 
 ---
 
-### Fitted model for `hers` data {.smaller}
+#### Fitted model for `hers` data {.smaller}
 
 ::: notes
 Consider the `hers` data from @vittinghoff2e.
@@ -1587,7 +1827,7 @@ With intercept
 
 :::
 
-## Residuals
+### Residuals
 
 ::: notes
 Maybe we can transform the data and model in some way 
@@ -1599,7 +1839,7 @@ to make it easier to inspect.
 ---
 
 :::{#thm-gaussian-resid-noise}
-### Residuals in Gaussian models
+#### Residuals in Gaussian models
 
 If $Y$ has a Gaussian distribution, 
 then $\err(Y)$ also has a Gaussian distribution, and vice versa.
@@ -1612,7 +1852,7 @@ Left to the reader.
 ---
 
 :::{#def-resid-fitted}
-### Residuals of a fitted model value
+#### Residuals of a fitted model value
 
 The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error) relative to the observed data:
 $$
@@ -1627,7 +1867,7 @@ $$
 
 :::{#exm-resid-bw}
 
-### residuals in `birthweight` data
+#### residuals in `birthweight` data
 
 :::{#fig-bw-resids1}
 
@@ -1655,7 +1895,7 @@ Fitted values and residuals for interaction model for `birthweight` data
 
 ---
 
-### Residuals of fitted values vs residual noise
+#### Residuals of fitted values vs residual noise
 
 $e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
 
@@ -1668,7 +1908,7 @@ $$
 
 ---
 
-### General characteristics of residuals
+#### General characteristics of residuals
 
 :::{#thm-resid-unbiased}
 If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
@@ -1710,7 +1950,7 @@ $$
 
 ---
 
-### Characteristics of residuals in Gaussian models
+#### Characteristics of residuals in Gaussian models
 
 With enough data and a correct model, 
 the residuals will be approximately Gaussian distributed, 
@@ -1724,7 +1964,7 @@ $$
 
 ---
 
-### Computing residuals in R
+#### Computing residuals in R
 
 R provides a function for residuals:
 
@@ -1750,7 +1990,7 @@ This matches R's output!
 
 ---
 
-### Graphing the residuals
+#### Graphing the residuals
 
 :::{#fig-resid-bw layout-ncol=2}
 
@@ -1822,7 +2062,7 @@ Fitted values and residuals for interaction model for `birthweight` data
 
 ---
 
-### Residuals versus predictors
+#### Residuals versus predictors
 
 ```{r}
 hers <- hers |>
@@ -1877,7 +2117,7 @@ Residuals of `hers` data vs predictors
 
 ---
 
-### Residuals versus fitted values
+#### Residuals versus fitted values
 
 ::: notes
 If the model contains multiple continuous covariates,
@@ -1963,7 +2203,7 @@ Residuals of interaction model for `hers` data, with and without intercept term
 
 :::{#def-stred}
 
-### Standardized residuals
+#### Standardized residuals
 
 $$r_i = \frac{e_i}{\widehat{SD}(e_i)}$$
 
@@ -1975,13 +2215,13 @@ $$
 r_i \siid N(0,1)
 $$
 
-## Marginal distributions of residuals
+### Marginal distributions of residuals
 
 To look for problems with our model, we can check whether the residuals $e_i$ and standardized residuals $r_i$ look like they have the distributions that they are supposed to have, according to the model.
 
 ---
 
-### Standardized residuals in R
+#### Standardized residuals in R
 
 ```{r}
 rstandard(bw_lm2)
@@ -2093,7 +2333,7 @@ Still hard to tell if the distribution is Gaussian.
 
 ---
 
-## QQ plot of standardized residuals
+### QQ plot of standardized residuals
 
 ::: notes
 Another way to assess normality is the QQ plot of the standardized residuals versus normal quantiles:
@@ -2126,7 +2366,7 @@ See also @dunn2018generalized [§3.5.4](https://link.springer.com/chapter/10.100
 
 ---
 
-### QQ plot - how it's built
+#### QQ plot - how it's built
 
 ::: notes
 Let's construct it by hand:
@@ -2174,7 +2414,7 @@ print(qqplot_lm2)
 
 ---
 
-## Conditional distributions of residuals
+### Conditional distributions of residuals
 
 If our Gaussian linear regression model is correct, the residuals $e_i$ and standardized residuals $r_i$ should have:
 
@@ -2195,7 +2435,7 @@ Regardless of whether we guessed the mean function correctly, ther the variance 
 
 ---
 
-### Residuals versus fitted values
+#### Residuals versus fitted values
 
 ::: notes
 To look for these issues, we can plot the residuals $e_i$ against the fitted values $\hat y_i$ (@fig-bw_lm2-resid-vs-fitted).
@@ -2222,7 +2462,7 @@ If not, we probably need to change the functional form of linear component of th
 {{< include exm-plot-fits.qmd >}}
 ---
 
-### Scale-location plot
+#### Scale-location plot
 
 ::: notes
 We can also plot the square roots of the absolute values of the standardized residuals against the fitted values (@fig-bw-scale-loc).
@@ -2244,7 +2484,7 @@ and we might need to transform our outcome $Y$
 
 ---
 
-### Residuals versus leverage
+#### Residuals versus leverage
 
 ::: notes
 
@@ -2267,7 +2507,7 @@ The blue line should be relatively flat and close to 0 here.
 
 ---
 
-## Diagnostics constructed by hand
+### Diagnostics constructed by hand
 
 ```{r}
 bw <-
@@ -2281,7 +2521,7 @@ bw <-
   )
 ```
 
-#### Residuals vs fitted
+##### Residuals vs fitted
 
 ```{r}
 resid_vs_fit <- bw |>
@@ -2296,7 +2536,7 @@ print(resid_vs_fit)
 ```
 
 
-#### Standardized residuals vs fitted
+##### Standardized residuals vs fitted
 
 ```{r}
 bw |>
@@ -2308,7 +2548,7 @@ bw |>
   geom_hline(yintercept = 0)
 ```
 
-#### Standardized residuals vs gestational age
+##### Standardized residuals vs gestational age
 
 ```{r}
 bw |>
@@ -2320,7 +2560,7 @@ bw |>
   geom_hline(yintercept = 0)
 ```
 
-#### `sqrt(abs(rstandard()))` vs fitted
+##### `sqrt(abs(rstandard()))` vs fitted
 
 Compare with `autoplot(bw_lm2, 3)`
 
@@ -2334,7 +2574,7 @@ bw |>
   geom_hline(yintercept = 0)
 ```
 
-# Model selection
+## Model selection
 
 (adapted from @dobson4e §6.3.3; for more information on prediction, see @james2013introduction and @rms2e).
 
@@ -2344,7 +2584,7 @@ If we have a lot of covariates in our dataset, we might want to choose a small s
 There are a few possible metrics to consider for choosing a "best" model.
 :::
 
-## Mean squared error
+### Mean squared error
 
 We might want to minimize the **mean squared error**, $\text E[(y-\hat y)^2]$, for new observations that weren't in our data set when we fit the model.
 
@@ -2352,7 +2592,7 @@ Unfortunately, $$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$ gives a biased estim
 
 ---
 
-### Cross-validation
+#### Cross-validation
 
 ```{r}
 data("carbohydrate", package = "dobson")
@@ -2397,7 +2637,7 @@ cv_results |>
 
 ---
 
-#### comparing metrics
+##### comparing metrics
 
 ```{r}
 compare_results <- tribble(
@@ -2427,10 +2667,10 @@ anova(full_model, reduced_model)
 
 ---
 
-### stepwise regression
+#### stepwise regression
 
 ::: {.callout-warning}
-# Caution about stepwise selection
+## Caution about stepwise selection
 
 Stepwise regression has several known problems:
 
@@ -2451,7 +2691,7 @@ olsrr:::ols_step_both_aic(full_model)
 
 ---
 
-### Lasso
+#### Lasso
 
 $$\am_{\theta} \cb{\llik(\th) - \lambda \sum_{j=1}^p|\beta_j|}$$
 
@@ -2486,241 +2726,3 @@ coef(cvfit, s = "lambda.1se")
 ```
 
 
-# Categorical covariates with more than two levels
-
-## Example: `birthweight`
-
-In the birthweight example, the variable `sex` had only two observed values:
-
-```{r}
-unique(bw$sex)
-```
-
-If there are more than two observed values, we can't just use a single variable with 0s and 1s.
-
-## 
-
-:::{.notes}
-For example, @tbl-iris-data shows the 
-[(in)famous](https://www.meganstodel.com/posts/no-to-iris/) 
-`iris` data (@anderson1935irises), 
-and @tbl-iris-summary provides summary statistics. 
-The data include three species: "setosa", "versicolor", and "virginica".
-:::
-
-```{r}
-#| tbl-cap: "The `iris` data"
-#| label: tbl-iris-data
-head(iris)
-```
-
-```{r}
-#| tbl-cap: "Summary statistics for the `iris` data"
-#| label: tbl-iris-summary
-
-library(table1)
-table1(
-  x = ~ . | Species,
-  data = iris,
-  overall = FALSE
-)
-```
-
----
-
-If we want to model `Sepal.Length` by species, we could create a variable $X$ that represents "setosa" as $X=1$, "virginica" as $X=2$, and "versicolor" as $X=3$.
-
-```{r}
-#| label: tbl-numeric-coding
-#| tbl-cap: "`iris` data with numeric coding of species"
-data(iris) # this step is not always necessary, but ensures you're starting
-# from the original version of a dataset stored in a loaded package
-
-iris <-
-  iris |>
-  tibble() |>
-  mutate(
-    X = case_when(
-      Species == "setosa" ~ 1,
-      Species == "virginica" ~ 2,
-      Species == "versicolor" ~ 3
-    )
-  )
-
-iris |>
-  distinct(Species, X)
-```
-
-Then we could fit a model like:
-
-```{r}
-#| label: tbl-iris-numeric-species
-#| tbl-cap: "Model of `iris` data with numeric coding of `Species`"
-iris_lm1 <- lm(Sepal.Length ~ X, data = iris)
-iris_lm1 |>
-  parameters() |>
-  print_md()
-```
-
-## Let's see how that model looks:
-
-```{r}
-#| label: fig-iris-numeric-species-model
-#| fig-cap: "Model of `iris` data with numeric coding of `Species`"
-iris_plot1 <- iris |>
-  ggplot(
-    aes(
-      x = X,
-      y = Sepal.Length
-    )
-  ) +
-  geom_point(alpha = .1) +
-  geom_abline(
-    intercept = coef(iris_lm1)[1],
-    slope = coef(iris_lm1)[2]
-  ) +
-  theme_bw(base_size = 18)
-print(iris_plot1)
-```
-
-We have forced the model to use a straight line for the three estimated means. Maybe not a good idea?
-
-## Let's see what R does with categorical variables by default:
-
-```{r}
-#| label: tbl-iris-model-factor1
-#| tbl-cap: "Model of `iris` data with `Species` as a categorical variable"
-iris_lm2 <- lm(Sepal.Length ~ Species, data = iris)
-iris_lm2 |>
-  parameters() |>
-  print_md()
-```
-
-## Re-parametrize with no intercept
-
-If you don't want the default and offset option, you can use "-1" like we've seen previously:
-
-```{r}
-#| label: tbl-iris-no-intcpt
-iris_lm2_no_int <- lm(Sepal.Length ~ Species - 1, data = iris)
-iris_lm2_no_int |>
-  parameters() |>
-  print_md()
-```
-
-## Let's see what these new models look like:
-
-```{r}
-#| label: fig-iris-no-intcpt
-iris_plot2 <-
-  iris |>
-  mutate(
-    predlm2 = predict(iris_lm2)
-  ) |>
-  arrange(X) |>
-  ggplot(aes(x = X, y = Sepal.Length)) +
-  geom_point(alpha = .1) +
-  geom_line(aes(y = predlm2), col = "red") +
-  geom_abline(
-    intercept = coef(iris_lm1)[1],
-    slope = coef(iris_lm1)[2]
-  ) +
-  theme_bw(base_size = 18)
-
-print(iris_plot2)
-```
-
-## Let's see how R did that:
-
-```{r}
-#| label: tbl-iris-model-matrix-factor
-formula(iris_lm2)
-model.matrix(iris_lm2) |>
-  as_tibble() |>
-  unique()
-```
-
-This format is called a "corner point parametrization" 
-(e.g., in @dobson4e) or "treatment coding" (e.g., in @dunn2018generalized).
-
-The default contrasts are controlled by `options("contrasts")`:
-
-```{r}
-options("contrasts")
-```
-
-See `?options` for more details.
-
----
-
-```{r}
-#| label: tbl-iris-group-point-parameterization
-formula(iris_lm2_no_int)
-model.matrix(iris_lm2_no_int) |>
-  as_tibble() |>
-  unique()
-```
-
-This format is called a "group point parametrization" (e.g., in @dobson4e).
-
-There are more options; see @dobson4e §6.4.1 and the 
-[`codingMatrices` package](https://CRAN.R-project.org/package=codingMatrices) 
-[vignette](https://cran.r-project.org/web/packages/codingMatrices/vignettes/codingMatrices.pdf) 
-(@venablescodingMatrices).
-
-# Ordinal covariates
-
-(c.f. @dobson4e §2.4.4)
-
----
-
-::: notes
-We can create ordinal variables in R using the `ordered()` function^[or equivalently, `factor(ordered = TRUE)`].
-:::
-
-:::{#exm-ordinal-variable}
-
-```{r}
-#| eval: false
-url <- paste0(
-  "https://regression.ucsf.edu/sites/g/files/tkssra6706/",
-  "f/wysiwyg/home/data/hersdata.dta"
-)
-library(haven)
-hers <- read_dta(url)
-```
-
-```{r}
-#| include: false
-library(haven)
-hers <- read_stata(fs::path_package("rme", "extdata/hersdata.dta"))
-```
-
-```{r}
-#| tbl-cap: "HERS dataset"
-#| label: tbl-HERS
-hers |> head()
-```
-
-:::
-
----
-
-::: notes
-For ordinal variables, 
-we might want to use contrasts that respect the ordering of the categories.
-The default treatment contrasts don't account for ordering.
-:::
-
-::: {.callout-note}
-# Working with ordinal variables
-
-When working with ordinal covariates in linear models:
-
-1. Use `ordered()` or `factor(ordered = TRUE)` to create the variable
-2. Consider using polynomial contrasts (`contr.poly`) which respect ordering
-3. Alternatively, treat the ordinal variable as numeric if equal spacing is reasonable
-4. Check `?codingMatrices::contr.diff` for additional contrast options
-
-See @dobson4e §2.4.4 for more details on contrasts for ordinal variables.
-:::
