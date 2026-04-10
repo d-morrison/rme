@@ -200,14 +200,22 @@ since $0\log(0) = 0$ in the limit.
 :::
 
 When binomial data is **ungrouped** (individual Bernoulli observations, $n_i = 1$),
-the saturated model reduces to the fully parametrized model,
-which sets $\hat\pi_i = y_i \in \{0, 1\}$ for each observation.
+R uses the **fully parametrized** model as its reference —
+assigning $\hat\pi_i = y_i \in \{0, 1\}$ to each individual observation.
 Since each predicted probability is exactly 0 or 1,
-every Bernoulli likelihood contribution equals 1
-and hence $\ell_{\text{sat}} = 0$.
-In this case, `deviance()` returns $-2\ell(\hat\beta)$,
-and the deviance statistic cannot be used as a goodness-of-fit test
+every Bernoulli likelihood contribution equals 1,
+and hence $\ell_{\text{fp}} = 0$.
+Thus R's `deviance()` returns $-2\ell(\hat\beta)$.
+
+::: callout-note
+This reference model is the **fully parametrized** model (one parameter per observation),
+not the **saturated** model (one parameter per distinct covariate pattern).
+They coincide only when there are no repeated covariate patterns ($q = n$).
+When patterns do repeat ($q < n$), the saturated model sets $\hat\pi_k = y_k/n_k$ per pattern,
+giving $\ell_{\text{sat}} < 0$.
+In either case, `deviance()` for ungrouped data cannot be used as a goodness-of-fit test
 against the $\chi^2$ distribution.
+:::
 
 ### Summary
 
