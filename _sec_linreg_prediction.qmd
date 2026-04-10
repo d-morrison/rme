@@ -187,19 +187,36 @@ See `?predict.lm` for more.
 
 ```{r}
 library(rlang) # defines the `.data` pronoun
-plot_PIs_and_CIs <- function(model, data) {
+plot_PIs_and_CIs <- function(data, model = NULL) {
+  if (is.null(model)) {
+    rlang::abort("`model` must be supplied to `plot_PIs_and_CIs()`.")
+  }
+
+  if (!is.data.frame(data) && is.data.frame(model)) {
+    rlang::warn(
+      paste0(
+        "`plot_PIs_and_CIs()` received `model` as the first argument ",
+        "and `data` as the second. ",
+        "Please update the call to use `data` first and `model` second."
+      )
+    )
+    tmp <- data
+    data <- model
+    model <- tmp
+  }
+
   cis <- model |>
-    predict(interval = "confidence") |>
+    predict(newdata = data, interval = "confidence") |>
     suppressWarnings() |>
     tibble::as_tibble()
   names(cis) <- paste("ci", names(cis), sep = "_")
 
   preds <- model |>
-    predict(interval = "predict") |>
+    predict(newdata = data, interval = "predict") |>
     suppressWarnings() |>
     tibble::as_tibble()
   names(preds) <- paste("pred", names(preds), sep = "_")
-  dplyr::bind_cols(bw, cis, preds) |>
+  dplyr::bind_cols(data, cis, preds) |>
     ggplot2::ggplot() +
     ggplot2::aes(
       x = .data$age,
