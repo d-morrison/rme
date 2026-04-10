@@ -77,6 +77,22 @@ Example:
 # First, check if the input is valid. Then, process the data. Finally, return the result.
 ```
 
+## Quarto Code Chunk Options
+
+When the code **and** its console output are both needed for the surrounding narrative to make sense, use `#| code-fold: false` so that neither is hidden:
+
+```qmd
+```{r}
+#| code-fold: false
+deviance(my_model)
+sum(residuals(my_model)^2)
+```
+```
+
+Use `code-fold: false` whenever:
+- The output value is referenced or explained in the surrounding text
+- The reader needs to see both the code and the result to follow the argument
+
 ## Math Notation
 
 This repository uses custom LaTeX macros defined in `latex-macros/macros.qmd` (a git submodule).
@@ -89,6 +105,19 @@ Key macros to use:
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
 
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
+
+- **Transpose**: Use `\tp{v}` (renders as $v'$) instead of the raw prime `v'` notation.
+  However, `\tp{v}` appends `^{\top}` to the argument, so if the argument already carries a superscript
+  (e.g., `\vxs` expands to `{{\vec{x}^*}}` which has `^*`), wrap it in parentheses first:
+  use `\tp{(\vxs)}` not `\tp{\vxs}`.
+  This avoids LaTeX "Double superscript" errors.
+
+## Math Derivations
+
+Include as many intermediate steps as possible in math derivations.
+Every non-trivial algebraic manipulation should be shown explicitly on its own line inside an aligned equation.
+Do not skip steps even if they seem obvious.
+This helps readers follow the logic and makes errors easier to spot.
 
 ## CI/CD Workflow Debugging
 
