@@ -22,8 +22,9 @@ $$
   \sumin (y_i - \hat{y}_i)^2
 $$
 
-The saturated model sets $\hat\mu_i = y_i$ for each observation
-(one free parameter per observation),
+The saturated model has one free mean parameter per distinct covariate pattern.
+When there are no replicates (each covariate pattern appears exactly once),
+it sets $\hat\mu_i = y_i$ for every observation,
 so its residual sum of squares is zero:
 
 $$\ell_{\text{sat}}(\hat\sigma^2) = -\frac{n}{2}\log(2\pi\hat\sigma^2)$$
@@ -113,11 +114,99 @@ $$D_1 - D_2 \;\dot \sim\; \chi^2_{p_2 - p_1}$$
 
 This asymptotic result replaces the exact F-test used for Gaussian models.
 
+### Saturated vs. fully parametrized models with replicates {#sec-sat-vs-full}
+
+When some covariate patterns appear more than once (i.e., when there are **replicates**),
+it is important to distinguish between two special models:
+
+- The **saturated model** has one free mean parameter per **distinct covariate pattern**
+  ($q$ parameters, where $q \leq n$ is the number of unique patterns).
+- The **fully parametrized model** has one free mean parameter per **observation**
+  ($n$ parameters).
+
+When there are no replicates ($q = n$), these two coincide.
+When there are replicates ($q < n$), the saturated model constrains all
+observations sharing a covariate pattern to have the same mean,
+but places no constraint on means across different patterns.
+See @kleinbaum2010logistic for further discussion of this distinction.
+
+Deviance is always measured relative to the **saturated model**,
+not the fully parametrized model.
+
+#### Gaussian deviance with replicates
+
+When covariate pattern $k$ has $n_k$ replicates with sample mean $\bar{y}_k$,
+the saturated model fits $\hat\mu_k = \bar{y}_k$ for each pattern $k$,
+so its residual sum of squares equals the **within-group (pure error) SS**:
+
+$$
+\text{RSS}_{\text{sat}}
+= \sum_{k=1}^q \sum_{i: \vx_i = \vx_k} (y_i - \bar{y}_k)^2
+$$
+
+This is nonzero whenever any covariate pattern has replicates with
+different response values.
+The Gaussian deviance relative to the saturated model is therefore:
+
+$$
+D
+= 2(\ell_{\text{sat}} - \ell(\hat\beta))
+= \frac{\text{RSS} - \text{RSS}_{\text{sat}}}{\hat\sigma^2}
+$$
+
+::: callout-note
+R's `deviance()` applied to an `lm` object returns the **total fitted-model RSS**,
+not the deviance relative to the saturated model.
+To compute the deviance relative to the saturated model,
+subtract the saturated model's RSS:
+`deviance(lm_fit) - deviance(lm_saturated)`.
+:::
+
+For the `birthweight` data, we can verify this directly using
+`bw_lm2` (the interaction model) and `lm_max` (the saturated model):
+
+```{r}
+#| code-fold: false
+deviance(bw_lm2)                      # total RSS of fitted model
+deviance(lm_max)                      # within-group (pure error) SS
+deviance(bw_lm2) - deviance(lm_max)   # lack-of-fit SS (deviance vs. saturated)
+```
+
+::: notes
+The lack-of-fit SS (`deviance(bw_lm2) - deviance(lm_max)`) measures
+how much additional unexplained variation remains after accounting for
+pure measurement error within covariate patterns.
+:::
+
+#### GLM deviance with replicates
+
+For a Binomial GLM fit to data **grouped by covariate pattern**
+(with $y_k$ events and $n_k$ observations for pattern $k$),
+the saturated model sets $\hat\pi_k^{\text{sat}} = y_k / n_k$ for each pattern $k$.
+R's `deviance()` correctly computes $2(\ell_{\text{sat}} - \ell(\hat\beta))$
+using this grouping:
+
+$$
+D = 2\sum_{k=1}^q
+\left[
+  y_k \log\!\left(\frac{y_k / n_k}{\hat\pi_k}\right)
+  + (n_k - y_k)\log\!\left(\frac{1 - y_k/n_k}{1 - \hat\pi_k}\right)
+\right]
+$$
+
+When binomial data is **ungrouped** (individual Bernoulli observations, $n_i = 1$),
+the saturated model reduces to the fully parametrized model,
+which achieves $\ell_{\text{sat}} = 0$ since each observation is perfectly predicted.
+In this case, `deviance()` returns $-2\ell(\hat\beta)$,
+and the deviance statistic cannot be used as a goodness-of-fit test
+against the $\chi^2$ distribution.
+
 ### Summary
 
 | Feature | Gaussian linear regression | Non-Gaussian GLMs (e.g., Poisson, Binomial) |
 |---|---|---|
-| Deviance formula | $\text{RSS}/\hat\sigma^2$ | $2(\ell_{\text{sat}} - \ell(\hat\beta))$ |
-| `deviance()` in R | Returns RSS | Returns $2(\ell_{\text{sat}} - \ell(\hat\beta))$ |
+| Deviance formula | $(\text{RSS} - \text{RSS}_{\text{sat}})/\hat\sigma^2$ | $2(\ell_{\text{sat}} - \ell(\hat\beta))$ |
+| `deviance()` in R | Returns total RSS | Returns $2(\ell_{\text{sat}} - \ell(\hat\beta))$ |
+| Saturated model reference | Per covariate pattern | Per covariate pattern (grouped) or per observation (ungrouped) |
 | Dispersion $\phi$ | Unknown; estimated as $s^2 = \text{RSS}/(n-p)$ | Fixed ($\phi = 1$) |
 | Test for nested models | F-test (exact) | $\chi^2$-test (asymptotic) |
