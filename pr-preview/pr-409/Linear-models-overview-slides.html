@@ -1667,30 +1667,75 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 <p>What are the interpretations of the <span class="math inline">\(\gamma\)</span>s? How do they relate to the <span class="math inline">\(\beta\)</span>s in <a href="#/eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>? Which have the same interpretation? Which are different, and how do they differ? What is the pattern?</p>
 </div>
 </section><section class="slide level2"><div class="proof solution">
-<p><span class="proof-title"><em>Solution</em>. </span>&nbsp;</p>
-<p>Since <span class="math inline">\(A = A^* + 32\)</span>, we can substitute <span class="math inline">\(a = a^* + 32\)</span> into <a href="#/eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
+<p><span class="proof-title"><em>Solution</em>. </span><strong>Interpretation of <span class="math inline">\(\gamma_0\)</span>:</strong></p>
+<p>From <a href="#/eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, <span class="math inline">\(\gamma_0\)</span> is the mean birthweight among females (<span class="math inline">\(M = 0\)</span>) with <span class="math inline">\(A^* = 0\)</span> (i.e., <span class="math inline">\(A = 32\)</span> weeks):</p>
+<p><span class="math display">\[
+\gamma_0 = \text{E}{\left[Y|M=0, A^*=0\right]} = \text{E}{\left[Y|M=0, A=32\right]}
+\]</span></p>
+<p>Substituting into <a href="#/eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\text{E}{\left[Y|M=m, A=a^*+32\right]}
-&amp;= \beta_0 + \beta_M m + \beta_A (a^* + 32) + \beta_{AM} (m \cdot (a^* + 32))\\
-&amp;= \beta_0 + \beta_M m + \beta_A a^* + 32\beta_A + \beta_{AM} m a^* + 32 \beta_{AM} m\\
-&amp;= (\beta_0 + 32\beta_A) + (\beta_M + 32\beta_{AM}) m + \beta_A a^* + \beta_{AM} (m \cdot a^*)
+\gamma_0
+&amp;= \beta_0 + \beta_M \cdot 0 + \beta_A \cdot 32 + \beta_{AM} \cdot 0 \cdot 32\\
+&amp;= \beta_0 + 32\beta_A
 \end{aligned}
 \]</span></p>
-<p>Matching coefficients with <a href="#/eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, we obtain the following relationships:</p>
+<p>This differs from <span class="math inline">\(\beta_0 = \text{E}{\left[Y|M=0, A=0\right]}\)</span>, which is the mean birthweight among females at <span class="math inline">\(A = 0\)</span> weeks.</p>
+<p><strong>Interpretation of <span class="math inline">\(\gamma_M\)</span>:</strong></p>
+<p>From <a href="#/eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, <span class="math inline">\(\gamma_M\)</span> is the sex difference in mean birthweight at <span class="math inline">\(A^* = 0\)</span> (i.e., <span class="math inline">\(A = 32\)</span> weeks):</p>
 <p><span class="math display">\[
 \begin{aligned}
-\gamma_0 &amp;= \beta_0 + 32\beta_A\\
-\gamma_M &amp;= \beta_M + 32\beta_{AM}\\
-\gamma_{A^*} &amp;= \beta_A\\
-\gamma_{A^*M} &amp;= \beta_{AM}
+\gamma_M
+&amp;= \text{E}{\left[Y|M=1, A^*=0\right]} - \text{E}{\left[Y|M=0, A^*=0\right]}\\
+&amp;= \text{E}{\left[Y|M=1, A=32\right]} - \text{E}{\left[Y|M=0, A=32\right]}
 \end{aligned}
 \]</span></p>
-<p><strong>Interpretations of the <span class="math inline">\(\gamma\)</span>s:</strong></p>
-<p><span class="math inline">\(\gamma_0\)</span> is the mean birthweight among females with <span class="math inline">\(A^* = 0\)</span>, i.e., females with gestational age <span class="math inline">\(A = 32\)</span> weeks. This differs from <span class="math inline">\(\beta_0\)</span>, which is the mean birthweight among females with <span class="math inline">\(A = 0\)</span> weeks.</p>
-<p><span class="math inline">\(\gamma_M\)</span> is the difference in mean birthweight between males and females with <span class="math inline">\(A^* = 0\)</span>, i.e., at gestational age <span class="math inline">\(A = 32\)</span> weeks. This differs from <span class="math inline">\(\beta_M\)</span>, which is the corresponding difference at <span class="math inline">\(A = 0\)</span> weeks.</p>
-<p><span class="math inline">\(\gamma_{A^*}\)</span> is the slope of mean birthweight with respect to <span class="math inline">\(A^*\)</span> among females. Since shifting <span class="math inline">\(A\)</span> by a constant does not change the slope, <span class="math inline">\(\gamma_{A^*} = \beta_A\)</span>: these two coefficients have the same value and the same interpretation.</p>
-<p><span class="math inline">\(\gamma_{A^*M}\)</span> is the difference in slope with respect to <span class="math inline">\(A^*\)</span> between males and females. Again, shifting <span class="math inline">\(A\)</span> does not affect slopes, so <span class="math inline">\(\gamma_{A^*M} = \beta_{AM}\)</span>: these two coefficients have the same value and the same interpretation.</p>
+<p>Substituting into <a href="#/eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_M
+&amp;= (\beta_0 + \beta_M + \beta_A \cdot 32 + \beta_{AM} \cdot 32) - (\beta_0 + \beta_A \cdot 32)\\
+&amp;= \beta_M + 32\beta_{AM}
+\end{aligned}
+\]</span></p>
+<p>This differs from <span class="math inline">\(\beta_M\)</span>, which is the sex difference at <span class="math inline">\(A = 0\)</span> weeks.</p>
+<p><strong>Interpretation of <span class="math inline">\(\gamma_{A^*}\)</span>:</strong></p>
+<p>From <a href="#/eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, <span class="math inline">\(\gamma_{A^*}\)</span> is the slope of mean birthweight with respect to <span class="math inline">\(A^*\)</span> among females (<span class="math inline">\(M = 0\)</span>):</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_{A^*}
+&amp;= \frac{d}{da^*}\text{E}{\left[Y|M=0, A^*=a^*\right]}\\
+&amp;= \frac{d}{da^*}\text{E}{\left[Y|M=0, A=a^*+32\right]}\\
+&amp;= \frac{d}{da}\text{E}{\left[Y|M=0, A=a\right]}
+\end{aligned}
+\]</span></p>
+<p>Substituting into <a href="#/eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_{A^*}
+&amp;= \frac{d}{da}\left(\beta_0 + \beta_A \cdot a\right)\\
+&amp;= \beta_A
+\end{aligned}
+\]</span></p>
+<p>Since shifting <span class="math inline">\(A\)</span> by a constant does not change the slope, <span class="math inline">\(\gamma_{A^*} = \beta_A\)</span>: these two coefficients have the same value and interpretation.</p>
+<p><strong>Interpretation of <span class="math inline">\(\gamma_{A^*M}\)</span>:</strong></p>
+<p>From <a href="#/eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, <span class="math inline">\(\gamma_{A^*M}\)</span> is the difference in slope with respect to <span class="math inline">\(A^*\)</span> between males and females:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_{A^*M}
+&amp;= \frac{d}{da^*}\text{E}{\left[Y|M=1, A^*=a^*\right]} - \frac{d}{da^*}\text{E}{\left[Y|M=0, A^*=a^*\right]}\\
+&amp;= \frac{d}{da}\text{E}{\left[Y|M=1, A=a\right]} - \frac{d}{da}\text{E}{\left[Y|M=0, A=a\right]}
+\end{aligned}
+\]</span></p>
+<p>Substituting into <a href="#/eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_{A^*M}
+&amp;= (\beta_A + \beta_{AM}) - \beta_A\\
+&amp;= \beta_{AM}
+\end{aligned}
+\]</span></p>
+<p>Since shifting <span class="math inline">\(A\)</span> by a constant does not change slopes, <span class="math inline">\(\gamma_{A^*M} = \beta_{AM}\)</span>: these two coefficients have the same value and interpretation.</p>
 <p><strong>The pattern:</strong></p>
 <p>Slope coefficients (<span class="math inline">\(\gamma_{A^*}\)</span> and <span class="math inline">\(\gamma_{A^*M}\)</span>) are unchanged by rescaling: they have the same values and interpretations as the corresponding <span class="math inline">\(\beta\)</span>s.</p>
 <p>Coefficients change only for variables that have interactions with the rescaled variable <span class="math inline">\(A\)</span>. This includes the intercept (which can be viewed as the main effect of a variable that interacts with <span class="math inline">\(A\)</span> via <span class="math inline">\(\beta_A\)</span>), and the main effect of <span class="math inline">\(M\)</span> (which interacts with <span class="math inline">\(A\)</span> via <span class="math inline">\(\beta_{AM}\)</span>). Shifting <span class="math inline">\(A\)</span> by 32 weeks changes the reference point from <span class="math inline">\(A = 0\)</span> to <span class="math inline">\(A = 32\)</span>, so these coefficients now represent quantities evaluated at <span class="math inline">\(A = 32\)</span> weeks rather than at <span class="math inline">\(A = 0\)</span> weeks.</p>
@@ -3538,23 +3583,23 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-with-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="shpimsgsmm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#shpimsgsmm table {
+<div id="trqfxcvmuc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#trqfxcvmuc table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#shpimsgsmm thead, #shpimsgsmm tbody, #shpimsgsmm tfoot, #shpimsgsmm tr, #shpimsgsmm td, #shpimsgsmm th {
+#trqfxcvmuc thead, #trqfxcvmuc tbody, #trqfxcvmuc tfoot, #trqfxcvmuc tr, #trqfxcvmuc td, #trqfxcvmuc th {
   border-style: none;
 }
 
-#shpimsgsmm p {
+#trqfxcvmuc p {
   margin: 0;
   padding: 0;
 }
 
-#shpimsgsmm .gt_table {
+#trqfxcvmuc .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3580,12 +3625,12 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_caption {
+#trqfxcvmuc .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#shpimsgsmm .gt_title {
+#trqfxcvmuc .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3597,7 +3642,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#shpimsgsmm .gt_subtitle {
+#trqfxcvmuc .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3609,7 +3654,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#shpimsgsmm .gt_heading {
+#trqfxcvmuc .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3621,13 +3666,13 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_bottom_border {
+#trqfxcvmuc .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_col_headings {
+#trqfxcvmuc .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3642,7 +3687,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_col_heading {
+#trqfxcvmuc .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3662,7 +3707,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#shpimsgsmm .gt_column_spanner_outer {
+#trqfxcvmuc .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3674,15 +3719,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#shpimsgsmm .gt_column_spanner_outer:first-child {
+#trqfxcvmuc .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#shpimsgsmm .gt_column_spanner_outer:last-child {
+#trqfxcvmuc .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#shpimsgsmm .gt_column_spanner {
+#trqfxcvmuc .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3694,11 +3739,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#shpimsgsmm .gt_spanner_row {
+#trqfxcvmuc .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#shpimsgsmm .gt_group_heading {
+#trqfxcvmuc .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3724,7 +3769,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#shpimsgsmm .gt_empty_group_heading {
+#trqfxcvmuc .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3739,15 +3784,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#shpimsgsmm .gt_from_md > :first-child {
+#trqfxcvmuc .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#shpimsgsmm .gt_from_md > :last-child {
+#trqfxcvmuc .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#shpimsgsmm .gt_row {
+#trqfxcvmuc .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3766,7 +3811,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#shpimsgsmm .gt_stub {
+#trqfxcvmuc .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3779,7 +3824,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#shpimsgsmm .gt_stub_row_group {
+#trqfxcvmuc .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3793,15 +3838,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#shpimsgsmm .gt_row_group_first td {
+#trqfxcvmuc .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#shpimsgsmm .gt_row_group_first th {
+#trqfxcvmuc .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#shpimsgsmm .gt_summary_row {
+#trqfxcvmuc .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3811,16 +3856,16 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#shpimsgsmm .gt_first_summary_row {
+#trqfxcvmuc .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_first_summary_row.thick {
+#trqfxcvmuc .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#shpimsgsmm .gt_last_summary_row {
+#trqfxcvmuc .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3830,7 +3875,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_grand_summary_row {
+#trqfxcvmuc .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3840,7 +3885,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#shpimsgsmm .gt_first_grand_summary_row {
+#trqfxcvmuc .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3850,7 +3895,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_last_grand_summary_row_top {
+#trqfxcvmuc .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3860,11 +3905,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_striped {
+#trqfxcvmuc .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#shpimsgsmm .gt_table_body {
+#trqfxcvmuc .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3873,7 +3918,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_footnotes {
+#trqfxcvmuc .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3887,7 +3932,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_footnote {
+#trqfxcvmuc .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3896,7 +3941,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#shpimsgsmm .gt_sourcenotes {
+#trqfxcvmuc .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3910,7 +3955,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#shpimsgsmm .gt_sourcenote {
+#trqfxcvmuc .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3918,72 +3963,72 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#shpimsgsmm .gt_left {
+#trqfxcvmuc .gt_left {
   text-align: left;
 }
 
-#shpimsgsmm .gt_center {
+#trqfxcvmuc .gt_center {
   text-align: center;
 }
 
-#shpimsgsmm .gt_right {
+#trqfxcvmuc .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#shpimsgsmm .gt_font_normal {
+#trqfxcvmuc .gt_font_normal {
   font-weight: normal;
 }
 
-#shpimsgsmm .gt_font_bold {
+#trqfxcvmuc .gt_font_bold {
   font-weight: bold;
 }
 
-#shpimsgsmm .gt_font_italic {
+#trqfxcvmuc .gt_font_italic {
   font-style: italic;
 }
 
-#shpimsgsmm .gt_super {
+#trqfxcvmuc .gt_super {
   font-size: 65%;
 }
 
-#shpimsgsmm .gt_footnote_marks {
+#trqfxcvmuc .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#shpimsgsmm .gt_asterisk {
+#trqfxcvmuc .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#shpimsgsmm .gt_indent_1 {
+#trqfxcvmuc .gt_indent_1 {
   text-indent: 5px;
 }
 
-#shpimsgsmm .gt_indent_2 {
+#trqfxcvmuc .gt_indent_2 {
   text-indent: 10px;
 }
 
-#shpimsgsmm .gt_indent_3 {
+#trqfxcvmuc .gt_indent_3 {
   text-indent: 15px;
 }
 
-#shpimsgsmm .gt_indent_4 {
+#trqfxcvmuc .gt_indent_4 {
   text-indent: 20px;
 }
 
-#shpimsgsmm .gt_indent_5 {
+#trqfxcvmuc .gt_indent_5 {
   text-indent: 25px;
 }
 
-#shpimsgsmm .katex-display {
+#trqfxcvmuc .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#shpimsgsmm div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#trqfxcvmuc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -4040,23 +4085,23 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="ajvxphxmxw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ajvxphxmxw table {
+<div id="pbihizyksx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pbihizyksx table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#ajvxphxmxw thead, #ajvxphxmxw tbody, #ajvxphxmxw tfoot, #ajvxphxmxw tr, #ajvxphxmxw td, #ajvxphxmxw th {
+#pbihizyksx thead, #pbihizyksx tbody, #pbihizyksx tfoot, #pbihizyksx tr, #pbihizyksx td, #pbihizyksx th {
   border-style: none;
 }
 
-#ajvxphxmxw p {
+#pbihizyksx p {
   margin: 0;
   padding: 0;
 }
 
-#ajvxphxmxw .gt_table {
+#pbihizyksx .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4082,12 +4127,12 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_caption {
+#pbihizyksx .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#ajvxphxmxw .gt_title {
+#pbihizyksx .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4099,7 +4144,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#ajvxphxmxw .gt_subtitle {
+#pbihizyksx .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4111,7 +4156,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#ajvxphxmxw .gt_heading {
+#pbihizyksx .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4123,13 +4168,13 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_bottom_border {
+#pbihizyksx .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_col_headings {
+#pbihizyksx .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4144,7 +4189,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_col_heading {
+#pbihizyksx .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4164,7 +4209,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#ajvxphxmxw .gt_column_spanner_outer {
+#pbihizyksx .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4176,15 +4221,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#ajvxphxmxw .gt_column_spanner_outer:first-child {
+#pbihizyksx .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#ajvxphxmxw .gt_column_spanner_outer:last-child {
+#pbihizyksx .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#ajvxphxmxw .gt_column_spanner {
+#pbihizyksx .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4196,11 +4241,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#ajvxphxmxw .gt_spanner_row {
+#pbihizyksx .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#ajvxphxmxw .gt_group_heading {
+#pbihizyksx .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4226,7 +4271,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#ajvxphxmxw .gt_empty_group_heading {
+#pbihizyksx .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4241,15 +4286,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#ajvxphxmxw .gt_from_md > :first-child {
+#pbihizyksx .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#ajvxphxmxw .gt_from_md > :last-child {
+#pbihizyksx .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#ajvxphxmxw .gt_row {
+#pbihizyksx .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4268,7 +4313,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#ajvxphxmxw .gt_stub {
+#pbihizyksx .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4281,7 +4326,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#ajvxphxmxw .gt_stub_row_group {
+#pbihizyksx .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4295,15 +4340,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#ajvxphxmxw .gt_row_group_first td {
+#pbihizyksx .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ajvxphxmxw .gt_row_group_first th {
+#pbihizyksx .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ajvxphxmxw .gt_summary_row {
+#pbihizyksx .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4313,16 +4358,16 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#ajvxphxmxw .gt_first_summary_row {
+#pbihizyksx .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_first_summary_row.thick {
+#pbihizyksx .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ajvxphxmxw .gt_last_summary_row {
+#pbihizyksx .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4332,7 +4377,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_grand_summary_row {
+#pbihizyksx .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4342,7 +4387,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#ajvxphxmxw .gt_first_grand_summary_row {
+#pbihizyksx .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4352,7 +4397,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_last_grand_summary_row_top {
+#pbihizyksx .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4362,11 +4407,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_striped {
+#pbihizyksx .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ajvxphxmxw .gt_table_body {
+#pbihizyksx .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4375,7 +4420,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_footnotes {
+#pbihizyksx .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4389,7 +4434,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_footnote {
+#pbihizyksx .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4398,7 +4443,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#ajvxphxmxw .gt_sourcenotes {
+#pbihizyksx .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4412,7 +4457,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#ajvxphxmxw .gt_sourcenote {
+#pbihizyksx .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4420,72 +4465,72 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#ajvxphxmxw .gt_left {
+#pbihizyksx .gt_left {
   text-align: left;
 }
 
-#ajvxphxmxw .gt_center {
+#pbihizyksx .gt_center {
   text-align: center;
 }
 
-#ajvxphxmxw .gt_right {
+#pbihizyksx .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ajvxphxmxw .gt_font_normal {
+#pbihizyksx .gt_font_normal {
   font-weight: normal;
 }
 
-#ajvxphxmxw .gt_font_bold {
+#pbihizyksx .gt_font_bold {
   font-weight: bold;
 }
 
-#ajvxphxmxw .gt_font_italic {
+#pbihizyksx .gt_font_italic {
   font-style: italic;
 }
 
-#ajvxphxmxw .gt_super {
+#pbihizyksx .gt_super {
   font-size: 65%;
 }
 
-#ajvxphxmxw .gt_footnote_marks {
+#pbihizyksx .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ajvxphxmxw .gt_asterisk {
+#pbihizyksx .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ajvxphxmxw .gt_indent_1 {
+#pbihizyksx .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ajvxphxmxw .gt_indent_2 {
+#pbihizyksx .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ajvxphxmxw .gt_indent_3 {
+#pbihizyksx .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ajvxphxmxw .gt_indent_4 {
+#pbihizyksx .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ajvxphxmxw .gt_indent_5 {
+#pbihizyksx .gt_indent_5 {
   text-indent: 25px;
 }
 
-#ajvxphxmxw .katex-display {
+#pbihizyksx .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#ajvxphxmxw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#pbihizyksx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -5902,7 +5947,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.72731","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.65498","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.73717","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.63656","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -6027,10 +6072,10 @@ Figure&nbsp;31: Lasso selection
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb126"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a></a><span class="fu">coef</span>(cvfit, <span class="at">s =</span> <span class="st">"lambda.1se"</span>)</span>
 <span id="cb126-2"><a></a><span class="co">#&gt; 4 x 1 sparse Matrix of class "dgCMatrix"</span></span>
 <span id="cb126-3"><a></a><span class="co">#&gt;             lambda.1se</span></span>
-<span id="cb126-4"><a></a><span class="co">#&gt; (Intercept) 34.3091615</span></span>
-<span id="cb126-5"><a></a><span class="co">#&gt; age          .        </span></span>
-<span id="cb126-6"><a></a><span class="co">#&gt; weight      -0.0800142</span></span>
-<span id="cb126-7"><a></a><span class="co">#&gt; protein      0.7640510</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb126-4"><a></a><span class="co">#&gt; (Intercept)  34.022070</span></span>
+<span id="cb126-5"><a></a><span class="co">#&gt; age           .       </span></span>
+<span id="cb126-6"><a></a><span class="co">#&gt; weight       -0.114507</span></span>
+<span id="cb126-7"><a></a><span class="co">#&gt; protein       1.022258</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section><section><section id="categorical-covariates-with-more-than-two-levels" class="title-slide slide level1 center" data-number="9"><h1>
