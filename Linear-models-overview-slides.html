@@ -1896,7 +1896,8 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 </details>
 </div>
 <p>If there are more than two observed values, we can’t just use a single variable with 0s and 1s.</p>
-<h3 id="section"></h3>
+<h3 id="example-iris">Example: <code>iris</code>
+</h3>
 <aside class="notes"><p>For example, <a href="#/tbl-iris-data" class="quarto-xref">Table&nbsp;8</a> shows the <a href="https://www.meganstodel.com/posts/no-to-iris/">(in)famous</a> <code>iris</code> data (<span class="citation" data-cites="anderson1935irises">Anderson (<a href="#/references" role="doc-biblioref" onclick="">1935</a>)</span>), and <a href="#/tbl-iris-summary" class="quarto-xref">Table&nbsp;9</a> provides summary statistics. The data include three species: “setosa”, “versicolor”, and “virginica”.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -3772,44 +3773,61 @@ Figure&nbsp;9: Predicted values and confidence bands for the <code>birthweight</
 <p>See <code><a href="https://rdrr.io/r/stats/predict.lm.html">?predict.lm</a></code> for more.</p>
 </section><section class="slide level2"><div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a></a><span class="fu">library</span>(rlang) <span class="co"># defines the `.data` pronoun</span></span>
-<span id="cb64-2"><a></a>plot_PIs_and_CIs <span class="ot">&lt;-</span> <span class="cf">function</span>(model, data) {</span>
-<span id="cb64-3"><a></a>  cis <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span></span>
-<span id="cb64-4"><a></a>    <span class="fu">predict</span>(<span class="at">interval =</span> <span class="st">"confidence"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb64-5"><a></a>    <span class="fu">suppressWarnings</span>() <span class="sc">|&gt;</span></span>
-<span id="cb64-6"><a></a>    tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
-<span id="cb64-7"><a></a>  <span class="fu">names</span>(cis) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"ci"</span>, <span class="fu">names</span>(cis), <span class="at">sep =</span> <span class="st">"_"</span>)</span>
-<span id="cb64-8"><a></a></span>
-<span id="cb64-9"><a></a>  preds <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span></span>
-<span id="cb64-10"><a></a>    <span class="fu">predict</span>(<span class="at">interval =</span> <span class="st">"predict"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb64-11"><a></a>    <span class="fu">suppressWarnings</span>() <span class="sc">|&gt;</span></span>
-<span id="cb64-12"><a></a>    tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
-<span id="cb64-13"><a></a>  <span class="fu">names</span>(preds) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"pred"</span>, <span class="fu">names</span>(preds), <span class="at">sep =</span> <span class="st">"_"</span>)</span>
-<span id="cb64-14"><a></a>  dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(bw, cis, preds) <span class="sc">|&gt;</span></span>
-<span id="cb64-15"><a></a>    ggplot2<span class="sc">::</span><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb64-16"><a></a>    ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
-<span id="cb64-17"><a></a>      <span class="at">x =</span> .data<span class="sc">$</span>age,</span>
-<span id="cb64-18"><a></a>      <span class="at">y =</span> .data<span class="sc">$</span>weight,</span>
-<span id="cb64-19"><a></a>      <span class="at">col =</span> .data<span class="sc">$</span>sex</span>
-<span id="cb64-20"><a></a>    ) <span class="sc">+</span></span>
-<span id="cb64-21"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb64-22"><a></a>    ggplot2<span class="sc">::</span><span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
-<span id="cb64-23"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">y =</span> .data<span class="sc">$</span>ci_fit)) <span class="sc">+</span></span>
-<span id="cb64-24"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(</span>
-<span id="cb64-25"><a></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
-<span id="cb64-26"><a></a>        <span class="at">ymin =</span> .data<span class="sc">$</span>pred_lwr,</span>
-<span id="cb64-27"><a></a>        <span class="at">ymax =</span> .data<span class="sc">$</span>pred_upr</span>
-<span id="cb64-28"><a></a>      ),</span>
-<span id="cb64-29"><a></a>      <span class="at">alpha =</span> <span class="fl">0.2</span></span>
-<span id="cb64-30"><a></a>    ) <span class="sc">+</span></span>
-<span id="cb64-31"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(</span>
-<span id="cb64-32"><a></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
-<span id="cb64-33"><a></a>        <span class="at">ymin =</span> .data<span class="sc">$</span>ci_lwr,</span>
-<span id="cb64-34"><a></a>        <span class="at">ymax =</span> .data<span class="sc">$</span>ci_upr</span>
-<span id="cb64-35"><a></a>      ),</span>
-<span id="cb64-36"><a></a>      <span class="at">alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb64-2"><a></a>plot_PIs_and_CIs <span class="ot">&lt;-</span> <span class="cf">function</span>(data, <span class="at">model =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb64-3"><a></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(model)) {</span>
+<span id="cb64-4"><a></a>    rlang<span class="sc">::</span><span class="fu">abort</span>(<span class="st">"`model` must be supplied to `plot_PIs_and_CIs()`."</span>)</span>
+<span id="cb64-5"><a></a>  }</span>
+<span id="cb64-6"><a></a></span>
+<span id="cb64-7"><a></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.data.frame</span>(data) <span class="sc">&amp;&amp;</span> <span class="fu">is.data.frame</span>(model)) {</span>
+<span id="cb64-8"><a></a>    rlang<span class="sc">::</span><span class="fu">warn</span>(</span>
+<span id="cb64-9"><a></a>      <span class="fu">paste0</span>(</span>
+<span id="cb64-10"><a></a>        <span class="st">"`plot_PIs_and_CIs()` received `model` as the first argument "</span>,</span>
+<span id="cb64-11"><a></a>        <span class="st">"and `data` as the second. "</span>,</span>
+<span id="cb64-12"><a></a>        <span class="st">"Please update the call to use `data` first and `model` second."</span></span>
+<span id="cb64-13"><a></a>      )</span>
+<span id="cb64-14"><a></a>    )</span>
+<span id="cb64-15"><a></a>    tmp <span class="ot">&lt;-</span> data</span>
+<span id="cb64-16"><a></a>    data <span class="ot">&lt;-</span> model</span>
+<span id="cb64-17"><a></a>    model <span class="ot">&lt;-</span> tmp</span>
+<span id="cb64-18"><a></a>  }</span>
+<span id="cb64-19"><a></a></span>
+<span id="cb64-20"><a></a>  cis <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span></span>
+<span id="cb64-21"><a></a>    <span class="fu">predict</span>(<span class="at">newdata =</span> data, <span class="at">interval =</span> <span class="st">"confidence"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb64-22"><a></a>    <span class="fu">suppressWarnings</span>() <span class="sc">|&gt;</span></span>
+<span id="cb64-23"><a></a>    tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
+<span id="cb64-24"><a></a>  <span class="fu">names</span>(cis) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"ci"</span>, <span class="fu">names</span>(cis), <span class="at">sep =</span> <span class="st">"_"</span>)</span>
+<span id="cb64-25"><a></a></span>
+<span id="cb64-26"><a></a>  preds <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span></span>
+<span id="cb64-27"><a></a>    <span class="fu">predict</span>(<span class="at">newdata =</span> data, <span class="at">interval =</span> <span class="st">"predict"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb64-28"><a></a>    <span class="fu">suppressWarnings</span>() <span class="sc">|&gt;</span></span>
+<span id="cb64-29"><a></a>    tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
+<span id="cb64-30"><a></a>  <span class="fu">names</span>(preds) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"pred"</span>, <span class="fu">names</span>(preds), <span class="at">sep =</span> <span class="st">"_"</span>)</span>
+<span id="cb64-31"><a></a>  dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(data, cis, preds) <span class="sc">|&gt;</span></span>
+<span id="cb64-32"><a></a>    ggplot2<span class="sc">::</span><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb64-33"><a></a>    ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
+<span id="cb64-34"><a></a>      <span class="at">x =</span> .data<span class="sc">$</span>age,</span>
+<span id="cb64-35"><a></a>      <span class="at">y =</span> .data<span class="sc">$</span>weight,</span>
+<span id="cb64-36"><a></a>      <span class="at">col =</span> .data<span class="sc">$</span>sex</span>
 <span id="cb64-37"><a></a>    ) <span class="sc">+</span></span>
-<span id="cb64-38"><a></a>    ggplot2<span class="sc">::</span><span class="fu">facet_wrap</span>(<span class="sc">~</span>sex)</span>
-<span id="cb64-39"><a></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb64-38"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb64-39"><a></a>    ggplot2<span class="sc">::</span><span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb64-40"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">y =</span> .data<span class="sc">$</span>ci_fit)) <span class="sc">+</span></span>
+<span id="cb64-41"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(</span>
+<span id="cb64-42"><a></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
+<span id="cb64-43"><a></a>        <span class="at">ymin =</span> .data<span class="sc">$</span>pred_lwr,</span>
+<span id="cb64-44"><a></a>        <span class="at">ymax =</span> .data<span class="sc">$</span>pred_upr</span>
+<span id="cb64-45"><a></a>      ),</span>
+<span id="cb64-46"><a></a>      <span class="at">alpha =</span> <span class="fl">0.2</span></span>
+<span id="cb64-47"><a></a>    ) <span class="sc">+</span></span>
+<span id="cb64-48"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(</span>
+<span id="cb64-49"><a></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
+<span id="cb64-50"><a></a>        <span class="at">ymin =</span> .data<span class="sc">$</span>ci_lwr,</span>
+<span id="cb64-51"><a></a>        <span class="at">ymax =</span> .data<span class="sc">$</span>ci_upr</span>
+<span id="cb64-52"><a></a>      ),</span>
+<span id="cb64-53"><a></a>      <span class="at">alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb64-54"><a></a>    ) <span class="sc">+</span></span>
+<span id="cb64-55"><a></a>    ggplot2<span class="sc">::</span><span class="fu">facet_wrap</span>(<span class="sc">~</span>sex)</span>
+<span id="cb64-56"><a></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw_lm2, bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -4138,7 +4156,7 @@ Figure&nbsp;11: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> an
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-max-vs-intxn-fits" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(lm_max, bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">factor</span>(age)), lm_max)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-fit-max" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-fit-max-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Saturated model
@@ -4223,7 +4241,7 @@ Figure&nbsp;11: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> an
 </table>
 </div>
 </div>
-</section><section class="slide level2"><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a></a>lm0 <span class="sc">|&gt;</span> <span class="fu">plot_PIs_and_CIs</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section><section class="slide level2"><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a></a>lm0 <span class="sc">|&gt;</span> <span class="fu">plot_PIs_and_CIs</span>(bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-null-model" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-null-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;12: Null model for birthweight data, with 95% confidence and prediction intervals.
@@ -4578,23 +4596,23 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-with-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="xipdazblkp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#xipdazblkp table {
+<div id="jyegzekuhe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jyegzekuhe table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#xipdazblkp thead, #xipdazblkp tbody, #xipdazblkp tfoot, #xipdazblkp tr, #xipdazblkp td, #xipdazblkp th {
+#jyegzekuhe thead, #jyegzekuhe tbody, #jyegzekuhe tfoot, #jyegzekuhe tr, #jyegzekuhe td, #jyegzekuhe th {
   border-style: none;
 }
 
-#xipdazblkp p {
+#jyegzekuhe p {
   margin: 0;
   padding: 0;
 }
 
-#xipdazblkp .gt_table {
+#jyegzekuhe .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4620,12 +4638,12 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_caption {
+#jyegzekuhe .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#xipdazblkp .gt_title {
+#jyegzekuhe .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4637,7 +4655,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#xipdazblkp .gt_subtitle {
+#jyegzekuhe .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4649,7 +4667,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#xipdazblkp .gt_heading {
+#jyegzekuhe .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4661,13 +4679,13 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_bottom_border {
+#jyegzekuhe .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_col_headings {
+#jyegzekuhe .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4682,7 +4700,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_col_heading {
+#jyegzekuhe .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4702,7 +4720,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#xipdazblkp .gt_column_spanner_outer {
+#jyegzekuhe .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4714,15 +4732,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#xipdazblkp .gt_column_spanner_outer:first-child {
+#jyegzekuhe .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#xipdazblkp .gt_column_spanner_outer:last-child {
+#jyegzekuhe .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#xipdazblkp .gt_column_spanner {
+#jyegzekuhe .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4734,11 +4752,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#xipdazblkp .gt_spanner_row {
+#jyegzekuhe .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#xipdazblkp .gt_group_heading {
+#jyegzekuhe .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4764,7 +4782,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#xipdazblkp .gt_empty_group_heading {
+#jyegzekuhe .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4779,15 +4797,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#xipdazblkp .gt_from_md > :first-child {
+#jyegzekuhe .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#xipdazblkp .gt_from_md > :last-child {
+#jyegzekuhe .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#xipdazblkp .gt_row {
+#jyegzekuhe .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4806,7 +4824,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#xipdazblkp .gt_stub {
+#jyegzekuhe .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4819,7 +4837,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#xipdazblkp .gt_stub_row_group {
+#jyegzekuhe .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4833,15 +4851,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#xipdazblkp .gt_row_group_first td {
+#jyegzekuhe .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#xipdazblkp .gt_row_group_first th {
+#jyegzekuhe .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#xipdazblkp .gt_summary_row {
+#jyegzekuhe .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4851,16 +4869,16 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#xipdazblkp .gt_first_summary_row {
+#jyegzekuhe .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_first_summary_row.thick {
+#jyegzekuhe .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#xipdazblkp .gt_last_summary_row {
+#jyegzekuhe .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4870,7 +4888,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_grand_summary_row {
+#jyegzekuhe .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4880,7 +4898,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#xipdazblkp .gt_first_grand_summary_row {
+#jyegzekuhe .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4890,7 +4908,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_last_grand_summary_row_top {
+#jyegzekuhe .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4900,11 +4918,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_striped {
+#jyegzekuhe .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#xipdazblkp .gt_table_body {
+#jyegzekuhe .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4913,7 +4931,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_footnotes {
+#jyegzekuhe .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4927,7 +4945,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_footnote {
+#jyegzekuhe .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4936,7 +4954,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#xipdazblkp .gt_sourcenotes {
+#jyegzekuhe .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4950,7 +4968,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#xipdazblkp .gt_sourcenote {
+#jyegzekuhe .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4958,72 +4976,72 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#xipdazblkp .gt_left {
+#jyegzekuhe .gt_left {
   text-align: left;
 }
 
-#xipdazblkp .gt_center {
+#jyegzekuhe .gt_center {
   text-align: center;
 }
 
-#xipdazblkp .gt_right {
+#jyegzekuhe .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#xipdazblkp .gt_font_normal {
+#jyegzekuhe .gt_font_normal {
   font-weight: normal;
 }
 
-#xipdazblkp .gt_font_bold {
+#jyegzekuhe .gt_font_bold {
   font-weight: bold;
 }
 
-#xipdazblkp .gt_font_italic {
+#jyegzekuhe .gt_font_italic {
   font-style: italic;
 }
 
-#xipdazblkp .gt_super {
+#jyegzekuhe .gt_super {
   font-size: 65%;
 }
 
-#xipdazblkp .gt_footnote_marks {
+#jyegzekuhe .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#xipdazblkp .gt_asterisk {
+#jyegzekuhe .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#xipdazblkp .gt_indent_1 {
+#jyegzekuhe .gt_indent_1 {
   text-indent: 5px;
 }
 
-#xipdazblkp .gt_indent_2 {
+#jyegzekuhe .gt_indent_2 {
   text-indent: 10px;
 }
 
-#xipdazblkp .gt_indent_3 {
+#jyegzekuhe .gt_indent_3 {
   text-indent: 15px;
 }
 
-#xipdazblkp .gt_indent_4 {
+#jyegzekuhe .gt_indent_4 {
   text-indent: 20px;
 }
 
-#xipdazblkp .gt_indent_5 {
+#jyegzekuhe .gt_indent_5 {
   text-indent: 25px;
 }
 
-#xipdazblkp .katex-display {
+#jyegzekuhe .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#xipdazblkp div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#jyegzekuhe div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -5080,23 +5098,23 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="chayeusnkz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#chayeusnkz table {
+<div id="ajraxomhwo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ajraxomhwo table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#chayeusnkz thead, #chayeusnkz tbody, #chayeusnkz tfoot, #chayeusnkz tr, #chayeusnkz td, #chayeusnkz th {
+#ajraxomhwo thead, #ajraxomhwo tbody, #ajraxomhwo tfoot, #ajraxomhwo tr, #ajraxomhwo td, #ajraxomhwo th {
   border-style: none;
 }
 
-#chayeusnkz p {
+#ajraxomhwo p {
   margin: 0;
   padding: 0;
 }
 
-#chayeusnkz .gt_table {
+#ajraxomhwo .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -5122,12 +5140,12 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_caption {
+#ajraxomhwo .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#chayeusnkz .gt_title {
+#ajraxomhwo .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -5139,7 +5157,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#chayeusnkz .gt_subtitle {
+#ajraxomhwo .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -5151,7 +5169,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#chayeusnkz .gt_heading {
+#ajraxomhwo .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -5163,13 +5181,13 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_bottom_border {
+#ajraxomhwo .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_col_headings {
+#ajraxomhwo .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5184,7 +5202,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_col_heading {
+#ajraxomhwo .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5204,7 +5222,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#chayeusnkz .gt_column_spanner_outer {
+#ajraxomhwo .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5216,15 +5234,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#chayeusnkz .gt_column_spanner_outer:first-child {
+#ajraxomhwo .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#chayeusnkz .gt_column_spanner_outer:last-child {
+#ajraxomhwo .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#chayeusnkz .gt_column_spanner {
+#ajraxomhwo .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -5236,11 +5254,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#chayeusnkz .gt_spanner_row {
+#ajraxomhwo .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#chayeusnkz .gt_group_heading {
+#ajraxomhwo .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5266,7 +5284,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#chayeusnkz .gt_empty_group_heading {
+#ajraxomhwo .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -5281,15 +5299,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#chayeusnkz .gt_from_md > :first-child {
+#ajraxomhwo .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#chayeusnkz .gt_from_md > :last-child {
+#ajraxomhwo .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#chayeusnkz .gt_row {
+#ajraxomhwo .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5308,7 +5326,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#chayeusnkz .gt_stub {
+#ajraxomhwo .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5321,7 +5339,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#chayeusnkz .gt_stub_row_group {
+#ajraxomhwo .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5335,15 +5353,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#chayeusnkz .gt_row_group_first td {
+#ajraxomhwo .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#chayeusnkz .gt_row_group_first th {
+#ajraxomhwo .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#chayeusnkz .gt_summary_row {
+#ajraxomhwo .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5353,16 +5371,16 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#chayeusnkz .gt_first_summary_row {
+#ajraxomhwo .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_first_summary_row.thick {
+#ajraxomhwo .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#chayeusnkz .gt_last_summary_row {
+#ajraxomhwo .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5372,7 +5390,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_grand_summary_row {
+#ajraxomhwo .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5382,7 +5400,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#chayeusnkz .gt_first_grand_summary_row {
+#ajraxomhwo .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5392,7 +5410,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_last_grand_summary_row_top {
+#ajraxomhwo .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5402,11 +5420,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_striped {
+#ajraxomhwo .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#chayeusnkz .gt_table_body {
+#ajraxomhwo .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5415,7 +5433,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_footnotes {
+#ajraxomhwo .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5429,7 +5447,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_footnote {
+#ajraxomhwo .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -5438,7 +5456,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#chayeusnkz .gt_sourcenotes {
+#ajraxomhwo .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5452,7 +5470,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#chayeusnkz .gt_sourcenote {
+#ajraxomhwo .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -5460,72 +5478,72 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#chayeusnkz .gt_left {
+#ajraxomhwo .gt_left {
   text-align: left;
 }
 
-#chayeusnkz .gt_center {
+#ajraxomhwo .gt_center {
   text-align: center;
 }
 
-#chayeusnkz .gt_right {
+#ajraxomhwo .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#chayeusnkz .gt_font_normal {
+#ajraxomhwo .gt_font_normal {
   font-weight: normal;
 }
 
-#chayeusnkz .gt_font_bold {
+#ajraxomhwo .gt_font_bold {
   font-weight: bold;
 }
 
-#chayeusnkz .gt_font_italic {
+#ajraxomhwo .gt_font_italic {
   font-style: italic;
 }
 
-#chayeusnkz .gt_super {
+#ajraxomhwo .gt_super {
   font-size: 65%;
 }
 
-#chayeusnkz .gt_footnote_marks {
+#ajraxomhwo .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#chayeusnkz .gt_asterisk {
+#ajraxomhwo .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#chayeusnkz .gt_indent_1 {
+#ajraxomhwo .gt_indent_1 {
   text-indent: 5px;
 }
 
-#chayeusnkz .gt_indent_2 {
+#ajraxomhwo .gt_indent_2 {
   text-indent: 10px;
 }
 
-#chayeusnkz .gt_indent_3 {
+#ajraxomhwo .gt_indent_3 {
   text-indent: 15px;
 }
 
-#chayeusnkz .gt_indent_4 {
+#ajraxomhwo .gt_indent_4 {
   text-indent: 20px;
 }
 
-#chayeusnkz .gt_indent_5 {
+#ajraxomhwo .gt_indent_5 {
   text-indent: 25px;
 }
 
-#chayeusnkz .katex-display {
+#ajraxomhwo .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#chayeusnkz div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#ajraxomhwo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -6936,7 +6954,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#/eq-
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"7.07915","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.48785","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.73168","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.58824","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -7061,10 +7079,10 @@ Figure&nbsp;33: Lasso selection
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb142"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a></a><span class="fu">coef</span>(cvfit, <span class="at">s =</span> <span class="st">"lambda.1se"</span>)</span>
 <span id="cb142-2"><a></a><span class="co">#&gt; 4 x 1 sparse Matrix of class "dgCMatrix"</span></span>
 <span id="cb142-3"><a></a><span class="co">#&gt;             lambda.1se</span></span>
-<span id="cb142-4"><a></a><span class="co">#&gt; (Intercept) 34.3091615</span></span>
-<span id="cb142-5"><a></a><span class="co">#&gt; age          .        </span></span>
-<span id="cb142-6"><a></a><span class="co">#&gt; weight      -0.0800142</span></span>
-<span id="cb142-7"><a></a><span class="co">#&gt; protein      0.7640510</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb142-4"><a></a><span class="co">#&gt; (Intercept)  34.109015</span></span>
+<span id="cb142-5"><a></a><span class="co">#&gt; age           .       </span></span>
+<span id="cb142-6"><a></a><span class="co">#&gt; weight       -0.104061</span></span>
+<span id="cb142-7"><a></a><span class="co">#&gt; protein       0.944061</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 
