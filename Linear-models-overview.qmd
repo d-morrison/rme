@@ -821,6 +821,8 @@ ggpenguins2 <- ggpenguins +
 ggpenguins2 |> print()
 ```
 
+{{< include _sec_linreg_rescaling.qmd >}}
+
 # Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}
 
 {{< include _sec_linreg_mle_est.qmd >}}
@@ -1331,54 +1333,6 @@ lrtest(lm_max, lm0)
 ```
 
 This log-likelihood ratio statistic is called the **null deviance**. It tells us whether we have enough data to detect a difference between the null and full models.
-
-# Rescaling
-
-::: notes
-Centering covariates (subtracting a constant from them) 
-can make coefficient interpretations more meaningful, 
-particularly for the intercept and main effect terms in models with interactions.
-:::
-
-## Rescale age {.smaller}
-
-::: notes
-For example, 
-the intercept $\beta_0$ in our interaction model represents 
-the mean birthweight for females at age = 0 weeks, 
-which is not a biologically plausible scenario.
-If we center age at 36 weeks instead, 
-$\beta_0$ will represent the mean birthweight for females at 36 weeks, 
-which is more interpretable.
-:::
-
-```{r}
-bw <-
-  bw |>
-  mutate(
-    `age - mean` = age - mean(age),
-    `age - 36wks` = age - 36
-  )
-
-lm1_c <- lm(weight ~ sex + `age - 36wks`, data = bw)
-
-lm2_c <- lm(weight ~ sex + `age - 36wks` + sex:`age - 36wks`, data = bw)
-
-parameters(lm2_c, ci_method = "wald") |> print_md()
-```
-
-Compare with what we got without rescaling:
-
-```{r}
-parameters(bw_lm2, ci_method = "wald") |> print_md()
-```
-
-::: notes
-Notice that the slope coefficients (`age - 36wks` and `sexmale:age - 36wks`) 
-remain the same, 
-but the intercept and `sexmale` coefficient have changed 
-to reflect means at age = 36 weeks rather than age = 0 weeks.
-:::
 
 # Prediction
 
