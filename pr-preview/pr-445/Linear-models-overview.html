@@ -525,7 +525,7 @@ window.Quarto = {
 <a href="#categorical-covariates-with-more-than-two-levels" id="toc-categorical-covariates-with-more-than-two-levels" class="nav-link" data-scroll-target="#categorical-covariates-with-more-than-two-levels"><span class="header-section-number">2.8</span> Categorical covariates with more than two levels</a>
   <ul class="collapse">
 <li><a href="#example-birthweight" id="toc-example-birthweight" class="nav-link" data-scroll-target="#example-birthweight"><span class="header-section-number">2.8.1</span> Example: <code>birthweight</code></a></li>
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"><span class="header-section-number">2.8.2</span> </a></li>
+  <li><a href="#example-iris" id="toc-example-iris" class="nav-link" data-scroll-target="#example-iris"><span class="header-section-number">2.8.2</span> Example: <code>iris</code></a></li>
   <li><a href="#lets-see-how-that-model-looks" id="toc-lets-see-how-that-model-looks" class="nav-link" data-scroll-target="#lets-see-how-that-model-looks"><span class="header-section-number">2.8.3</span> Let’s see how that model looks:</a></li>
   <li><a href="#lets-see-what-r-does-with-categorical-variables-by-default" id="toc-lets-see-what-r-does-with-categorical-variables-by-default" class="nav-link" data-scroll-target="#lets-see-what-r-does-with-categorical-variables-by-default"><span class="header-section-number">2.8.4</span> Let’s see what R does with categorical variables by default:</a></li>
   <li><a href="#re-parametrize-with-no-intercept" id="toc-re-parametrize-with-no-intercept" class="nav-link" data-scroll-target="#re-parametrize-with-no-intercept"><span class="header-section-number">2.8.5</span> Re-parametrize with no intercept</a></li>
@@ -639,7 +639,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2026-04-10: 22:26:04 (UTC)</p>
+      <p class="date">Last modified: 2026-04-10: 23:28:30 (UTC)</p>
     </div>
   </div>
   
@@ -2139,8 +2139,9 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 </details>
 </div>
 <p>If there are more than two observed values, we can’t just use a single variable with 0s and 1s.</p>
-</section><section id="section" class="level3" data-number="2.8.2"><h3 data-number="2.8.2" class="anchored" data-anchor-id="section">
-<span class="header-section-number">2.8.2</span> </h3>
+</section><section id="example-iris" class="level3" data-number="2.8.2"><h3 data-number="2.8.2" class="anchored" data-anchor-id="example-iris">
+<span class="header-section-number">2.8.2</span> Example: <code>iris</code>
+</h3>
 <div class="notes">
 <p>For example, <a href="#tbl-iris-data" class="quarto-xref">Table&nbsp;8</a> shows the <a href="https://www.meganstodel.com/posts/no-to-iris/">(in)famous</a> <code>iris</code> data (<span class="citation" data-cites="anderson1935irises">Anderson (<a href="#ref-anderson1935irises" role="doc-biblioref">1935</a>)</span>), and <a href="#tbl-iris-summary" class="quarto-xref">Table&nbsp;9</a> provides summary statistics. The data include three species: “setosa”, “versicolor”, and “virginica”.</p>
 </div>
@@ -3879,19 +3880,36 @@ Figure&nbsp;9: Predicted values and confidence bands for the <code>birthweight</
 <hr>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rlang.r-lib.org">rlang</a></span><span class="op">)</span> <span class="co"># defines the `.data` pronoun</span></span>
-<span><span class="va">plot_PIs_and_CIs</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">model</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="va">plot_PIs_and_CIs</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">model</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/abort.html">abort</a></span><span class="op">(</span><span class="st">"`model` must be supplied to `plot_PIs_and_CIs()`."</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">is.data.frame</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">is.data.frame</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/abort.html">warn</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span></span>
+<span>        <span class="st">"`plot_PIs_and_CIs()` received `model` as the first argument "</span>,</span>
+<span>        <span class="st">"and `data` as the second. "</span>,</span>
+<span>        <span class="st">"Please update the call to use `data` first and `model` second."</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>    <span class="va">tmp</span> <span class="op">&lt;-</span> <span class="va">data</span></span>
+<span>    <span class="va">data</span> <span class="op">&lt;-</span> <span class="va">model</span></span>
+<span>    <span class="va">model</span> <span class="op">&lt;-</span> <span class="va">tmp</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
 <span>  <span class="va">cis</span> <span class="op">&lt;-</span> <span class="va">model</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span>interval <span class="op">=</span> <span class="st">"confidence"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span>newdata <span class="op">=</span> <span class="va">data</span>, interval <span class="op">=</span> <span class="st">"confidence"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">cis</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"ci"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">cis</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="va">preds</span> <span class="op">&lt;-</span> <span class="va">model</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span>interval <span class="op">=</span> <span class="st">"predict"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span>newdata <span class="op">=</span> <span class="va">data</span>, interval <span class="op">=</span> <span class="st">"predict"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">preds</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"pred"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">preds</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_cols.html">bind_cols</a></span><span class="op">(</span><span class="va">bw</span>, <span class="va">cis</span>, <span class="va">preds</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_cols.html">bind_cols</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">cis</span>, <span class="va">preds</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
 <span>      x <span class="op">=</span> <span class="va">.data</span><span class="op">$</span><span class="va">age</span>,</span>
@@ -4241,7 +4259,7 @@ Figure&nbsp;11: Model <a href="#eq-BW-lm-interact" class="quarto-xref">2</a> and
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-max-vs-intxn-fits" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">plot_PIs_and_CIs</span><span class="op">(</span><span class="va">lm_max</span>, <span class="va">bw</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">plot_PIs_and_CIs</span><span class="op">(</span><span class="va">bw</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span><span class="op">)</span>, <span class="va">lm_max</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-fit-max" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-fit-max-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Saturated model
@@ -4329,7 +4347,7 @@ Figure&nbsp;11: Model <a href="#eq-BW-lm-interact" class="quarto-xref">2</a> and
 </div>
 </div>
 <hr>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb77"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm0</span> <span class="op">|&gt;</span> <span class="fu">plot_PIs_and_CIs</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb77"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm0</span> <span class="op">|&gt;</span> <span class="fu">plot_PIs_and_CIs</span><span class="op">(</span><span class="va">bw</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-null-model" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-null-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;12: Null model for birthweight data, with 95% confidence and prediction intervals.
@@ -4636,23 +4654,23 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-with-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="twzltvttwo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#twzltvttwo table {
+<div id="lzrvrfuzqv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#lzrvrfuzqv table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#twzltvttwo thead, #twzltvttwo tbody, #twzltvttwo tfoot, #twzltvttwo tr, #twzltvttwo td, #twzltvttwo th {
+#lzrvrfuzqv thead, #lzrvrfuzqv tbody, #lzrvrfuzqv tfoot, #lzrvrfuzqv tr, #lzrvrfuzqv td, #lzrvrfuzqv th {
   border-style: none;
 }
 
-#twzltvttwo p {
+#lzrvrfuzqv p {
   margin: 0;
   padding: 0;
 }
 
-#twzltvttwo .gt_table {
+#lzrvrfuzqv .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4678,12 +4696,12 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_caption {
+#lzrvrfuzqv .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#twzltvttwo .gt_title {
+#lzrvrfuzqv .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4695,7 +4713,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#twzltvttwo .gt_subtitle {
+#lzrvrfuzqv .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4707,7 +4725,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#twzltvttwo .gt_heading {
+#lzrvrfuzqv .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4719,13 +4737,13 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_bottom_border {
+#lzrvrfuzqv .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_col_headings {
+#lzrvrfuzqv .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4740,7 +4758,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_col_heading {
+#lzrvrfuzqv .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4760,7 +4778,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#twzltvttwo .gt_column_spanner_outer {
+#lzrvrfuzqv .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4772,15 +4790,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#twzltvttwo .gt_column_spanner_outer:first-child {
+#lzrvrfuzqv .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#twzltvttwo .gt_column_spanner_outer:last-child {
+#lzrvrfuzqv .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#twzltvttwo .gt_column_spanner {
+#lzrvrfuzqv .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4792,11 +4810,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#twzltvttwo .gt_spanner_row {
+#lzrvrfuzqv .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#twzltvttwo .gt_group_heading {
+#lzrvrfuzqv .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4822,7 +4840,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#twzltvttwo .gt_empty_group_heading {
+#lzrvrfuzqv .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4837,15 +4855,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#twzltvttwo .gt_from_md > :first-child {
+#lzrvrfuzqv .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#twzltvttwo .gt_from_md > :last-child {
+#lzrvrfuzqv .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#twzltvttwo .gt_row {
+#lzrvrfuzqv .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4864,7 +4882,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#twzltvttwo .gt_stub {
+#lzrvrfuzqv .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4877,7 +4895,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#twzltvttwo .gt_stub_row_group {
+#lzrvrfuzqv .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4891,15 +4909,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#twzltvttwo .gt_row_group_first td {
+#lzrvrfuzqv .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#twzltvttwo .gt_row_group_first th {
+#lzrvrfuzqv .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#twzltvttwo .gt_summary_row {
+#lzrvrfuzqv .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4909,16 +4927,16 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#twzltvttwo .gt_first_summary_row {
+#lzrvrfuzqv .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_first_summary_row.thick {
+#lzrvrfuzqv .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#twzltvttwo .gt_last_summary_row {
+#lzrvrfuzqv .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4928,7 +4946,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_grand_summary_row {
+#lzrvrfuzqv .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4938,7 +4956,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#twzltvttwo .gt_first_grand_summary_row {
+#lzrvrfuzqv .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4948,7 +4966,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_last_grand_summary_row_top {
+#lzrvrfuzqv .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4958,11 +4976,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_striped {
+#lzrvrfuzqv .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#twzltvttwo .gt_table_body {
+#lzrvrfuzqv .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4971,7 +4989,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_footnotes {
+#lzrvrfuzqv .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4985,7 +5003,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_footnote {
+#lzrvrfuzqv .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4994,7 +5012,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#twzltvttwo .gt_sourcenotes {
+#lzrvrfuzqv .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5008,7 +5026,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#twzltvttwo .gt_sourcenote {
+#lzrvrfuzqv .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -5016,72 +5034,72 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#twzltvttwo .gt_left {
+#lzrvrfuzqv .gt_left {
   text-align: left;
 }
 
-#twzltvttwo .gt_center {
+#lzrvrfuzqv .gt_center {
   text-align: center;
 }
 
-#twzltvttwo .gt_right {
+#lzrvrfuzqv .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#twzltvttwo .gt_font_normal {
+#lzrvrfuzqv .gt_font_normal {
   font-weight: normal;
 }
 
-#twzltvttwo .gt_font_bold {
+#lzrvrfuzqv .gt_font_bold {
   font-weight: bold;
 }
 
-#twzltvttwo .gt_font_italic {
+#lzrvrfuzqv .gt_font_italic {
   font-style: italic;
 }
 
-#twzltvttwo .gt_super {
+#lzrvrfuzqv .gt_super {
   font-size: 65%;
 }
 
-#twzltvttwo .gt_footnote_marks {
+#lzrvrfuzqv .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#twzltvttwo .gt_asterisk {
+#lzrvrfuzqv .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#twzltvttwo .gt_indent_1 {
+#lzrvrfuzqv .gt_indent_1 {
   text-indent: 5px;
 }
 
-#twzltvttwo .gt_indent_2 {
+#lzrvrfuzqv .gt_indent_2 {
   text-indent: 10px;
 }
 
-#twzltvttwo .gt_indent_3 {
+#lzrvrfuzqv .gt_indent_3 {
   text-indent: 15px;
 }
 
-#twzltvttwo .gt_indent_4 {
+#lzrvrfuzqv .gt_indent_4 {
   text-indent: 20px;
 }
 
-#twzltvttwo .gt_indent_5 {
+#lzrvrfuzqv .gt_indent_5 {
   text-indent: 25px;
 }
 
-#twzltvttwo .katex-display {
+#lzrvrfuzqv .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#twzltvttwo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#lzrvrfuzqv div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -5138,23 +5156,23 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="zjeanjaywd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#zjeanjaywd table {
+<div id="hrdwhypszl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hrdwhypszl table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#zjeanjaywd thead, #zjeanjaywd tbody, #zjeanjaywd tfoot, #zjeanjaywd tr, #zjeanjaywd td, #zjeanjaywd th {
+#hrdwhypszl thead, #hrdwhypszl tbody, #hrdwhypszl tfoot, #hrdwhypszl tr, #hrdwhypszl td, #hrdwhypszl th {
   border-style: none;
 }
 
-#zjeanjaywd p {
+#hrdwhypszl p {
   margin: 0;
   padding: 0;
 }
 
-#zjeanjaywd .gt_table {
+#hrdwhypszl .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -5180,12 +5198,12 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_caption {
+#hrdwhypszl .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#zjeanjaywd .gt_title {
+#hrdwhypszl .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -5197,7 +5215,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#zjeanjaywd .gt_subtitle {
+#hrdwhypszl .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -5209,7 +5227,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#zjeanjaywd .gt_heading {
+#hrdwhypszl .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -5221,13 +5239,13 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_bottom_border {
+#hrdwhypszl .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_col_headings {
+#hrdwhypszl .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5242,7 +5260,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_col_heading {
+#hrdwhypszl .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5262,7 +5280,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#zjeanjaywd .gt_column_spanner_outer {
+#hrdwhypszl .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5274,15 +5292,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#zjeanjaywd .gt_column_spanner_outer:first-child {
+#hrdwhypszl .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#zjeanjaywd .gt_column_spanner_outer:last-child {
+#hrdwhypszl .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#zjeanjaywd .gt_column_spanner {
+#hrdwhypszl .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -5294,11 +5312,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#zjeanjaywd .gt_spanner_row {
+#hrdwhypszl .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#zjeanjaywd .gt_group_heading {
+#hrdwhypszl .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5324,7 +5342,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#zjeanjaywd .gt_empty_group_heading {
+#hrdwhypszl .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -5339,15 +5357,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#zjeanjaywd .gt_from_md > :first-child {
+#hrdwhypszl .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#zjeanjaywd .gt_from_md > :last-child {
+#hrdwhypszl .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#zjeanjaywd .gt_row {
+#hrdwhypszl .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5366,7 +5384,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#zjeanjaywd .gt_stub {
+#hrdwhypszl .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5379,7 +5397,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zjeanjaywd .gt_stub_row_group {
+#hrdwhypszl .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5393,15 +5411,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#zjeanjaywd .gt_row_group_first td {
+#hrdwhypszl .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#zjeanjaywd .gt_row_group_first th {
+#hrdwhypszl .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#zjeanjaywd .gt_summary_row {
+#hrdwhypszl .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5411,16 +5429,16 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zjeanjaywd .gt_first_summary_row {
+#hrdwhypszl .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_first_summary_row.thick {
+#hrdwhypszl .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#zjeanjaywd .gt_last_summary_row {
+#hrdwhypszl .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5430,7 +5448,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_grand_summary_row {
+#hrdwhypszl .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5440,7 +5458,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zjeanjaywd .gt_first_grand_summary_row {
+#hrdwhypszl .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5450,7 +5468,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_last_grand_summary_row_top {
+#hrdwhypszl .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5460,11 +5478,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_striped {
+#hrdwhypszl .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#zjeanjaywd .gt_table_body {
+#hrdwhypszl .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5473,7 +5491,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_footnotes {
+#hrdwhypszl .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5487,7 +5505,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_footnote {
+#hrdwhypszl .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -5496,7 +5514,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zjeanjaywd .gt_sourcenotes {
+#hrdwhypszl .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5510,7 +5528,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#zjeanjaywd .gt_sourcenote {
+#hrdwhypszl .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -5518,72 +5536,72 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zjeanjaywd .gt_left {
+#hrdwhypszl .gt_left {
   text-align: left;
 }
 
-#zjeanjaywd .gt_center {
+#hrdwhypszl .gt_center {
   text-align: center;
 }
 
-#zjeanjaywd .gt_right {
+#hrdwhypszl .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#zjeanjaywd .gt_font_normal {
+#hrdwhypszl .gt_font_normal {
   font-weight: normal;
 }
 
-#zjeanjaywd .gt_font_bold {
+#hrdwhypszl .gt_font_bold {
   font-weight: bold;
 }
 
-#zjeanjaywd .gt_font_italic {
+#hrdwhypszl .gt_font_italic {
   font-style: italic;
 }
 
-#zjeanjaywd .gt_super {
+#hrdwhypszl .gt_super {
   font-size: 65%;
 }
 
-#zjeanjaywd .gt_footnote_marks {
+#hrdwhypszl .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#zjeanjaywd .gt_asterisk {
+#hrdwhypszl .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#zjeanjaywd .gt_indent_1 {
+#hrdwhypszl .gt_indent_1 {
   text-indent: 5px;
 }
 
-#zjeanjaywd .gt_indent_2 {
+#hrdwhypszl .gt_indent_2 {
   text-indent: 10px;
 }
 
-#zjeanjaywd .gt_indent_3 {
+#hrdwhypszl .gt_indent_3 {
   text-indent: 15px;
 }
 
-#zjeanjaywd .gt_indent_4 {
+#hrdwhypszl .gt_indent_4 {
   text-indent: 20px;
 }
 
-#zjeanjaywd .gt_indent_5 {
+#hrdwhypszl .gt_indent_5 {
   text-indent: 25px;
 }
 
-#zjeanjaywd .katex-display {
+#hrdwhypszl .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#zjeanjaywd div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#hrdwhypszl div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -6886,7 +6904,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.89318","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.64607","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.78195","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.47784","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
