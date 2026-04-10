@@ -1,0 +1,749 @@
+
+## Motivating example: birthweights and gestational age {.smaller}
+
+Suppose we want to learn about the distributions of birthweights (*outcome* $Y$) 
+for (human) babies born at different gestational ages (*covariate* $A$) 
+and with different chromosomal sexes (*covariate* $S$) (@dobson4e Example 2.2.2).
+
+## Dobson `birthweight` data {.smaller}
+
+::::: {.panel-tabset}
+
+### Data as table
+
+```{r}
+#| label: tbl-birthweight-data1
+#| tbl-cap: "`birthweight` data (@dobson4e Example 2.2.2)"
+library(dobson)
+data("birthweight", package = "dobson")
+birthweight
+```
+
+### Reshape data for graphing
+
+```{r}
+#| label: tbl-birthweight-data2
+#| tbl-cap: "`birthweight` data reshaped"
+library(tidyverse)
+bw <-
+  birthweight |>
+  pivot_longer(
+    cols = everything(),
+    names_to = c("sex", ".value"),
+    names_sep = "s "
+  ) |>
+  rename(age = `gestational age`) |>
+  mutate(
+    id = row_number(),
+    sex = sex |>
+      case_match(
+        "boy" ~ "male",
+        "girl" ~ "female"
+      ) |>
+      factor(levels = c("female", "male")),
+    male = sex == "male",
+    female = sex == "female"
+  )
+
+bw
+```
+
+### Data as graph
+
+```{r}
+#| label: fig-plot-birthweight1
+#| fig-cap: "`birthweight` data (@dobson4e Example 2.2.2)"
+#| fig-height: 5
+#| fig-width: 7
+plot1 <- bw |>
+  ggplot(aes(
+    x = age,
+    y = weight,
+    shape = sex,
+    col = sex
+  )) +
+  theme_bw() +
+  xlab("Gestational age (weeks)") +
+  ylab("Birthweight (grams)") +
+  theme(legend.position = "bottom") +
+  # expand_limits(y = 0, x = 0) +
+  geom_point(alpha = .7)
+print(plot1 + facet_wrap(~sex))
+```
+
+:::::
+
+---
+
+### Data notation {.smaller}
+
+::: notes
+Let's define some notation to represent this data:
+:::
+
+-   $Y$: birthweight (measured in grams)
+-   $S$: chromosomal sex: "male" (XY) or "female" (XX)
+-   $M$: indicator variable for $S$ = "male"^[$M$ is implicitly a deterministic function of $S$]
+-   $M = 0$ if $S$ = "female"
+-   $M = 1$ if $S$ = "male"
+-   $F$: indicator variable for $S$ = "female"^[$F$ is implicitly a deterministic function of $S$]
+-   $F = 1$ if $S$ = "female"
+-   $F = 0$ if $S$ = "male"
+-   $A$: estimated gestational age at birth (measured in weeks).
+
+::: notes
+Female is the **reference level** for the categorical variable $S$ 
+(chromosomal sex) and corresponding indicator variable $M$ . 
+The choice of a reference level is arbitrary and does not limit what 
+we can do with the resulting model; 
+it only makes it more computationally convenient to make inferences 
+about comparisons involving that reference group.
+
+$M$ and $F$ are called **dummy variables**; 
+together, they are a numeric representation of the categorical variable $S$.
+Dummy variables with values 0 and 1 are also called **indicator variables**.
+There are other ways to construct dummy variables, 
+such as using the values -1 and 1
+(see @dobson4e §2.4 for details).
+:::
+
+## Parallel lines regression {.smaller}
+
+(c.f. @dunn2018generalized 
+[§2.10.3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_2#Sec31))
+
+::: notes
+
+We don't have enough data to model the distribution of birth weight 
+separately for each combination of gestational age and sex, 
+so let's instead consider a (relatively) simple model for how that 
+distribution varies with gestational age and sex:
+:::
+
+
+$$
+\ba
+Y|M,A &\sciid N(\mu(M,A), \sigma^2)\\
+\mu(m,a) &= \beta_0 + \beta_M m + \beta_A a
+\ea
+$$ {#eq-lm-parallel}
+
+:::{.notes}
+
+@tbl-lm-parallel shows the parameter estimates from R.
+@fig-parallel-fit1 shows the estimated model, superimposed on the data.
+
+:::
+
+::: {.column width=40%}
+
+::: {#tbl-lm-parallel}
+
+```{r}
+bw_lm1 <- lm(
+  formula = weight ~ sex + age,
+  data = bw
+)
+
+library(parameters)
+bw_lm1 |>
+  parameters::parameters() |>
+  parameters::print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
+Regression parameter estimates for [Model @eq-lm-parallel] of `birthweight` data
+
+:::
+
+:::
+
+:::{.column width=10%}
+:::
+
+:::{.column width=50%}
+
+:::{#fig-parallel-fit1}
+
+```{r}
+bw <-
+  bw |>
+  mutate(`E[Y|X=x]` = fitted(bw_lm1)) |>
+  arrange(sex, age)
+
+plot2 <-
+  plot1 %+% bw +
+  geom_line(aes(y = `E[Y|X=x]`))
+
+print(plot2)
+```
+
+Graph of [Model @eq-lm-parallel] for `birthweight` data
+
+:::
+
+:::
+
+---
+
+### Model assumptions and predictions
+
+::: notes
+To learn what this model is assuming, let's plug in a few values.
+:::
+
+---
+
+::: {#exr-pred-fem-parallel}
+
+What's the mean birthweight for a female born at 36 weeks?
+
+```{r}
+#| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
+#| code-fold: false
+#| echo: false
+bw_lm1 |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+:::
+
+---
+
+:::{.solution .smaller}
+\ 
+
+```{r}
+#| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
+#| code-fold: false
+#| echo: false
+bw_lm1 |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+```{r}
+pred_female <- coef(bw_lm1)["(Intercept)"] + coef(bw_lm1)["age"] * 36
+## or using built-in prediction:
+pred_female_alt <- predict(bw_lm1, newdata = tibble(sex = "female", age = 36))
+```
+
+$$
+\ba
+E[Y|M = 0, A = 36] 
+&= \beta_0 + \paren{\beta_M \cdot 0}+ \paren{\beta_A \cdot 36} \\
+&= `r coef(bw_lm1)["(Intercept)"]` + \paren{`r coef(bw_lm1)["sexmale"]` \cdot 0} 
++ \paren{`r coef(bw_lm1)["age"]` \cdot 36} \\
+&=  `r pred_female`
+\ea
+$$
+:::
+
+---
+
+:::{#exr-pred-male-parallel}
+
+What's the mean birthweight for a male born at 36 weeks?
+
+```{r}
+#| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
+#| code-fold: false
+#| echo: false
+bw_lm1 |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+:::
+
+---
+
+:::{.solution}
+\ 
+
+```{r}
+#| tbl-cap: "Estimated coefficients for [model @eq-lm-parallel]"
+#| code-fold: false
+#| echo: false
+bw_lm1 |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+```{r}
+pred_male <-
+  coef(bw_lm1)["(Intercept)"] +
+  coef(bw_lm1)["sexmale"] +
+  coef(bw_lm1)["age"] * 36
+```
+
+$$
+\ba
+E[Y|M = 1, A = 36] 
+&= \beta_0 + \beta_M \cdot 1+ \beta_A \cdot 36 \\
+&=  `r pred_male`
+\ea
+$$
+
+:::
+
+---
+
+:::{#exr-diff-sex-parallel-1}
+What's the difference in mean birthweights between males born at 36 weeks and females born at 36 weeks?
+:::
+
+```{r}
+coef(bw_lm1)
+```
+
+---
+
+:::{.solution}
+
+$$
+\begin{aligned}
+& E[Y|M = 1, A = 36] - E[Y|M = 0, A = 36]\\
+&= 
+`r pred_male` - `r pred_female`\\
+&=
+`r pred_male - pred_female`
+\end{aligned}
+$$
+
+Shortcut:
+
+$$
+\begin{aligned}
+& E[Y|M = 1, A = 36] - E[Y|M = 0, A = 36]\\
+&= (\beta_0 + \beta_M \cdot 1+ \beta_A \cdot 36) - 
+(\beta_0 + \beta_M \cdot 0+ \beta_A \cdot 36) \\
+&= \beta_M \\ 
+&=  `r coef(bw_lm1)["sexmale"]`
+\end{aligned}
+$$
+
+:::
+
+:::{.notes}
+
+Age cancels out in this difference.
+In other words, 
+according to this model, 
+the difference between females and males with the same gestational age 
+is the same for every age.
+
+This characteristic is an assumption of the model
+specified by @eq-lm-parallel.
+It's hardwired into the parametric model structure, 
+even before we estimated values for those parameters.
+
+:::
+
+---
+
+### Coefficient Interpretation
+
+{{< include _sec_linear_coef_interp_no_intxn.qmd >}}
+
+## Interactions {.smaller}
+
+::: notes
+What if we don't like that parallel lines assumption?
+
+Then we need to allow an "interaction" between  age $A$ and sex $S$:
+:::
+
+$$E[Y|S=s,A=a] = \beta_0 + \beta_A a+ \beta_M m + \beta_{AM} (a \cdot m)$$ {#eq-BW-lm-interact}
+
+::: notes
+Now, the slope of mean birthweight $E[Y|A,S]$ 
+with respect to gestational age $A$ 
+depends on the value of sex $S$.
+:::
+
+::: {.column width=40% .smaller}
+
+```{r}
+#| label: tbl-bw-model-coefs-interact
+#| tbl-cap: "Birthweight model with interaction term"
+
+bw_lm2 <- lm(weight ~ sex + age + sex:age, data = bw)
+bw_lm2 |>
+  parameters() |>
+  parameters::print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
+:::
+
+:::{.column width=5%}
+:::
+
+:::{.column width=55%}
+
+```{r}
+#| label: fig-bw-interaction
+#| fig-cap: "Birthweight model with interaction term"
+bw <-
+  bw |>
+  mutate(
+    predlm2 = predict(bw_lm2)
+  ) |>
+  arrange(sex, age)
+
+plot1_interact <-
+  plot1 %+% bw +
+  geom_line(aes(y = predlm2))
+
+print(plot1_interact)
+```
+
+:::
+
+::: {.notes}
+Now we can see that the lines aren't parallel.
+:::
+
+---
+
+Here's another way we could rewrite this model (by collecting terms involving $S$):
+
+$$
+E[Y|M,A] = \beta_0 + \beta_M M+ (\beta_A + \beta_{AM} M) A
+$$
+
+::: notes
+If you want to understand a coefficient in a model with interactions, 
+collect terms for the corresponding variable, 
+and you will see which other covariates interact with the variable 
+whose coefficient you are interested in.
+In this case, 
+the association between
+$A$ (age) varies between males and females (that is, by sex $S$).
+^[some call this kind of variation "interaction" or "effect modification",
+but "act", "effect", "modify", and "by" all suggest causality, 
+which we are not prepared to assess here;
+let's try to avoid using causal terms, 
+unless we are constructing a causal model.]
+So the slope of $Y$ with respect to $A$ depends on the value of $M$.
+According to this model, there is no such thing as 
+"*the* slope of birthweight with respect to age". 
+There are two slopes, one for each sex.
+We can only talk about 
+"the slope of birthweight with respect to age among males" 
+and "the slope of birthweight with respect to age among females".
+Then: 
+each non-interaction slope coefficient is the difference in means 
+per unit difference in its corresponding variable, 
+when all interacting variables are set to 0.
+:::
+
+---
+
+::: notes
+To learn what this model is assuming, let's plug in a few values.
+:::
+
+:::{#exr-pred-fem-interact}
+According to this model, what's the mean birthweight for a female born at 36 weeks?
+:::
+
+```{r}
+#| code-fold: false
+#| echo: false
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
+
+---
+
+::: {.solution}
+\ 
+
+```{r}
+#| code-fold: false
+#| echo: false
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
+```{r}
+pred_female <- coef(bw_lm2)["(Intercept)"] + coef(bw_lm2)["age"] * 36
+```
+
+$$
+E[Y|M = 0, A = 36] = 
+\beta_0 + \beta_M \cdot 0+ \beta_A \cdot 36 + \beta_{AM} \cdot (0 * 36) 
+=  `r pred_female`
+$$ 
+
+:::
+
+---
+
+:::{#exr-pred-interact-male_36}
+What's the mean birthweight for a male born at 36 weeks?
+
+```{r}
+#| code-fold: false
+#| echo: false
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
+:::
+
+---
+
+::: solution
+\ 
+
+```{r}
+#| code-fold: false
+#| echo: false
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
+```{r}
+pred_male <-
+  coef(bw_lm2)["(Intercept)"] +
+  coef(bw_lm2)["sexmale"] +
+  coef(bw_lm2)["age"] * 36 +
+  coef(bw_lm2)["sexmale:age"] * 36
+```
+
+$$
+\ba
+E[Y|M = 1, A = 36]
+&= \beta_0 + \beta_M \cdot 1+ \beta_A \cdot 36 + \beta_{AM} \cdot 1 \cdot 36\\
+&= `r pred_male`
+\ea
+$$
+
+:::
+
+---
+
+:::{#exr-diff-gender-interact}
+What's the difference in mean birthweights between males born at 36 weeks and females born at 36 weeks?
+:::
+
+---
+
+:::{.solution}
+
+$$
+\begin{aligned}
+& E[Y|M = 1, A = 36] - E[Y|M = 0, A = 36]\\ 
+&= (\beta_0 + \beta_M \cdot 1+ \beta_A \cdot 36 + \beta_{AM} \cdot 1 \cdot 36)\\ 
+&\ \ \ \ \  -(\beta_0 + \beta_M \cdot 0+ \beta_A \cdot 36 + \beta_{AM} \cdot 0 \cdot 36) \\
+&= \beta_M + \beta_{AM}\cdot 36\\
+&=  `r pred_male - pred_female`
+\end{aligned}
+$$
+:::
+
+:::{.notes}
+Note that age now does show up in the difference: in other words, according to this model, the difference in mean birthweights between females and males with the same gestational age can vary by gestational age.
+
+That's how the lines in the graph ended up non-parallel.
+
+:::
+
+---
+
+### Coefficient Interpretation
+
+{{< include _sec_linear_coef_interp_intxn.qmd >}}
+
+--- 
+
+### Compare coefficient interpretations
+
+:::{#tbl-compare-coef-interps}
+  $\mu(m,a)$    | $\beta_0 + \beta_M m + \beta_A a$  | $\beta_0 + \beta_M m + \beta_A a + \red{\beta_{AM} ma}$
+----------------|------------------------------------|---------------------------------------------------
+  $\beta_0$     | $\mu(0,0)$                         | $\mu(0,0)$ 
+  $\beta_A$     | $\deriv{a}\mu(\blue{m},a)$         | $\deriv{a}\mu(\red{0},a)$
+  $\beta_M$     | $\mu(1, \blue{a}) - \mu(0, \blue{a})$            | $\mu(1, \red{0}) - \mu(0,\red{0})$
+  $\beta_{AM}$  |                                    | $\deriv{a}\mu(1,a) - \deriv{a}\mu(0,a)$
+
+Coefficient interpretations, by model structure
+
+:::
+
+::: notes
+In the model with an interaction term multiplying $A\times M$, 
+the interpretation of $\b_A$ involves the reference level of $M$, 
+and interpretation of $\beta_M$ involves the reference level of $A$ (@tbl-compare-coef-interps).
+:::
+
+## Stratified regression {.smaller}
+
+:::{.notes}
+We could re-write the interaction model as a stratified model, with a slope and intercept for each sex:
+:::
+
+$$
+\E{Y|A=a, S=s} = 
+\beta_M m + \beta_{AM} (a \cdot m) + 
+\beta_F f + \beta_{AF} (a \cdot f)
+$$ {#eq-model-strat}
+
+Compare this stratified model (@eq-model-strat) with our interaction model, @eq-BW-lm-interact:
+
+$$
+\E{Y|A=a, S=s} = 
+\beta_0 + \beta_A a + \beta_M m + \beta_{AM} (a \cdot m)
+$$
+
+::: notes
+
+In the stratified model, the intercept term $\beta_0$ has been relabeled as $\beta_F$.
+
+:::
+
+::: {.column width=45%}
+```{r}
+#| label: tbl-bw-model-coefs-interact2
+#| tbl-cap: "Birthweight model with interaction term"
+
+bw_lm2 <- lm(weight ~ sex + age + sex:age, data = bw)
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = include_reference_lines,
+    select = "{estimate}"
+  )
+```
+
+:::
+
+:::{.column width=10%}
+:::
+
+:::{.column width=45%}
+
+```{r}
+#| label: tbl-bw-model-coefs-strat
+#| tbl-cap: "Birthweight model - stratified betas"
+
+bw_lm_strat <-
+  bw |>
+  lm(
+    formula = weight ~ sex + sex:age - 1,
+    data = _
+  )
+
+bw_lm_strat |>
+  parameters() |>
+  print_md(
+    select = "{estimate}"
+  )
+```
+
+:::
+
+## Curved-line regression
+
+::: notes
+If we transform some of our covariates ($X$s) 
+and plot the resulting model on the original covariate scale, 
+we end up with curved regression lines:
+:::
+
+```{r}
+#| label: fig-birthweight-log-x
+#| fig-cap: "`birthweight` model with `age` entering on log scale"
+bw_lm3 <- lm(weight ~ sex:log(age) - 1, data = bw)
+
+ggbw <-
+  bw |>
+  ggplot(
+    aes(x = age, y = weight)
+  ) +
+  geom_point() +
+  xlab("Gestational Age (weeks)") +
+  ylab("Birth Weight (g)")
+
+ggbw2 <- ggbw +
+  stat_smooth(
+    method = "lm",
+    formula = y ~ log(x),
+    geom = "smooth"
+  ) +
+  xlab("Gestational Age (weeks)") +
+  ylab("Birth Weight (g)")
+
+
+ggbw2 |> print()
+```
+
+---
+
+::: notes
+Below is an example with a slightly more obvious curve.
+:::
+
+```{r}
+#| label: fig-penguins-log-x
+#| fig-cap: "`palmerpenguins` model with `bill_length` entering on log scale"
+library(palmerpenguins)
+
+ggpenguins <-
+  palmerpenguins::penguins |>
+  dplyr::filter(species == "Adelie") |>
+  ggplot(
+    aes(x = bill_length_mm, y = body_mass_g)
+  ) +
+  geom_point() +
+  xlab("Bill length (mm)") +
+  ylab("Body mass (g)")
+
+ggpenguins2 <- ggpenguins +
+  stat_smooth(
+    method = "lm",
+    formula = y ~ log(x),
+    geom = "smooth"
+  ) +
+  xlab("Bill length (mm)") +
+  ylab("Body mass (g)")
+
+
+ggpenguins2 |> print()
+```
+
+{{< include _sec_linreg_rescaling.qmd >}}
+
