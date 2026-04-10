@@ -41,6 +41,23 @@
   - Test cross-references and anchor links
   - Ensure relative paths are correct
 
+## Linking Within the Quarto Website
+
+When linking to other pages within this Quarto website, always link to the **source `.qmd` file**, not the rendered `.html` file.
+This follows the [Quarto website linking guidelines](https://quarto.org/docs/websites/#linking).
+
+**Correct** (link to source file):
+```markdown
+[chain rule](math-prereqs.qmd#thm-chain-rule)
+```
+
+**Incorrect** (link to rendered HTML):
+```markdown
+[chain rule](math-prereqs.html#thm-chain-rule)
+```
+
+This ensures links work correctly across all output formats and during local development.
+
 ## Code Formatting Guidelines
 
 When adding or editing text in source code (such as comments, documentation strings, or error messages) or in Quarto document text chunks:
