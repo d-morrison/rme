@@ -2359,17 +2359,31 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
 <p><span class="math inline">\(H_0: \beta_{AM} = 0\)</span></p>
 <p><span class="math inline">\(H_A: \beta_{AM} \neq 0\)</span></p>
 <p><span class="math inline">\(P(|\hat\beta_{AM}| &gt; |-18.417241| \mid H_0)\)</span> = ?</p>
-</section><section id="wald-tests-and-cis" class="slide level2 smaller" data-number="4.2"><h2>
-<span class="header-section-number">4.2</span> Wald tests and CIs</h2>
-<p>R can give you Wald tests for single coefficients and corresponding CIs:</p>
+</section><section id="inference-for-individual-predictor-coefficients" class="slide level2" data-number="4.2"><h2>
+<span class="header-section-number">4.2</span> Inference for individual predictor coefficients</h2>
+<h3 id="wald-tests-and-confidence-intervals">Wald tests and confidence intervals</h3>
+<p>For Gaussian linear regression, the ordinary least squares (OLS) estimates <span class="math inline">\(\hat\beta_k\)</span> are exactly Gaussian when the error terms <span class="math inline">\(\epsilon_i\)</span> are Gaussian, for any sample size. See also the <a href="./intro-MLEs.html#tbl-gaussian-vs-mle-tests">table of Gaussian vs.&nbsp;MLE-based tests</a>.</p>
+<h4 id="wald-test-statistic">Wald test statistic</h4>
+<p>To test <span class="math inline">\(H_0: \beta_k = \beta_{k,0}\)</span> (typically <span class="math inline">\(\beta_{k,0} = 0\)</span>):</p>
+<p><span class="math display">\[t_k = \frac{\hat\beta_k - \beta_{k,0}}{\widehat{SE}(\hat\beta_k)}\]</span></p>
+<p>Under <span class="math inline">\(H_0\)</span>, <span class="math inline">\(t_k \sim t_{n-p}\)</span> exactly when errors are Gaussian.</p>
+<h4 id="confidence-intervals-for-regression-coefficients">Confidence intervals for regression coefficients</h4>
+<p>A 95% confidence interval for <span class="math inline">\(\beta_k\)</span> is:</p>
+<p><span class="math display">\[\hat\beta_k \pm t_{n-p}(0.975) \cdot \widehat{SE}(\hat\beta_k)\]</span></p>
+<h4 id="in-r">In R</h4>
+<p>In R, <code>parameters()</code> from the <code>parameters</code> package automatically computes Wald tests and confidence intervals for linear regression model coefficients:</p>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
 <span id="cb27-2"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
 <span id="cb27-3"><a></a>  <span class="fu">print_md</span>(</span>
 <span id="cb27-4"><a></a>    <span class="at">include_reference =</span> <span class="cn">TRUE</span></span>
 <span id="cb27-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details><div class="cell-output-display">
-<table class="caption-top">
+</details><div id="tbl-bw-wald-tests" class="cell quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bw-wald-tests-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;10: Wald tests and 95% CIs for <code>birthweight</code> linear regression
+</figcaption><div aria-describedby="tbl-bw-wald-tests-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top">
 <colgroup>
 <col style="width: 22%">
 <col style="width: 17%">
@@ -2431,9 +2445,11 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
 </table>
 </div>
 </div>
+</figure>
+</div>
+</div>
 <p>To understand what’s happening, let’s replicate these results by hand for the interaction term.</p>
-</section><section id="p-values" class="slide level2 smaller" data-number="4.3"><h2>
-<span class="header-section-number">4.3</span> P-values</h2>
+<h4 class="smaller" id="p-values">P-values</h4>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
 <span id="cb28-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
@@ -2507,64 +2523,27 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside></section><section id="confidence-intervals" class="slide level2" data-number="4.4"><h2>
-<span class="header-section-number">4.4</span> Confidence intervals</h2>
+      }</style></aside><h4 class="smaller" id="confidence-intervals">Confidence intervals</h4>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb30-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb30-3"><a></a>  <span class="fu">print_md</span>(</span>
-<span id="cb30-4"><a></a>    <span class="at">include_reference =</span> <span class="cn">TRUE</span></span>
-<span id="cb30-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details><div class="cell-output-display">
-<table class="caption-top">
-<colgroup>
-<col style="width: 24%">
-<col style="width: 18%">
-<col style="width: 10%">
-<col style="width: 26%">
-<col style="width: 10%">
-<col style="width: 10%">
-</colgroup>
-<thead><tr class="header">
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: center;">Coefficient</th>
-<th style="text-align: center;">SE</th>
-<th style="text-align: center;">95% CI</th>
-<th style="text-align: center;">t(20)</th>
-<th style="text-align: center;">p</th>
-</tr></thead>
-<tbody><tr class="odd">
-<td style="text-align: left;">sex (male) × age</td>
-<td style="text-align: center;">-18.42</td>
-<td style="text-align: center;">41.76</td>
-<td style="text-align: center;">(-105.52, 68.68)</td>
-<td style="text-align: center;">-0.44</td>
-<td style="text-align: center;">0.664</td>
-</tr></tbody>
-</table>
-</div>
-</div>
-<div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a></a>q_t_upper <span class="ot">&lt;-</span> <span class="fu">qt</span>(</span>
-<span id="cb31-2"><a></a>  <span class="at">p =</span> <span class="fl">0.975</span>,</span>
-<span id="cb31-3"><a></a>  <span class="at">df =</span> dfresid,</span>
-<span id="cb31-4"><a></a>  <span class="at">lower.tail =</span> <span class="cn">TRUE</span></span>
-<span id="cb31-5"><a></a>)</span>
-<span id="cb31-6"><a></a></span>
-<span id="cb31-7"><a></a>q_t_lower <span class="ot">&lt;-</span> <span class="fu">qt</span>(</span>
-<span id="cb31-8"><a></a>  <span class="at">p =</span> <span class="fl">0.025</span>,</span>
-<span id="cb31-9"><a></a>  <span class="at">df =</span> dfresid,</span>
-<span id="cb31-10"><a></a>  <span class="at">lower.tail =</span> <span class="cn">TRUE</span></span>
-<span id="cb31-11"><a></a>)</span>
-<span id="cb31-12"><a></a></span>
-<span id="cb31-13"><a></a></span>
-<span id="cb31-14"><a></a>confint_radius_t <span class="ot">&lt;-</span></span>
-<span id="cb31-15"><a></a>  se_hat <span class="sc">*</span> q_t_upper</span>
-<span id="cb31-16"><a></a></span>
-<span id="cb31-17"><a></a>confint_t <span class="ot">&lt;-</span> beta_hat <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> confint_radius_t</span>
-<span id="cb31-18"><a></a></span>
-<span id="cb31-19"><a></a><span class="fu">print</span>(confint_t)</span>
-<span id="cb31-20"><a></a><span class="co">#&gt; [1] -105.5184   68.6839</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a></a>q_t_upper <span class="ot">&lt;-</span> <span class="fu">qt</span>(</span>
+<span id="cb30-2"><a></a>  <span class="at">p =</span> <span class="fl">0.975</span>,</span>
+<span id="cb30-3"><a></a>  <span class="at">df =</span> dfresid,</span>
+<span id="cb30-4"><a></a>  <span class="at">lower.tail =</span> <span class="cn">TRUE</span></span>
+<span id="cb30-5"><a></a>)</span>
+<span id="cb30-6"><a></a></span>
+<span id="cb30-7"><a></a>q_t_lower <span class="ot">&lt;-</span> <span class="fu">qt</span>(</span>
+<span id="cb30-8"><a></a>  <span class="at">p =</span> <span class="fl">0.025</span>,</span>
+<span id="cb30-9"><a></a>  <span class="at">df =</span> dfresid,</span>
+<span id="cb30-10"><a></a>  <span class="at">lower.tail =</span> <span class="cn">TRUE</span></span>
+<span id="cb30-11"><a></a>)</span>
+<span id="cb30-12"><a></a></span>
+<span id="cb30-13"><a></a>confint_radius_t <span class="ot">&lt;-</span></span>
+<span id="cb30-14"><a></a>  se_hat <span class="sc">*</span> q_t_upper</span>
+<span id="cb30-15"><a></a></span>
+<span id="cb30-16"><a></a>confint_t <span class="ot">&lt;-</span> beta_hat <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> confint_radius_t</span>
+<span id="cb30-17"><a></a></span>
+<span id="cb30-18"><a></a><span class="fu">print</span>(confint_t)</span>
+<span id="cb30-19"><a></a><span class="co">#&gt; [1] -105.5184   68.6839</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <aside class="notes"><p>This also matches.</p>
@@ -2578,100 +2557,424 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside></section><section id="gaussian-approximations" class="slide level2" data-number="4.5"><h2>
-<span class="header-section-number">4.5</span> Gaussian approximations</h2>
-<p>Here are the asymptotic (Gaussian approximation) equivalents:</p>
-</section><section id="p-values-1" class="slide level2 smaller" data-number="4.6"><h2>
-<span class="header-section-number">4.6</span> P-values</h2>
+      }</style></aside><h4 class="smaller" id="gaussian-approximations">Gaussian approximations</h4>
+<p>For large samples, the t-distribution is well-approximated by the standard Gaussian:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb32-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb32-3"><a></a>  <span class="fu">print_md</span>(</span>
-<span id="cb32-4"><a></a>    <span class="at">include_reference =</span> <span class="cn">TRUE</span></span>
-<span id="cb32-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details><div class="cell-output-display">
-<table class="caption-top">
-<colgroup>
-<col style="width: 24%">
-<col style="width: 18%">
-<col style="width: 10%">
-<col style="width: 26%">
-<col style="width: 10%">
-<col style="width: 10%">
-</colgroup>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a></a>pval_z <span class="ot">&lt;-</span> <span class="fu">pnorm</span>(<span class="fu">abs</span>(t_stat), <span class="at">lower.tail =</span> <span class="cn">FALSE</span>) <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb31-2"><a></a></span>
+<span id="cb31-3"><a></a><span class="fu">print</span>(pval_z)</span>
+<span id="cb31-4"><a></a><span class="co">#&gt; [1] 0.659162</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a></a>confint_radius_z <span class="ot">&lt;-</span> se_hat <span class="sc">*</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>, <span class="at">lower.tail =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb32-2"><a></a>confint_z <span class="ot">&lt;-</span></span>
+<span id="cb32-3"><a></a>  beta_hat <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> confint_radius_z</span>
+<span id="cb32-4"><a></a><span class="fu">print</span>(confint_z)</span>
+<span id="cb32-5"><a></a><span class="co">#&gt; [1] -100.2571   63.4227</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section><section id="inference-for-predicted-means" class="slide level2" data-number="4.3"><h2>
+<span class="header-section-number">4.3</span> Inference for predicted means</h2>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \def\or{\theta}  -->
+<!-- doesn't work for some reason -->
+<div id="exr-ci-mean" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 14</strong></span> Given a maximum likelihood estimate <span class="math inline">\(\hat{\tilde{\beta}}\)</span> and a corresponding estimated covariance matrix <span class="math inline">\(\hat \Sigma\stackrel{\text{def}}{=}\widehat{\text{Cov}}(\hat{\tilde{\beta}})\)</span>, calculate a 95% confidence interval for the predicted mean <span class="math inline">\(\mu(\tilde{x}) = \text{E}{\left[Y|\tilde{X}=\tilde{x}\right]}\)</span>.</p>
+</div>
+</section><section class="slide level2"><div id="sol-ci-mean" class="proof solution">
+<p><span class="proof-title"><em>Solution 1</em>. </span></p>
+<aside class="notes"><p>By <a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Markov_theorem">the Gauss-Markov theorem</a>, the OLS estimate <span class="math inline">\(\hat{\tilde{\beta}}\)</span> is the best linear unbiased estimator of <span class="math inline">\(\tilde{\beta}\)</span>. A 95% confidence interval for <span class="math inline">\(\mu(\tilde{x})\)</span> can be constructed directly on the original scale:</p>
+<p><span class="math display">\[\hat\mu(\tilde{x}) \pm t_{n-p}(0.975) \cdot \widehat{\text{SE}}{\left(\hat\mu(\tilde{x})\right)}\]</span></p>
+<p>where <span class="math inline">\(\hat\mu(\tilde{x}) = \tilde{x}'\hat{\tilde{\beta}}\)</span>.</p>
+<p>Unlike in logistic regression, no transformation is needed; the confidence interval is constructed directly on the mean scale.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><p><span class="math display">\[\mu(\tilde{x}) \in {\left(\hat\mu(\tilde{x}) \pm t_{n-p}(0.975) \cdot \widehat{\text{SE}}{\left(\hat\mu(\tilde{x})\right)}\right)}\]</span></p>
+</div>
+</section><section class="slide level2"><div id="exr-se-mean" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 15</strong></span> &nbsp;</p>
+<aside class="notes"><p>How can we estimate the standard error of <span class="math inline">\(\hat\mu(\tilde{x})\)</span>?</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><p><span class="math display">\[{\color{blue}\widehat{\text{SE}}{\left(\hat\mu(\tilde{x})\right)}} = {\color{blue}?}\]</span></p>
+</div>
+</section><section class="slide level2"><div id="sol-se-mean" class="proof solution">
+<p><span class="proof-title"><em>Solution 2</em>. </span><span id="eq-se-sqrt-var-mean"><span class="math display">\[
+{\color{green}\text{SE}{\left(\hat\mu(\tilde{x})\right)}} =
+\sqrt{{\color{red}\text{Var}{\left(\hat\mu(\tilde{x})\right)}}}
+\tag{10}\]</span></span></p>
+<p>By the definition <span class="math inline">\(\hat\mu(\tilde{x}) = \tilde{x}'\hat{\tilde{\beta}}\)</span> and <a href="./probability.html#thm-var-lincom">the variance of a linear combination</a>:</p>
+<p><span id="eq-var-mean"><span class="math display">\[
+\begin{aligned}
+{\color{red}\text{Var}{\left(\hat\mu(\tilde{x})\right)}}
+&amp;= \text{Var}{\left(\tilde{x}'\hat{\tilde{\beta}}\right)}
+\\
+&amp;= \tilde{x}'\text{Cov}{\left(\hat{\tilde{\beta}}\right)}\tilde{x}
+\\
+&amp;= {\color{red}{\tilde{x}}^{\top}\Sigma\tilde{x}}
+\end{aligned}
+\tag{11}\]</span></span></p>
+<p>where <span class="math inline">\(\Sigma \stackrel{\text{def}}{=}\text{Cov}(\hat{\tilde{\beta}})\)</span>.</p>
+<hr>
+<aside class="notes"><p>Expanding <a href="#/eq-var-mean" class="quarto-xref">Equation&nbsp;11</a> out of matrix-vector notation, we have:</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><p><span class="math display">\[
+\begin{aligned}
+{\color{red}{\tilde{x}}^{\top}\Sigma\tilde{x}}
+&amp;= \sum_{i=1}^p\sum_{j=1}^px_i \Sigma_{ij} x_j
+\\
+&amp;= {\color{red}\sum_{i=1}^p\sum_{j=1}^px_i \text{Cov}(\hat{\tilde{\beta}}_i,\hat{\tilde{\beta}}_j) x_j}
+\end{aligned}
+\]</span></p>
+<hr>
+<p>Combining <a href="#/eq-var-mean" class="quarto-xref">Equation&nbsp;11</a> and the Gauss-Markov theorem:</p>
+<div id="thm-est-se-mean" class="theorem">
+<p><span class="theorem-title"><strong>Theorem 1 (Estimated variance and standard error of predicted mean)</strong></span> <span id="eq-est-var-mean"><span class="math display">\[
+{\color{orange}\widehat{\text{Var}}{\left(\hat\mu(\tilde{x})\right)}} = {\color{orange}{\tilde{x}}^{\top}\hat{\Sigma}\tilde{x}}
+\tag{12}\]</span></span></p>
+<p><span id="eq-est-se-mean"><span class="math display">\[
+{\color{blue}\widehat{\text{SE}}{\left(\hat\mu(\tilde{x})\right)}} =
+{\color{blue}\sqrt{{\tilde{x}}^{\top}\hat{\Sigma}\tilde{x}}}
+\tag{13}\]</span></span></p>
+</div>
+<aside class="notes"><p>Note: on the RHS, we have plugged in <span class="math inline">\(\hat{\Sigma}\)</span>, our estimate of <span class="math inline">\(\Sigma\)</span>.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section><section class="slide level2"><h4 id="in-r-1">In R</h4>
+<p>In R, <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> with <code>se.fit = TRUE</code> computes the estimated mean <span class="math inline">\(\hat\mu(\tilde{x}) = \tilde{x}'\hat{\tilde{\beta}}\)</span> and its estimated standard error for each covariate pattern:</p>
+<div class="cell">
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb33-2"><a></a>new_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb33-3"><a></a>  <span class="at">age =</span> <span class="fu">c</span>(<span class="dv">36</span>, <span class="dv">38</span>, <span class="dv">40</span>),</span>
+<span id="cb33-4"><a></a>  <span class="at">sex =</span> <span class="st">"male"</span></span>
+<span id="cb33-5"><a></a>)</span>
+<span id="cb33-6"><a></a></span>
+<span id="cb33-7"><a></a>pred_mean <span class="ot">&lt;-</span></span>
+<span id="cb33-8"><a></a>  bw_lm2 <span class="sc">|&gt;</span></span>
+<span id="cb33-9"><a></a>  <span class="fu">predict</span>(</span>
+<span id="cb33-10"><a></a>    <span class="at">newdata =</span> new_data,</span>
+<span id="cb33-11"><a></a>    <span class="at">se.fit =</span> <span class="cn">TRUE</span></span>
+<span id="cb33-12"><a></a>  )</span>
+<span id="cb33-13"><a></a></span>
+<span id="cb33-14"><a></a>new_data <span class="sc">|&gt;</span></span>
+<span id="cb33-15"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb33-16"><a></a>    <span class="at">mu_hat =</span> pred_mean<span class="sc">$</span>fit,</span>
+<span id="cb33-17"><a></a>    <span class="at">se =</span> pred_mean<span class="sc">$</span>se.fit,</span>
+<span id="cb33-18"><a></a>    <span class="at">ci_lower =</span> mu_hat <span class="sc">-</span> <span class="fu">qt</span>(<span class="fl">0.975</span>, <span class="at">df =</span> bw_lm2<span class="sc">$</span>df.residual) <span class="sc">*</span> se,</span>
+<span id="cb33-19"><a></a>    <span class="at">ci_upper =</span> mu_hat <span class="sc">+</span> <span class="fu">qt</span>(<span class="fl">0.975</span>, <span class="at">df =</span> bw_lm2<span class="sc">$</span>df.residual) <span class="sc">*</span> se</span>
+<span id="cb33-20"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb33-21"><a></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><div id="tbl-bw-pred-mean" class="cell quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bw-pred-mean-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11: Predicted means and 95% CI for <code>birthweight</code> linear regression
+</figcaption><div aria-describedby="tbl-bw-pred-mean-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top">
 <thead><tr class="header">
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: center;">Coefficient</th>
-<th style="text-align: center;">SE</th>
-<th style="text-align: center;">95% CI</th>
-<th style="text-align: center;">t(20)</th>
-<th style="text-align: center;">p</th>
+<th style="text-align: right;">age</th>
+<th style="text-align: left;">sex</th>
+<th style="text-align: right;">mu_hat</th>
+<th style="text-align: right;">se</th>
+<th style="text-align: right;">ci_lower</th>
+<th style="text-align: right;">ci_upper</th>
 </tr></thead>
-<tbody><tr class="odd">
-<td style="text-align: left;">sex (male) × age</td>
-<td style="text-align: center;">-18.42</td>
-<td style="text-align: center;">41.76</td>
-<td style="text-align: center;">(-105.52, 68.68)</td>
-<td style="text-align: center;">-0.44</td>
-<td style="text-align: center;">0.664</td>
-</tr></tbody>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">36</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: right;">2762.71</td>
+<td style="text-align: right;">85.508</td>
+<td style="text-align: right;">2584.34</td>
+<td style="text-align: right;">2941.07</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">38</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: right;">2986.67</td>
+<td style="text-align: right;">53.030</td>
+<td style="text-align: right;">2876.05</td>
+<td style="text-align: right;">3097.29</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">40</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: right;">3210.64</td>
+<td style="text-align: right;">71.147</td>
+<td style="text-align: right;">3062.23</td>
+<td style="text-align: right;">3359.05</td>
+</tr>
+</tbody>
 </table>
 </div>
 </div>
-<div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a></a>pval_z <span class="ot">&lt;-</span> <span class="fu">pnorm</span>(<span class="fu">abs</span>(t_stat), <span class="at">lower =</span> <span class="cn">FALSE</span>) <span class="sc">*</span> <span class="dv">2</span></span>
-<span id="cb33-2"><a></a></span>
-<span id="cb33-3"><a></a><span class="fu">print</span>(pval_z)</span>
-<span id="cb33-4"><a></a><span class="co">#&gt; [1] 0.659162</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+</figure>
 </div>
-</section><section id="confidence-intervals-1" class="slide level2 smaller" data-number="4.7"><h2>
-<span class="header-section-number">4.7</span> Confidence intervals</h2>
+</div>
+<p>Alternatively, <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> with <code>interval = "confidence"</code> gives the same result:</p>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb34-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb34-3"><a></a>  <span class="fu">print_md</span>(</span>
-<span id="cb34-4"><a></a>    <span class="at">include_reference =</span> <span class="cn">TRUE</span></span>
-<span id="cb34-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details><div class="cell-output-display">
-<table class="caption-top">
-<colgroup>
-<col style="width: 24%">
-<col style="width: 18%">
-<col style="width: 10%">
-<col style="width: 26%">
-<col style="width: 10%">
-<col style="width: 10%">
-</colgroup>
+<span id="cb34-2"><a></a>  <span class="fu">predict</span>(</span>
+<span id="cb34-3"><a></a>    <span class="at">newdata =</span> new_data,</span>
+<span id="cb34-4"><a></a>    <span class="at">interval =</span> <span class="st">"confidence"</span></span>
+<span id="cb34-5"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb34-6"><a></a>  <span class="fu">cbind</span>(new_data) <span class="sc">|&gt;</span></span>
+<span id="cb34-7"><a></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><div id="tbl-bw-pred-ci" class="cell quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bw-pred-ci-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;12: Predicted means and 95% CI using <code>interval = 'confidence'</code>
+</figcaption><div aria-describedby="tbl-bw-pred-ci-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top">
 <thead><tr class="header">
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: center;">Coefficient</th>
-<th style="text-align: center;">SE</th>
-<th style="text-align: center;">95% CI</th>
-<th style="text-align: center;">t(20)</th>
-<th style="text-align: center;">p</th>
+<th style="text-align: right;">fit</th>
+<th style="text-align: right;">lwr</th>
+<th style="text-align: right;">upr</th>
+<th style="text-align: right;">age</th>
+<th style="text-align: left;">sex</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2762.71</td>
+<td style="text-align: right;">2584.34</td>
+<td style="text-align: right;">2941.07</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: left;">male</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2986.67</td>
+<td style="text-align: right;">2876.05</td>
+<td style="text-align: right;">3097.29</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: left;">male</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3210.64</td>
+<td style="text-align: right;">3062.23</td>
+<td style="text-align: right;">3359.05</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: left;">male</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section><section id="inference-for-differences-in-means" class="slide level2" data-number="4.4"><h2>
+<span class="header-section-number">4.4</span> Inference for differences in means</h2>
+<!-- https://www.overleaf.com/learn/latex/Using_colors_in_LaTeX#Named_colors_provided_by_the_xcolor_package -->
+<!-- \def\or{\theta}  -->
+<!-- doesn't work for some reason -->
+<div id="exr-ci-diff-means" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 16</strong></span> Given a maximum likelihood estimate <span class="math inline">\(\hat{\tilde{\beta}}\)</span> and a corresponding estimated covariance matrix <span class="math inline">\(\hat \Sigma\stackrel{\text{def}}{=}\widehat{\text{Cov}}(\hat{\tilde{\beta}})\)</span>, calculate a 95% confidence interval for the difference in means comparing covariate patterns <span class="math inline">\(\tilde{x}\)</span> and <span class="math inline">\({\tilde{x}^*}\)</span>, <span class="math inline">\(\mu(\tilde{x}) - \mu({\tilde{x}^*})\)</span>.</p>
+</div>
+</section><section class="slide level2"><div id="sol-ci-diff-means" class="proof solution">
+<p><span class="proof-title"><em>Solution 3</em>. </span></p>
+<aside class="notes"><p>The difference in means is a linear function of <span class="math inline">\(\hat{\tilde{\beta}}\)</span>, so we can construct the confidence interval directly:</p>
+<p><span class="math display">\[\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})} \pm t_{n-p}(0.975) \cdot \widehat{\text{SE}}{\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\right)}\]</span></p>
+<p>No transformation is needed (unlike for odds ratios in logistic regression).</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><p><span class="math display">\[\mu(\tilde{x}) - \mu({\tilde{x}^*}) \in {\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})} \pm t_{n-p}(0.975) \cdot \widehat{\text{SE}}{\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\right)}\right)}\]</span></p>
+</div>
+</section><section class="slide level2"><div id="exr-diff-means-as-lincom" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 17</strong></span> Express the difference in means <span class="math inline">\(\mu(\tilde{x}) - \mu({\tilde{x}^*})\)</span> as a linear function of <span class="math inline">\(\tilde{\beta}\)</span>.</p>
+</div>
+</section><section class="slide level2"><div id="sol-diff-means-as-lincom" class="proof solution">
+<p><span class="proof-title"><em>Solution 4</em>. </span><span id="eq-diff-means-lincom"><span class="math display">\[
+\begin{aligned}
+\mu(\tilde{x}) - \mu({\tilde{x}^*})
+&amp;= {\tilde{x}}^{\top}\tilde{\beta}- {({\tilde{x}^*})}^{\top}\tilde{\beta}
+\\
+&amp;= (\tilde{x}- {\tilde{x}^*})'\tilde{\beta}
+\\
+&amp;= \Delta\tilde{x}'\tilde{\beta}
+\end{aligned}
+\tag{14}\]</span></span></p>
+<p>where <span class="math inline">\(\Delta\tilde{x}\stackrel{\text{def}}{=}\tilde{x}- {\tilde{x}^*}\)</span>.</p>
+</div>
+</section><section class="slide level2"><div id="exr-se-diff-means" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 18</strong></span> &nbsp;</p>
+<aside class="notes"><p>How can we estimate the standard error of <span class="math inline">\(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\)</span>?</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><p><span class="math display">\[{\color{blue}\widehat{\text{SE}}{\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\right)}} = {\color{blue}?}\]</span></p>
+</div>
+</section><section class="slide level2"><div id="sol-se-diff-means" class="proof solution">
+<p><span class="proof-title"><em>Solution 5</em>. </span><span id="eq-se-sqrt-var-diff-means"><span class="math display">\[
+{\color{green}\text{SE}{\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\right)}} =
+\sqrt{{\color{red}\text{Var}{\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\right)}}}
+\tag{15}\]</span></span></p>
+<p>By <a href="#/sol-diff-means-as-lincom" class="quarto-xref">Solution&nbsp;4</a> and <a href="./probability.html#thm-var-lincom">the variance of a linear combination</a>:</p>
+<p><span id="eq-var-diff-means"><span class="math display">\[
+\begin{aligned}
+{\color{red}\text{Var}{\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\right)}}
+&amp;= \text{Var}{\left((\Delta\tilde{x})'\hat{\tilde{\beta}}\right)}
+\\
+&amp;= {\left(\Delta\tilde{x}\right)}^{\top}\text{Cov}{\left(\hat{\tilde{\beta}}\right)}(\Delta\tilde{x})
+\\
+&amp;= {\color{red}{\left(\Delta\tilde{x}\right)}^{\top}\Sigma(\Delta\tilde{x})}
+\end{aligned}
+\tag{16}\]</span></span></p>
+<p>where <span class="math inline">\(\Sigma \stackrel{\text{def}}{=}\text{Cov}(\hat{\tilde{\beta}})\)</span>.</p>
+<hr>
+<aside class="notes"><p>Expanding <a href="#/eq-var-diff-means" class="quarto-xref">Equation&nbsp;16</a> out of matrix-vector notation, we have:</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><p><span class="math display">\[
+\begin{aligned}
+{\color{red}{\left(\Delta\tilde{x}\right)}^{\top}\Sigma(\Delta\tilde{x})}
+&amp;= \sum_{i=1}^p\sum_{j=1}^p(\Delta\tilde{x})_i \Sigma_{ij} (\Delta\tilde{x})_j
+\\
+&amp;= \sum_{i=1}^p\sum_{j=1}^p(\Delta x_i) \Sigma_{ij} (\Delta x_j)
+\\
+&amp;= {\color{red}\sum_{i=1}^p\sum_{j=1}^p(x_i - x^*_i) \text{Cov}(\hat{\tilde{\beta}}_i,\hat{\tilde{\beta}}_j) (x_j - x^*_j)}
+\end{aligned}
+\]</span></p>
+<hr>
+<p>Combining <a href="#/eq-var-diff-means" class="quarto-xref">Equation&nbsp;16</a> and the Gauss-Markov theorem:</p>
+<div id="thm-est-se-diff-means" class="theorem">
+<p><span class="theorem-title"><strong>Theorem 2 (Estimated variance and standard error of difference in means)</strong></span> <span id="eq-est-var-diff-means"><span class="math display">\[
+{\color{orange}\widehat{\text{Var}}{\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\right)}} = {\color{orange}{\Delta\tilde{x}}^{\top}\hat{\Sigma}(\Delta\tilde{x})}
+\tag{17}\]</span></span></p>
+<p><span id="eq-est-se-diff-means"><span class="math display">\[
+{\color{blue}\widehat{\text{SE}}{\left(\widehat{\mu(\tilde{x}) - \mu({\tilde{x}^*})}\right)}} =
+{\color{blue}\sqrt{{\Delta\tilde{x}}^{\top}\hat{\Sigma}(\Delta\tilde{x})}}
+\tag{18}\]</span></span></p>
+</div>
+<aside class="notes"><p>Note: on the RHS, we have plugged in <span class="math inline">\(\hat{\Sigma}\)</span>, our estimate of <span class="math inline">\(\Sigma\)</span>.</p>
+<p>Compare this result with the formula for <a href="#/exr-se-mean">inference for predicted means</a>: the only change is to replace <span class="math inline">\(\tilde{x}\)</span> with <span class="math inline">\(\Delta\tilde{x}= \tilde{x}- {\tilde{x}^*}\)</span>.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section><section class="slide level2"><h4 id="in-r-2">In R</h4>
+<p>In R, we can compute the CI for the difference in means by computing the predicted means for both covariate patterns and applying the variance formula directly:</p>
+<div class="cell">
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb35-2"><a></a>new_data_pair <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb35-3"><a></a>  <span class="at">sex =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"female"</span>, <span class="st">"male"</span>), <span class="at">levels =</span> <span class="fu">levels</span>(bw<span class="sc">$</span>sex)),</span>
+<span id="cb35-4"><a></a>  <span class="at">age =</span> <span class="fu">c</span>(<span class="dv">40</span>, <span class="dv">40</span>)</span>
+<span id="cb35-5"><a></a>)</span>
+<span id="cb35-6"><a></a></span>
+<span id="cb35-7"><a></a>pred_pair <span class="ot">&lt;-</span></span>
+<span id="cb35-8"><a></a>  bw_lm2 <span class="sc">|&gt;</span></span>
+<span id="cb35-9"><a></a>  <span class="fu">predict</span>(</span>
+<span id="cb35-10"><a></a>    <span class="at">newdata =</span> new_data_pair,</span>
+<span id="cb35-11"><a></a>    <span class="at">se.fit =</span> <span class="cn">TRUE</span></span>
+<span id="cb35-12"><a></a>  )</span>
+<span id="cb35-13"><a></a></span>
+<span id="cb35-14"><a></a>design_mat <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="fu">delete.response</span>(<span class="fu">terms</span>(bw_lm2)), new_data_pair)</span>
+<span id="cb35-15"><a></a>delta_x <span class="ot">&lt;-</span> design_mat[<span class="dv">2</span>, ] <span class="sc">-</span> design_mat[<span class="dv">1</span>, ]</span>
+<span id="cb35-16"><a></a></span>
+<span id="cb35-17"><a></a>sigma_hat <span class="ot">&lt;-</span> <span class="fu">vcov</span>(bw_lm2)</span>
+<span id="cb35-18"><a></a></span>
+<span id="cb35-19"><a></a>diff_mean_hat <span class="ot">&lt;-</span> <span class="fu">diff</span>(pred_pair<span class="sc">$</span>fit)</span>
+<span id="cb35-20"><a></a>se_diff <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">t</span>(delta_x) <span class="sc">%*%</span> sigma_hat <span class="sc">%*%</span> delta_x)</span>
+<span id="cb35-21"><a></a>t_crit <span class="ot">&lt;-</span> <span class="fu">qt</span>(<span class="fl">0.975</span>, <span class="at">df =</span> bw_lm2<span class="sc">$</span>df.residual)</span>
+<span id="cb35-22"><a></a></span>
+<span id="cb35-23"><a></a><span class="fu">tibble</span>(</span>
+<span id="cb35-24"><a></a>  <span class="at">diff_mean =</span> diff_mean_hat,</span>
+<span id="cb35-25"><a></a>  <span class="at">se =</span> <span class="fu">as.numeric</span>(se_diff),</span>
+<span id="cb35-26"><a></a>  <span class="at">ci_lower =</span> diff_mean_hat <span class="sc">-</span> t_crit <span class="sc">*</span> se,</span>
+<span id="cb35-27"><a></a>  <span class="at">ci_upper =</span> diff_mean_hat <span class="sc">+</span> t_crit <span class="sc">*</span> se</span>
+<span id="cb35-28"><a></a>) <span class="sc">|&gt;</span></span>
+<span id="cb35-29"><a></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><div id="tbl-bw-diff-means" class="cell quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bw-diff-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;13: 95% CI for difference in birthweight means (male vs.&nbsp;female)
+</figcaption><div aria-describedby="tbl-bw-diff-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top">
+<thead><tr class="header">
+<th style="text-align: right;">diff_mean</th>
+<th style="text-align: right;">se</th>
+<th style="text-align: right;">ci_lower</th>
+<th style="text-align: right;">ci_upper</th>
 </tr></thead>
 <tbody><tr class="odd">
-<td style="text-align: left;">sex (male) × age</td>
-<td style="text-align: center;">-18.42</td>
-<td style="text-align: center;">41.76</td>
-<td style="text-align: center;">(-105.52, 68.68)</td>
-<td style="text-align: center;">-0.44</td>
-<td style="text-align: center;">0.664</td>
+<td style="text-align: right;">136.305</td>
+<td style="text-align: right;">95.846</td>
+<td style="text-align: right;">-63.626</td>
+<td style="text-align: right;">336.236</td>
 </tr></tbody>
 </table>
 </div>
 </div>
-<div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a></a>confint_radius_z <span class="ot">&lt;-</span> se_hat <span class="sc">*</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>, <span class="at">lower =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb35-2"><a></a>confint_z <span class="ot">&lt;-</span></span>
-<span id="cb35-3"><a></a>  beta_hat <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> confint_radius_z</span>
-<span id="cb35-4"><a></a><span class="fu">print</span>(confint_z)</span>
-<span id="cb35-5"><a></a><span class="co">#&gt; [1] -100.2571   63.4227</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+</figure>
 </div>
-</section><section id="likelihood-ratio-statistics" class="slide level2" data-number="4.8"><h2>
-<span class="header-section-number">4.8</span> Likelihood ratio statistics</h2>
+</div>
+</section><section id="likelihood-ratio-statistics" class="slide level2" data-number="4.5"><h2>
+<span class="header-section-number">4.5</span> Likelihood ratio statistics</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a></a><span class="fu">logLik</span>(bw_lm2)</span>
 <span id="cb36-2"><a></a><span class="co">#&gt; 'log Lik.' -156.579 (df=5)</span></span>
@@ -2814,11 +3117,11 @@ Figure&nbsp;6: Chi-square distribution
 <span id="cb42-5"><a></a>n_unique_bw <span class="ot">&lt;-</span> <span class="fu">nrow</span>(bw_X_unique)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>For example, in the <code>birthweight</code> data, there are <span class="math inline">\(q = 12\)</span> unique patterns (<a href="#/tbl-bw-x-combos" class="quarto-xref">Table&nbsp;10</a>).</p>
+<p>For example, in the <code>birthweight</code> data, there are <span class="math inline">\(q = 12\)</span> unique patterns (<a href="#/tbl-bw-x-combos" class="quarto-xref">Table&nbsp;14</a>).</p>
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a></a>bw_X_unique</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-bw-x-combos" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bw-x-combos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;10: Unique covariate combinations in the <code>birthweight</code> data, with replicate counts
+Table&nbsp;14: Unique covariate combinations in the <code>birthweight</code> data, with replicate counts
 </figcaption><div aria-describedby="tbl-bw-x-combos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
@@ -2836,13 +3139,13 @@ Table&nbsp;10: Unique covariate combinations in the <code>birthweight</code> dat
 <p><span class="theorem-title"><strong>Definition 1 (Replicates)</strong></span> If a given covariate pattern has more than one observation in a dataset, those observations are called <strong>replicates</strong>.</p>
 </div>
 </section><section class="slide level2"><div id="exm-replicate-bw" class="theorem example">
-<p><span class="theorem-title"><strong>Example 2 (Replicates in the <code>birthweight</code> data)</strong></span> In the <code>birthweight</code> dataset, there are 2 replicates of the combination “female, age 36” (<a href="#/tbl-bw-x-combos" class="quarto-xref">Table&nbsp;10</a>).</p>
+<p><span class="theorem-title"><strong>Example 2 (Replicates in the <code>birthweight</code> data)</strong></span> In the <code>birthweight</code> dataset, there are 2 replicates of the combination “female, age 36” (<a href="#/tbl-bw-x-combos" class="quarto-xref">Table&nbsp;14</a>).</p>
 </div>
 </section><section class="slide level2"><div id="exr-replicate-bw" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise 14 (Replicates in the <code>birthweight</code> data)</strong></span> Which covariate pattern(s) in the <code>birthweight</code> data has the most replicates?</p>
+<p><span class="theorem-title"><strong>Exercise 19 (Replicates in the <code>birthweight</code> data)</strong></span> Which covariate pattern(s) in the <code>birthweight</code> data has the most replicates?</p>
 </div>
 </section><section class="slide level2"><div id="sol-replicate-bw" class="proof solution">
-<p><span class="proof-title"><em>Solution 1</em> (Replicates in the <code>birthweight</code> data). </span>Two covariate patterns are tied for most replicates: males at age 40 weeks and females at age 40 weeks. 40 weeks is the usual length for human pregnancy (<span class="citation" data-cites="polin2011fetal">Polin et al. (<a href="#/references" role="doc-biblioref" onclick="">2011</a>)</span>), so this result makes sense.</p>
+<p><span class="proof-title"><em>Solution 6</em> (Replicates in the <code>birthweight</code> data). </span>Two covariate patterns are tied for most replicates: males at age 40 weeks and females at age 40 weeks. 40 weeks is the usual length for human pregnancy (<span class="citation" data-cites="polin2011fetal">Polin et al. (<a href="#/references" role="doc-biblioref" onclick="">2011</a>)</span>), so this result makes sense.</p>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a></a>bw_X_unique <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(n <span class="sc">==</span> <span class="fu">max</span>(n))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
@@ -2870,7 +3173,7 @@ Table&nbsp;10: Unique covariate combinations in the <code>birthweight</code> dat
 <span id="cb45-11"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-bw-model-sat" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bw-model-sat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;11: Saturated model for the <code>birthweight</code> data
+Table&nbsp;15: Saturated model for the <code>birthweight</code> data
 </figcaption><div aria-describedby="tbl-bw-model-sat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <table class="cell caption-top">
@@ -3051,7 +3354,7 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-38-1.png" class="lightbox" data-gallery="fig-max-vs-intxn-fits" title="Figure&nbsp;7&nbsp;(a): Model 2 (linear with age:sex interaction)"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-38-1.png" data-ref-parent="fig-max-vs-intxn-fits" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-35-1.png" class="lightbox" data-gallery="fig-max-vs-intxn-fits" title="Figure&nbsp;7&nbsp;(a): Model 2 (linear with age:sex interaction)"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-35-1.png" data-ref-parent="fig-max-vs-intxn-fits" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -3069,7 +3372,7 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-39-1.png" class="lightbox" data-gallery="fig-max-vs-intxn-fits" title="Figure&nbsp;7&nbsp;(b): Saturated model"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-39-1.png" data-ref-parent="fig-max-vs-intxn-fits" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-36-1.png" class="lightbox" data-gallery="fig-max-vs-intxn-fits" title="Figure&nbsp;7&nbsp;(b): Saturated model"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-36-1.png" data-ref-parent="fig-max-vs-intxn-fits" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -3155,7 +3458,7 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-43-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;8: Null model for birthweight data, with 95% confidence and prediction intervals."><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-43-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-40-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;8: Null model for birthweight data, with 95% confidence and prediction intervals."><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-40-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -3202,7 +3505,7 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 </section><section id="sec-compare-lm-glm-deviance" class="slide level2" data-number="5.4"><h2>
 <span class="header-section-number">5.4</span> Gaussian Deviance vs.&nbsp;GLM Deviance</h2>
 <p>The residual deviance is a general concept that applies to all GLMs, including Gaussian linear regression. For any GLM, the residual deviance is:</p>
-<p><span id="eq-deviance-general"><span class="math display">\[D = 2(\ell_{\text{sat}} - \ell(\hat\beta)) \tag{10}\]</span></span></p>
+<p><span id="eq-deviance-general"><span class="math display">\[D = 2(\ell_{\text{sat}} - \ell(\hat\beta)) \tag{19}\]</span></span></p>
 <p>where <span class="math inline">\(\ell_{\text{sat}}\)</span> is the log-likelihood of the saturated model and <span class="math inline">\(\ell(\hat\beta)\)</span> is the log-likelihood of the fitted model. However, this formula simplifies differently depending on the distribution family, and the resulting test statistics have different null distributions.</p>
 <h3 id="gaussian-linear-regression-deviance">Gaussian linear regression deviance</h3>
 <p>From <a href="#/eq-linreg-loglik" class="quarto-xref">Equation&nbsp;6</a>, the Gaussian log-likelihood is:</p>
@@ -3214,7 +3517,7 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 \]</span></p>
 <p>The saturated model sets <span class="math inline">\(\hat\mu_i = y_i\)</span> for each observation (one free parameter per observation), so its residual sum of squares is zero:</p>
 <p><span class="math display">\[\ell_{\text{sat}}(\hat\sigma^2) = -\frac{n}{2}\log(2\pi\hat\sigma^2)\]</span></p>
-<p>Substituting into <a href="#/eq-deviance-general" class="quarto-xref">Equation&nbsp;10</a>, the Gaussian deviance simplifies to the <strong>residual sum of squares</strong> (RSS), scaled by <span class="math inline">\(\hat\sigma^2\)</span>:</p>
+<p>Substituting into <a href="#/eq-deviance-general" class="quarto-xref">Equation&nbsp;19</a>, the Gaussian deviance simplifies to the <strong>residual sum of squares</strong> (RSS), scaled by <span class="math inline">\(\hat\sigma^2\)</span>:</p>
 <p><span class="math display">\[
 D
 = 2(\ell_{\text{sat}} - \ell(\hat\beta))
@@ -3456,7 +3759,7 @@ Figure&nbsp;9: Predicted values and confidence bands for the <code>birthweight</
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-56-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;9: Predicted values and confidence bands for the birthweight model with interaction term"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-56-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-53-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;9: Predicted values and confidence bands for the birthweight model with interaction term"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-53-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -3476,7 +3779,7 @@ Figure&nbsp;9: Predicted values and confidence bands for the <code>birthweight</
 \\ &amp;=  {{\tilde{x}}^{*\top}} {\left(\sigma^2(\mathbf{X}'\mathbf{X})^{-1}\right)} {{\tilde{x}}^*} + \sigma^2
 \\ &amp;= \sigma^2 {{\tilde{x}}^{*\top}} (\mathbf{X}'\mathbf{X})^{-1} {{\tilde{x}}^*} + \sigma^2
 \end{aligned}
-\tag{11}\]</span></span></p>
+\tag{20}\]</span></span></p>
 <aside class="notes"><p>See <span class="citation" data-cites="hoggtanis2015">Hogg et al. (<a href="#/references" role="doc-biblioref" onclick="">2015</a>)</span> §7.6 (p.&nbsp;340) for a longer version.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -3520,7 +3823,7 @@ Figure&nbsp;10: Confidence and prediction intervals for <code>birthweight</code>
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-59-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Figure&nbsp;10: Confidence and prediction intervals for birthweight model 2"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-59-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-56-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Figure&nbsp;10: Confidence and prediction intervals for birthweight model 2"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-56-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -3639,7 +3942,7 @@ Figure&nbsp;11: Birthweight model with interaction term
 <span id="cb70-3"><a></a>hers</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-hers-data" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-hers-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;12: <code>hers</code> data
+Table&nbsp;16: <code>hers</code> data
 </figcaption><div aria-describedby="tbl-hers-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
@@ -3695,7 +3998,7 @@ Table&nbsp;12: <code>hers</code> data
 </div>
 <div id="tbl-hers-maybe-int" class="quarto-layout-panel">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-hers-maybe-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;13: <code>hers</code> data models with and without intercepts
+Table&nbsp;17: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-maybe-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="tbl-hers-maybe-int" style="flex-basis: 50.0%;justify-content: center;">
@@ -3708,23 +4011,23 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-with-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="bmhxskebqi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#bmhxskebqi table {
+<div id="pazxlbbvwq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pazxlbbvwq table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#bmhxskebqi thead, #bmhxskebqi tbody, #bmhxskebqi tfoot, #bmhxskebqi tr, #bmhxskebqi td, #bmhxskebqi th {
+#pazxlbbvwq thead, #pazxlbbvwq tbody, #pazxlbbvwq tfoot, #pazxlbbvwq tr, #pazxlbbvwq td, #pazxlbbvwq th {
   border-style: none;
 }
 
-#bmhxskebqi p {
+#pazxlbbvwq p {
   margin: 0;
   padding: 0;
 }
 
-#bmhxskebqi .gt_table {
+#pazxlbbvwq .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3750,12 +4053,12 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_caption {
+#pazxlbbvwq .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#bmhxskebqi .gt_title {
+#pazxlbbvwq .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3767,7 +4070,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#bmhxskebqi .gt_subtitle {
+#pazxlbbvwq .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3779,7 +4082,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#bmhxskebqi .gt_heading {
+#pazxlbbvwq .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3791,13 +4094,13 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_bottom_border {
+#pazxlbbvwq .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_col_headings {
+#pazxlbbvwq .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3812,7 +4115,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_col_heading {
+#pazxlbbvwq .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3832,7 +4135,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#bmhxskebqi .gt_column_spanner_outer {
+#pazxlbbvwq .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3844,15 +4147,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#bmhxskebqi .gt_column_spanner_outer:first-child {
+#pazxlbbvwq .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#bmhxskebqi .gt_column_spanner_outer:last-child {
+#pazxlbbvwq .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#bmhxskebqi .gt_column_spanner {
+#pazxlbbvwq .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3864,11 +4167,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#bmhxskebqi .gt_spanner_row {
+#pazxlbbvwq .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#bmhxskebqi .gt_group_heading {
+#pazxlbbvwq .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3894,7 +4197,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#bmhxskebqi .gt_empty_group_heading {
+#pazxlbbvwq .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3909,15 +4212,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#bmhxskebqi .gt_from_md > :first-child {
+#pazxlbbvwq .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#bmhxskebqi .gt_from_md > :last-child {
+#pazxlbbvwq .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#bmhxskebqi .gt_row {
+#pazxlbbvwq .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3936,7 +4239,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#bmhxskebqi .gt_stub {
+#pazxlbbvwq .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3949,7 +4252,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#bmhxskebqi .gt_stub_row_group {
+#pazxlbbvwq .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3963,15 +4266,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#bmhxskebqi .gt_row_group_first td {
+#pazxlbbvwq .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#bmhxskebqi .gt_row_group_first th {
+#pazxlbbvwq .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#bmhxskebqi .gt_summary_row {
+#pazxlbbvwq .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3981,16 +4284,16 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#bmhxskebqi .gt_first_summary_row {
+#pazxlbbvwq .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_first_summary_row.thick {
+#pazxlbbvwq .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#bmhxskebqi .gt_last_summary_row {
+#pazxlbbvwq .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4000,7 +4303,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_grand_summary_row {
+#pazxlbbvwq .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4010,7 +4313,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#bmhxskebqi .gt_first_grand_summary_row {
+#pazxlbbvwq .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4020,7 +4323,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_last_grand_summary_row_top {
+#pazxlbbvwq .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4030,11 +4333,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_striped {
+#pazxlbbvwq .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#bmhxskebqi .gt_table_body {
+#pazxlbbvwq .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4043,7 +4346,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_footnotes {
+#pazxlbbvwq .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4057,7 +4360,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_footnote {
+#pazxlbbvwq .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4066,7 +4369,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#bmhxskebqi .gt_sourcenotes {
+#pazxlbbvwq .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4080,7 +4383,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#bmhxskebqi .gt_sourcenote {
+#pazxlbbvwq .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4088,72 +4391,72 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#bmhxskebqi .gt_left {
+#pazxlbbvwq .gt_left {
   text-align: left;
 }
 
-#bmhxskebqi .gt_center {
+#pazxlbbvwq .gt_center {
   text-align: center;
 }
 
-#bmhxskebqi .gt_right {
+#pazxlbbvwq .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#bmhxskebqi .gt_font_normal {
+#pazxlbbvwq .gt_font_normal {
   font-weight: normal;
 }
 
-#bmhxskebqi .gt_font_bold {
+#pazxlbbvwq .gt_font_bold {
   font-weight: bold;
 }
 
-#bmhxskebqi .gt_font_italic {
+#pazxlbbvwq .gt_font_italic {
   font-style: italic;
 }
 
-#bmhxskebqi .gt_super {
+#pazxlbbvwq .gt_super {
   font-size: 65%;
 }
 
-#bmhxskebqi .gt_footnote_marks {
+#pazxlbbvwq .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#bmhxskebqi .gt_asterisk {
+#pazxlbbvwq .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#bmhxskebqi .gt_indent_1 {
+#pazxlbbvwq .gt_indent_1 {
   text-indent: 5px;
 }
 
-#bmhxskebqi .gt_indent_2 {
+#pazxlbbvwq .gt_indent_2 {
   text-indent: 10px;
 }
 
-#bmhxskebqi .gt_indent_3 {
+#pazxlbbvwq .gt_indent_3 {
   text-indent: 15px;
 }
 
-#bmhxskebqi .gt_indent_4 {
+#pazxlbbvwq .gt_indent_4 {
   text-indent: 20px;
 }
 
-#bmhxskebqi .gt_indent_5 {
+#pazxlbbvwq .gt_indent_5 {
   text-indent: 25px;
 }
 
-#bmhxskebqi .katex-display {
+#pazxlbbvwq .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#bmhxskebqi div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#pazxlbbvwq div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -4210,23 +4513,23 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="sybonxmhcl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#sybonxmhcl table {
+<div id="mizkfoygxj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mizkfoygxj table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#sybonxmhcl thead, #sybonxmhcl tbody, #sybonxmhcl tfoot, #sybonxmhcl tr, #sybonxmhcl td, #sybonxmhcl th {
+#mizkfoygxj thead, #mizkfoygxj tbody, #mizkfoygxj tfoot, #mizkfoygxj tr, #mizkfoygxj td, #mizkfoygxj th {
   border-style: none;
 }
 
-#sybonxmhcl p {
+#mizkfoygxj p {
   margin: 0;
   padding: 0;
 }
 
-#sybonxmhcl .gt_table {
+#mizkfoygxj .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4252,12 +4555,12 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_caption {
+#mizkfoygxj .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#sybonxmhcl .gt_title {
+#mizkfoygxj .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4269,7 +4572,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#sybonxmhcl .gt_subtitle {
+#mizkfoygxj .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4281,7 +4584,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#sybonxmhcl .gt_heading {
+#mizkfoygxj .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4293,13 +4596,13 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_bottom_border {
+#mizkfoygxj .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_col_headings {
+#mizkfoygxj .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4314,7 +4617,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_col_heading {
+#mizkfoygxj .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4334,7 +4637,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#sybonxmhcl .gt_column_spanner_outer {
+#mizkfoygxj .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4346,15 +4649,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#sybonxmhcl .gt_column_spanner_outer:first-child {
+#mizkfoygxj .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#sybonxmhcl .gt_column_spanner_outer:last-child {
+#mizkfoygxj .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#sybonxmhcl .gt_column_spanner {
+#mizkfoygxj .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4366,11 +4669,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#sybonxmhcl .gt_spanner_row {
+#mizkfoygxj .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#sybonxmhcl .gt_group_heading {
+#mizkfoygxj .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4396,7 +4699,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#sybonxmhcl .gt_empty_group_heading {
+#mizkfoygxj .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4411,15 +4714,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#sybonxmhcl .gt_from_md > :first-child {
+#mizkfoygxj .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#sybonxmhcl .gt_from_md > :last-child {
+#mizkfoygxj .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#sybonxmhcl .gt_row {
+#mizkfoygxj .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4438,7 +4741,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#sybonxmhcl .gt_stub {
+#mizkfoygxj .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4451,7 +4754,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#sybonxmhcl .gt_stub_row_group {
+#mizkfoygxj .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4465,15 +4768,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#sybonxmhcl .gt_row_group_first td {
+#mizkfoygxj .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#sybonxmhcl .gt_row_group_first th {
+#mizkfoygxj .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#sybonxmhcl .gt_summary_row {
+#mizkfoygxj .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4483,16 +4786,16 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#sybonxmhcl .gt_first_summary_row {
+#mizkfoygxj .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_first_summary_row.thick {
+#mizkfoygxj .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#sybonxmhcl .gt_last_summary_row {
+#mizkfoygxj .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4502,7 +4805,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_grand_summary_row {
+#mizkfoygxj .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4512,7 +4815,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#sybonxmhcl .gt_first_grand_summary_row {
+#mizkfoygxj .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4522,7 +4825,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_last_grand_summary_row_top {
+#mizkfoygxj .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4532,11 +4835,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_striped {
+#mizkfoygxj .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#sybonxmhcl .gt_table_body {
+#mizkfoygxj .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4545,7 +4848,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_footnotes {
+#mizkfoygxj .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4559,7 +4862,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_footnote {
+#mizkfoygxj .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4568,7 +4871,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#sybonxmhcl .gt_sourcenotes {
+#mizkfoygxj .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4582,7 +4885,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#sybonxmhcl .gt_sourcenote {
+#mizkfoygxj .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4590,72 +4893,72 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#sybonxmhcl .gt_left {
+#mizkfoygxj .gt_left {
   text-align: left;
 }
 
-#sybonxmhcl .gt_center {
+#mizkfoygxj .gt_center {
   text-align: center;
 }
 
-#sybonxmhcl .gt_right {
+#mizkfoygxj .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#sybonxmhcl .gt_font_normal {
+#mizkfoygxj .gt_font_normal {
   font-weight: normal;
 }
 
-#sybonxmhcl .gt_font_bold {
+#mizkfoygxj .gt_font_bold {
   font-weight: bold;
 }
 
-#sybonxmhcl .gt_font_italic {
+#mizkfoygxj .gt_font_italic {
   font-style: italic;
 }
 
-#sybonxmhcl .gt_super {
+#mizkfoygxj .gt_super {
   font-size: 65%;
 }
 
-#sybonxmhcl .gt_footnote_marks {
+#mizkfoygxj .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#sybonxmhcl .gt_asterisk {
+#mizkfoygxj .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#sybonxmhcl .gt_indent_1 {
+#mizkfoygxj .gt_indent_1 {
   text-indent: 5px;
 }
 
-#sybonxmhcl .gt_indent_2 {
+#mizkfoygxj .gt_indent_2 {
   text-indent: 10px;
 }
 
-#sybonxmhcl .gt_indent_3 {
+#mizkfoygxj .gt_indent_3 {
   text-indent: 15px;
 }
 
-#sybonxmhcl .gt_indent_4 {
+#mizkfoygxj .gt_indent_4 {
   text-indent: 20px;
 }
 
-#sybonxmhcl .gt_indent_5 {
+#mizkfoygxj .gt_indent_5 {
   text-indent: 25px;
 }
 
-#sybonxmhcl .katex-display {
+#mizkfoygxj .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#sybonxmhcl div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#mizkfoygxj div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -4721,7 +5024,7 @@ Figure&nbsp;12: <code>hers</code> data models with and without intercepts
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-65-1.png" class="lightbox" data-gallery="fig-hers-maybe-int" title="Figure&nbsp;12&nbsp;(a): No intercept"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-65-1.png" data-ref-parent="fig-hers-maybe-int" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-62-1.png" class="lightbox" data-gallery="fig-hers-maybe-int" title="Figure&nbsp;12&nbsp;(a): No intercept"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-62-1.png" data-ref-parent="fig-hers-maybe-int" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -4751,7 +5054,7 @@ Figure&nbsp;12: <code>hers</code> data models with and without intercepts
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-66-1.png" class="lightbox" data-gallery="fig-hers-maybe-int" title="Figure&nbsp;12&nbsp;(b): With intercept"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-66-1.png" data-ref-parent="fig-hers-maybe-int" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-63-1.png" class="lightbox" data-gallery="fig-hers-maybe-int" title="Figure&nbsp;12&nbsp;(b): With intercept"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-63-1.png" data-ref-parent="fig-hers-maybe-int" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -4779,7 +5082,7 @@ Figure&nbsp;12: <code>hers</code> data models with and without intercepts
           display:block!important;
       }</style></aside><div id="def-resid-noise" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 4 (Residual noise/deviation from the population mean)</strong></span> The <strong>residual noise</strong> in a probabilistic model <span class="math inline">\(p(Y)\)</span>, also known as the <strong>residual deviation of an observation from its population mean</strong> or <strong>residual</strong> for short, is the difference between an observed value <span class="math inline">\(y\)</span> and its population mean:</p>
-<p><span id="eq-def-resid"><span class="math display">\[\varepsilon(y) \stackrel{\text{def}}{=}y - \text{E}{\left[Y\right]} \tag{12}\]</span></span></p>
+<p><span id="eq-def-resid"><span class="math display">\[\varepsilon(y) \stackrel{\text{def}}{=}y - \text{E}{\left[Y\right]} \tag{21}\]</span></span></p>
 </div>
 <aside class="notes"><p>We use the same notation for residual noise that we used for <a href="./estimation.html#def-error">errors</a>.</p>
 <p><span class="math inline">\(\text{E}{\left[Y\right]}\)</span> can be viewed as an estimate of <span class="math inline">\(Y\)</span>, before <span class="math inline">\(y\)</span> is observed. Conversely, each observation <span class="math inline">\(y\)</span> can be viewed as an estimate of <span class="math inline">\(\text{E}{\left[Y\right]}\)</span> (albeit an imprecise one, individually, since <span class="math inline">\(n=1\)</span>).</p>
@@ -4793,10 +5096,10 @@ Figure&nbsp;12: <code>hers</code> data models with and without intercepts
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside><p>We can rearrange <a href="#/eq-def-resid" class="quarto-xref">Equation&nbsp;12</a> to view <span class="math inline">\(y\)</span> as the sum of its mean plus the residual noise:</p>
+      }</style></aside><p>We can rearrange <a href="#/eq-def-resid" class="quarto-xref">Equation&nbsp;21</a> to view <span class="math inline">\(y\)</span> as the sum of its mean plus the residual noise:</p>
 <p><span class="math display">\[y = \text{E}{\left[Y\right]} + \varepsilon{\left(y\right)}\]</span></p>
 </section><section class="slide level2"><div id="thm-gaussian-resid-noise" class="theorem">
-<p><span class="theorem-title"><strong>Theorem 1 (Residuals in Gaussian models)</strong></span> If <span class="math inline">\(Y\)</span> has a Gaussian distribution, then <span class="math inline">\(\varepsilon(Y)\)</span> also has a Gaussian distribution, and vice versa.</p>
+<p><span class="theorem-title"><strong>Theorem 3 (Residuals in Gaussian models)</strong></span> If <span class="math inline">\(Y\)</span> has a Gaussian distribution, then <span class="math inline">\(\varepsilon(Y)\)</span> also has a Gaussian distribution, and vice versa.</p>
 </div>
 <div class="proof">
 <p><span class="proof-title"><em>Proof</em>. </span>Left to the reader.</p>
@@ -4831,7 +5134,7 @@ Figure&nbsp;13: Fitted values and residuals for interaction model for <code>birt
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-67-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15" title="Figure&nbsp;13: Fitted values and residuals for interaction model for birthweight data"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-67-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-64-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15" title="Figure&nbsp;13: Fitted values and residuals for interaction model for birthweight data"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-64-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -4850,12 +5153,12 @@ e(\hat y) &amp;= y - \hat y
 \]</span></p>
 </section><section class="slide level2"><h3 id="general-characteristics-of-residuals">General characteristics of residuals</h3>
 <div id="thm-resid-unbiased" class="theorem">
-<p><span class="theorem-title"><strong>Theorem 2</strong></span> If <span class="math inline">\(\hat{\text{E}}{\left[Y\right]}\)</span> is an <a href="./estimation.html#sec-unbiased-estimators">unbiased</a> estimator of the mean <span class="math inline">\(\text{E}{\left[Y\right]}\)</span>, then:</p>
-<p><span id="eq-mean-resid-unbiased"><span class="math display">\[\text{E}{\left[e(y)\right]} = 0 \tag{13}\]</span></span> <span id="eq-var-resid-unbiased"><span class="math display">\[\text{Var}{\left(e(y)\right)} \approx \sigma^2 \tag{14}\]</span></span></p>
+<p><span class="theorem-title"><strong>Theorem 4</strong></span> If <span class="math inline">\(\hat{\text{E}}{\left[Y\right]}\)</span> is an <a href="./estimation.html#sec-unbiased-estimators">unbiased</a> estimator of the mean <span class="math inline">\(\text{E}{\left[Y\right]}\)</span>, then:</p>
+<p><span id="eq-mean-resid-unbiased"><span class="math display">\[\text{E}{\left[e(y)\right]} = 0 \tag{22}\]</span></span> <span id="eq-var-resid-unbiased"><span class="math display">\[\text{Var}{\left(e(y)\right)} \approx \sigma^2 \tag{23}\]</span></span></p>
 </div>
 </section><section class="slide level2"><div class="proof">
 <p><span class="proof-title"><em>Proof</em>. </span>&nbsp;</p>
-<p><a href="#/eq-mean-resid-unbiased" class="quarto-xref">Equation&nbsp;13</a>:</p>
+<p><a href="#/eq-mean-resid-unbiased" class="quarto-xref">Equation&nbsp;22</a>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \text{E}{\left[e(y)\right]} &amp;= \text{E}{\left[y - \hat y\right]}
@@ -4864,7 +5167,7 @@ e(\hat y) &amp;= y - \hat y
 \\ &amp;= 0
 \end{aligned}
 \]</span></p>
-<p><a href="#/eq-var-resid-unbiased" class="quarto-xref">Equation&nbsp;14</a>:</p>
+<p><a href="#/eq-var-resid-unbiased" class="quarto-xref">Equation&nbsp;23</a>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \text{Var}{\left(e(y)\right)} &amp;= \text{Var}{\left(y - \hat y\right)}
@@ -4893,7 +5196,7 @@ e_i \ \sim_{\text{iid}}\ N(0, \hat\sigma^2)
 </details>
 </div>
 </section><section class="slide level2"><div id="exr-calc-resids" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise 15</strong></span> Check R’s output by computing the residuals directly.</p>
+<p><span class="theorem-title"><strong>Exercise 20</strong></span> Check R’s output by computing the residuals directly.</p>
 </div>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span>&nbsp;</p>
@@ -4936,7 +5239,7 @@ Figure&nbsp;14: Fitted values and residuals for interaction model for <code>birt
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-70-1.png" class="lightbox" data-gallery="fig-resid-bw" title="Figure&nbsp;14&nbsp;(a): fitted values"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-70-1.png" data-ref-parent="fig-resid-bw" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-67-1.png" class="lightbox" data-gallery="fig-resid-bw" title="Figure&nbsp;14&nbsp;(a): fitted values"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-67-1.png" data-ref-parent="fig-resid-bw" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -4988,7 +5291,7 @@ Figure&nbsp;14: Fitted values and residuals for interaction model for <code>birt
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-71-1.png" class="lightbox" data-gallery="fig-resid-bw" title="Figure&nbsp;14&nbsp;(b): Residuals"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-71-1.png" data-ref-parent="fig-resid-bw" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-68-1.png" class="lightbox" data-gallery="fig-resid-bw" title="Figure&nbsp;14&nbsp;(b): Residuals"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-68-1.png" data-ref-parent="fig-resid-bw" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5034,7 +5337,7 @@ Figure&nbsp;15: Residuals of <code>hers</code> data vs predictors
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-73-1.png" class="lightbox" data-gallery="fig-resids-hers-1" title="Figure&nbsp;15&nbsp;(a): no intercept"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-73-1.png" data-ref-parent="fig-resids-hers-1" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-70-1.png" class="lightbox" data-gallery="fig-resids-hers-1" title="Figure&nbsp;15&nbsp;(a): no intercept"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-70-1.png" data-ref-parent="fig-resids-hers-1" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5060,7 +5363,7 @@ Figure&nbsp;15: Residuals of <code>hers</code> data vs predictors
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-74-1.png" class="lightbox" data-gallery="fig-resids-hers-1" title="Figure&nbsp;15&nbsp;(b): with intercept"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-74-1.png" data-ref-parent="fig-resids-hers-1" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-71-1.png" class="lightbox" data-gallery="fig-resids-hers-1" title="Figure&nbsp;15&nbsp;(b): with intercept"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-71-1.png" data-ref-parent="fig-resids-hers-1" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5148,7 +5451,7 @@ Figure&nbsp;18: Residuals of interaction model for <code>hers</code> data, with 
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-75-1.png" class="lightbox" data-gallery="fig-resid-hers-compare" title="Figure&nbsp;18&nbsp;(a): no intercept term"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-75-1.png" data-ref-parent="fig-resid-hers-compare" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-72-1.png" class="lightbox" data-gallery="fig-resid-hers-compare" title="Figure&nbsp;18&nbsp;(a): no intercept term"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-72-1.png" data-ref-parent="fig-resid-hers-compare" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5172,7 +5475,7 @@ Figure&nbsp;18: Residuals of interaction model for <code>hers</code> data, with 
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-76-1.png" class="lightbox" data-gallery="fig-resid-hers-compare" title="Figure&nbsp;18&nbsp;(b): with intercept term"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-76-1.png" data-ref-parent="fig-resid-hers-compare" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-73-1.png" class="lightbox" data-gallery="fig-resid-hers-compare" title="Figure&nbsp;18&nbsp;(b): with intercept term"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-73-1.png" data-ref-parent="fig-resid-hers-compare" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5253,7 +5556,7 @@ r_i \ \sim_{\text{iid}}\ N(0,1)
 <span id="cb90-22"><a></a><span class="fu">print</span>(rstandard_compare_plot)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-78-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-24"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-78-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-75-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-24"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-75-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5385,7 +5688,7 @@ Figure&nbsp;20: Marginal distribution of standardized residuals
 <span id="cb94-12"><a></a><span class="fu">print</span>(qqplot_lm2_auto)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-80-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-27"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-80-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-77-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-27"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-77-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5455,7 +5758,7 @@ Figure&nbsp;20: Marginal distribution of standardized residuals
 <span id="cb95-37"><a></a><span class="fu">print</span>(qqplot_lm2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-81-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-28"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-81-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-78-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-28"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-78-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5492,7 +5795,7 @@ Figure&nbsp;21: <code>birthweight</code> model (<a href="#/eq-BW-lm-interact" cl
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-82-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-29" title="Figure&nbsp;21: birthweight model (Equation&nbsp;2): residuals versus fitted values"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-82-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-79-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-29" title="Figure&nbsp;21: birthweight model (Equation&nbsp;2): residuals versus fitted values"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-79-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5761,7 +6064,7 @@ Figure&nbsp;27: logarithmic fit
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb107"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a></a><span class="fu">anova</span>(lm_PLOS_linear, lm_PLOS_quad)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-plos-lin-quad-anova" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-plos-lin-quad-anova-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;14: linear vs quadratic
+Table&nbsp;18: linear vs quadratic
 </figcaption><div aria-describedby="tbl-plos-lin-quad-anova-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <div data-pagedtable="false">
@@ -5778,7 +6081,7 @@ Table&nbsp;14: linear vs quadratic
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb108"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a></a><span class="fu">anova</span>(lm_PLOS_quad, lm_PLOS_cub)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-plos-quad-cub-anova" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-plos-quad-cub-anova-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;15: quadratic vs cubic
+Table&nbsp;19: quadratic vs cubic
 </figcaption><div aria-describedby="tbl-plos-quad-cub-anova-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <div data-pagedtable="false">
@@ -5885,7 +6188,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-88-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-43" title="Figure&nbsp;30: birthweight model with interactions (Equation&nbsp;2): residuals versus leverage"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-88-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-85-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-43" title="Figure&nbsp;30: birthweight model with interactions (Equation&nbsp;2): residuals versus leverage"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-85-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5931,7 +6234,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 <span id="cb116-9"><a></a><span class="fu">print</span>(resid_vs_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-90-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-44"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-90-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-87-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-44"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-87-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5947,7 +6250,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 <span id="cb117-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-91-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-45"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-91-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-88-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-45"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-88-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5963,7 +6266,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 <span id="cb118-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-92-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-46"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-92-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-89-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-46"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-89-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5981,7 +6284,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 <span id="cb119-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-93-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-47"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-93-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-90-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-47"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-90-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6045,7 +6348,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 <span id="cb121-17"><a></a>  <span class="fu">geom_boxplot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-95-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-48"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-95-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-92-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-48"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-92-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6072,7 +6375,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.90178","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.82346","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"7.04561","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.64874","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -6188,7 +6491,7 @@ Figure&nbsp;31: Lasso selection
 <span id="cb127-2"><a></a><span class="fu">plot</span>(cvfit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-100-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-50"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-100-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-97-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-50"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-97-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6197,10 +6500,10 @@ Figure&nbsp;31: Lasso selection
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb128"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a></a><span class="fu">coef</span>(cvfit, <span class="at">s =</span> <span class="st">"lambda.1se"</span>)</span>
 <span id="cb128-2"><a></a><span class="co">#&gt; 4 x 1 sparse Matrix of class "dgCMatrix"</span></span>
 <span id="cb128-3"><a></a><span class="co">#&gt;             lambda.1se</span></span>
-<span id="cb128-4"><a></a><span class="co">#&gt; (Intercept)  34.424097</span></span>
-<span id="cb128-5"><a></a><span class="co">#&gt; age           .       </span></span>
-<span id="cb128-6"><a></a><span class="co">#&gt; weight       -0.066205</span></span>
-<span id="cb128-7"><a></a><span class="co">#&gt; protein       0.660679</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb128-4"><a></a><span class="co">#&gt; (Intercept) 34.3091615</span></span>
+<span id="cb128-5"><a></a><span class="co">#&gt; age          .        </span></span>
+<span id="cb128-6"><a></a><span class="co">#&gt; weight      -0.0800142</span></span>
+<span id="cb128-7"><a></a><span class="co">#&gt; protein      0.7640510</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section><section><section id="categorical-covariates-with-more-than-two-levels" class="title-slide slide level1 center" data-number="9"><h1>
@@ -6219,7 +6522,7 @@ Figure&nbsp;31: Lasso selection
 <p>If there are more than two observed values, we can’t just use a single variable with 0s and 1s.</p>
 </section><section id="section" class="slide level2" data-number="9.2"><h2>
 <span class="header-section-number">9.2</span> </h2>
-<aside class="notes"><p>For example, <a href="#/tbl-iris-data" class="quarto-xref">Table&nbsp;16</a> shows the <a href="https://www.meganstodel.com/posts/no-to-iris/">(in)famous</a> <code>iris</code> data (<span class="citation" data-cites="anderson1935irises">Anderson (<a href="#/references" role="doc-biblioref" onclick="">1935</a>)</span>), and <a href="#/tbl-iris-summary" class="quarto-xref">Table&nbsp;17</a> provides summary statistics. The data include three species: “setosa”, “versicolor”, and “virginica”.</p>
+<aside class="notes"><p>For example, <a href="#/tbl-iris-data" class="quarto-xref">Table&nbsp;20</a> shows the <a href="https://www.meganstodel.com/posts/no-to-iris/">(in)famous</a> <code>iris</code> data (<span class="citation" data-cites="anderson1935irises">Anderson (<a href="#/references" role="doc-biblioref" onclick="">1935</a>)</span>), and <a href="#/tbl-iris-summary" class="quarto-xref">Table&nbsp;21</a> provides summary statistics. The data include three species: “setosa”, “versicolor”, and “virginica”.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -6234,7 +6537,7 @@ Figure&nbsp;31: Lasso selection
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb130"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a></a><span class="fu">head</span>(iris)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-iris-data" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-iris-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;16: The <code>iris</code> data
+Table&nbsp;20: The <code>iris</code> data
 </figcaption><div aria-describedby="tbl-iris-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <div data-pagedtable="false">
@@ -6256,7 +6559,7 @@ Table&nbsp;16: The <code>iris</code> data
 <span id="cb131-6"><a></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-iris-summary" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-iris-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;17: Summary statistics for the <code>iris</code> data
+Table&nbsp;21: Summary statistics for the <code>iris</code> data
 </figcaption><div aria-describedby="tbl-iris-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <div class="Rtable1">
@@ -6374,7 +6677,7 @@ Table&nbsp;17: Summary statistics for the <code>iris</code> data
 <span id="cb132-16"><a></a>  <span class="fu">distinct</span>(Species, X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-numeric-coding" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-numeric-coding-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;18: <code>iris</code> data with numeric coding of species
+Table&nbsp;22: <code>iris</code> data with numeric coding of species
 </figcaption><div aria-describedby="tbl-numeric-coding-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <div data-pagedtable="false">
@@ -6395,7 +6698,7 @@ Table&nbsp;18: <code>iris</code> data with numeric coding of species
 <span id="cb133-4"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-iris-numeric-species" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-iris-numeric-species-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;19: Model of <code>iris</code> data with numeric coding of <code>Species</code>
+Table&nbsp;23: Model of <code>iris</code> data with numeric coding of <code>Species</code>
 </figcaption><div aria-describedby="tbl-iris-numeric-species-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <table class="cell caption-top">
@@ -6469,7 +6772,7 @@ Figure&nbsp;32: Model of <code>iris</code> data with numeric coding of <code>Spe
 <span id="cb135-4"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-iris-model-factor1" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-iris-model-factor1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;20: Model of <code>iris</code> data with <code>Species</code> as a categorical variable
+Table&nbsp;24: Model of <code>iris</code> data with <code>Species</code> as a categorical variable
 </figcaption><div aria-describedby="tbl-iris-model-factor1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <table class="cell caption-top">
@@ -6531,7 +6834,7 @@ Table&nbsp;20: Model of <code>iris</code> data with <code>Species</code> as a ca
 <span id="cb136-4"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-iris-no-intcpt" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-iris-no-intcpt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;21
+Table&nbsp;25
 </figcaption><div aria-describedby="tbl-iris-no-intcpt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <table class="caption-top">
@@ -6623,7 +6926,7 @@ Figure&nbsp;33
 <span id="cb138-5"><a></a>  <span class="fu">unique</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-iris-model-matrix-factor" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-iris-model-matrix-factor-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;22
+Table&nbsp;26
 </figcaption><div aria-describedby="tbl-iris-model-matrix-factor-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <div data-pagedtable="false">
@@ -6654,7 +6957,7 @@ Table&nbsp;22
 <span id="cb140-5"><a></a>  <span class="fu">unique</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-iris-group-point-parameterization" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-iris-group-point-parameterization-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;23
+Table&nbsp;27
 </figcaption><div aria-describedby="tbl-iris-group-point-parameterization-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <div data-pagedtable="false">
@@ -6698,7 +7001,7 @@ Table&nbsp;23
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb142"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a></a>hers <span class="sc">|&gt;</span> <span class="fu">head</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-HERS" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-HERS-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;24: HERS dataset
+Table&nbsp;28: HERS dataset
 </figcaption><div aria-describedby="tbl-HERS-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
 <div data-pagedtable="false">
