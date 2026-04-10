@@ -91,8 +91,10 @@ Key macros to use:
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
 
 - **Transpose**: Use `\tp{v}` (renders as $v'$) instead of the raw prime `v'` notation.
-  This avoids LaTeX "Double superscript" errors when transposing vectors that already carry a superscript,
-  such as `\vxs` (which expands to `{\vec{x}^*}`).
+  However, `\tp{v}` appends `^{\top}` to the argument, so if the argument already carries a superscript
+  (e.g., `\vxs` expands to `{{\vec{x}^*}}` which has `^*`), wrap it in parentheses first:
+  use `\tp{(\vxs)}` not `\tp{\vxs}`.
+  This avoids LaTeX "Double superscript" errors.
 
 ## Math Derivations
 
