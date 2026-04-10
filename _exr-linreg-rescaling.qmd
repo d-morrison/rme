@@ -21,54 +21,105 @@ What is the pattern?
 ---
 
 ::: {.solution}
-\ 
 
-Since $A = A^* + 32$,
-we can substitute $a = a^* + 32$ into [Model @eq-BW-lm-interact]:
+**Interpretation of $\gamma_0$:**
+
+From [Model @eq-BW-lm-interact-rescaled], $\g_0$ is the mean birthweight among females ($M = 0$) with $A^* = 0$ (i.e., $A = 32$ weeks):
+
+$$
+\g_0 = \E{Y|M=0, A^*=0} = \E{Y|M=0, A=32}
+$$
+
+Substituting into [Model @eq-BW-lm-interact]:
 
 $$
 \ba
-\E{Y|M=m, A=a^*+32}
-&= \b_0 + \b_M m + \b_A (a^* + 32) + \b_{AM} (m \cdot (a^* + 32))\\
-&= \b_0 + \b_M m + \b_A a^* + 32\b_A + \b_{AM} m a^* + 32 \b_{AM} m\\
-&= (\b_0 + 32\b_A) + (\b_M + 32\b_{AM}) m + \b_A a^* + \b_{AM} (m \cdot a^*)
+\g_0
+&= \b_0 + \b_M \cdot 0 + \b_A \cdot 32 + \b_{AM} \cdot 0 \cdot 32\\
+&= \b_0 + 32\b_A
 \ea
 $$
 
-Matching coefficients with [Model @eq-BW-lm-interact-rescaled],
-we obtain the following relationships:
+This differs from $\b_0 = \E{Y|M=0, A=0}$,
+which is the mean birthweight among females at $A = 0$ weeks.
+
+**Interpretation of $\gamma_M$:**
+
+From [Model @eq-BW-lm-interact-rescaled], $\g_M$ is the sex difference in mean birthweight at $A^* = 0$ (i.e., $A = 32$ weeks):
 
 $$
 \ba
-\g_0 &= \b_0 + 32\b_A\\
-\g_M &= \b_M + 32\b_{AM}\\
-\g_{A^*} &= \b_A\\
-\g_{A^*M} &= \b_{AM}
+\g_M
+&= \E{Y|M=1, A^*=0} - \E{Y|M=0, A^*=0}\\
+&= \E{Y|M=1, A=32} - \E{Y|M=0, A=32}
 \ea
 $$
 
-**Interpretations of the $\gamma$s:**
+Substituting into [Model @eq-BW-lm-interact]:
 
-$\gamma_0$ is the mean birthweight among females with $A^* = 0$,
-i.e., females with gestational age $A = 32$ weeks.
-This differs from $\beta_0$,
-which is the mean birthweight among females with $A = 0$ weeks.
+$$
+\ba
+\g_M
+&= (\b_0 + \b_M + \b_A \cdot 32 + \b_{AM} \cdot 32) - (\b_0 + \b_A \cdot 32)\\
+&= \b_M + 32\b_{AM}
+\ea
+$$
 
-$\gamma_M$ is the difference in mean birthweight between males and females
-with $A^* = 0$,
-i.e., at gestational age $A = 32$ weeks.
-This differs from $\beta_M$,
-which is the corresponding difference at $A = 0$ weeks.
+This differs from $\b_M$,
+which is the sex difference at $A = 0$ weeks.
 
-$\gamma_{A^*}$ is the slope of mean birthweight with respect to $A^*$ among females.
+**Interpretation of $\gamma_{A^*}$:**
+
+From [Model @eq-BW-lm-interact-rescaled], $\g_{A^*}$ is the slope of mean birthweight with respect to $A^*$ among females ($M = 0$):
+
+$$
+\ba
+\g_{A^*}
+&= \frac{d}{da^*}\E{Y|M=0, A^*=a^*}\\
+&= \frac{d}{da^*}\E{Y|M=0, A=a^*+32}\\
+&= \frac{d}{da}\E{Y|M=0, A=a}
+\ea
+$$
+
+Substituting into [Model @eq-BW-lm-interact]:
+
+$$
+\ba
+\g_{A^*}
+&= \frac{d}{da}\left(\b_0 + \b_A \cdot a\right)\\
+&= \b_A
+\ea
+$$
+
 Since shifting $A$ by a constant does not change the slope,
-$\gamma_{A^*} = \beta_A$:
-these two coefficients have the same value and the same interpretation.
+$\g_{A^*} = \b_A$:
+these two coefficients have the same value and interpretation.
 
-$\gamma_{A^*M}$ is the difference in slope with respect to $A^*$ between males and females.
-Again, shifting $A$ does not affect slopes,
-so $\gamma_{A^*M} = \beta_{AM}$:
-these two coefficients have the same value and the same interpretation.
+**Interpretation of $\gamma_{A^*M}$:**
+
+From [Model @eq-BW-lm-interact-rescaled], $\g_{A^*M}$ is the difference in slope with respect to $A^*$ between males and females:
+
+$$
+\ba
+\g_{A^*M}
+&= \frac{d}{da^*}\E{Y|M=1, A^*=a^*} - \frac{d}{da^*}\E{Y|M=0, A^*=a^*}\\
+&= \frac{d}{da}\E{Y|M=1, A=a} - \frac{d}{da}\E{Y|M=0, A=a}
+\ea
+$$
+
+Substituting into [Model @eq-BW-lm-interact]:
+
+$$
+\ba
+\g_{A^*M}
+&= (\b_A + \b_{AM}) - \b_A\\
+&= \b_{AM}
+\ea
+$$
+
+Since shifting $A$ by a constant does not change slopes,
+$\g_{A^*M} = \b_{AM}$:
+these two coefficients have the same value and interpretation.
 
 **The pattern:**
 
