@@ -233,12 +233,16 @@ They coincide only when there are no repeated covariate patterns ($q = n$).
 When patterns do repeat ($q < n$), the saturated model sets $\hat\pi_k = y_k/n_k$ per pattern,
 giving $\ell_{\text{sat}} < 0$.
 
-`deviance()` for ungrouped data cannot be used as a goodness-of-fit test
-against the $\chi^2$ distribution,
-because the asymptotic $\chi^2(q - p)$ approximation
-requires the number of observations per covariate pattern to grow ($n_k \to \infty$).
-With ungrouped Bernoulli data ($n_i = 1$), this condition never holds,
-so the approximation is unreliable regardless of total sample size $n$.
+`deviance()` for ungrouped data **cannot** be used as a goodness-of-fit test
+against the $\chi^2$ distribution when $q < n$.
+The correct GOF statistic is $2(\ell_{\text{sat}} - \ell(\hat\beta))$,
+but R's `deviance()` for ungrouped data returns $-2\ell(\hat\beta)$ (using $\ell_{\text{fp}} = 0$).
+These two quantities differ by $-2\ell_{\text{sat}} > 0$ whenever $q < n$.
+Even if each covariate pattern has many replicates (large $n_k$),
+R's ungrouped deviance is the wrong statistic to compare against $\chi^2(q - p)$.
+To obtain a valid GOF test when patterns repeat,
+fit the model using **grouped** data (one row per pattern with $y_k$ and $n_k$),
+so that R uses the saturated model as its reference.
 :::
 
 ### Summary
