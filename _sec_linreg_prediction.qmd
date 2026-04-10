@@ -1,0 +1,196 @@
+
+## Prediction for linear models
+
+:::{#def-predicted-value}
+### Predicted value
+
+In a regression model $\p(y|\vx)$, 
+the **predicted value** of $y$ given $\vx$ is the estimated mean of $Y$ given $\vX=\vx$:
+
+$$\hat y \eqdef \hE{Y|\vX=\vx}$$
+:::
+
+---
+
+For linear models, 
+the predicted value can be straightforwardly calculated 
+by multiplying each predictor value $x_j$ by its corresponding coefficient $\beta_j$ 
+and adding up the results:
+
+$$
+\begin{aligned}
+\hat y &= \hE{Y|\vX=\vx} \\
+&= \vx'\hat\beta \\
+&= \hat\beta_0\cdot 1 + \hat\beta_1 x_1 + ... + \hat\beta_p x_p
+\end{aligned}
+$$
+
+---
+
+## Example: prediction for the `birthweight` data
+
+```{r}
+x <- c(1, 1, 40)
+sum(x * coef(bw_lm1))
+```
+
+R has built-in functions for prediction:
+
+```{r}
+x <- tibble(age = 40, sex = "male")
+bw_lm1 |> predict(newdata = x)
+```
+
+If you don't provide `newdata`, 
+R will use the covariate values from the original dataset:
+
+```{r}
+predict(bw_lm1)
+```
+
+These special predictions are called the *fitted values* of the dataset:
+
+:::{#def-fitted-value}
+
+For a given dataset $(\vY, \mX)$ and corresponding fitted model $\p_{\hb}(\vy|\mx)$, 
+the **fitted value** of $y_i$ is 
+the predicted value of $y$ when $\vX=\vx_i$ using the estimate parameters $\hb$.
+
+:::
+
+R has an extra function to get these values:
+
+```{r}
+fitted(bw_lm1)
+```
+
+## Confidence intervals {#sec-se-fitted}
+
+Use `predict(se.fit = TRUE)` to compute SEs for predicted values:
+
+```{r}
+bw_lm1 |>
+  predict(
+    newdata = x,
+    se.fit = TRUE
+  )
+```
+
+The output of `predict.lm(se.fit = TRUE)` is a `list()`; 
+you can extract the elements with `$` or `magrittr::use_series()`:
+
+```{r}
+library(magrittr)
+bw_lm1 |>
+  predict(
+    newdata = x,
+    se.fit = TRUE
+  ) |>
+  use_series(se.fit)
+```
+
+---
+
+We can construct **confidence intervals** for $\E{Y|X=x}$ 
+using the usual formula:
+
+
+$$\mu(\vx) \in 
+\paren{\red{\hat{\mu}(\vx)} \pm \blue{\zeta_\alpha}}$$
+
+$$
+\blue{\zeta_\alpha} = 
+t_{n-p}\paren{1-\frac{\alpha}{2}} * \hse{\hat{\mu}(\vx)}
+$$
+
+$$\red{\hat{\mu}(\vx)} = \vx \cdot \hb$$
+
+$$\se{\hat{\mu}(\vx)} = \sqrt{\Var{\hat{\mu}(\vx)}}$$
+$$
+\ba
+\Var{\hat{\mu}(\vx)} &= \Var{x'\hat{\beta}}
+\\&= x' \Var{\hat{\beta}} x
+\\&= x' \sigma^2(\mX'\mX)^{-1} x
+\\&= \sigma^2 x' (\mX'\mX)^{-1} x
+\\&= \sumin \sumjn x_i x_j \Covs{\hb_i}{\hb_j}
+\ea
+$$
+$$\hVar{\hat{\mu}(\vx)} = \hs^2 x' (\mX'\mX)^{-1} x$$
+
+```{R}
+bw_lm2 |> predict(
+  newdata = x,
+  interval = "confidence"
+)
+```
+
+---
+
+:::{#fig-pred-int}
+
+```{r}
+library(sjPlot)
+bw_lm2 |>
+  plot_model(type = "pred", terms = c("age", "sex"), show.data = TRUE) +
+  theme_sjplot() +
+  theme(legend.position = "bottom")
+```
+
+Predicted values and confidence bands for the `birthweight` model with interaction term
+:::
+
+
+## Prediction intervals {#sec-se-pred}
+
+We can also construct **prediction intervals** for 
+the value of a new observation $Y^*$,
+given a covariate pattern $\vx^*$:
+
+$$
+\ba
+\hat{Y^*} &= \hat\mu({\vx}^*) + \hat{\epsilon}^*
+\\ \Var{\hat{Y}} &= \Var{\hat\mu} + \Var{\hat\epsilon}
+\\ \Var{\hat{Y}} &= \Var{x'\hb} + \Var{\hat\epsilon}
+\\ &= {{\vx}^{*\top}} \Var{\hb} {{\vx}^*} + \sigma^2
+\\ &=  {{\vx}^{*\top}} \paren{\sigma^2(\mX'\mX)^{-1}} {{\vx}^*} + \sigma^2
+\\ &= \sigma^2 {{\vx}^{*\top}} (\mX'\mX)^{-1} {{\vx}^*} + \sigma^2
+\ea
+$${#eq-prediction-var}
+
+::: notes
+See @hoggtanis2015 §7.6 (p. 340) for a longer version.
+:::
+
+```{r}
+#| code-fold: show
+bw_lm2 |>
+  predict(newdata = x, interval = "predict")
+```
+
+---
+
+If you don't specify `newdata`, you get a warning:
+
+```{r}
+#| code-fold: show
+#| warning: true
+bw_lm2 |>
+  predict(interval = "predict") |>
+  head()
+```
+
+The warning from the last command is: "predictions on current data refer to *future* responses" (since you already know what happened to the current data, and thus don't need to predict it).
+
+See `?predict.lm` for more.
+
+---
+
+:::{#fig-pred-int-bw}
+```{r}
+plot_PIs_and_CIs(bw_lm2, bw)
+```
+
+Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact]
+
+:::
+

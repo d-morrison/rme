@@ -1,0 +1,181 @@
+
+### Example: `birthweight`
+
+In the birthweight example, the variable `sex` had only two observed values:
+
+```{r}
+unique(bw$sex)
+```
+
+If there are more than two observed values, we can't just use a single variable with 0s and 1s.
+
+### 
+
+:::{.notes}
+For example, @tbl-iris-data shows the 
+[(in)famous](https://www.meganstodel.com/posts/no-to-iris/) 
+`iris` data (@anderson1935irises), 
+and @tbl-iris-summary provides summary statistics. 
+The data include three species: "setosa", "versicolor", and "virginica".
+:::
+
+```{r}
+#| tbl-cap: "The `iris` data"
+#| label: tbl-iris-data
+head(iris)
+```
+
+```{r}
+#| tbl-cap: "Summary statistics for the `iris` data"
+#| label: tbl-iris-summary
+
+library(table1)
+table1(
+  x = ~ . | Species,
+  data = iris,
+  overall = FALSE
+)
+```
+
+---
+
+If we want to model `Sepal.Length` by species, we could create a variable $X$ that represents "setosa" as $X=1$, "virginica" as $X=2$, and "versicolor" as $X=3$.
+
+```{r}
+#| label: tbl-numeric-coding
+#| tbl-cap: "`iris` data with numeric coding of species"
+data(iris) # this step is not always necessary, but ensures you're starting
+# from the original version of a dataset stored in a loaded package
+
+iris <-
+  iris |>
+  tibble() |>
+  mutate(
+    X = case_when(
+      Species == "setosa" ~ 1,
+      Species == "virginica" ~ 2,
+      Species == "versicolor" ~ 3
+    )
+  )
+
+iris |>
+  distinct(Species, X)
+```
+
+Then we could fit a model like:
+
+```{r}
+#| label: tbl-iris-numeric-species
+#| tbl-cap: "Model of `iris` data with numeric coding of `Species`"
+iris_lm1 <- lm(Sepal.Length ~ X, data = iris)
+iris_lm1 |>
+  parameters() |>
+  print_md()
+```
+
+### Let's see how that model looks:
+
+```{r}
+#| label: fig-iris-numeric-species-model
+#| fig-cap: "Model of `iris` data with numeric coding of `Species`"
+iris_plot1 <- iris |>
+  ggplot(
+    aes(
+      x = X,
+      y = Sepal.Length
+    )
+  ) +
+  geom_point(alpha = .1) +
+  geom_abline(
+    intercept = coef(iris_lm1)[1],
+    slope = coef(iris_lm1)[2]
+  ) +
+  theme_bw(base_size = 18)
+print(iris_plot1)
+```
+
+We have forced the model to use a straight line for the three estimated means. Maybe not a good idea?
+
+### Let's see what R does with categorical variables by default:
+
+```{r}
+#| label: tbl-iris-model-factor1
+#| tbl-cap: "Model of `iris` data with `Species` as a categorical variable"
+iris_lm2 <- lm(Sepal.Length ~ Species, data = iris)
+iris_lm2 |>
+  parameters() |>
+  print_md()
+```
+
+### Re-parametrize with no intercept
+
+If you don't want the default and offset option, you can use "-1" like we've seen previously:
+
+```{r}
+#| label: tbl-iris-no-intcpt
+iris_lm2_no_int <- lm(Sepal.Length ~ Species - 1, data = iris)
+iris_lm2_no_int |>
+  parameters() |>
+  print_md()
+```
+
+### Let's see what these new models look like:
+
+```{r}
+#| label: fig-iris-no-intcpt
+iris_plot2 <-
+  iris |>
+  mutate(
+    predlm2 = predict(iris_lm2)
+  ) |>
+  arrange(X) |>
+  ggplot(aes(x = X, y = Sepal.Length)) +
+  geom_point(alpha = .1) +
+  geom_line(aes(y = predlm2), col = "red") +
+  geom_abline(
+    intercept = coef(iris_lm1)[1],
+    slope = coef(iris_lm1)[2]
+  ) +
+  theme_bw(base_size = 18)
+
+print(iris_plot2)
+```
+
+### Let's see how R did that:
+
+```{r}
+#| label: tbl-iris-model-matrix-factor
+formula(iris_lm2)
+model.matrix(iris_lm2) |>
+  as_tibble() |>
+  unique()
+```
+
+This format is called a "corner point parametrization" 
+(e.g., in @dobson4e) or "treatment coding" (e.g., in @dunn2018generalized).
+
+The default contrasts are controlled by `options("contrasts")`:
+
+```{r}
+options("contrasts")
+```
+
+See `?options` for more details.
+
+---
+
+```{r}
+#| label: tbl-iris-group-point-parameterization
+formula(iris_lm2_no_int)
+model.matrix(iris_lm2_no_int) |>
+  as_tibble() |>
+  unique()
+```
+
+This format is called a "group point parametrization" (e.g., in @dobson4e).
+
+There are more options; see @dobson4e §6.4.1 and the 
+[`codingMatrices` package](https://CRAN.R-project.org/package=codingMatrices) 
+[vignette](https://cran.r-project.org/web/packages/codingMatrices/vignettes/codingMatrices.pdf) 
+(@venablescodingMatrices).
+
