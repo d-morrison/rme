@@ -1448,13 +1448,13 @@ Table&nbsp;2: Summary statistics for <code>drug6mp</code> data
 <span id="cb10-5"><a></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb10-6"><a></a><span class="fu">library</span>(survival)</span>
 <span id="cb10-7"><a></a></span>
-<span id="cb10-8"><a></a>drug6mp_km_model1 <span class="ot">&lt;-</span></span>
+<span id="cb10-8"><a></a>km_model1 <span class="ot">&lt;-</span></span>
 <span id="cb10-9"><a></a>  drug6mp <span class="sc">|&gt;</span></span>
 <span id="cb10-10"><a></a>  <span class="fu">mutate</span>(<span class="at">surv =</span> <span class="fu">Surv</span>(t2, relapse)) <span class="sc">|&gt;</span></span>
 <span id="cb10-11"><a></a>  <span class="fu">survfit</span>(<span class="at">formula =</span> surv <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> _)</span>
 <span id="cb10-12"><a></a></span>
 <span id="cb10-13"><a></a><span class="fu">library</span>(ggfortify)</span>
-<span id="cb10-14"><a></a>drug6mp_km_model1 <span class="sc">|&gt;</span></span>
+<span id="cb10-14"><a></a>km_model1 <span class="sc">|&gt;</span></span>
 <span id="cb10-15"><a></a>  <span class="fu">autoplot</span>(</span>
 <span id="cb10-16"><a></a>    <span class="at">mark.time =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb10-17"><a></a>    <span class="at">conf.int =</span> <span class="cn">FALSE</span></span>
@@ -1480,7 +1480,7 @@ Figure&nbsp;7: Kaplan-Meier Survival Curve for 6-MP Patients
 <span id="cb11-2"><a></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb11-3"><a></a><span class="fu">data</span>(drug6mp)</span>
 <span id="cb11-4"><a></a></span>
-<span id="cb11-5"><a></a>drug6mp.v2 <span class="ot">&lt;-</span></span>
+<span id="cb11-5"><a></a>data_v2 <span class="ot">&lt;-</span></span>
 <span id="cb11-6"><a></a>  drug6mp <span class="sc">|&gt;</span></span>
 <span id="cb11-7"><a></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
 <span id="cb11-8"><a></a>  <span class="fu">mutate</span>(</span>
@@ -1497,8 +1497,8 @@ Figure&nbsp;7: Kaplan-Meier Survival Curve for 6-MP Patients
 <span id="cb11-19"><a></a>      )</span>
 <span id="cb11-20"><a></a>  )</span>
 <span id="cb11-21"><a></a></span>
-<span id="cb11-22"><a></a>km<span class="fl">.6</span>mp <span class="ot">&lt;-</span></span>
-<span id="cb11-23"><a></a>  drug6mp.v2 <span class="sc">|&gt;</span></span>
+<span id="cb11-22"><a></a>km_table <span class="ot">&lt;-</span></span>
+<span id="cb11-23"><a></a>  data_v2 <span class="sc">|&gt;</span></span>
 <span id="cb11-24"><a></a>  <span class="fu">summarize</span>(</span>
 <span id="cb11-25"><a></a>    <span class="at">.by =</span> t2,</span>
 <span id="cb11-26"><a></a>    <span class="at">Relapses =</span> <span class="fu">sum</span>(outcome <span class="sc">==</span> <span class="st">"relapsed"</span>),</span>
@@ -1526,7 +1526,7 @@ Figure&nbsp;7: Kaplan-Meier Survival Curve for 6-MP Patients
 <span id="cb11-48"><a></a>  )</span>
 <span id="cb11-49"><a></a></span>
 <span id="cb11-50"><a></a><span class="fu">library</span>(pander)</span>
-<span id="cb11-51"><a></a><span class="fu">pander</span>(km<span class="fl">.6</span>mp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-51"><a></a><span class="fu">pander</span>(km_table)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <table class="caption-top">
 <colgroup>
@@ -1789,10 +1789,10 @@ Figure&nbsp;7: Kaplan-Meier Survival Curve for 6-MP Patients
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb12-2"><a></a><span class="fu">conflicts_prefer</span>(dplyr<span class="sc">::</span>filter)</span>
-<span id="cb12-3"><a></a>km<span class="fl">.6</span>mp <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a></a>km_table <span class="sc">|&gt;</span></span>
 <span id="cb12-4"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> t2, <span class="at">y =</span> <span class="st">`</span><span class="at">KM Survival Curve</span><span class="st">`</span>)) <span class="sc">+</span></span>
 <span id="cb12-5"><a></a>  <span class="fu">geom_step</span>() <span class="sc">+</span></span>
-<span id="cb12-6"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> km<span class="fl">.6</span>mp <span class="sc">|&gt;</span> <span class="fu">filter</span>(Censored <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="at">shape =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb12-6"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> km_table <span class="sc">|&gt;</span> <span class="fu">filter</span>(Censored <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="at">shape =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
 <span id="cb12-7"><a></a>  <span class="fu">expand_limits</span>(<span class="at">y =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">x =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
 <span id="cb12-8"><a></a>  <span class="fu">xlab</span>(<span class="st">"Time since diagnosis (months)"</span>) <span class="sc">+</span></span>
 <span id="cb12-9"><a></a>  <span class="fu">ylab</span>(<span class="st">"KM Survival Curve"</span>) <span class="sc">+</span></span>
@@ -1816,8 +1816,8 @@ Figure&nbsp;8: KM curve for 6MP patients, calculated by hand
 <h4 id="example-surv-with-drug6mp-data">Example: <code>Surv()</code> with <code>drug6mp</code> data</h4>
 <div class="cell">
 <details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" data-code-line-numbers="5-7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a><span class="fu">library</span>(survival)</span>
-<span id="cb13-2"><a></a>drug6mp.v3 <span class="ot">&lt;-</span></span>
-<span id="cb13-3"><a></a>  drug6mp.v2 <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a></a>data_v3 <span class="ot">&lt;-</span></span>
+<span id="cb13-3"><a></a>  data_v2 <span class="sc">|&gt;</span></span>
 <span id="cb13-4"><a></a>  <span class="fu">mutate</span>(</span>
 <span id="cb13-5"><a></a>    <span class="at">surv2 =</span> <span class="fu">Surv</span>(</span>
 <span id="cb13-6"><a></a>      <span class="at">time =</span> t2,</span>
@@ -1825,7 +1825,7 @@ Figure&nbsp;8: KM curve for 6MP patients, calculated by hand
 <span id="cb13-8"><a></a>    )</span>
 <span id="cb13-9"><a></a>  )</span>
 <span id="cb13-10"><a></a></span>
-<span id="cb13-11"><a></a><span class="fu">print</span>(drug6mp.v3)</span>
+<span id="cb13-11"><a></a><span class="fu">print</span>(data_v3)</span>
 <span id="cb13-12"><a></a><span class="co">#&gt; # A tibble: 21 × 7</span></span>
 <span id="cb13-13"><a></a><span class="co">#&gt;     pair remstat     t1    t2 relapse outcome   surv2</span></span>
 <span id="cb13-14"><a></a><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;    &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;chr&gt;    &lt;Surv&gt;</span></span>
@@ -1865,16 +1865,16 @@ Figure&nbsp;8: KM curve for 6MP patients, calculated by hand
 <section class="slide level2"><h4 id="example-survfit-with-drug6mp-data">Example: <code>survfit()</code> with <code>drug6mp</code> data</h4>
 <p>Here we use <code>survfit()</code> to create a <code>survfit</code> object, which contains the Kaplan-Meier estimate:</p>
 <div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a>drug6mp.km_model <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a>km_model <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
 <span id="cb14-2"><a></a>  <span class="at">formula =</span> surv2 <span class="sc">~</span> <span class="dv">1</span>,</span>
-<span id="cb14-3"><a></a>  <span class="at">data =</span> drug6mp.v3</span>
+<span id="cb14-3"><a></a>  <span class="at">data =</span> data_v3</span>
 <span id="cb14-4"><a></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p><code>print.survfit()</code> just gives some summary statistics:</p>
 <div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">print</span>(drug6mp.km_model)</span>
-<span id="cb15-2"><a></a><span class="co">#&gt; Call: survfit(formula = surv2 ~ 1, data = drug6mp.v3)</span></span>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">print</span>(km_model)</span>
+<span id="cb15-2"><a></a><span class="co">#&gt; Call: survfit(formula = surv2 ~ 1, data = data_v3)</span></span>
 <span id="cb15-3"><a></a><span class="co">#&gt; </span></span>
 <span id="cb15-4"><a></a><span class="co">#&gt;       n events median 0.95LCL 0.95UCL</span></span>
 <span id="cb15-5"><a></a><span class="co">#&gt; [1,] 21      9     23      16      NA</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1882,8 +1882,8 @@ Figure&nbsp;8: KM curve for 6MP patients, calculated by hand
 </div>
 <p><code>summary.survfit()</code> shows us the underlying Kaplan-Meier table:</p>
 <div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a><span class="fu">summary</span>(drug6mp.km_model)</span>
-<span id="cb16-2"><a></a><span class="co">#&gt; Call: survfit(formula = surv2 ~ 1, data = drug6mp.v3)</span></span>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a><span class="fu">summary</span>(km_model)</span>
+<span id="cb16-2"><a></a><span class="co">#&gt; Call: survfit(formula = surv2 ~ 1, data = data_v3)</span></span>
 <span id="cb16-3"><a></a><span class="co">#&gt; </span></span>
 <span id="cb16-4"><a></a><span class="co">#&gt;  time n.risk n.event survival std.err lower 95% CI upper 95% CI</span></span>
 <span id="cb16-5"><a></a><span class="co">#&gt;     6     21       3    0.857  0.0764        0.720        1.000</span></span>
@@ -1898,10 +1898,10 @@ Figure&nbsp;8: KM curve for 6MP patients, calculated by hand
 </section><section class="slide level2"><p>We can specify which time points we want using the <code>times</code> argument:</p>
 <div class="cell">
 <details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a></a><span class="fu">summary</span>(</span>
-<span id="cb17-2"><a></a>  drug6mp.km_model,</span>
-<span id="cb17-3"><a></a>  <span class="at">times =</span> <span class="fu">c</span>(<span class="dv">0</span>, drug6mp.v3<span class="sc">$</span>t2)</span>
+<span id="cb17-2"><a></a>  km_model,</span>
+<span id="cb17-3"><a></a>  <span class="at">times =</span> <span class="fu">c</span>(<span class="dv">0</span>, data_v3<span class="sc">$</span>t2)</span>
 <span id="cb17-4"><a></a>)</span>
-<span id="cb17-5"><a></a><span class="co">#&gt; Call: survfit(formula = surv2 ~ 1, data = drug6mp.v3)</span></span>
+<span id="cb17-5"><a></a><span class="co">#&gt; Call: survfit(formula = surv2 ~ 1, data = data_v3)</span></span>
 <span id="cb17-6"><a></a><span class="co">#&gt; </span></span>
 <span id="cb17-7"><a></a><span class="co">#&gt;  time n.risk n.event survival std.err lower 95% CI upper 95% CI</span></span>
 <span id="cb17-8"><a></a><span class="co">#&gt;     0     21       0    1.000  0.0000        1.000        1.000</span></span>
@@ -1936,29 +1936,22 @@ Figure&nbsp;8: KM curve for 6MP patients, calculated by hand
 <p>We can plot <code>survfit</code> objects with <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code>, <code>autoplot()</code>, or <code>ggsurvplot()</code>:</p>
 <div class="cell">
 <details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a></a><span class="fu">library</span>(ggfortify)</span>
-<span id="cb19-2"><a></a><span class="fu">autoplot</span>(drug6mp.km_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb19-2"><a></a><span class="fu">autoplot</span>(km_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure><figcaption>Kaplan-Meier Survival Curve for 6-MP Patients</figcaption><p><a href="intro-to-survival-analysis_files/figure-html/unnamed-chunk-13-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Kaplan-Meier Survival Curve for 6-MP Patients"><img data-src="intro-to-survival-analysis_files/figure-html/unnamed-chunk-13-1.png" width="672" alt="Kaplan-Meier Survival Curve for 6-MP Patients"></a></p>
 </figure>
 </div>
 </div>
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a></a></span>
-<span id="cb20-2"><a></a><span class="co"># not shown:</span></span>
-<span id="cb20-3"><a></a><span class="co"># plot(drug6mp.km_model)</span></span>
-<span id="cb20-4"><a></a></span>
-<span id="cb20-5"><a></a><span class="co"># library(survminer)</span></span>
-<span id="cb20-6"><a></a><span class="co"># ggsurvplot(drug6mp.km_model)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
 </section><section class="slide level2"><h4 id="quantiles-of-survival-curve">quantiles of survival curve</h4>
 <p>We can extract quantiles with <code><a href="https://rdrr.io/r/stats/quantile.html">quantile()</a></code>:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21" data-code-line-numbers="2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a></a>drug6mp.km_model <span class="sc">|&gt;</span></span>
-<span id="cb21-2"><a></a>  <span class="fu">quantile</span>(<span class="at">p =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">5</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb21-3"><a></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
-<span id="cb21-4"><a></a>  <span class="fu">mutate</span>(<span class="at">p =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">5</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb21-5"><a></a>  <span class="fu">relocate</span>(p, <span class="at">.before =</span> <span class="fu">everything</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20" data-code-line-numbers="2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a></a>km_model <span class="sc">|&gt;</span></span>
+<span id="cb20-2"><a></a>  <span class="fu">quantile</span>(<span class="at">p =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">5</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb20-4"><a></a>  <span class="fu">mutate</span>(<span class="at">p =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">5</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb20-5"><a></a>  <span class="fu">relocate</span>(p, <span class="at">.before =</span> <span class="fu">everything</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -2098,53 +2091,53 @@ Figure&nbsp;8: KM curve for 6MP patients, calculated by hand
 \]</span></p>
 <h3 id="the-survdiff-function">The <code>survdiff</code> function</h3>
 <div class="cell" data-printr.help.sections="[&quot;description&quot;,&quot;usage&quot;]">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a></a>?survdiff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a></a>?survdiff</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <h3 id="example-survdiff-with-drug6mp-data">Example: <code>survdiff()</code> with <code>drug6mp</code> data</h3>
 <p>Now we are going to compare the placebo and 6-MP data. We need to reshape the data to make it usable with the standard <code>survival</code> workflow:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a></a><span class="fu">library</span>(survival)</span>
-<span id="cb23-2"><a></a><span class="fu">library</span>(tidyr)</span>
-<span id="cb23-3"><a></a>drug6mp.v4 <span class="ot">&lt;-</span></span>
-<span id="cb23-4"><a></a>  drug6mp.v3 <span class="sc">|&gt;</span></span>
-<span id="cb23-5"><a></a>  <span class="fu">select</span>(pair, remstat, t1, t2, outcome) <span class="sc">|&gt;</span></span>
-<span id="cb23-6"><a></a>  <span class="co"># here we are going to change the data from a wide format to long:</span></span>
-<span id="cb23-7"><a></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb23-8"><a></a>    <span class="at">cols =</span> <span class="fu">c</span>(t1, t2),</span>
-<span id="cb23-9"><a></a>    <span class="at">names_to =</span> <span class="st">"treatment"</span>,</span>
-<span id="cb23-10"><a></a>    <span class="at">values_to =</span> <span class="st">"exit_time"</span></span>
-<span id="cb23-11"><a></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb23-12"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb23-13"><a></a>    <span class="at">treatment =</span> treatment <span class="sc">|&gt;</span></span>
-<span id="cb23-14"><a></a>      <span class="fu">case_match</span>(</span>
-<span id="cb23-15"><a></a>        <span class="st">"t1"</span> <span class="sc">~</span> <span class="st">"placebo"</span>,</span>
-<span id="cb23-16"><a></a>        <span class="st">"t2"</span> <span class="sc">~</span> <span class="st">"6-MP"</span></span>
-<span id="cb23-17"><a></a>      ),</span>
-<span id="cb23-18"><a></a>    <span class="at">outcome =</span> <span class="fu">if_else</span>(</span>
-<span id="cb23-19"><a></a>      treatment <span class="sc">==</span> <span class="st">"placebo"</span>,</span>
-<span id="cb23-20"><a></a>      <span class="st">"relapsed"</span>,</span>
-<span id="cb23-21"><a></a>      outcome</span>
-<span id="cb23-22"><a></a>    ),</span>
-<span id="cb23-23"><a></a>    <span class="at">surv =</span> <span class="fu">Surv</span>(</span>
-<span id="cb23-24"><a></a>      <span class="at">time =</span> exit_time,</span>
-<span id="cb23-25"><a></a>      <span class="at">event =</span> (outcome <span class="sc">==</span> <span class="st">"relapsed"</span>)</span>
-<span id="cb23-26"><a></a>    )</span>
-<span id="cb23-27"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a></a><span class="fu">library</span>(survival)</span>
+<span id="cb22-2"><a></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb22-3"><a></a>data_v4 <span class="ot">&lt;-</span></span>
+<span id="cb22-4"><a></a>  data_v3 <span class="sc">|&gt;</span></span>
+<span id="cb22-5"><a></a>  <span class="fu">select</span>(pair, remstat, t1, t2, outcome) <span class="sc">|&gt;</span></span>
+<span id="cb22-6"><a></a>  <span class="co"># here we are going to change the data from a wide format to long:</span></span>
+<span id="cb22-7"><a></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb22-8"><a></a>    <span class="at">cols =</span> <span class="fu">c</span>(t1, t2),</span>
+<span id="cb22-9"><a></a>    <span class="at">names_to =</span> <span class="st">"treatment"</span>,</span>
+<span id="cb22-10"><a></a>    <span class="at">values_to =</span> <span class="st">"exit_time"</span></span>
+<span id="cb22-11"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb22-12"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb22-13"><a></a>    <span class="at">treatment =</span> treatment <span class="sc">|&gt;</span></span>
+<span id="cb22-14"><a></a>      <span class="fu">case_match</span>(</span>
+<span id="cb22-15"><a></a>        <span class="st">"t1"</span> <span class="sc">~</span> <span class="st">"placebo"</span>,</span>
+<span id="cb22-16"><a></a>        <span class="st">"t2"</span> <span class="sc">~</span> <span class="st">"6-MP"</span></span>
+<span id="cb22-17"><a></a>      ),</span>
+<span id="cb22-18"><a></a>    <span class="at">outcome =</span> <span class="fu">if_else</span>(</span>
+<span id="cb22-19"><a></a>      treatment <span class="sc">==</span> <span class="st">"placebo"</span>,</span>
+<span id="cb22-20"><a></a>      <span class="st">"relapsed"</span>,</span>
+<span id="cb22-21"><a></a>      outcome</span>
+<span id="cb22-22"><a></a>    ),</span>
+<span id="cb22-23"><a></a>    <span class="at">surv =</span> <span class="fu">Surv</span>(</span>
+<span id="cb22-24"><a></a>      <span class="at">time =</span> exit_time,</span>
+<span id="cb22-25"><a></a>      <span class="at">event =</span> (outcome <span class="sc">==</span> <span class="st">"relapsed"</span>)</span>
+<span id="cb22-26"><a></a>    )</span>
+<span id="cb22-27"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><p>Using this long data format, we can fit a Kaplan-Meier curve for each treatment group simultaneously:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a></a>drug6mp.km_model2 <span class="ot">&lt;-</span></span>
-<span id="cb24-2"><a></a>  <span class="fu">survfit</span>(</span>
-<span id="cb24-3"><a></a>    <span class="at">formula =</span> surv <span class="sc">~</span> treatment,</span>
-<span id="cb24-4"><a></a>    <span class="at">data =</span> drug6mp.v4</span>
-<span id="cb24-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a></a>km_model2 <span class="ot">&lt;-</span></span>
+<span id="cb23-2"><a></a>  <span class="fu">survfit</span>(</span>
+<span id="cb23-3"><a></a>    <span class="at">formula =</span> surv <span class="sc">~</span> treatment,</span>
+<span id="cb23-4"><a></a>    <span class="at">data =</span> data_v4</span>
+<span id="cb23-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><p>We can plot the curves in the same graph:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a></a>drug6mp.km_model2 <span class="sc">|&gt;</span> <span class="fu">autoplot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a></a>km_model2 <span class="sc">|&gt;</span> <span class="fu">autoplot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure><p><a href="intro-to-survival-analysis_files/figure-html/unnamed-chunk-18-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12"><img data-src="intro-to-survival-analysis_files/figure-html/unnamed-chunk-18-1.png" width="672"></a></p>
@@ -2153,41 +2146,41 @@ Figure&nbsp;8: KM curve for 6MP patients, calculated by hand
 </div>
 </div>
 </section><section class="slide level2"><p>We can also perform something like a t-test, where the null hypothesis is that the curves are the same:</p>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a></a></span>
-<span id="cb26-2"><a></a>o_e <span class="ot">&lt;-</span> drug6mp.v4 <span class="sc">|&gt;</span></span>
-<span id="cb26-3"><a></a>  <span class="fu">arrange</span>(exit_time) <span class="sc">|&gt;</span></span>
-<span id="cb26-4"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb26-5"><a></a>    <span class="at">.by =</span> treatment,</span>
-<span id="cb26-6"><a></a>    <span class="at">n_exited =</span> <span class="fu">row_number</span>(),</span>
-<span id="cb26-7"><a></a>    <span class="at">n_at_risk =</span> <span class="fu">n</span>() <span class="sc">-</span> n_exited <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb26-8"><a></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb26-9"><a></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(</span>
-<span id="cb26-10"><a></a>    <span class="at">.by =</span> <span class="fu">all_of</span>(<span class="fu">c</span>(<span class="st">"exit_time"</span>, <span class="st">"treatment"</span>)),</span>
-<span id="cb26-11"><a></a>    <span class="at">n_at_risk =</span> <span class="fu">max</span>(n_at_risk),</span>
-<span id="cb26-12"><a></a>    <span class="at">n_events =</span> <span class="fu">sum</span>(outcome <span class="sc">==</span> <span class="st">"relapsed"</span>)</span>
-<span id="cb26-13"><a></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb26-14"><a></a>  tidyr<span class="sc">::</span><span class="fu">pivot_wider</span>(</span>
-<span id="cb26-15"><a></a>    <span class="at">names_from =</span> <span class="st">"treatment"</span>,</span>
-<span id="cb26-16"><a></a>    <span class="at">values_from =</span> <span class="fu">c</span>(n_at_risk, n_events)</span>
-<span id="cb26-17"><a></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb26-18"><a></a>  tidyr<span class="sc">::</span><span class="fu">fill</span>(</span>
-<span id="cb26-19"><a></a>    <span class="fu">starts_with</span>(<span class="st">"n_at_risk"</span>),</span>
-<span id="cb26-20"><a></a>    <span class="at">.direction =</span> <span class="st">"up"</span></span>
-<span id="cb26-21"><a></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb26-22"><a></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="st">"n_events_placebo"</span> <span class="ot">=</span> <span class="dv">0</span>,</span>
-<span id="cb26-23"><a></a>                  <span class="st">"n_events_6-MP"</span> <span class="ot">=</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb26-24"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb26-25"><a></a>    <span class="at">n_at_risk =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_at_risk"</span>))),</span>
-<span id="cb26-26"><a></a>    <span class="at">n_events =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_events"</span>))),</span>
-<span id="cb26-27"><a></a>    <span class="at">marginal_hazard =</span> n_events <span class="sc">/</span> n_at_risk,</span>
-<span id="cb26-28"><a></a>    <span class="at">expected_6mp =</span> marginal_hazard <span class="sc">*</span> <span class="st">`</span><span class="at">n_at_risk_6-MP</span><span class="st">`</span>,</span>
-<span id="cb26-29"><a></a>    <span class="at">expected_plc =</span> marginal_hazard <span class="sc">*</span> n_at_risk_placebo,</span>
-<span id="cb26-30"><a></a>    <span class="at">diff_6mp =</span> <span class="st">`</span><span class="at">n_events_6-MP</span><span class="st">`</span> <span class="sc">-</span> expected_6mp,</span>
-<span id="cb26-31"><a></a>    <span class="at">diff_plc =</span> n_events_placebo <span class="sc">-</span> expected_plc</span>
-<span id="cb26-32"><a></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb26-33"><a></a>  <span class="fu">filter</span>(n_events <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb26-34"><a></a></span>
-<span id="cb26-35"><a></a>o_e</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a></a></span>
+<span id="cb25-2"><a></a>o_e <span class="ot">&lt;-</span> data_v4 <span class="sc">|&gt;</span></span>
+<span id="cb25-3"><a></a>  <span class="fu">arrange</span>(exit_time) <span class="sc">|&gt;</span></span>
+<span id="cb25-4"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb25-5"><a></a>    <span class="at">.by =</span> treatment,</span>
+<span id="cb25-6"><a></a>    <span class="at">n_exited =</span> <span class="fu">row_number</span>(),</span>
+<span id="cb25-7"><a></a>    <span class="at">n_at_risk =</span> <span class="fu">n</span>() <span class="sc">-</span> n_exited <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb25-8"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb25-9"><a></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(</span>
+<span id="cb25-10"><a></a>    <span class="at">.by =</span> <span class="fu">all_of</span>(<span class="fu">c</span>(<span class="st">"exit_time"</span>, <span class="st">"treatment"</span>)),</span>
+<span id="cb25-11"><a></a>    <span class="at">n_at_risk =</span> <span class="fu">max</span>(n_at_risk),</span>
+<span id="cb25-12"><a></a>    <span class="at">n_events =</span> <span class="fu">sum</span>(outcome <span class="sc">==</span> <span class="st">"relapsed"</span>)</span>
+<span id="cb25-13"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb25-14"><a></a>  tidyr<span class="sc">::</span><span class="fu">pivot_wider</span>(</span>
+<span id="cb25-15"><a></a>    <span class="at">names_from =</span> <span class="st">"treatment"</span>,</span>
+<span id="cb25-16"><a></a>    <span class="at">values_from =</span> <span class="fu">c</span>(n_at_risk, n_events)</span>
+<span id="cb25-17"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb25-18"><a></a>  tidyr<span class="sc">::</span><span class="fu">fill</span>(</span>
+<span id="cb25-19"><a></a>    <span class="fu">starts_with</span>(<span class="st">"n_at_risk"</span>),</span>
+<span id="cb25-20"><a></a>    <span class="at">.direction =</span> <span class="st">"up"</span></span>
+<span id="cb25-21"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb25-22"><a></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="st">"n_events_placebo"</span> <span class="ot">=</span> <span class="dv">0</span>,</span>
+<span id="cb25-23"><a></a>                  <span class="st">"n_events_6-MP"</span> <span class="ot">=</span> <span class="dv">0</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb25-24"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb25-25"><a></a>    <span class="at">n_at_risk =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_at_risk"</span>))),</span>
+<span id="cb25-26"><a></a>    <span class="at">n_events =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_events"</span>))),</span>
+<span id="cb25-27"><a></a>    <span class="at">marginal_hazard =</span> n_events <span class="sc">/</span> n_at_risk,</span>
+<span id="cb25-28"><a></a>    <span class="at">expected_6mp =</span> marginal_hazard <span class="sc">*</span> <span class="st">`</span><span class="at">n_at_risk_6-MP</span><span class="st">`</span>,</span>
+<span id="cb25-29"><a></a>    <span class="at">expected_plc =</span> marginal_hazard <span class="sc">*</span> n_at_risk_placebo,</span>
+<span id="cb25-30"><a></a>    <span class="at">diff_6mp =</span> <span class="st">`</span><span class="at">n_events_6-MP</span><span class="st">`</span> <span class="sc">-</span> expected_6mp,</span>
+<span id="cb25-31"><a></a>    <span class="at">diff_plc =</span> n_events_placebo <span class="sc">-</span> expected_plc</span>
+<span id="cb25-32"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb25-33"><a></a>  <span class="fu">filter</span>(n_events <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb25-34"><a></a></span>
+<span id="cb25-35"><a></a>o_e</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-logrank-6mp" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-logrank-6mp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;3: Observed and expected event counts for the 6-MP data, for log-rank test
@@ -2204,12 +2197,12 @@ Table&nbsp;3: Observed and expected event counts for the 6-MP data, for log-rank
 </div>
 </figure>
 </div>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a></a>o_e_summ <span class="ot">&lt;-</span> o_e <span class="sc">|&gt;</span></span>
-<span id="cb27-2"><a></a>  <span class="fu">summarize</span>(</span>
-<span id="cb27-3"><a></a>    <span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"expected"</span>), sum),</span>
-<span id="cb27-4"><a></a>    <span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_events_"</span>), sum)</span>
-<span id="cb27-5"><a></a>  )</span>
-<span id="cb27-6"><a></a>pander<span class="sc">::</span><span class="fu">pander</span>(o_e_summ)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a></a>o_e_summ <span class="ot">&lt;-</span> o_e <span class="sc">|&gt;</span></span>
+<span id="cb26-2"><a></a>  <span class="fu">summarize</span>(</span>
+<span id="cb26-3"><a></a>    <span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"expected"</span>), sum),</span>
+<span id="cb26-4"><a></a>    <span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"n_events_"</span>), sum)</span>
+<span id="cb26-5"><a></a>  )</span>
+<span id="cb26-6"><a></a>pander<span class="sc">::</span><span class="fu">pander</span>(o_e_summ)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-sum-obs-exp" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-sum-obs-exp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;4: Observed and expected sums for the 6-MP data, for log-rank test
@@ -2281,15 +2274,15 @@ Table&nbsp;4: Observed and expected sums for the 6-MP data, for log-rank test
           display:block!important;
       }</style></aside><p><span class="math display">\[X^2 \approx \sum_{i = 1}^p \frac{(O_i - E_i)^2}{E_i}\]</span></p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a></a><span class="fu">with</span>(</span>
-<span id="cb28-2"><a></a>  o_e_summ,</span>
-<span id="cb28-3"><a></a>  <span class="fu">tibble</span>(</span>
-<span id="cb28-4"><a></a>    <span class="st">"6mp"</span> <span class="ot">=</span> (<span class="st">`</span><span class="at">n_events_6-MP</span><span class="st">`</span> <span class="sc">-</span> expected_6mp)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> expected_6mp,</span>
-<span id="cb28-5"><a></a>    <span class="st">"placebo"</span> <span class="ot">=</span> (n_events_placebo <span class="sc">-</span> expected_plc)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> expected_plc,</span>
-<span id="cb28-6"><a></a>    <span class="at">sum =</span> <span class="st">`</span><span class="at">6mp</span><span class="st">`</span> <span class="sc">+</span> placebo</span>
-<span id="cb28-7"><a></a>  )</span>
-<span id="cb28-8"><a></a>) <span class="sc">|&gt;</span></span>
-<span id="cb28-9"><a></a>  pander<span class="sc">::</span><span class="fu">pander</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a></a><span class="fu">with</span>(</span>
+<span id="cb27-2"><a></a>  o_e_summ,</span>
+<span id="cb27-3"><a></a>  <span class="fu">tibble</span>(</span>
+<span id="cb27-4"><a></a>    <span class="st">"6mp"</span> <span class="ot">=</span> (<span class="st">`</span><span class="at">n_events_6-MP</span><span class="st">`</span> <span class="sc">-</span> expected_6mp)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> expected_6mp,</span>
+<span id="cb27-5"><a></a>    <span class="st">"placebo"</span> <span class="ot">=</span> (n_events_placebo <span class="sc">-</span> expected_plc)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> expected_plc,</span>
+<span id="cb27-6"><a></a>    <span class="at">sum =</span> <span class="st">`</span><span class="at">6mp</span><span class="st">`</span> <span class="sc">+</span> placebo</span>
+<span id="cb27-7"><a></a>  )</span>
+<span id="cb27-8"><a></a>) <span class="sc">|&gt;</span></span>
+<span id="cb27-9"><a></a>  pander<span class="sc">::</span><span class="fu">pander</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <table class="caption-top" style="width:39%;">
 <colgroup>
@@ -2312,18 +2305,18 @@ Table&nbsp;4: Observed and expected sums for the 6-MP data, for log-rank test
 </div>
 </section><section class="slide level2"><p>R gives us both the exact and approximate results:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a></a><span class="fu">survdiff</span>(</span>
-<span id="cb29-2"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> treatment,</span>
-<span id="cb29-3"><a></a>  <span class="at">data =</span> drug6mp.v4</span>
-<span id="cb29-4"><a></a>)</span>
-<span id="cb29-5"><a></a><span class="co">#&gt; Call:</span></span>
-<span id="cb29-6"><a></a><span class="co">#&gt; survdiff(formula = surv ~ treatment, data = drug6mp.v4)</span></span>
-<span id="cb29-7"><a></a><span class="co">#&gt; </span></span>
-<span id="cb29-8"><a></a><span class="co">#&gt;                    N Observed Expected (O-E)^2/E (O-E)^2/V</span></span>
-<span id="cb29-9"><a></a><span class="co">#&gt; treatment=6-MP    21        9     19.3      5.46      16.8</span></span>
-<span id="cb29-10"><a></a><span class="co">#&gt; treatment=placebo 21       21     10.7      9.77      16.8</span></span>
-<span id="cb29-11"><a></a><span class="co">#&gt; </span></span>
-<span id="cb29-12"><a></a><span class="co">#&gt;  Chisq= 16.8  on 1 degrees of freedom, p= 4e-05</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a></a><span class="fu">survdiff</span>(</span>
+<span id="cb28-2"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> treatment,</span>
+<span id="cb28-3"><a></a>  <span class="at">data =</span> data_v4</span>
+<span id="cb28-4"><a></a>)</span>
+<span id="cb28-5"><a></a><span class="co">#&gt; Call:</span></span>
+<span id="cb28-6"><a></a><span class="co">#&gt; survdiff(formula = surv ~ treatment, data = data_v4)</span></span>
+<span id="cb28-7"><a></a><span class="co">#&gt; </span></span>
+<span id="cb28-8"><a></a><span class="co">#&gt;                    N Observed Expected (O-E)^2/E (O-E)^2/V</span></span>
+<span id="cb28-9"><a></a><span class="co">#&gt; treatment=6-MP    21        9     19.3      5.46      16.8</span></span>
+<span id="cb28-10"><a></a><span class="co">#&gt; treatment=placebo 21       21     10.7      9.77      16.8</span></span>
+<span id="cb28-11"><a></a><span class="co">#&gt; </span></span>
+<span id="cb28-12"><a></a><span class="co">#&gt;  Chisq= 16.8  on 1 degrees of freedom, p= 4e-05</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><aside class="notes"><p>By default, <code>survdiff()</code> ignores any pairing, but we can use <code>strata()</code> to perform something similar to a paired t-test:</p>
@@ -2338,19 +2331,19 @@ Table&nbsp;4: Observed and expected sums for the 6-MP data, for log-rank test
           overflow: hidden!important;
           display:block!important;
       }</style></aside><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a></a>lrank_test <span class="ot">&lt;-</span> <span class="fu">survdiff</span>(</span>
-<span id="cb30-2"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> treatment <span class="sc">+</span> <span class="fu">strata</span>(pair),</span>
-<span id="cb30-3"><a></a>  <span class="at">data =</span> drug6mp.v4</span>
-<span id="cb30-4"><a></a>)</span>
-<span id="cb30-5"><a></a>lrank_test</span>
-<span id="cb30-6"><a></a><span class="co">#&gt; Call:</span></span>
-<span id="cb30-7"><a></a><span class="co">#&gt; survdiff(formula = surv ~ treatment + strata(pair), data = drug6mp.v4)</span></span>
-<span id="cb30-8"><a></a><span class="co">#&gt; </span></span>
-<span id="cb30-9"><a></a><span class="co">#&gt;                    N Observed Expected (O-E)^2/E (O-E)^2/V</span></span>
-<span id="cb30-10"><a></a><span class="co">#&gt; treatment=6-MP    21        9     16.5      3.41      10.7</span></span>
-<span id="cb30-11"><a></a><span class="co">#&gt; treatment=placebo 21       21     13.5      4.17      10.7</span></span>
-<span id="cb30-12"><a></a><span class="co">#&gt; </span></span>
-<span id="cb30-13"><a></a><span class="co">#&gt;  Chisq= 10.7  on 1 degrees of freedom, p= 0.001</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a></a>lrank_test <span class="ot">&lt;-</span> <span class="fu">survdiff</span>(</span>
+<span id="cb29-2"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> treatment <span class="sc">+</span> <span class="fu">strata</span>(pair),</span>
+<span id="cb29-3"><a></a>  <span class="at">data =</span> data_v4</span>
+<span id="cb29-4"><a></a>)</span>
+<span id="cb29-5"><a></a>lrank_test</span>
+<span id="cb29-6"><a></a><span class="co">#&gt; Call:</span></span>
+<span id="cb29-7"><a></a><span class="co">#&gt; survdiff(formula = surv ~ treatment + strata(pair), data = data_v4)</span></span>
+<span id="cb29-8"><a></a><span class="co">#&gt; </span></span>
+<span id="cb29-9"><a></a><span class="co">#&gt;                    N Observed Expected (O-E)^2/E (O-E)^2/V</span></span>
+<span id="cb29-10"><a></a><span class="co">#&gt; treatment=6-MP    21        9     16.5      3.41      10.7</span></span>
+<span id="cb29-11"><a></a><span class="co">#&gt; treatment=placebo 21       21     13.5      4.17      10.7</span></span>
+<span id="cb29-12"><a></a><span class="co">#&gt; </span></span>
+<span id="cb29-13"><a></a><span class="co">#&gt;  Chisq= 10.7  on 1 degrees of freedom, p= 0.001</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <aside class="notes"><p>Interestingly, accounting for pairing reduces the significance of the difference.</p>
@@ -2405,8 +2398,8 @@ Figure&nbsp;9: Recovery process from a bone marrow transplant (Fig. 1.1 from <sp
 <h3 id="kmsurvbmt-data-in-r">
 <code>KMsurv::bmt</code> data in R</h3>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a></a><span class="fu">library</span>(KMsurv)</span>
-<span id="cb31-2"><a></a>?bmt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a></a><span class="fu">library</span>(KMsurv)</span>
+<span id="cb30-2"><a></a>?bmt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <h3 id="analysis-plan">Analysis plan</h3>
@@ -2427,38 +2420,38 @@ Figure&nbsp;9: Recovery process from a bone marrow transplant (Fig. 1.1 from <sp
 <p>We can use <a href="#/eq-var-est-surv" class="quarto-xref">Equation&nbsp;3</a> for confidence intervals for a survival function or a difference of survival functions.</p>
 </section><section class="slide level2"><h5 id="kaplan-meier-survival-curves">Kaplan-Meier survival curves</h5>
 <div class="cell">
-<details class="code-fold"><summary>code to preprocess and model <code>bmt</code> data</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a></a><span class="fu">library</span>(KMsurv)</span>
-<span id="cb32-2"><a></a><span class="fu">library</span>(survival)</span>
-<span id="cb32-3"><a></a><span class="fu">data</span>(bmt)</span>
-<span id="cb32-4"><a></a></span>
-<span id="cb32-5"><a></a>bmt <span class="ot">&lt;-</span></span>
-<span id="cb32-6"><a></a>  bmt <span class="sc">|&gt;</span></span>
-<span id="cb32-7"><a></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
-<span id="cb32-8"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb32-9"><a></a>    <span class="at">group =</span></span>
-<span id="cb32-10"><a></a>      group <span class="sc">|&gt;</span></span>
-<span id="cb32-11"><a></a>      <span class="fu">factor</span>(</span>
-<span id="cb32-12"><a></a>        <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"ALL"</span>, <span class="st">"Low Risk AML"</span>, <span class="st">"High Risk AML"</span>)</span>
-<span id="cb32-13"><a></a>      ),</span>
-<span id="cb32-14"><a></a>    <span class="at">surv =</span> <span class="fu">Surv</span>(t2, d3)</span>
-<span id="cb32-15"><a></a>  )</span>
-<span id="cb32-16"><a></a></span>
-<span id="cb32-17"><a></a>km_model1 <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
-<span id="cb32-18"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
-<span id="cb32-19"><a></a>  <span class="at">data =</span> bmt</span>
-<span id="cb32-20"><a></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>code to preprocess and model <code>bmt</code> data</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a></a><span class="fu">library</span>(KMsurv)</span>
+<span id="cb31-2"><a></a><span class="fu">library</span>(survival)</span>
+<span id="cb31-3"><a></a><span class="fu">data</span>(bmt)</span>
+<span id="cb31-4"><a></a></span>
+<span id="cb31-5"><a></a>bmt <span class="ot">&lt;-</span></span>
+<span id="cb31-6"><a></a>  bmt <span class="sc">|&gt;</span></span>
+<span id="cb31-7"><a></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb31-8"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb31-9"><a></a>    <span class="at">group =</span></span>
+<span id="cb31-10"><a></a>      group <span class="sc">|&gt;</span></span>
+<span id="cb31-11"><a></a>      <span class="fu">factor</span>(</span>
+<span id="cb31-12"><a></a>        <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"ALL"</span>, <span class="st">"Low Risk AML"</span>, <span class="st">"High Risk AML"</span>)</span>
+<span id="cb31-13"><a></a>      ),</span>
+<span id="cb31-14"><a></a>    <span class="at">surv =</span> <span class="fu">Surv</span>(t2, d3)</span>
+<span id="cb31-15"><a></a>  )</span>
+<span id="cb31-16"><a></a></span>
+<span id="cb31-17"><a></a>km_model1 <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
+<span id="cb31-18"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
+<span id="cb31-19"><a></a>  <span class="at">data =</span> bmt</span>
+<span id="cb31-20"><a></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a></a><span class="fu">library</span>(ggfortify)</span>
-<span id="cb33-2"><a></a><span class="fu">autoplot</span>(</span>
-<span id="cb33-3"><a></a>  km_model1,</span>
-<span id="cb33-4"><a></a>  <span class="at">conf.int =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb33-5"><a></a>  <span class="at">ylab =</span> <span class="st">"Pr(disease-free survival)"</span>,</span>
-<span id="cb33-6"><a></a>  <span class="at">xlab =</span> <span class="st">"Time since transplant (days)"</span></span>
-<span id="cb33-7"><a></a>) <span class="sc">+</span></span>
-<span id="cb33-8"><a></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb33-9"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a></a><span class="fu">library</span>(ggfortify)</span>
+<span id="cb32-2"><a></a><span class="fu">autoplot</span>(</span>
+<span id="cb32-3"><a></a>  km_model1,</span>
+<span id="cb32-4"><a></a>  <span class="at">conf.int =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb32-5"><a></a>  <span class="at">ylab =</span> <span class="st">"Pr(disease-free survival)"</span>,</span>
+<span id="cb32-6"><a></a>  <span class="at">xlab =</span> <span class="st">"Time since transplant (days)"</span></span>
+<span id="cb32-7"><a></a>) <span class="sc">+</span></span>
+<span id="cb32-8"><a></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb32-9"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure><figcaption>Disease-Free Survival by Disease Group</figcaption><p><a href="intro-to-survival-analysis_files/figure-html/KM survival curves for bmt data-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14" title="Disease-Free Survival by Disease Group"><img data-src="intro-to-survival-analysis_files/figure-html/KM survival curves for bmt data-1.png" width="672" alt="Disease-Free Survival by Disease Group"></a></p>
@@ -2509,16 +2502,16 @@ Figure&nbsp;9: Recovery process from a bone marrow transplant (Fig. 1.1 from <sp
 <h3 id="test-for-differences-among-the-disease-groups">Test for differences among the disease groups</h3>
 <p>Here we compute a chi-square test for assocation between disease group (<code>group</code>) and disease-free survival:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a></a><span class="fu">survdiff</span>(surv <span class="sc">~</span> group, <span class="at">data =</span> bmt)</span>
-<span id="cb34-2"><a></a><span class="co">#&gt; Call:</span></span>
-<span id="cb34-3"><a></a><span class="co">#&gt; survdiff(formula = surv ~ group, data = bmt)</span></span>
-<span id="cb34-4"><a></a><span class="co">#&gt; </span></span>
-<span id="cb34-5"><a></a><span class="co">#&gt;                      N Observed Expected (O-E)^2/E (O-E)^2/V</span></span>
-<span id="cb34-6"><a></a><span class="co">#&gt; group=ALL           38       24     21.9     0.211     0.289</span></span>
-<span id="cb34-7"><a></a><span class="co">#&gt; group=Low Risk AML  54       25     40.0     5.604    11.012</span></span>
-<span id="cb34-8"><a></a><span class="co">#&gt; group=High Risk AML 45       34     21.2     7.756    10.529</span></span>
-<span id="cb34-9"><a></a><span class="co">#&gt; </span></span>
-<span id="cb34-10"><a></a><span class="co">#&gt;  Chisq= 13.8  on 2 degrees of freedom, p= 0.001</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a></a><span class="fu">survdiff</span>(surv <span class="sc">~</span> group, <span class="at">data =</span> bmt)</span>
+<span id="cb33-2"><a></a><span class="co">#&gt; Call:</span></span>
+<span id="cb33-3"><a></a><span class="co">#&gt; survdiff(formula = surv ~ group, data = bmt)</span></span>
+<span id="cb33-4"><a></a><span class="co">#&gt; </span></span>
+<span id="cb33-5"><a></a><span class="co">#&gt;                      N Observed Expected (O-E)^2/E (O-E)^2/V</span></span>
+<span id="cb33-6"><a></a><span class="co">#&gt; group=ALL           38       24     21.9     0.211     0.289</span></span>
+<span id="cb33-7"><a></a><span class="co">#&gt; group=Low Risk AML  54       25     40.0     5.604    11.012</span></span>
+<span id="cb33-8"><a></a><span class="co">#&gt; group=High Risk AML 45       34     21.2     7.756    10.529</span></span>
+<span id="cb33-9"><a></a><span class="co">#&gt; </span></span>
+<span id="cb33-10"><a></a><span class="co">#&gt;  Chisq= 13.8  on 2 degrees of freedom, p= 0.001</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <h3 id="cumulative-hazard-1">Cumulative Hazard</h3>
@@ -2548,15 +2541,15 @@ Figure&nbsp;9: Recovery process from a bone marrow transplant (Fig. 1.1 from <sp
 <p>This is the <strong>Kaplan-Meier (product-limit) estimate of cumulative hazard</strong>.</p>
 </section><section class="slide level2"><h4 id="example-cumulative-hazard-curves-for-bone-marrow-transplant-bmt-data">Example: Cumulative Hazard Curves for Bone-Marrow Transplant (<code>bmt</code>) data</h4>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a></a><span class="fu">autoplot</span>(</span>
-<span id="cb35-2"><a></a>  <span class="at">fun =</span> <span class="st">"cumhaz"</span>,</span>
-<span id="cb35-3"><a></a>  km_model1,</span>
-<span id="cb35-4"><a></a>  <span class="at">conf.int =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb35-5"><a></a>  <span class="at">ylab =</span> <span class="st">"Cumulative hazard (disease-free survival)"</span>,</span>
-<span id="cb35-6"><a></a>  <span class="at">xlab =</span> <span class="st">"Time since transplant (days)"</span></span>
-<span id="cb35-7"><a></a>) <span class="sc">+</span></span>
-<span id="cb35-8"><a></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb35-9"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a></a><span class="fu">autoplot</span>(</span>
+<span id="cb34-2"><a></a>  <span class="at">fun =</span> <span class="st">"cumhaz"</span>,</span>
+<span id="cb34-3"><a></a>  km_model1,</span>
+<span id="cb34-4"><a></a>  <span class="at">conf.int =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb34-5"><a></a>  <span class="at">ylab =</span> <span class="st">"Cumulative hazard (disease-free survival)"</span>,</span>
+<span id="cb34-6"><a></a>  <span class="at">xlab =</span> <span class="st">"Time since transplant (days)"</span></span>
+<span id="cb34-7"><a></a>) <span class="sc">+</span></span>
+<span id="cb34-8"><a></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb34-9"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-cuhaz-bmt" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-cuhaz-bmt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -2636,36 +2629,36 @@ Figure&nbsp;10: Disease-Free Cumulative Hazard by Disease Group
           display:block!important;
       }</style></aside><h3 id="application-to-bmt-dataset">Application to <code>bmt</code> dataset</h3>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a></a>na_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
-<span id="cb36-2"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
-<span id="cb36-3"><a></a>  <span class="at">type =</span> <span class="st">"fleming-harrington"</span>,</span>
-<span id="cb36-4"><a></a>  <span class="at">data =</span> bmt</span>
-<span id="cb36-5"><a></a>)</span>
-<span id="cb36-6"><a></a></span>
-<span id="cb36-7"><a></a>km_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
-<span id="cb36-8"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
-<span id="cb36-9"><a></a>  <span class="at">type =</span> <span class="st">"kaplan-meier"</span>,</span>
-<span id="cb36-10"><a></a>  <span class="at">data =</span> bmt</span>
-<span id="cb36-11"><a></a>)</span>
-<span id="cb36-12"><a></a></span>
-<span id="cb36-13"><a></a>km_and_na <span class="ot">&lt;-</span></span>
-<span id="cb36-14"><a></a>  <span class="fu">bind_rows</span>(</span>
-<span id="cb36-15"><a></a>    <span class="at">.id =</span> <span class="st">"model"</span>,</span>
-<span id="cb36-16"><a></a>    <span class="st">"Kaplan-Meier"</span> <span class="ot">=</span> km_fit <span class="sc">|&gt;</span> <span class="fu">fortify</span>(<span class="at">surv.connect =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb36-17"><a></a>    <span class="st">"Nelson-Aalen"</span> <span class="ot">=</span> na_fit <span class="sc">|&gt;</span> <span class="fu">fortify</span>(<span class="at">surv.connect =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb36-18"><a></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb36-19"><a></a>  <span class="fu">as_tibble</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a></a>na_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
+<span id="cb35-2"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
+<span id="cb35-3"><a></a>  <span class="at">type =</span> <span class="st">"fleming-harrington"</span>,</span>
+<span id="cb35-4"><a></a>  <span class="at">data =</span> bmt</span>
+<span id="cb35-5"><a></a>)</span>
+<span id="cb35-6"><a></a></span>
+<span id="cb35-7"><a></a>km_fit <span class="ot">&lt;-</span> <span class="fu">survfit</span>(</span>
+<span id="cb35-8"><a></a>  <span class="at">formula =</span> surv <span class="sc">~</span> group,</span>
+<span id="cb35-9"><a></a>  <span class="at">type =</span> <span class="st">"kaplan-meier"</span>,</span>
+<span id="cb35-10"><a></a>  <span class="at">data =</span> bmt</span>
+<span id="cb35-11"><a></a>)</span>
+<span id="cb35-12"><a></a></span>
+<span id="cb35-13"><a></a>km_and_na <span class="ot">&lt;-</span></span>
+<span id="cb35-14"><a></a>  <span class="fu">bind_rows</span>(</span>
+<span id="cb35-15"><a></a>    <span class="at">.id =</span> <span class="st">"model"</span>,</span>
+<span id="cb35-16"><a></a>    <span class="st">"Kaplan-Meier"</span> <span class="ot">=</span> km_fit <span class="sc">|&gt;</span> <span class="fu">fortify</span>(<span class="at">surv.connect =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb35-17"><a></a>    <span class="st">"Nelson-Aalen"</span> <span class="ot">=</span> na_fit <span class="sc">|&gt;</span> <span class="fu">fortify</span>(<span class="at">surv.connect =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-18"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb35-19"><a></a>  <span class="fu">as_tibble</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a></a>km_and_na <span class="sc">|&gt;</span></span>
-<span id="cb37-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> surv, <span class="at">col =</span> model)) <span class="sc">+</span></span>
-<span id="cb37-3"><a></a>  <span class="fu">geom_step</span>() <span class="sc">+</span></span>
-<span id="cb37-4"><a></a>  <span class="fu">facet_grid</span>(. <span class="sc">~</span> strata) <span class="sc">+</span></span>
-<span id="cb37-5"><a></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb37-6"><a></a>  <span class="fu">ylab</span>(<span class="st">"S(t) = P(T&gt;=t)"</span>) <span class="sc">+</span></span>
-<span id="cb37-7"><a></a>  <span class="fu">xlab</span>(<span class="st">"Survival time (t, days)"</span>) <span class="sc">+</span></span>
-<span id="cb37-8"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a></a>km_and_na <span class="sc">|&gt;</span></span>
+<span id="cb36-2"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> time, <span class="at">y =</span> surv, <span class="at">col =</span> model)) <span class="sc">+</span></span>
+<span id="cb36-3"><a></a>  <span class="fu">geom_step</span>() <span class="sc">+</span></span>
+<span id="cb36-4"><a></a>  <span class="fu">facet_grid</span>(. <span class="sc">~</span> strata) <span class="sc">+</span></span>
+<span id="cb36-5"><a></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb36-6"><a></a>  <span class="fu">ylab</span>(<span class="st">"S(t) = P(T&gt;=t)"</span>) <span class="sc">+</span></span>
+<span id="cb36-7"><a></a>  <span class="fu">xlab</span>(<span class="st">"Survival time (t, days)"</span>) <span class="sc">+</span></span>
+<span id="cb36-8"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure><figcaption>Kaplan-Meier and Nelson-Aalen Survival Function Estimates, stratified by disease group</figcaption><p><a href="intro-to-survival-analysis_files/figure-html/unnamed-chunk-28-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16" title="Kaplan-Meier and Nelson-Aalen Survival Function Estimates, stratified by disease group"><img data-src="intro-to-survival-analysis_files/figure-html/unnamed-chunk-28-1.png" width="672" alt="Kaplan-Meier and Nelson-Aalen Survival Function Estimates, stratified by disease group"></a></p>
