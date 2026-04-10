@@ -40,16 +40,20 @@ $$
 
 Because $\sigma^2$ is unknown and must be estimated,
 comparing deviances between two nested Gaussian models uses an **F-test**,
-which is exact under Gaussian assumptions:
+which is exact under Gaussian assumptions.
+Substituting $D = \text{RSS}/\hat\sigma^2$, the $\hat\sigma^2$ factors cancel:
 
 $$
-F = \frac{(D_1 - D_2) / (p_2 - p_1)}{D_2 / (n - p_2)} \dist F_{p_2 - p_1,\; n - p_2}
+F = \frac{(D_1 - D_2) / (p_2 - p_1)}{D_2 / (n - p_2)}
+= \frac{(\text{RSS}_1 - \text{RSS}_2) / (p_2 - p_1)}{\text{RSS}_2 / (n - p_2)}
+\dist F_{p_2 - p_1,\; n - p_2}
 $$
 
 In R, `deviance()` applied to an `lm` object returns **RSS**
 (the unscaled deviance):
 
 ```{r}
+#| code-fold: false
 deviance(bw_lm2)
 sum(residuals(bw_lm2)^2)
 ```
@@ -62,6 +66,7 @@ The Gaussian linear regression model can equivalently be fit as a GLM
 with `family = gaussian`, which also returns RSS as the deviance:
 
 ```{r}
+#| code-fold: false
 bw_glm2 <- glm(
   weight ~ sex + age + sex:age,
   data = bw,

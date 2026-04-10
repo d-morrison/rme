@@ -77,6 +77,22 @@ Example:
 # First, check if the input is valid. Then, process the data. Finally, return the result.
 ```
 
+## Quarto Code Chunk Options
+
+When the code **and** its console output are both needed for the surrounding narrative to make sense, use `#| code-fold: false` so that neither is hidden:
+
+```qmd
+```{r}
+#| code-fold: false
+deviance(my_model)
+sum(residuals(my_model)^2)
+```
+```
+
+Use `code-fold: false` whenever:
+- The output value is referenced or explained in the surrounding text
+- The reader needs to see both the code and the result to follow the argument
+
 ## CI/CD Workflow Debugging
 
 When investigating CI/CD failures (build, test, or lint workflow issues):
