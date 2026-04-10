@@ -657,7 +657,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2026-04-10: 3:24:58 (UTC)</p>
+      <p class="date">Last modified: 2026-04-10: 3:45:11 (UTC)</p>
     </div>
   </div>
   
@@ -1922,6 +1922,98 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 <div class="notes">
 <p>For example, the intercept <span class="math inline">\(\beta_0\)</span> in our interaction model represents the mean birthweight for females at age = 0 weeks, which is not a biologically plausible scenario. If we center age at 36 weeks instead, <span class="math inline">\(\beta_0\)</span> will represent the mean birthweight for females at 36 weeks, which is more interpretable.</p>
 </div>
+<hr>
+<div id="exr-rescaling-interaction" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 12</strong></span> Let <span class="math inline">\(A^* = A - 32\)</span> weeks.</p>
+<p>Consider a new version of <a href="#eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>, with <span class="math inline">\(A^*\)</span> in place of <span class="math inline">\(A\)</span>:</p>
+<p><span id="eq-BW-lm-interact-rescaled"><span class="math display">\[
+\text{E}{\left[Y|M=m, A^*=a^*\right]} = \gamma_0 + \gamma_M m + \gamma_{A^*} a^* + \gamma_{A^*M} (m \cdot a^*)
+\tag{4}\]</span></span></p>
+<p>Let the coefficients of this model be <span class="math inline">\(\gamma\)</span>s instead of <span class="math inline">\(\beta\)</span>s.</p>
+<p>What are the interpretations of the <span class="math inline">\(\gamma\)</span>s? How do they relate to the <span class="math inline">\(\beta\)</span>s in <a href="#eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>? Which have the same interpretation? Which are different, and how do they differ? What is the pattern?</p>
+</div>
+<hr>
+<div class="proof solution">
+<p><span class="proof-title"><em>Solution</em>. </span><strong>Interpretation of <span class="math inline">\(\gamma_0\)</span>:</strong></p>
+<p>From <a href="#eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, <span class="math inline">\(\gamma_0\)</span> is the mean birthweight among females (<span class="math inline">\(M = 0\)</span>) with <span class="math inline">\(A^* = 0\)</span> (i.e., <span class="math inline">\(A = 32\)</span> weeks):</p>
+<p><span class="math display">\[
+\gamma_0 = \text{E}{\left[Y|M=0, A^*=0\right]} = \text{E}{\left[Y|M=0, A=32\right]}
+\]</span></p>
+<p>Substituting into <a href="#eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_0
+&amp;= \beta_0 + \beta_M \cdot 0 + \beta_A \cdot 32 + \beta_{AM} \cdot 0 \cdot 32\\
+&amp;= \beta_0 + 32\beta_A
+\end{aligned}
+\]</span></p>
+<p>This differs from <span class="math inline">\(\beta_0 = \text{E}{\left[Y|M=0, A=0\right]}\)</span>, which is the mean birthweight among females at <span class="math inline">\(A = 0\)</span> weeks.</p>
+<p><strong>Interpretation of <span class="math inline">\(\gamma_M\)</span>:</strong></p>
+<p>From <a href="#eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, <span class="math inline">\(\gamma_M\)</span> is the sex difference in mean birthweight at <span class="math inline">\(A^* = 0\)</span> (i.e., <span class="math inline">\(A = 32\)</span> weeks):</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_M
+&amp;= \text{E}{\left[Y|M=1, A^*=0\right]} - \text{E}{\left[Y|M=0, A^*=0\right]}\\
+&amp;= \text{E}{\left[Y|M=1, A=32\right]} - \text{E}{\left[Y|M=0, A=32\right]}
+\end{aligned}
+\]</span></p>
+<p>Substituting into <a href="#eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_M
+&amp;= (\beta_0 + \beta_M + \beta_A \cdot 32 + \beta_{AM} \cdot 32) - (\beta_0 + \beta_A \cdot 32)\\
+&amp;= \beta_M + 32\beta_{AM}
+\end{aligned}
+\]</span></p>
+<p>This differs from <span class="math inline">\(\beta_M\)</span>, which is the sex difference at <span class="math inline">\(A = 0\)</span> weeks.</p>
+<p><strong>Interpretation of <span class="math inline">\(\gamma_{A^*}\)</span>:</strong></p>
+<p>From <a href="#eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, <span class="math inline">\(\gamma_{A^*}\)</span> is the slope of mean birthweight with respect to <span class="math inline">\(A^*\)</span> among females (<span class="math inline">\(M = 0\)</span>):</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_{A^*}
+&amp;= \frac{d}{da^*}\text{E}{\left[Y|M=0, A^*=a^*\right]}\\
+&amp;= \frac{d}{da^*}\text{E}{\left[Y|M=0, A=a^*+32\right]}\\
+&amp;= \frac{d}{da}\text{E}{\left[Y|M=0, A=a\right]}
+\end{aligned}
+\]</span></p>
+<p>Substituting into <a href="#eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_{A^*}
+&amp;= \frac{d}{da}\left(\beta_0 + \beta_A \cdot a\right)\\
+&amp;= \beta_A
+\end{aligned}
+\]</span></p>
+<p>Since shifting <span class="math inline">\(A\)</span> by a constant does not change the slope, <span class="math inline">\(\gamma_{A^*} = \beta_A\)</span>: these two coefficients have the same value and interpretation.</p>
+<p><strong>Interpretation of <span class="math inline">\(\gamma_{A^*M}\)</span>:</strong></p>
+<p>From <a href="#eq-BW-lm-interact-rescaled" class="quarto-xref">Model&nbsp;4</a>, <span class="math inline">\(\gamma_{A^*M}\)</span> is the difference in slope with respect to <span class="math inline">\(A^*\)</span> between males and females:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_{A^*M}
+&amp;= \frac{d}{da^*}\text{E}{\left[Y|M=1, A^*=a^*\right]} - \frac{d}{da^*}\text{E}{\left[Y|M=0, A^*=a^*\right]}\\
+&amp;= \frac{d}{da}\text{E}{\left[Y|M=1, A=a\right]} - \frac{d}{da}\text{E}{\left[Y|M=0, A=a\right]}
+\end{aligned}
+\]</span></p>
+<p>Substituting into <a href="#eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\gamma_{A^*M}
+&amp;= (\beta_A + \beta_{AM}) - \beta_A\\
+&amp;= \beta_{AM}
+\end{aligned}
+\]</span></p>
+<p>Since shifting <span class="math inline">\(A\)</span> by a constant does not change slopes, <span class="math inline">\(\gamma_{A^*M} = \beta_{AM}\)</span>: these two coefficients have the same value and interpretation.</p>
+<p><strong>The pattern:</strong></p>
+<p>Slope coefficients (<span class="math inline">\(\gamma_{A^*}\)</span> and <span class="math inline">\(\gamma_{A^*M}\)</span>) are unchanged by rescaling: they have the same values and interpretations as the corresponding <span class="math inline">\(\beta\)</span>s.</p>
+<p>Coefficients change only for variables that have interactions with the rescaled variable <span class="math inline">\(A\)</span>. This includes the intercept (which can be viewed as the main effect of a variable that interacts with <span class="math inline">\(A\)</span> via <span class="math inline">\(\beta_A\)</span>), and the main effect of <span class="math inline">\(M\)</span> (which interacts with <span class="math inline">\(A\)</span> via <span class="math inline">\(\beta_{AM}\)</span>). Shifting <span class="math inline">\(A\)</span> by 32 weeks changes the reference point from <span class="math inline">\(A = 0\)</span> to <span class="math inline">\(A = 32\)</span>, so these coefficients now represent quantities evaluated at <span class="math inline">\(A = 32\)</span> weeks rather than at <span class="math inline">\(A = 0\)</span> weeks.</p>
+</div>
+<hr>
+<div id="exr-rescaling-in-r" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise 13</strong></span> Using R, fit the rescaled interaction model with <span class="math inline">\(A^* = A - 36\)</span> weeks in place of <span class="math inline">\(A\)</span> in <a href="#eq-BW-lm-interact" class="quarto-xref">Model&nbsp;2</a>. Compare the coefficient estimates with those from the original model. Which coefficients change, and which remain the same?</p>
+</div>
+<hr>
+<div class="proof solution">
+<p><span class="proof-title"><em>Solution</em>. </span></p>
 <div class="cell">
 <details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">bw</span> <span class="op">|&gt;</span></span>
@@ -2051,6 +2143,7 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 <div class="notes">
 <p>Notice that the slope coefficients (<code>age - 36wks</code> and <code>sexmale:age - 36wks</code>) remain the same, but the intercept and <code>sexmale</code> coefficient have changed to reflect means at age = 36 weeks rather than age = 0 weeks.</p>
 </div>
+</div>
 </section></section></section><section id="sec-est-LMs" class="level1" data-number="3"><h1 data-number="3">
 <span class="header-section-number">3</span> Estimating Linear Models via Maximum Likelihood</h1>
 <div class="notes">
@@ -2082,7 +2175,7 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 \\
 &amp;= \prod_{i=1}^n \mathscr{L}_i
 \end{aligned}
-\tag{4}\]</span></span></p>
+\tag{5}\]</span></span></p>
 <hr></section><section id="log-likelihood" class="level3" data-number="3.0.2"><h3 data-number="3.0.2" class="anchored" data-anchor-id="log-likelihood">
 <span class="header-section-number">3.0.2</span> Log-likelihood</h3>
 <p><span class="math display">\[
@@ -2124,7 +2217,7 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 &amp;= -\frac{n}{2}\text{log}{\left\{2\pi\sigma^2\right\}} -
 \frac{1}{2\sigma^2}\sum_{i=1}^n {\left(y_i - {\left(\tilde{x}_i\cdot \tilde{\beta}\right)}\right)}^2
 \end{aligned}
-\tag{5}\]</span></span></p>
+\tag{6}\]</span></span></p>
 </section><section id="score-function" class="level3" data-number="3.0.3"><h3 data-number="3.0.3" class="anchored" data-anchor-id="score-function">
 <span class="header-section-number">3.0.3</span> Score function</h3>
 <p><span class="math display">\[
@@ -2228,7 +2321,7 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 &amp;= -\frac{1}{\sigma^2} \mathbf{X}^{\top}\mathbf{X}
 \end{aligned}
 \]</span> That is,</p>
-<p><span id="eq-lm-hess"><span class="math display">\[\ell''= -\frac{1}{\sigma^2} \sum_{i=1}^n\tilde{x}_i \tilde{x}_i^{\top} \tag{6}\]</span></span></p>
+<p><span id="eq-lm-hess"><span class="math display">\[\ell''= -\frac{1}{\sigma^2} \sum_{i=1}^n\tilde{x}_i \tilde{x}_i^{\top} \tag{7}\]</span></span></p>
 <hr></section><section id="alternative-approach-using-matrix-derivatives" class="level3" data-number="3.0.5"><h3 data-number="3.0.5" class="anchored" data-anchor-id="alternative-approach-using-matrix-derivatives">
 <span class="header-section-number">3.0.5</span> Alternative approach using matrix derivatives</h3>
 <p><span id="eq-linreg-score"><span class="math display">\[
@@ -2240,7 +2333,7 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 \frac{1}{2\sigma^2}\frac{\partial}{\partial \tilde{\beta}}
 {\left(\sum_{i=1}^n {\left(y_i - {\left(\tilde{x}_i\cdot \tilde{\beta}\right)}\right)}^2\right)}
 \end{aligned}
-\tag{7}\]</span></span></p>
+\tag{8}\]</span></span></p>
 <hr>
 <div class="notes">
 <p>Let’s switch to matrix-vector notation:</p>
@@ -2273,7 +2366,7 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 \\ &amp;= - 2X'(y - \text{E}[y])
 \\ &amp;= - 2X' \varepsilon(y)
 \end{aligned}
-\tag{8}\]</span></span></p>
+\tag{9}\]</span></span></p>
 <hr>
 <p>So if <span class="math inline">\(\ell'(\beta,\sigma^2) = 0\)</span>, then</p>
 <p><span class="math display">\[
@@ -2930,7 +3023,7 @@ Table&nbsp;10: Unique covariate combinations in the <code>birthweight</code> dat
 </div>
 <hr>
 <div id="exr-replicate-bw" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise 12 (Replicates in the <code>birthweight</code> data)</strong></span> Which covariate pattern(s) in the <code>birthweight</code> data has the most replicates?</p>
+<p><span class="theorem-title"><strong>Exercise 14 (Replicates in the <code>birthweight</code> data)</strong></span> Which covariate pattern(s) in the <code>birthweight</code> data has the most replicates?</p>
 </div>
 <hr>
 <div id="sol-replicate-bw" class="proof solution">
@@ -3451,7 +3544,7 @@ Figure&nbsp;9: Predicted values and confidence bands for the <code>birthweight</
 \\ &amp;=  {{\tilde{x}}^{*\top}} {\left(\sigma^2(\mathbf{X}'\mathbf{X})^{-1}\right)} {{\tilde{x}}^*} + \sigma^2
 \\ &amp;= \sigma^2 {{\tilde{x}}^{*\top}} (\mathbf{X}'\mathbf{X})^{-1} {{\tilde{x}}^*} + \sigma^2
 \end{aligned}
-\tag{9}\]</span></span></p>
+\tag{10}\]</span></span></p>
 <div class="notes">
 <p>See <span class="citation" data-cites="hoggtanis2015">Hogg et al. (<a href="#ref-hoggtanis2015" role="doc-biblioref">2015</a>)</span> §7.6 (p.&nbsp;340) for a longer version.</p>
 </div>
@@ -3640,23 +3733,23 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-with-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="jhdcmwzemm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#jhdcmwzemm table {
+<div id="mfbkrljpru" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mfbkrljpru table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#jhdcmwzemm thead, #jhdcmwzemm tbody, #jhdcmwzemm tfoot, #jhdcmwzemm tr, #jhdcmwzemm td, #jhdcmwzemm th {
+#mfbkrljpru thead, #mfbkrljpru tbody, #mfbkrljpru tfoot, #mfbkrljpru tr, #mfbkrljpru td, #mfbkrljpru th {
   border-style: none;
 }
 
-#jhdcmwzemm p {
+#mfbkrljpru p {
   margin: 0;
   padding: 0;
 }
 
-#jhdcmwzemm .gt_table {
+#mfbkrljpru .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3682,12 +3775,12 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_caption {
+#mfbkrljpru .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#jhdcmwzemm .gt_title {
+#mfbkrljpru .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3699,7 +3792,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#jhdcmwzemm .gt_subtitle {
+#mfbkrljpru .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3711,7 +3804,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#jhdcmwzemm .gt_heading {
+#mfbkrljpru .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3723,13 +3816,13 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_bottom_border {
+#mfbkrljpru .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_col_headings {
+#mfbkrljpru .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3744,7 +3837,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_col_heading {
+#mfbkrljpru .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3764,7 +3857,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#jhdcmwzemm .gt_column_spanner_outer {
+#mfbkrljpru .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3776,15 +3869,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#jhdcmwzemm .gt_column_spanner_outer:first-child {
+#mfbkrljpru .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#jhdcmwzemm .gt_column_spanner_outer:last-child {
+#mfbkrljpru .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#jhdcmwzemm .gt_column_spanner {
+#mfbkrljpru .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3796,11 +3889,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#jhdcmwzemm .gt_spanner_row {
+#mfbkrljpru .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#jhdcmwzemm .gt_group_heading {
+#mfbkrljpru .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3826,7 +3919,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#jhdcmwzemm .gt_empty_group_heading {
+#mfbkrljpru .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3841,15 +3934,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#jhdcmwzemm .gt_from_md > :first-child {
+#mfbkrljpru .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#jhdcmwzemm .gt_from_md > :last-child {
+#mfbkrljpru .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#jhdcmwzemm .gt_row {
+#mfbkrljpru .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3868,7 +3961,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#jhdcmwzemm .gt_stub {
+#mfbkrljpru .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3881,7 +3974,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jhdcmwzemm .gt_stub_row_group {
+#mfbkrljpru .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3895,15 +3988,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#jhdcmwzemm .gt_row_group_first td {
+#mfbkrljpru .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#jhdcmwzemm .gt_row_group_first th {
+#mfbkrljpru .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#jhdcmwzemm .gt_summary_row {
+#mfbkrljpru .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3913,16 +4006,16 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jhdcmwzemm .gt_first_summary_row {
+#mfbkrljpru .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_first_summary_row.thick {
+#mfbkrljpru .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#jhdcmwzemm .gt_last_summary_row {
+#mfbkrljpru .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3932,7 +4025,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_grand_summary_row {
+#mfbkrljpru .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3942,7 +4035,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jhdcmwzemm .gt_first_grand_summary_row {
+#mfbkrljpru .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3952,7 +4045,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_last_grand_summary_row_top {
+#mfbkrljpru .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3962,11 +4055,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_striped {
+#mfbkrljpru .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#jhdcmwzemm .gt_table_body {
+#mfbkrljpru .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3975,7 +4068,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_footnotes {
+#mfbkrljpru .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3989,7 +4082,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_footnote {
+#mfbkrljpru .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3998,7 +4091,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jhdcmwzemm .gt_sourcenotes {
+#mfbkrljpru .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4012,7 +4105,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#jhdcmwzemm .gt_sourcenote {
+#mfbkrljpru .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4020,72 +4113,72 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jhdcmwzemm .gt_left {
+#mfbkrljpru .gt_left {
   text-align: left;
 }
 
-#jhdcmwzemm .gt_center {
+#mfbkrljpru .gt_center {
   text-align: center;
 }
 
-#jhdcmwzemm .gt_right {
+#mfbkrljpru .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#jhdcmwzemm .gt_font_normal {
+#mfbkrljpru .gt_font_normal {
   font-weight: normal;
 }
 
-#jhdcmwzemm .gt_font_bold {
+#mfbkrljpru .gt_font_bold {
   font-weight: bold;
 }
 
-#jhdcmwzemm .gt_font_italic {
+#mfbkrljpru .gt_font_italic {
   font-style: italic;
 }
 
-#jhdcmwzemm .gt_super {
+#mfbkrljpru .gt_super {
   font-size: 65%;
 }
 
-#jhdcmwzemm .gt_footnote_marks {
+#mfbkrljpru .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#jhdcmwzemm .gt_asterisk {
+#mfbkrljpru .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#jhdcmwzemm .gt_indent_1 {
+#mfbkrljpru .gt_indent_1 {
   text-indent: 5px;
 }
 
-#jhdcmwzemm .gt_indent_2 {
+#mfbkrljpru .gt_indent_2 {
   text-indent: 10px;
 }
 
-#jhdcmwzemm .gt_indent_3 {
+#mfbkrljpru .gt_indent_3 {
   text-indent: 15px;
 }
 
-#jhdcmwzemm .gt_indent_4 {
+#mfbkrljpru .gt_indent_4 {
   text-indent: 20px;
 }
 
-#jhdcmwzemm .gt_indent_5 {
+#mfbkrljpru .gt_indent_5 {
   text-indent: 25px;
 }
 
-#jhdcmwzemm .katex-display {
+#mfbkrljpru .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#jhdcmwzemm div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#mfbkrljpru div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -4142,23 +4235,23 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="tsydenmoms" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#tsydenmoms table {
+<div id="mhxmuvftjr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mhxmuvftjr table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#tsydenmoms thead, #tsydenmoms tbody, #tsydenmoms tfoot, #tsydenmoms tr, #tsydenmoms td, #tsydenmoms th {
+#mhxmuvftjr thead, #mhxmuvftjr tbody, #mhxmuvftjr tfoot, #mhxmuvftjr tr, #mhxmuvftjr td, #mhxmuvftjr th {
   border-style: none;
 }
 
-#tsydenmoms p {
+#mhxmuvftjr p {
   margin: 0;
   padding: 0;
 }
 
-#tsydenmoms .gt_table {
+#mhxmuvftjr .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4184,12 +4277,12 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_caption {
+#mhxmuvftjr .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#tsydenmoms .gt_title {
+#mhxmuvftjr .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4201,7 +4294,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#tsydenmoms .gt_subtitle {
+#mhxmuvftjr .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4213,7 +4306,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#tsydenmoms .gt_heading {
+#mhxmuvftjr .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4225,13 +4318,13 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_bottom_border {
+#mhxmuvftjr .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_col_headings {
+#mhxmuvftjr .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4246,7 +4339,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_col_heading {
+#mhxmuvftjr .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4266,7 +4359,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#tsydenmoms .gt_column_spanner_outer {
+#mhxmuvftjr .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4278,15 +4371,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#tsydenmoms .gt_column_spanner_outer:first-child {
+#mhxmuvftjr .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#tsydenmoms .gt_column_spanner_outer:last-child {
+#mhxmuvftjr .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#tsydenmoms .gt_column_spanner {
+#mhxmuvftjr .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4298,11 +4391,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#tsydenmoms .gt_spanner_row {
+#mhxmuvftjr .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#tsydenmoms .gt_group_heading {
+#mhxmuvftjr .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4328,7 +4421,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#tsydenmoms .gt_empty_group_heading {
+#mhxmuvftjr .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4343,15 +4436,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#tsydenmoms .gt_from_md > :first-child {
+#mhxmuvftjr .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#tsydenmoms .gt_from_md > :last-child {
+#mhxmuvftjr .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#tsydenmoms .gt_row {
+#mhxmuvftjr .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4370,7 +4463,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#tsydenmoms .gt_stub {
+#mhxmuvftjr .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4383,7 +4476,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#tsydenmoms .gt_stub_row_group {
+#mhxmuvftjr .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4397,15 +4490,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#tsydenmoms .gt_row_group_first td {
+#mhxmuvftjr .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#tsydenmoms .gt_row_group_first th {
+#mhxmuvftjr .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#tsydenmoms .gt_summary_row {
+#mhxmuvftjr .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4415,16 +4508,16 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#tsydenmoms .gt_first_summary_row {
+#mhxmuvftjr .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_first_summary_row.thick {
+#mhxmuvftjr .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#tsydenmoms .gt_last_summary_row {
+#mhxmuvftjr .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4434,7 +4527,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_grand_summary_row {
+#mhxmuvftjr .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4444,7 +4537,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#tsydenmoms .gt_first_grand_summary_row {
+#mhxmuvftjr .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4454,7 +4547,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_last_grand_summary_row_top {
+#mhxmuvftjr .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4464,11 +4557,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_striped {
+#mhxmuvftjr .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#tsydenmoms .gt_table_body {
+#mhxmuvftjr .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4477,7 +4570,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_footnotes {
+#mhxmuvftjr .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4491,7 +4584,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_footnote {
+#mhxmuvftjr .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4500,7 +4593,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#tsydenmoms .gt_sourcenotes {
+#mhxmuvftjr .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4514,7 +4607,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#tsydenmoms .gt_sourcenote {
+#mhxmuvftjr .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4522,72 +4615,72 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#tsydenmoms .gt_left {
+#mhxmuvftjr .gt_left {
   text-align: left;
 }
 
-#tsydenmoms .gt_center {
+#mhxmuvftjr .gt_center {
   text-align: center;
 }
 
-#tsydenmoms .gt_right {
+#mhxmuvftjr .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#tsydenmoms .gt_font_normal {
+#mhxmuvftjr .gt_font_normal {
   font-weight: normal;
 }
 
-#tsydenmoms .gt_font_bold {
+#mhxmuvftjr .gt_font_bold {
   font-weight: bold;
 }
 
-#tsydenmoms .gt_font_italic {
+#mhxmuvftjr .gt_font_italic {
   font-style: italic;
 }
 
-#tsydenmoms .gt_super {
+#mhxmuvftjr .gt_super {
   font-size: 65%;
 }
 
-#tsydenmoms .gt_footnote_marks {
+#mhxmuvftjr .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#tsydenmoms .gt_asterisk {
+#mhxmuvftjr .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#tsydenmoms .gt_indent_1 {
+#mhxmuvftjr .gt_indent_1 {
   text-indent: 5px;
 }
 
-#tsydenmoms .gt_indent_2 {
+#mhxmuvftjr .gt_indent_2 {
   text-indent: 10px;
 }
 
-#tsydenmoms .gt_indent_3 {
+#mhxmuvftjr .gt_indent_3 {
   text-indent: 15px;
 }
 
-#tsydenmoms .gt_indent_4 {
+#mhxmuvftjr .gt_indent_4 {
   text-indent: 20px;
 }
 
-#tsydenmoms .gt_indent_5 {
+#mhxmuvftjr .gt_indent_5 {
   text-indent: 25px;
 }
 
-#tsydenmoms .katex-display {
+#mhxmuvftjr .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#tsydenmoms div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#mhxmuvftjr div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -4704,13 +4797,13 @@ Figure&nbsp;12: <code>hers</code> data models with and without intercepts
 </div>
 <div id="def-resid-noise" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 4 (Residual noise/deviation from the population mean)</strong></span> The <strong>residual noise</strong> in a probabilistic model <span class="math inline">\(p(Y)\)</span>, also known as the <strong>residual deviation of an observation from its population mean</strong> or <strong>residual</strong> for short, is the difference between an observed value <span class="math inline">\(y\)</span> and its population mean:</p>
-<p><span id="eq-def-resid"><span class="math display">\[\varepsilon(y) \stackrel{\text{def}}{=}y - \text{E}{\left[Y\right]} \tag{10}\]</span></span></p>
+<p><span id="eq-def-resid"><span class="math display">\[\varepsilon(y) \stackrel{\text{def}}{=}y - \text{E}{\left[Y\right]} \tag{11}\]</span></span></p>
 </div>
 <div class="notes">
 <p>We use the same notation for residual noise that we used for <a href="./estimation.html#def-error">errors</a>.</p>
 <p><span class="math inline">\(\text{E}{\left[Y\right]}\)</span> can be viewed as an estimate of <span class="math inline">\(Y\)</span>, before <span class="math inline">\(y\)</span> is observed. Conversely, each observation <span class="math inline">\(y\)</span> can be viewed as an estimate of <span class="math inline">\(\text{E}{\left[Y\right]}\)</span> (albeit an imprecise one, individually, since <span class="math inline">\(n=1\)</span>).</p>
 </div>
-<p>We can rearrange <a href="#eq-def-resid" class="quarto-xref">Equation&nbsp;10</a> to view <span class="math inline">\(y\)</span> as the sum of its mean plus the residual noise:</p>
+<p>We can rearrange <a href="#eq-def-resid" class="quarto-xref">Equation&nbsp;11</a> to view <span class="math inline">\(y\)</span> as the sum of its mean plus the residual noise:</p>
 <p><span class="math display">\[y = \text{E}{\left[Y\right]} + \varepsilon{\left(y\right)}\]</span></p>
 <hr>
 <div id="thm-gaussian-resid-noise" class="theorem">
@@ -4774,12 +4867,12 @@ e(\hat y) &amp;= y - \hat y
 <span class="header-section-number">7.3.2</span> General characteristics of residuals</h3>
 <div id="thm-resid-unbiased" class="theorem">
 <p><span class="theorem-title"><strong>Theorem 2</strong></span> If <span class="math inline">\(\hat{\text{E}}{\left[Y\right]}\)</span> is an <a href="./estimation.html#sec-unbiased-estimators">unbiased</a> estimator of the mean <span class="math inline">\(\text{E}{\left[Y\right]}\)</span>, then:</p>
-<p><span id="eq-mean-resid-unbiased"><span class="math display">\[\text{E}{\left[e(y)\right]} = 0 \tag{11}\]</span></span> <span id="eq-var-resid-unbiased"><span class="math display">\[\text{Var}{\left(e(y)\right)} \approx \sigma^2 \tag{12}\]</span></span></p>
+<p><span id="eq-mean-resid-unbiased"><span class="math display">\[\text{E}{\left[e(y)\right]} = 0 \tag{12}\]</span></span> <span id="eq-var-resid-unbiased"><span class="math display">\[\text{Var}{\left(e(y)\right)} \approx \sigma^2 \tag{13}\]</span></span></p>
 </div>
 <hr>
 <div class="proof">
 <p><span class="proof-title"><em>Proof</em>. </span>&nbsp;</p>
-<p><a href="#eq-mean-resid-unbiased" class="quarto-xref">Equation&nbsp;11</a>:</p>
+<p><a href="#eq-mean-resid-unbiased" class="quarto-xref">Equation&nbsp;12</a>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \text{E}{\left[e(y)\right]} &amp;= \text{E}{\left[y - \hat y\right]}
@@ -4788,7 +4881,7 @@ e(\hat y) &amp;= y - \hat y
 \\ &amp;= 0
 \end{aligned}
 \]</span></p>
-<p><a href="#eq-var-resid-unbiased" class="quarto-xref">Equation&nbsp;12</a>:</p>
+<p><a href="#eq-var-resid-unbiased" class="quarto-xref">Equation&nbsp;13</a>:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \text{Var}{\left(e(y)\right)} &amp;= \text{Var}{\left(y - \hat y\right)}
@@ -4820,7 +4913,7 @@ e_i \ \sim_{\text{iid}}\ N(0, \hat\sigma^2)
 </div>
 <hr>
 <div id="exr-calc-resids" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise 13</strong></span> Check R’s output by computing the residuals directly.</p>
+<p><span class="theorem-title"><strong>Exercise 15</strong></span> Check R’s output by computing the residuals directly.</p>
 </div>
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span>&nbsp;</p>
@@ -5904,7 +5997,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#eq-B
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.69674","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.55885","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.77580","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.53035","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -6002,7 +6095,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#eq-B
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">carbohydrate</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">weight</span>, <span class="va">protein</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/glmnet.html">glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/glmnet/man/glmnet.html">glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <hr>
@@ -6021,7 +6114,7 @@ Figure&nbsp;31: Lasso selection
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb125"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html">cv.glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb125"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/glmnet/man/cv.glmnet.html">cv.glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">cvfit</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
@@ -6035,10 +6128,10 @@ Figure&nbsp;31: Lasso selection
 <details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb126"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">cvfit</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 4 x 1 sparse Matrix of class "dgCMatrix"</span></span>
 <span><span class="co">#&gt;             lambda.1se</span></span>
-<span><span class="co">#&gt; (Intercept) 34.2044364</span></span>
+<span><span class="co">#&gt; (Intercept) 34.3091615</span></span>
 <span><span class="co">#&gt; age          .        </span></span>
-<span><span class="co">#&gt; weight      -0.0925966</span></span>
-<span><span class="co">#&gt; protein      0.8582398</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; weight      -0.0800142</span></span>
+<span><span class="co">#&gt; protein      0.7640510</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section></section><section id="categorical-covariates-with-more-than-two-levels" class="level1" data-number="9"><h1 data-number="9">
