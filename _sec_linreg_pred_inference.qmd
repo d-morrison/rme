@@ -1,0 +1,171 @@
+{{< include latex-macros/macros.qmd >}}
+
+:::{#exr-ci-mean}
+
+Given
+a maximum likelihood estimate $\hvb$
+and
+a corresponding estimated covariance matrix
+$\hS \eqdef \widehat{\Covt}(\hvb)$,
+calculate a 95% confidence interval for the predicted mean
+$\mu(\vx) = \E{Y|\vX=\vx}$.
+
+:::
+
+---
+
+:::{#sol-ci-mean}
+
+::: notes
+
+By [the Gauss-Markov theorem](https://en.wikipedia.org/wiki/Gauss%E2%80%93Markov_theorem),
+the OLS estimate $\hvb$ is the best linear unbiased estimator of $\vb$.
+A 95% confidence interval for $\mu(\vx)$
+can be constructed directly on the original scale:
+
+$$\hat\mu(\vx) \pm t_{n-p}(0.975) \cdot \HSE{\hat\mu(\vx)}$$
+
+where $\hat\mu(\vx) = \vx'\hvb$.
+
+Unlike in logistic regression,
+no transformation is needed;
+the confidence interval is constructed directly on the mean scale.
+
+:::
+
+$$\mu(\vx) \in \paren{\hat\mu(\vx) \pm t_{n-p}(0.975) \cdot \HSE{\hat\mu(\vx)}}$$
+
+:::
+
+---
+
+:::{#exr-se-mean}
+
+::: notes
+
+How can we estimate the standard error of
+$\hat\mu(\vx)$?
+
+:::
+
+$$\blue{\HSE{\hat\mu(\vx)}} = \blue{?}$$
+
+:::
+
+---
+
+:::{#sol-se-mean}
+
+$$
+\green{\SE{\hat\mu(\vx)}} =
+\sqrt{\red{\Var{\hat\mu(\vx)}}}
+$${#eq-se-sqrt-var-mean}
+
+By the definition $\hat\mu(\vx) = \vx'\hvb$
+and [the variance of a linear combination](probability.qmd#thm-var-lincom):
+
+$$
+\ba
+\red{\Var{\hat\mu(\vx)}}
+&= \Var{\vx'\hvb}
+\\
+&= \vx'\Cov{\hvb}\vx
+\\
+&= \red{\tp{\vx}\Sigma\vx}
+\ea
+$${#eq-var-mean}
+
+where $\Sigma \eqdef \Covt(\hvb)$.
+
+---
+
+::: notes
+
+Expanding @eq-var-mean out of matrix-vector notation, we have:
+
+:::
+
+$$
+\ba
+\red{\tp{\vx}\Sigma\vx}
+&= \sumip\sumjp x_i \Sigma_{ij} x_j
+\\
+&= \red{\sumip\sumjp x_i \Covt(\hvb_i,\hvb_j) x_j}
+\ea
+$$
+
+---
+
+Combining @eq-var-mean and the Gauss-Markov theorem:
+
+:::{#thm-est-se-mean}
+
+#### Estimated variance and standard error of predicted mean
+
+$$
+\orange{\hVar{\hat\mu(\vx)}} = \orange{\tp{\vx}\hat{\Sigma}\vx}
+$${#eq-est-var-mean}
+
+$$
+\blue{\HSE{\hat\mu(\vx)}} =
+\blue{\sqrt{\tp{\vx}\hat{\Sigma}\vx}}
+$${#eq-est-se-mean}
+
+:::
+
+::: notes
+
+Note: on the RHS, we have plugged in $\hat{\Sigma}$,
+our estimate of $\Sigma$.
+
+:::
+
+:::
+
+---
+
+#### In R
+
+In R, `predict()` with `se.fit = TRUE`
+computes the estimated mean $\hat\mu(\vx) = \vx'\hvb$
+and its estimated standard error for each covariate pattern:
+
+```{r}
+#| label: tbl-bw-pred-mean
+#| tbl-cap: "Predicted means and 95% CI for `birthweight` linear regression"
+library(dplyr)
+new_data <- tibble(
+  age = c(36, 38, 40),
+  sex = "male"
+)
+
+pred_mean <-
+  bw_lm2 |>
+  predict(
+    newdata = new_data,
+    se.fit = TRUE
+  )
+
+new_data |>
+  mutate(
+    mu_hat = pred_mean$fit,
+    se = pred_mean$se.fit,
+    ci_lower = mu_hat - qt(0.975, df = bw_lm2$df.residual) * se,
+    ci_upper = mu_hat + qt(0.975, df = bw_lm2$df.residual) * se
+  ) |>
+  knitr::kable(digits = 3)
+```
+
+Alternatively, `predict()` with `interval = "confidence"` gives the same result:
+
+```{r}
+#| label: tbl-bw-pred-ci
+#| tbl-cap: "Predicted means and 95% CI using `interval = 'confidence'`"
+bw_lm2 |>
+  predict(
+    newdata = new_data,
+    interval = "confidence"
+  ) |>
+  cbind(new_data) |>
+  knitr::kable(digits = 3)
+```

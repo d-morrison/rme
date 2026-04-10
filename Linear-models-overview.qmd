@@ -821,6 +821,8 @@ ggpenguins2 <- ggpenguins +
 ggpenguins2 |> print()
 ```
 
+{{< include _sec_linreg_rescaling.qmd >}}
+
 # Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}
 
 {{< include _sec_linreg_mle_est.qmd >}}
@@ -841,136 +843,19 @@ $H_A: \beta_{AM} \neq 0$
 
 $P(|\hat\beta_{AM}| > |`r coef(bw_lm2)["sexmale:age"]`| \mid H_0)$ = ?
 
-## Wald tests and CIs {.smaller}
+## Inference for individual predictor coefficients
 
-R can give you Wald tests for single coefficients and corresponding CIs:
+### Wald tests and confidence intervals
 
-```{r "wald tests bw_lm2"}
-bw_lm2 |>
-  parameters() |>
-  print_md(
-    include_reference = TRUE
-  )
-```
+{{< include _sec_linreg_wald.qmd >}}
 
-To understand what's happening, let's replicate these results by hand for the interaction term.
+## Inference for predicted means
 
-## P-values {.smaller}
+{{< include _sec_linreg_pred_inference.qmd >}}
 
-```{r}
-bw_lm2 |>
-  parameters(keep = "sexmale:age") |>
-  print_md(
-    include_reference = TRUE
-  )
-```
+## Inference for differences in means
 
-
-```{r}
-beta_hat <- coef(summary(bw_lm2))["sexmale:age", "Estimate"]
-se_hat <- coef(summary(bw_lm2))["sexmale:age", "Std. Error"]
-dfresid <- bw_lm2$df.residual
-t_stat <- abs(beta_hat) / se_hat
-pval_t <-
-  pt(-t_stat, df = dfresid, lower.tail = TRUE) +
-  pt(t_stat, df = dfresid, lower.tail = FALSE)
-```
-
-$$
-\begin{aligned}
-&P\paren{
-| \hat \beta_{AM}  | > 
-| `r coef(bw_lm2)["sexmale:age"]`| \middle| H_0
-} 
-\\
-&= \Pr \paren{
-\abs{ \frac{\hat\beta_{AM}}{\hat{SE}(\hat\beta_{AM})} } > 
-\abs{ \frac{`r beta_hat`}{`r se_hat`} } \middle| H_0
-}\\ 
-&= \Pr \paren{
-\abs{ T_{`r dfresid`} }  >  `r t_stat` | H_0
-}\\
-&= `r pval_t`
-\end{aligned}
-$$ 
-
-::: notes
-This matches the result in the table above.
-:::
-
-## Confidence intervals
-
-```{r}
-bw_lm2 |>
-  parameters(keep = "sexmale:age") |>
-  print_md(
-    include_reference = TRUE
-  )
-```
-
-```{r}
-#| label: confint-t
-q_t_upper <- qt(
-  p = 0.975,
-  df = dfresid,
-  lower.tail = TRUE
-)
-
-q_t_lower <- qt(
-  p = 0.025,
-  df = dfresid,
-  lower.tail = TRUE
-)
-
-
-confint_radius_t <-
-  se_hat * q_t_upper
-
-confint_t <- beta_hat + c(-1, 1) * confint_radius_t
-
-print(confint_t)
-```
-
-::: notes
-This also matches.
-:::
-
-## Gaussian approximations
-
-Here are the asymptotic (Gaussian approximation) equivalents:
-
-## P-values {.smaller}
-
-```{r}
-bw_lm2 |>
-  parameters(keep = "sexmale:age") |>
-  print_md(
-    include_reference = TRUE
-  )
-```
-
-```{r}
-pval_z <- pnorm(abs(t_stat), lower = FALSE) * 2
-
-print(pval_z)
-```
-
-## Confidence intervals  {.smaller}
-
-```{r}
-bw_lm2 |>
-  parameters(keep = "sexmale:age") |>
-  print_md(
-    include_reference = TRUE
-  )
-```
-
-```{r}
-confint_radius_z <- se_hat * qnorm(0.975, lower = TRUE)
-confint_z <-
-  beta_hat + c(-1, 1) * confint_radius_z
-print(confint_z)
-```
+{{< include _sec_linreg_diff_means_inference.qmd >}}
 
 ## Likelihood ratio statistics
 
@@ -1398,53 +1283,7 @@ lrtest(lm_max, lm0)
 
 This log-likelihood ratio statistic is called the **null deviance**. It tells us whether we have enough data to detect a difference between the null and full models.
 
-# Rescaling
-
-::: notes
-Centering covariates (subtracting a constant from them) 
-can make coefficient interpretations more meaningful, 
-particularly for the intercept and main effect terms in models with interactions.
-:::
-
-## Rescale age {.smaller}
-
-::: notes
-For example, 
-the intercept $\beta_0$ in our interaction model represents 
-the mean birthweight for females at age = 0 weeks, 
-which is not a biologically plausible scenario.
-If we center age at 36 weeks instead, 
-$\beta_0$ will represent the mean birthweight for females at 36 weeks, 
-which is more interpretable.
-:::
-
-```{r}
-bw <-
-  bw |>
-  mutate(
-    `age - mean` = age - mean(age),
-    `age - 36wks` = age - 36
-  )
-
-lm1_c <- lm(weight ~ sex + `age - 36wks`, data = bw)
-
-lm2_c <- lm(weight ~ sex + `age - 36wks` + sex:`age - 36wks`, data = bw)
-
-parameters(lm2_c, ci_method = "wald") |> print_md()
-```
-
-Compare with what we got without rescaling:
-
-```{r}
-parameters(bw_lm2, ci_method = "wald") |> print_md()
-```
-
-::: notes
-Notice that the slope coefficients (`age - 36wks` and `sexmale:age - 36wks`) 
-remain the same, 
-but the intercept and `sexmale` coefficient have changed 
-to reflect means at age = 36 weeks rather than age = 0 weeks.
-:::
+{{< include _sec_compare_lm_glm_deviance.qmd >}}
 
 # Prediction
 
