@@ -207,14 +207,38 @@ every Bernoulli likelihood contribution equals 1,
 and hence $\ell_{\text{fp}} = 0$.
 Thus R's `deviance()` returns $-2\ell(\hat\beta)$.
 
+We can verify this directly:
+observations are ungrouped Bernoulli with repeated covariate patterns
+($x \in \{0, 1\}$ appears three times each).
+
+```{r}
+#| code-fold: false
+set.seed(42)
+x_ug <- rep(0:1, each = 3)
+y_ug <- c(0L, 1L, 0L, 1L, 1L, 0L)
+fit_ug <- glm(y_ug ~ x_ug, family = binomial)
+deviance(fit_ug)                     # R's deviance
+-2 * as.numeric(logLik(fit_ug))      # -2 * log-likelihood (using ell_fp = 0)
+```
+
+::: notes
+The two values are equal, confirming that R uses $\ell_{\text{fp}} = 0$ as its reference
+when data are ungrouped.
+:::
+
 ::: callout-note
 This reference model is the **fully parametrized** model (one parameter per observation),
 not the **saturated** model (one parameter per distinct covariate pattern).
 They coincide only when there are no repeated covariate patterns ($q = n$).
 When patterns do repeat ($q < n$), the saturated model sets $\hat\pi_k = y_k/n_k$ per pattern,
 giving $\ell_{\text{sat}} < 0$.
-In either case, `deviance()` for ungrouped data cannot be used as a goodness-of-fit test
-against the $\chi^2$ distribution.
+
+`deviance()` for ungrouped data cannot be used as a goodness-of-fit test
+against the $\chi^2$ distribution,
+because the asymptotic $\chi^2(q - p)$ approximation
+requires the number of observations per covariate pattern to grow ($n_k \to \infty$).
+With ungrouped Bernoulli data ($n_i = 1$), this condition never holds,
+so the approximation is unreliable regardless of total sample size $n$.
 :::
 
 ### Summary
