@@ -672,7 +672,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2026-04-10: 9:55:27 (UTC)</p>
+      <p class="date">Last modified: 2026-04-10: 18:44:21 (UTC)</p>
     </div>
   </div>
   
@@ -3809,7 +3809,8 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>This reference model is the <strong>fully parametrized</strong> model (one parameter per observation), not the <strong>saturated</strong> model (one parameter per distinct covariate pattern). They coincide only when there are no repeated covariate patterns (<span class="math inline">\(q = n\)</span>). When patterns do repeat (<span class="math inline">\(q &lt; n\)</span>), the saturated model sets <span class="math inline">\(\hat\pi_k = y_k/n_k\)</span> per pattern, giving <span class="math inline">\(\ell_{\text{sat}} &lt; 0\)</span>.</p>
-<p><code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> for ungrouped data cannot be used as a goodness-of-fit test against the <span class="math inline">\(\chi^2\)</span> distribution, because the asymptotic <span class="math inline">\(\chi^2(q - p)\)</span> approximation requires the number of observations per covariate pattern to grow (<span class="math inline">\(n_k \to \infty\)</span>). With ungrouped Bernoulli data (<span class="math inline">\(n_i = 1\)</span>), this condition never holds, so the approximation is unreliable regardless of total sample size <span class="math inline">\(n\)</span>.</p>
+<p><code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> for ungrouped data <strong>cannot</strong> be used as a goodness-of-fit test against the <span class="math inline">\(\chi^2\)</span> distribution when <span class="math inline">\(q &lt; n\)</span>. The correct GOF statistic is <span class="math inline">\(2(\ell_{\text{sat}} - \ell(\hat\beta))\)</span>, but R’s <code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> for ungrouped data returns <span class="math inline">\(-2\ell(\hat\beta)\)</span> (using <span class="math inline">\(\ell_{\text{fp}} = 0\)</span>). These two quantities differ by <span class="math inline">\(-2\ell_{\text{sat}} &gt; 0\)</span> whenever <span class="math inline">\(q &lt; n\)</span>. Even if each covariate pattern has many replicates (large <span class="math inline">\(n_k\)</span>), R’s ungrouped deviance is the wrong statistic to compare against <span class="math inline">\(\chi^2(q - p)\)</span>. To obtain a valid GOF test when patterns repeat, fit the model using <strong>grouped</strong> data (one row per pattern with <span class="math inline">\(y_k\)</span> and <span class="math inline">\(n_k\)</span>), so that R uses the saturated model as its reference.</p>
+<p>For further discussion, see <span class="citation" data-cites="dunn2018generalized">Dunn and Smyth (<a href="#ref-dunn2018generalized" role="doc-biblioref">2018, chap. 9</a>)</span> and <a href="https://stats.stackexchange.com/questions/626597/is-there-a-justification-for-the-bernoulli-deviance-in-the-r-stats-package">this Stats Stack Exchange thread</a>.</p>
 </div>
 </div>
 </section></section><section id="summary" class="level3" data-number="5.4.4"><h3 data-number="5.4.4" class="anchored" data-anchor-id="summary">
@@ -6562,7 +6563,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#eq-B
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">carbohydrate</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">weight</span>, <span class="va">protein</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/glmnet/man/glmnet.html">glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/glmnet.html">glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <hr>
@@ -6581,7 +6582,7 @@ Figure&nbsp;31: Lasso selection
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb129"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/glmnet/man/cv.glmnet.html">cv.glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb129"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html">cv.glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">cvfit</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
