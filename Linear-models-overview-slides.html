@@ -380,7 +380,7 @@ text-align: center;
 <li><p><a href="#/sec-understand-LMs" class="quarto-xref">Section&nbsp;2</a>: how to interpret linear regression models</p></li>
 <li><p><a href="#/sec-est-LMs" class="quarto-xref">Section&nbsp;3</a>: how to estimate linear regression models</p></li>
 <li><p><a href="#/sec-infer-LMs" class="quarto-xref">Section&nbsp;4</a>: how to quantify uncertainty about our estimates</p></li>
-<li><p><a href="#/sec-diagnose-LMs" class="quarto-xref">Section&nbsp;8</a>: how to tell if your model is insufficiently complex</p></li>
+<li><p><a href="#/sec-diagnose-LMs" class="quarto-xref">Section&nbsp;7</a>: how to tell if your model is insufficiently complex</p></li>
 </ul></section></section><section><section id="sec-understand-LMs" class="title-slide slide level1 center" data-number="2"><h1>
 <span class="header-section-number">2</span> Understanding Gaussian Linear Regression Models</h1>
 
@@ -1632,7 +1632,169 @@ Figure&nbsp;5: <code>palmerpenguins</code> model with <code>bill_length</code> e
 </div>
 </div>
 </div>
-</section></section><section><section id="sec-est-LMs" class="title-slide slide level1 center" data-number="3"><h1>
+</section><section id="rescaling" class="slide level2" data-number="2.7"><h2>
+<span class="header-section-number">2.7</span> Rescaling</h2>
+<aside class="notes"><p>Centering covariates (subtracting a constant from them) can make coefficient interpretations more meaningful, particularly for the intercept and main effect terms in models with interactions.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><h3 class="smaller" id="rescale-age">Rescale age</h3>
+<aside class="notes"><p>For example, the intercept <span class="math inline">\(\beta_0\)</span> in our interaction model represents the mean birthweight for females at age = 0 weeks, which is not a biologically plausible scenario. If we center age at 36 weeks instead, <span class="math inline">\(\beta_0\)</span> will represent the mean birthweight for females at 36 weeks, which is more interpretable.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><div class="cell">
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a></a>bw <span class="ot">&lt;-</span></span>
+<span id="cb20-2"><a></a>  bw <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb20-4"><a></a>    <span class="st">`</span><span class="at">age - mean</span><span class="st">`</span> <span class="ot">=</span> age <span class="sc">-</span> <span class="fu">mean</span>(age),</span>
+<span id="cb20-5"><a></a>    <span class="st">`</span><span class="at">age - 36wks</span><span class="st">`</span> <span class="ot">=</span> age <span class="sc">-</span> <span class="dv">36</span></span>
+<span id="cb20-6"><a></a>  )</span>
+<span id="cb20-7"><a></a></span>
+<span id="cb20-8"><a></a>lm1_c <span class="ot">&lt;-</span> <span class="fu">lm</span>(weight <span class="sc">~</span> sex <span class="sc">+</span> <span class="st">`</span><span class="at">age - 36wks</span><span class="st">`</span>, <span class="at">data =</span> bw)</span>
+<span id="cb20-9"><a></a></span>
+<span id="cb20-10"><a></a>lm2_c <span class="ot">&lt;-</span> <span class="fu">lm</span>(weight <span class="sc">~</span> sex <span class="sc">+</span> <span class="st">`</span><span class="at">age - 36wks</span><span class="st">`</span> <span class="sc">+</span> sex<span class="sc">:</span><span class="st">`</span><span class="at">age - 36wks</span><span class="st">`</span>, <span class="at">data =</span> bw)</span>
+<span id="cb20-11"><a></a></span>
+<span id="cb20-12"><a></a><span class="fu">parameters</span>(lm2_c, <span class="at">ci_method =</span> <span class="st">"wald"</span>) <span class="sc">|&gt;</span> <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><div class="cell-output-display">
+<table class="caption-top">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 16%">
+<col style="width: 9%">
+<col style="width: 24%">
+<col style="width: 8%">
+<col style="width: 9%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">Coefficient</th>
+<th style="text-align: center;">SE</th>
+<th style="text-align: center;">95% CI</th>
+<th style="text-align: center;">t(20)</th>
+<th style="text-align: center;">p</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">2552.73</td>
+<td style="text-align: center;">97.59</td>
+<td style="text-align: center;">(2349.16, 2756.30)</td>
+<td style="text-align: center;">26.16</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sex (male)</td>
+<td style="text-align: center;">209.97</td>
+<td style="text-align: center;">129.75</td>
+<td style="text-align: center;">(-60.68, 480.63)</td>
+<td style="text-align: center;">1.62</td>
+<td style="text-align: center;">0.121</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">age - 36wks</td>
+<td style="text-align: center;">130.40</td>
+<td style="text-align: center;">30.00</td>
+<td style="text-align: center;">(67.82, 192.98)</td>
+<td style="text-align: center;">4.35</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sex (male) × age - 36wks</td>
+<td style="text-align: center;">-18.42</td>
+<td style="text-align: center;">41.76</td>
+<td style="text-align: center;">(-105.52, 68.68)</td>
+<td style="text-align: center;">-0.44</td>
+<td style="text-align: center;">0.664</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Compare with what we got without rescaling:</p>
+<div class="cell">
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a></a><span class="fu">parameters</span>(bw_lm2, <span class="at">ci_method =</span> <span class="st">"wald"</span>) <span class="sc">|&gt;</span> <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><div class="cell-output-display">
+<table class="caption-top">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 17%">
+<col style="width: 12%">
+<col style="width: 28%">
+<col style="width: 9%">
+<col style="width: 10%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">Coefficient</th>
+<th style="text-align: center;">SE</th>
+<th style="text-align: center;">95% CI</th>
+<th style="text-align: center;">t(20)</th>
+<th style="text-align: center;">p</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">-2141.67</td>
+<td style="text-align: center;">1163.60</td>
+<td style="text-align: center;">(-4568.90, 285.56)</td>
+<td style="text-align: center;">-1.84</td>
+<td style="text-align: center;">0.081</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sex (male)</td>
+<td style="text-align: center;">872.99</td>
+<td style="text-align: center;">1611.33</td>
+<td style="text-align: center;">(-2488.18, 4234.17)</td>
+<td style="text-align: center;">0.54</td>
+<td style="text-align: center;">0.594</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">age</td>
+<td style="text-align: center;">130.40</td>
+<td style="text-align: center;">30.00</td>
+<td style="text-align: center;">(67.82, 192.98)</td>
+<td style="text-align: center;">4.35</td>
+<td style="text-align: center;">&lt; .001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sex (male) × age</td>
+<td style="text-align: center;">-18.42</td>
+<td style="text-align: center;">41.76</td>
+<td style="text-align: center;">(-105.52, 68.68)</td>
+<td style="text-align: center;">-0.44</td>
+<td style="text-align: center;">0.664</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<aside class="notes"><p>Notice that the slope coefficients (<code>age - 36wks</code> and <code>sexmale:age - 36wks</code>) remain the same, but the intercept and <code>sexmale</code> coefficient have changed to reflect means at age = 36 weeks rather than age = 0 weeks.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside></section></section><section><section id="sec-est-LMs" class="title-slide slide level1 center" data-number="3"><h1>
 <span class="header-section-number">3</span> Estimating Linear Models via Maximum Likelihood</h1>
 <aside class="notes"><p>In EPI 203 and <a href="./intro-MLEs.html#sec-intro-MLEs">our review of MLEs</a>, we learned how to fit outcome-only models of the form <span class="math inline">\(p(X=x|\theta)\)</span> to iid data <span class="math inline">\(\tilde{x}= (x_1,…,x_n)\)</span> using maximum likelihood estimation.</p>
 <p>Now, we apply the same procedure to linear regression models:</p>
@@ -1918,12 +2080,12 @@ Var(\hat \beta) \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (\mathbf{X}'\mathbf
 \]</span></p>
 </section><section class="slide level2"><div id="exm-bw-inference" class="theorem example">
 <p><span class="theorem-title"><strong>Example 1 (MLEs for birthweight data)</strong></span> In model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> above, <span class="math inline">\(\hat{\mathcal{I}}(\beta)\)</span> is:</p>
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a></a>bw_lm2 <span class="sc">|&gt;</span> <span class="fu">vcov</span>()</span>
-<span id="cb20-2"><a></a><span class="co">#&gt;             (Intercept)  sexmale        age sexmale:age</span></span>
-<span id="cb20-3"><a></a><span class="co">#&gt; (Intercept)     1353968 -1353968 -34870.966   34870.966</span></span>
-<span id="cb20-4"><a></a><span class="co">#&gt; sexmale        -1353968  2596387  34870.966  -67210.974</span></span>
-<span id="cb20-5"><a></a><span class="co">#&gt; age              -34871    34871    899.896    -899.896</span></span>
-<span id="cb20-6"><a></a><span class="co">#&gt; sexmale:age       34871   -67211   -899.896    1743.548</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a></a>bw_lm2 <span class="sc">|&gt;</span> <span class="fu">vcov</span>()</span>
+<span id="cb22-2"><a></a><span class="co">#&gt;             (Intercept)  sexmale        age sexmale:age</span></span>
+<span id="cb22-3"><a></a><span class="co">#&gt; (Intercept)     1353968 -1353968 -34870.966   34870.966</span></span>
+<span id="cb22-4"><a></a><span class="co">#&gt; sexmale        -1353968  2596387  34870.966  -67210.974</span></span>
+<span id="cb22-5"><a></a><span class="co">#&gt; age              -34871    34871    899.896    -899.896</span></span>
+<span id="cb22-6"><a></a><span class="co">#&gt; sexmale:age       34871   -67211   -899.896    1743.548</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-vcov" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-vcov-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;8: Covariance matrix of <span class="math inline">\(\hat{\tilde{\beta}}\)</span> for <code>birthweight</code> model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> (with interaction term)
@@ -1946,18 +2108,18 @@ Table&nbsp;8: Covariance matrix of <span class="math inline">\(\hat{\tilde{\beta
           overflow: hidden!important;
           display:block!important;
       }</style></aside><div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb21-2"><a></a>  <span class="fu">vcov</span>() <span class="sc">|&gt;</span></span>
-<span id="cb21-3"><a></a>  <span class="fu">diag</span>() <span class="sc">|&gt;</span></span>
-<span id="cb21-4"><a></a>  <span class="fu">sqrt</span>()</span>
-<span id="cb21-5"><a></a><span class="co">#&gt; (Intercept)     sexmale         age sexmale:age </span></span>
-<span id="cb21-6"><a></a><span class="co">#&gt;   1163.6015   1611.3309     29.9983     41.7558</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
+<span id="cb23-2"><a></a>  <span class="fu">vcov</span>() <span class="sc">|&gt;</span></span>
+<span id="cb23-3"><a></a>  <span class="fu">diag</span>() <span class="sc">|&gt;</span></span>
+<span id="cb23-4"><a></a>  <span class="fu">sqrt</span>()</span>
+<span id="cb23-5"><a></a><span class="co">#&gt; (Intercept)     sexmale         age sexmale:age </span></span>
+<span id="cb23-6"><a></a><span class="co">#&gt;   1163.6015   1611.3309     29.9983     41.7558</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb22-2"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
-<span id="cb22-3"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
+<span id="cb24-3"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-mod-intx" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mod-intx-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction term
@@ -2046,8 +2208,8 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
           overflow: hidden!important;
           display:block!important;
       }</style></aside><div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a></a><span class="fu">sigma</span>(bw_lm2)</span>
-<span id="cb23-2"><a></a><span class="co">#&gt; [1] 180.613</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a></a><span class="fu">sigma</span>(bw_lm2)</span>
+<span id="cb25-2"><a></a><span class="co">#&gt; [1] 180.613</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><h4 id="sigma-is-not-residual-standard-error">
@@ -2064,27 +2226,27 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
           overflow: hidden!important;
           display:block!important;
       }</style></aside><div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a></a><span class="fu">summary</span>(bw_lm2)</span>
-<span id="cb24-2"><a></a><span class="co">#&gt; </span></span>
-<span id="cb24-3"><a></a><span class="co">#&gt; Call:</span></span>
-<span id="cb24-4"><a></a><span class="co">#&gt; lm(formula = weight ~ sex + age + sex:age, data = bw)</span></span>
-<span id="cb24-5"><a></a><span class="co">#&gt; </span></span>
-<span id="cb24-6"><a></a><span class="co">#&gt; Residuals:</span></span>
-<span id="cb24-7"><a></a><span class="co">#&gt;    Min     1Q Median     3Q    Max </span></span>
-<span id="cb24-8"><a></a><span class="co">#&gt; -246.7 -138.1  -39.1  176.6  274.3 </span></span>
-<span id="cb24-9"><a></a><span class="co">#&gt; </span></span>
-<span id="cb24-10"><a></a><span class="co">#&gt; Coefficients:</span></span>
-<span id="cb24-11"><a></a><span class="co">#&gt;             Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
-<span id="cb24-12"><a></a><span class="co">#&gt; (Intercept)  -2141.7     1163.6   -1.84  0.08057 .  </span></span>
-<span id="cb24-13"><a></a><span class="co">#&gt; sexmale        873.0     1611.3    0.54  0.59395    </span></span>
-<span id="cb24-14"><a></a><span class="co">#&gt; age            130.4       30.0    4.35  0.00031 ***</span></span>
-<span id="cb24-15"><a></a><span class="co">#&gt; sexmale:age    -18.4       41.8   -0.44  0.66389    </span></span>
-<span id="cb24-16"><a></a><span class="co">#&gt; ---</span></span>
-<span id="cb24-17"><a></a><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span id="cb24-18"><a></a><span class="co">#&gt; </span></span>
-<span id="cb24-19"><a></a><span class="co">#&gt; Residual standard error: 181 on 20 degrees of freedom</span></span>
-<span id="cb24-20"><a></a><span class="co">#&gt; Multiple R-squared:  0.643,  Adjusted R-squared:  0.59 </span></span>
-<span id="cb24-21"><a></a><span class="co">#&gt; F-statistic:   12 on 3 and 20 DF,  p-value: 0.000101</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a></a><span class="fu">summary</span>(bw_lm2)</span>
+<span id="cb26-2"><a></a><span class="co">#&gt; </span></span>
+<span id="cb26-3"><a></a><span class="co">#&gt; Call:</span></span>
+<span id="cb26-4"><a></a><span class="co">#&gt; lm(formula = weight ~ sex + age + sex:age, data = bw)</span></span>
+<span id="cb26-5"><a></a><span class="co">#&gt; </span></span>
+<span id="cb26-6"><a></a><span class="co">#&gt; Residuals:</span></span>
+<span id="cb26-7"><a></a><span class="co">#&gt;    Min     1Q Median     3Q    Max </span></span>
+<span id="cb26-8"><a></a><span class="co">#&gt; -246.7 -138.1  -39.1  176.6  274.3 </span></span>
+<span id="cb26-9"><a></a><span class="co">#&gt; </span></span>
+<span id="cb26-10"><a></a><span class="co">#&gt; Coefficients:</span></span>
+<span id="cb26-11"><a></a><span class="co">#&gt;             Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
+<span id="cb26-12"><a></a><span class="co">#&gt; (Intercept)  -2141.7     1163.6   -1.84  0.08057 .  </span></span>
+<span id="cb26-13"><a></a><span class="co">#&gt; sexmale        873.0     1611.3    0.54  0.59395    </span></span>
+<span id="cb26-14"><a></a><span class="co">#&gt; age            130.4       30.0    4.35  0.00031 ***</span></span>
+<span id="cb26-15"><a></a><span class="co">#&gt; sexmale:age    -18.4       41.8   -0.44  0.66389    </span></span>
+<span id="cb26-16"><a></a><span class="co">#&gt; ---</span></span>
+<span id="cb26-17"><a></a><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span id="cb26-18"><a></a><span class="co">#&gt; </span></span>
+<span id="cb26-19"><a></a><span class="co">#&gt; Residual standard error: 181 on 20 degrees of freedom</span></span>
+<span id="cb26-20"><a></a><span class="co">#&gt; Multiple R-squared:  0.643,  Adjusted R-squared:  0.59 </span></span>
+<span id="cb26-21"><a></a><span class="co">#&gt; F-statistic:   12 on 3 and 20 DF,  p-value: 0.000101</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <aside class="notes"><p>However, this is a misnomer: see note in <code><a href="https://rdrr.io/r/stats/sigma.html">?stats::sigma</a></code></p>
@@ -2111,11 +2273,11 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
 <span class="header-section-number">4.2</span> Wald tests and CIs</h2>
 <p>R can give you Wald tests for single coefficients and corresponding CIs:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb25-2"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
-<span id="cb25-3"><a></a>  <span class="fu">print_md</span>(</span>
-<span id="cb25-4"><a></a>    <span class="at">include_reference =</span> <span class="cn">TRUE</span></span>
-<span id="cb25-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
+<span id="cb27-3"><a></a>  <span class="fu">print_md</span>(</span>
+<span id="cb27-4"><a></a>    <span class="at">include_reference =</span> <span class="cn">TRUE</span></span>
+<span id="cb27-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <table class="caption-top">
 <colgroup>
@@ -2183,81 +2345,6 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
 </section><section id="p-values" class="slide level2 smaller" data-number="4.3"><h2>
 <span class="header-section-number">4.3</span> P-values</h2>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb26-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb26-3"><a></a>  <span class="fu">print_md</span>(</span>
-<span id="cb26-4"><a></a>    <span class="at">include_reference =</span> <span class="cn">TRUE</span></span>
-<span id="cb26-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details><div class="cell-output-display">
-<table class="caption-top">
-<colgroup>
-<col style="width: 24%">
-<col style="width: 18%">
-<col style="width: 10%">
-<col style="width: 26%">
-<col style="width: 10%">
-<col style="width: 10%">
-</colgroup>
-<thead><tr class="header">
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: center;">Coefficient</th>
-<th style="text-align: center;">SE</th>
-<th style="text-align: center;">95% CI</th>
-<th style="text-align: center;">t(20)</th>
-<th style="text-align: center;">p</th>
-</tr></thead>
-<tbody><tr class="odd">
-<td style="text-align: left;">sex (male) × age</td>
-<td style="text-align: center;">-18.42</td>
-<td style="text-align: center;">41.76</td>
-<td style="text-align: center;">(-105.52, 68.68)</td>
-<td style="text-align: center;">-0.44</td>
-<td style="text-align: center;">0.664</td>
-</tr></tbody>
-</table>
-</div>
-</div>
-<div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a></a>beta_hat <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">summary</span>(bw_lm2))[<span class="st">"sexmale:age"</span>, <span class="st">"Estimate"</span>]</span>
-<span id="cb27-2"><a></a>se_hat <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">summary</span>(bw_lm2))[<span class="st">"sexmale:age"</span>, <span class="st">"Std. Error"</span>]</span>
-<span id="cb27-3"><a></a>dfresid <span class="ot">&lt;-</span> bw_lm2<span class="sc">$</span>df.residual</span>
-<span id="cb27-4"><a></a>t_stat <span class="ot">&lt;-</span> <span class="fu">abs</span>(beta_hat) <span class="sc">/</span> se_hat</span>
-<span id="cb27-5"><a></a>pval_t <span class="ot">&lt;-</span></span>
-<span id="cb27-6"><a></a>  <span class="fu">pt</span>(<span class="sc">-</span>t_stat, <span class="at">df =</span> dfresid, <span class="at">lower.tail =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb27-7"><a></a>  <span class="fu">pt</span>(t_stat, <span class="at">df =</span> dfresid, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<p><span class="math display">\[
-\begin{aligned}
-&amp;P{\left(
-| \hat \beta_{AM}  | &gt;
-| -18.417241| \middle| H_0
-\right)}
-\\
-&amp;= \Pr {\left(
-\left| \frac{\hat\beta_{AM}}{\hat{SE}(\hat\beta_{AM})} \right| &gt;
-\left| \frac{-18.417241}{41.755817} \right| \middle| H_0
-\right)}\\
-&amp;= \Pr {\left(
-\left| T_{20} \right|  &gt;  0.44107 | H_0
-\right)}\\
-&amp;= 0.663893
-\end{aligned}
-\]</span></p>
-<aside class="notes"><p>This matches the result in the table above.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside></section><section id="confidence-intervals" class="slide level2" data-number="4.4"><h2>
-<span class="header-section-number">4.4</span> Confidence intervals</h2>
-<div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
 <span id="cb28-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb28-3"><a></a>  <span class="fu">print_md</span>(</span>
@@ -2293,29 +2380,33 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a></a>q_t_upper <span class="ot">&lt;-</span> <span class="fu">qt</span>(</span>
-<span id="cb29-2"><a></a>  <span class="at">p =</span> <span class="fl">0.975</span>,</span>
-<span id="cb29-3"><a></a>  <span class="at">df =</span> dfresid,</span>
-<span id="cb29-4"><a></a>  <span class="at">lower.tail =</span> <span class="cn">TRUE</span></span>
-<span id="cb29-5"><a></a>)</span>
-<span id="cb29-6"><a></a></span>
-<span id="cb29-7"><a></a>q_t_lower <span class="ot">&lt;-</span> <span class="fu">qt</span>(</span>
-<span id="cb29-8"><a></a>  <span class="at">p =</span> <span class="fl">0.025</span>,</span>
-<span id="cb29-9"><a></a>  <span class="at">df =</span> dfresid,</span>
-<span id="cb29-10"><a></a>  <span class="at">lower.tail =</span> <span class="cn">TRUE</span></span>
-<span id="cb29-11"><a></a>)</span>
-<span id="cb29-12"><a></a></span>
-<span id="cb29-13"><a></a></span>
-<span id="cb29-14"><a></a>confint_radius_t <span class="ot">&lt;-</span></span>
-<span id="cb29-15"><a></a>  se_hat <span class="sc">*</span> q_t_upper</span>
-<span id="cb29-16"><a></a></span>
-<span id="cb29-17"><a></a>confint_t <span class="ot">&lt;-</span> beta_hat <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> confint_radius_t</span>
-<span id="cb29-18"><a></a></span>
-<span id="cb29-19"><a></a><span class="fu">print</span>(confint_t)</span>
-<span id="cb29-20"><a></a><span class="co">#&gt; [1] -105.5184   68.6839</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a></a>beta_hat <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">summary</span>(bw_lm2))[<span class="st">"sexmale:age"</span>, <span class="st">"Estimate"</span>]</span>
+<span id="cb29-2"><a></a>se_hat <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">summary</span>(bw_lm2))[<span class="st">"sexmale:age"</span>, <span class="st">"Std. Error"</span>]</span>
+<span id="cb29-3"><a></a>dfresid <span class="ot">&lt;-</span> bw_lm2<span class="sc">$</span>df.residual</span>
+<span id="cb29-4"><a></a>t_stat <span class="ot">&lt;-</span> <span class="fu">abs</span>(beta_hat) <span class="sc">/</span> se_hat</span>
+<span id="cb29-5"><a></a>pval_t <span class="ot">&lt;-</span></span>
+<span id="cb29-6"><a></a>  <span class="fu">pt</span>(<span class="sc">-</span>t_stat, <span class="at">df =</span> dfresid, <span class="at">lower.tail =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb29-7"><a></a>  <span class="fu">pt</span>(t_stat, <span class="at">df =</span> dfresid, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<aside class="notes"><p>This also matches.</p>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;P{\left(
+| \hat \beta_{AM}  | &gt;
+| -18.417241| \middle| H_0
+\right)}
+\\
+&amp;= \Pr {\left(
+\left| \frac{\hat\beta_{AM}}{\hat{SE}(\hat\beta_{AM})} \right| &gt;
+\left| \frac{-18.417241}{41.755817} \right| \middle| H_0
+\right)}\\
+&amp;= \Pr {\left(
+\left| T_{20} \right|  &gt;  0.44107 | H_0
+\right)}\\
+&amp;= 0.663893
+\end{aligned}
+\]</span></p>
+<aside class="notes"><p>This matches the result in the table above.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -2326,11 +2417,8 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside></section><section id="gaussian-approximations" class="slide level2" data-number="4.5"><h2>
-<span class="header-section-number">4.5</span> Gaussian approximations</h2>
-<p>Here are the asymptotic (Gaussian approximation) equivalents:</p>
-</section><section id="p-values-1" class="slide level2 smaller" data-number="4.6"><h2>
-<span class="header-section-number">4.6</span> P-values</h2>
+      }</style></aside></section><section id="confidence-intervals" class="slide level2" data-number="4.4"><h2>
+<span class="header-section-number">4.4</span> Confidence intervals</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
 <span id="cb30-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
@@ -2367,14 +2455,44 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a></a>pval_z <span class="ot">&lt;-</span> <span class="fu">pnorm</span>(<span class="fu">abs</span>(t_stat), <span class="at">lower =</span> <span class="cn">FALSE</span>) <span class="sc">*</span> <span class="dv">2</span></span>
-<span id="cb31-2"><a></a></span>
-<span id="cb31-3"><a></a><span class="fu">print</span>(pval_z)</span>
-<span id="cb31-4"><a></a><span class="co">#&gt; [1] 0.659162</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a></a>q_t_upper <span class="ot">&lt;-</span> <span class="fu">qt</span>(</span>
+<span id="cb31-2"><a></a>  <span class="at">p =</span> <span class="fl">0.975</span>,</span>
+<span id="cb31-3"><a></a>  <span class="at">df =</span> dfresid,</span>
+<span id="cb31-4"><a></a>  <span class="at">lower.tail =</span> <span class="cn">TRUE</span></span>
+<span id="cb31-5"><a></a>)</span>
+<span id="cb31-6"><a></a></span>
+<span id="cb31-7"><a></a>q_t_lower <span class="ot">&lt;-</span> <span class="fu">qt</span>(</span>
+<span id="cb31-8"><a></a>  <span class="at">p =</span> <span class="fl">0.025</span>,</span>
+<span id="cb31-9"><a></a>  <span class="at">df =</span> dfresid,</span>
+<span id="cb31-10"><a></a>  <span class="at">lower.tail =</span> <span class="cn">TRUE</span></span>
+<span id="cb31-11"><a></a>)</span>
+<span id="cb31-12"><a></a></span>
+<span id="cb31-13"><a></a></span>
+<span id="cb31-14"><a></a>confint_radius_t <span class="ot">&lt;-</span></span>
+<span id="cb31-15"><a></a>  se_hat <span class="sc">*</span> q_t_upper</span>
+<span id="cb31-16"><a></a></span>
+<span id="cb31-17"><a></a>confint_t <span class="ot">&lt;-</span> beta_hat <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> confint_radius_t</span>
+<span id="cb31-18"><a></a></span>
+<span id="cb31-19"><a></a><span class="fu">print</span>(confint_t)</span>
+<span id="cb31-20"><a></a><span class="co">#&gt; [1] -105.5184   68.6839</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-</section><section id="confidence-intervals-1" class="slide level2 smaller" data-number="4.7"><h2>
-<span class="header-section-number">4.7</span> Confidence intervals</h2>
+<aside class="notes"><p>This also matches.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside></section><section id="gaussian-approximations" class="slide level2" data-number="4.5"><h2>
+<span class="header-section-number">4.5</span> Gaussian approximations</h2>
+<p>Here are the asymptotic (Gaussian approximation) equivalents:</p>
+</section><section id="p-values-1" class="slide level2 smaller" data-number="4.6"><h2>
+<span class="header-section-number">4.6</span> P-values</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
 <span id="cb32-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
@@ -2411,55 +2529,99 @@ Table&nbsp;9: Estimated model for <code>birthweight</code> data with interaction
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a></a>confint_radius_z <span class="ot">&lt;-</span> se_hat <span class="sc">*</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>, <span class="at">lower =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb33-2"><a></a>confint_z <span class="ot">&lt;-</span></span>
-<span id="cb33-3"><a></a>  beta_hat <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> confint_radius_z</span>
-<span id="cb33-4"><a></a><span class="fu">print</span>(confint_z)</span>
-<span id="cb33-5"><a></a><span class="co">#&gt; [1] -100.2571   63.4227</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a></a>pval_z <span class="ot">&lt;-</span> <span class="fu">pnorm</span>(<span class="fu">abs</span>(t_stat), <span class="at">lower =</span> <span class="cn">FALSE</span>) <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb33-2"><a></a></span>
+<span id="cb33-3"><a></a><span class="fu">print</span>(pval_z)</span>
+<span id="cb33-4"><a></a><span class="co">#&gt; [1] 0.659162</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section><section id="confidence-intervals-1" class="slide level2 smaller" data-number="4.7"><h2>
+<span class="header-section-number">4.7</span> Confidence intervals</h2>
+<div class="cell">
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
+<span id="cb34-2"><a></a>  <span class="fu">parameters</span>(<span class="at">keep =</span> <span class="st">"sexmale:age"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb34-3"><a></a>  <span class="fu">print_md</span>(</span>
+<span id="cb34-4"><a></a>    <span class="at">include_reference =</span> <span class="cn">TRUE</span></span>
+<span id="cb34-5"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><div class="cell-output-display">
+<table class="caption-top">
+<colgroup>
+<col style="width: 24%">
+<col style="width: 18%">
+<col style="width: 10%">
+<col style="width: 26%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: center;">Coefficient</th>
+<th style="text-align: center;">SE</th>
+<th style="text-align: center;">95% CI</th>
+<th style="text-align: center;">t(20)</th>
+<th style="text-align: center;">p</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td style="text-align: left;">sex (male) × age</td>
+<td style="text-align: center;">-18.42</td>
+<td style="text-align: center;">41.76</td>
+<td style="text-align: center;">(-105.52, 68.68)</td>
+<td style="text-align: center;">-0.44</td>
+<td style="text-align: center;">0.664</td>
+</tr></tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a></a>confint_radius_z <span class="ot">&lt;-</span> se_hat <span class="sc">*</span> <span class="fu">qnorm</span>(<span class="fl">0.975</span>, <span class="at">lower =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-2"><a></a>confint_z <span class="ot">&lt;-</span></span>
+<span id="cb35-3"><a></a>  beta_hat <span class="sc">+</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="sc">*</span> confint_radius_z</span>
+<span id="cb35-4"><a></a><span class="fu">print</span>(confint_z)</span>
+<span id="cb35-5"><a></a><span class="co">#&gt; [1] -100.2571   63.4227</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section id="likelihood-ratio-statistics" class="slide level2" data-number="4.8"><h2>
 <span class="header-section-number">4.8</span> Likelihood ratio statistics</h2>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a></a><span class="fu">logLik</span>(bw_lm2)</span>
-<span id="cb34-2"><a></a><span class="co">#&gt; 'log Lik.' -156.579 (df=5)</span></span>
-<span id="cb34-3"><a></a><span class="fu">logLik</span>(bw_lm1)</span>
-<span id="cb34-4"><a></a><span class="co">#&gt; 'log Lik.' -156.695 (df=4)</span></span>
-<span id="cb34-5"><a></a></span>
-<span id="cb34-6"><a></a>log_LR <span class="ot">&lt;-</span> (<span class="fu">logLik</span>(bw_lm2) <span class="sc">-</span> <span class="fu">logLik</span>(bw_lm1)) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>()</span>
-<span id="cb34-7"><a></a>delta_df <span class="ot">&lt;-</span> (bw_lm1<span class="sc">$</span>df.residual <span class="sc">-</span> <span class="fu">df.residual</span>(bw_lm2))</span>
-<span id="cb34-8"><a></a></span>
-<span id="cb34-9"><a></a></span>
-<span id="cb34-10"><a></a>x_max <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a></a><span class="fu">logLik</span>(bw_lm2)</span>
+<span id="cb36-2"><a></a><span class="co">#&gt; 'log Lik.' -156.579 (df=5)</span></span>
+<span id="cb36-3"><a></a><span class="fu">logLik</span>(bw_lm1)</span>
+<span id="cb36-4"><a></a><span class="co">#&gt; 'log Lik.' -156.695 (df=4)</span></span>
+<span id="cb36-5"><a></a></span>
+<span id="cb36-6"><a></a>log_LR <span class="ot">&lt;-</span> (<span class="fu">logLik</span>(bw_lm2) <span class="sc">-</span> <span class="fu">logLik</span>(bw_lm1)) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>()</span>
+<span id="cb36-7"><a></a>delta_df <span class="ot">&lt;-</span> (bw_lm1<span class="sc">$</span>df.residual <span class="sc">-</span> <span class="fu">df.residual</span>(bw_lm2))</span>
+<span id="cb36-8"><a></a></span>
+<span id="cb36-9"><a></a></span>
+<span id="cb36-10"><a></a>x_max <span class="ot">&lt;-</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a></a>d_log_LR <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">df =</span> delta_df) <span class="fu">dchisq</span>(x, <span class="at">df =</span> df)</span>
-<span id="cb35-2"><a></a></span>
-<span id="cb35-3"><a></a>chisq_plot <span class="ot">&lt;-</span></span>
-<span id="cb35-4"><a></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb35-5"><a></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> d_log_LR) <span class="sc">+</span></span>
-<span id="cb35-6"><a></a>  <span class="fu">stat_function</span>(</span>
-<span id="cb35-7"><a></a>    <span class="at">fun =</span> d_log_LR,</span>
-<span id="cb35-8"><a></a>    <span class="at">xlim =</span> <span class="fu">c</span>(log_LR, x_max),</span>
-<span id="cb35-9"><a></a>    <span class="at">geom =</span> <span class="st">"area"</span>,</span>
-<span id="cb35-10"><a></a>    <span class="at">fill =</span> <span class="st">"gray"</span></span>
-<span id="cb35-11"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb35-12"><a></a>  <span class="fu">geom_segment</span>(</span>
-<span id="cb35-13"><a></a>    <span class="fu">aes</span>(</span>
-<span id="cb35-14"><a></a>      <span class="at">x =</span> log_LR,</span>
-<span id="cb35-15"><a></a>      <span class="at">xend =</span> log_LR,</span>
-<span id="cb35-16"><a></a>      <span class="at">y =</span> <span class="dv">0</span>,</span>
-<span id="cb35-17"><a></a>      <span class="at">yend =</span> <span class="fu">d_log_LR</span>(log_LR)</span>
-<span id="cb35-18"><a></a>    ),</span>
-<span id="cb35-19"><a></a>    <span class="at">col =</span> <span class="st">"red"</span></span>
-<span id="cb35-20"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb35-21"><a></a>  <span class="fu">xlim</span>(<span class="fl">0.0001</span>, x_max) <span class="sc">+</span></span>
-<span id="cb35-22"><a></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb35-23"><a></a>  <span class="fu">ylab</span>(<span class="st">"p(X=x)"</span>) <span class="sc">+</span></span>
-<span id="cb35-24"><a></a>  <span class="fu">xlab</span>(<span class="st">"log(likelihood ratio) statistic [x]"</span>) <span class="sc">+</span></span>
-<span id="cb35-25"><a></a>  <span class="fu">theme_classic</span>()</span>
-<span id="cb35-26"><a></a>chisq_plot <span class="sc">|&gt;</span> <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a></a>d_log_LR <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">df =</span> delta_df) <span class="fu">dchisq</span>(x, <span class="at">df =</span> df)</span>
+<span id="cb37-2"><a></a></span>
+<span id="cb37-3"><a></a>chisq_plot <span class="ot">&lt;-</span></span>
+<span id="cb37-4"><a></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb37-5"><a></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> d_log_LR) <span class="sc">+</span></span>
+<span id="cb37-6"><a></a>  <span class="fu">stat_function</span>(</span>
+<span id="cb37-7"><a></a>    <span class="at">fun =</span> d_log_LR,</span>
+<span id="cb37-8"><a></a>    <span class="at">xlim =</span> <span class="fu">c</span>(log_LR, x_max),</span>
+<span id="cb37-9"><a></a>    <span class="at">geom =</span> <span class="st">"area"</span>,</span>
+<span id="cb37-10"><a></a>    <span class="at">fill =</span> <span class="st">"gray"</span></span>
+<span id="cb37-11"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb37-12"><a></a>  <span class="fu">geom_segment</span>(</span>
+<span id="cb37-13"><a></a>    <span class="fu">aes</span>(</span>
+<span id="cb37-14"><a></a>      <span class="at">x =</span> log_LR,</span>
+<span id="cb37-15"><a></a>      <span class="at">xend =</span> log_LR,</span>
+<span id="cb37-16"><a></a>      <span class="at">y =</span> <span class="dv">0</span>,</span>
+<span id="cb37-17"><a></a>      <span class="at">yend =</span> <span class="fu">d_log_LR</span>(log_LR)</span>
+<span id="cb37-18"><a></a>    ),</span>
+<span id="cb37-19"><a></a>    <span class="at">col =</span> <span class="st">"red"</span></span>
+<span id="cb37-20"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb37-21"><a></a>  <span class="fu">xlim</span>(<span class="fl">0.0001</span>, x_max) <span class="sc">+</span></span>
+<span id="cb37-22"><a></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb37-23"><a></a>  <span class="fu">ylab</span>(<span class="st">"p(X=x)"</span>) <span class="sc">+</span></span>
+<span id="cb37-24"><a></a>  <span class="fu">xlab</span>(<span class="st">"log(likelihood ratio) statistic [x]"</span>) <span class="sc">+</span></span>
+<span id="cb37-25"><a></a>  <span class="fu">theme_classic</span>()</span>
+<span id="cb37-26"><a></a>chisq_plot <span class="sc">|&gt;</span> <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-chisq-plot" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-chisq-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -2473,20 +2635,20 @@ Figure&nbsp;6: Chi-square distribution
 </div>
 </section><section class="slide level2"><p>Now we can get the p-value:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a></a><span class="fu">pchisq</span>(</span>
-<span id="cb36-2"><a></a>  <span class="at">q =</span> <span class="dv">2</span> <span class="sc">*</span> log_LR,</span>
-<span id="cb36-3"><a></a>  <span class="at">df =</span> delta_df,</span>
-<span id="cb36-4"><a></a>  <span class="at">lower =</span> <span class="cn">FALSE</span></span>
-<span id="cb36-5"><a></a>) <span class="sc">|&gt;</span></span>
-<span id="cb36-6"><a></a>  <span class="fu">print</span>()</span>
-<span id="cb36-7"><a></a><span class="co">#&gt; [1] 0.629806</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a></a><span class="fu">pchisq</span>(</span>
+<span id="cb38-2"><a></a>  <span class="at">q =</span> <span class="dv">2</span> <span class="sc">*</span> log_LR,</span>
+<span id="cb38-3"><a></a>  <span class="at">df =</span> delta_df,</span>
+<span id="cb38-4"><a></a>  <span class="at">lower =</span> <span class="cn">FALSE</span></span>
+<span id="cb38-5"><a></a>) <span class="sc">|&gt;</span></span>
+<span id="cb38-6"><a></a>  <span class="fu">print</span>()</span>
+<span id="cb38-7"><a></a><span class="co">#&gt; [1] 0.629806</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><p>In practice you don’t have to do this by hand; there are functions to do it for you:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a></a><span class="co"># built in</span></span>
-<span id="cb37-2"><a></a><span class="fu">library</span>(lmtest)</span>
-<span id="cb37-3"><a></a><span class="fu">lrtest</span>(bw_lm2, bw_lm1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a></a><span class="co"># built in</span></span>
+<span id="cb39-2"><a></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb39-3"><a></a><span class="fu">lrtest</span>(bw_lm2, bw_lm1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -2521,22 +2683,22 @@ Figure&nbsp;6: Chi-square distribution
 <p>You can calculate these criteria using the <code><a href="https://rdrr.io/r/stats/logLik.html">logLik()</a></code> function, or use the built-in R functions:</p>
 <h3 id="aic-in-r">AIC in R</h3>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a></a><span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">logLik</span>(bw_lm2) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>() <span class="sc">+</span></span>
-<span id="cb38-2"><a></a>  <span class="dv">2</span> <span class="sc">*</span> (<span class="fu">length</span>(<span class="fu">coef</span>(bw_lm2)) <span class="sc">+</span> <span class="dv">1</span>) <span class="co"># sigma counts as a parameter here</span></span>
-<span id="cb38-3"><a></a><span class="co">#&gt; [1] 323.159</span></span>
-<span id="cb38-4"><a></a></span>
-<span id="cb38-5"><a></a><span class="fu">AIC</span>(bw_lm2)</span>
-<span id="cb38-6"><a></a><span class="co">#&gt; [1] 323.159</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a></a><span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">logLik</span>(bw_lm2) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>() <span class="sc">+</span></span>
+<span id="cb40-2"><a></a>  <span class="dv">2</span> <span class="sc">*</span> (<span class="fu">length</span>(<span class="fu">coef</span>(bw_lm2)) <span class="sc">+</span> <span class="dv">1</span>) <span class="co"># sigma counts as a parameter here</span></span>
+<span id="cb40-3"><a></a><span class="co">#&gt; [1] 323.159</span></span>
+<span id="cb40-4"><a></a></span>
+<span id="cb40-5"><a></a><span class="fu">AIC</span>(bw_lm2)</span>
+<span id="cb40-6"><a></a><span class="co">#&gt; [1] 323.159</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <h3 id="bic-in-r">BIC in R</h3>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a></a><span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">logLik</span>(bw_lm2) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>() <span class="sc">+</span></span>
-<span id="cb39-2"><a></a>  (<span class="fu">length</span>(<span class="fu">coef</span>(bw_lm2)) <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="fu">log</span>(<span class="fu">nobs</span>(bw_lm2))</span>
-<span id="cb39-3"><a></a><span class="co">#&gt; [1] 329.049</span></span>
-<span id="cb39-4"><a></a></span>
-<span id="cb39-5"><a></a><span class="fu">BIC</span>(bw_lm2)</span>
-<span id="cb39-6"><a></a><span class="co">#&gt; [1] 329.049</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a></a><span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">logLik</span>(bw_lm2) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>() <span class="sc">+</span></span>
+<span id="cb41-2"><a></a>  (<span class="fu">length</span>(<span class="fu">coef</span>(bw_lm2)) <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="fu">log</span>(<span class="fu">nobs</span>(bw_lm2))</span>
+<span id="cb41-3"><a></a><span class="co">#&gt; [1] 329.049</span></span>
+<span id="cb41-4"><a></a></span>
+<span id="cb41-5"><a></a><span class="fu">BIC</span>(bw_lm2)</span>
+<span id="cb41-6"><a></a><span class="co">#&gt; [1] 329.049</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Large values of AIC and BIC are worse than small values. There are no hypothesis tests or p-values associated with these criteria.</p>
@@ -2555,15 +2717,15 @@ Figure&nbsp;6: Chi-square distribution
 <span class="header-section-number">5.2</span> (Residual) Deviance</h2>
 <p>Let <span class="math inline">\(q\)</span> be the number of distinct covariate combinations in a data set.</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a></a>bw_X_unique <span class="ot">&lt;-</span></span>
-<span id="cb40-2"><a></a>  bw <span class="sc">|&gt;</span></span>
-<span id="cb40-3"><a></a>  <span class="fu">count</span>(sex, age)</span>
-<span id="cb40-4"><a></a></span>
-<span id="cb40-5"><a></a>n_unique_bw <span class="ot">&lt;-</span> <span class="fu">nrow</span>(bw_X_unique)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a></a>bw_X_unique <span class="ot">&lt;-</span></span>
+<span id="cb42-2"><a></a>  bw <span class="sc">|&gt;</span></span>
+<span id="cb42-3"><a></a>  <span class="fu">count</span>(sex, age)</span>
+<span id="cb42-4"><a></a></span>
+<span id="cb42-5"><a></a>n_unique_bw <span class="ot">&lt;-</span> <span class="fu">nrow</span>(bw_X_unique)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>For example, in the <code>birthweight</code> data, there are <span class="math inline">\(q = 12\)</span> unique patterns (<a href="#/tbl-bw-x-combos" class="quarto-xref">Table&nbsp;10</a>).</p>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a></a>bw_X_unique</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a></a>bw_X_unique</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-bw-x-combos" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bw-x-combos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;10: Unique covariate combinations in the <code>birthweight</code> data, with replicate counts
@@ -2592,7 +2754,7 @@ Table&nbsp;10: Unique covariate combinations in the <code>birthweight</code> dat
 </section><section class="slide level2"><div id="sol-replicate-bw" class="proof solution">
 <p><span class="proof-title"><em>Solution 1</em> (Replicates in the <code>birthweight</code> data). </span>Two covariate patterns are tied for most replicates: males at age 40 weeks and females at age 40 weeks. 40 weeks is the usual length for human pregnancy (<span class="citation" data-cites="polin2011fetal">Polin et al. (<a href="#/references" role="doc-biblioref" onclick="">2011</a>)</span>), so this result makes sense.</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a></a>bw_X_unique <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(n <span class="sc">==</span> <span class="fu">max</span>(n))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a></a>bw_X_unique <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(n <span class="sc">==</span> <span class="fu">max</span>(n))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -2605,17 +2767,17 @@ Table&nbsp;10: Unique covariate combinations in the <code>birthweight</code> dat
 </section><section class="slide level2"><h3 class="smaller" id="saturated-models">Saturated models</h3>
 <p>The most complicated model we could fit would have one parameter (a mean) for each covariate pattern, plus a variance parameter:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a></a>lm_max <span class="ot">&lt;-</span></span>
-<span id="cb43-2"><a></a>  bw <span class="sc">|&gt;</span></span>
-<span id="cb43-3"><a></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">factor</span>(age)) <span class="sc">|&gt;</span></span>
-<span id="cb43-4"><a></a>  <span class="fu">lm</span>(</span>
-<span id="cb43-5"><a></a>    <span class="at">formula =</span> weight <span class="sc">~</span> sex<span class="sc">:</span>age <span class="sc">-</span> <span class="dv">1</span>,</span>
-<span id="cb43-6"><a></a>    <span class="at">data =</span> _</span>
-<span id="cb43-7"><a></a>  )</span>
-<span id="cb43-8"><a></a></span>
-<span id="cb43-9"><a></a>lm_max <span class="sc">|&gt;</span></span>
-<span id="cb43-10"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
-<span id="cb43-11"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a></a>lm_max <span class="ot">&lt;-</span></span>
+<span id="cb45-2"><a></a>  bw <span class="sc">|&gt;</span></span>
+<span id="cb45-3"><a></a>  <span class="fu">mutate</span>(<span class="at">age =</span> <span class="fu">factor</span>(age)) <span class="sc">|&gt;</span></span>
+<span id="cb45-4"><a></a>  <span class="fu">lm</span>(</span>
+<span id="cb45-5"><a></a>    <span class="at">formula =</span> weight <span class="sc">~</span> sex<span class="sc">:</span>age <span class="sc">-</span> <span class="dv">1</span>,</span>
+<span id="cb45-6"><a></a>    <span class="at">data =</span> _</span>
+<span id="cb45-7"><a></a>  )</span>
+<span id="cb45-8"><a></a></span>
+<span id="cb45-9"><a></a>lm_max <span class="sc">|&gt;</span></span>
+<span id="cb45-10"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
+<span id="cb45-11"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-bw-model-sat" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bw-model-sat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;11: Saturated model for the <code>birthweight</code> data
@@ -2744,45 +2906,45 @@ Table&nbsp;11: Saturated model for the <code>birthweight</code> data
 </div>
 <p>We call this model the <strong>full</strong>, <strong>maximal</strong>, or <strong>saturated</strong> model for this dataset.</p>
 </section><section class="slide level2"><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a></a><span class="fu">library</span>(rlang) <span class="co"># defines the `.data` pronoun</span></span>
-<span id="cb44-2"><a></a>plot_PIs_and_CIs <span class="ot">&lt;-</span> <span class="cf">function</span>(model, data) {</span>
-<span id="cb44-3"><a></a>  cis <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span></span>
-<span id="cb44-4"><a></a>    <span class="fu">predict</span>(<span class="at">interval =</span> <span class="st">"confidence"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb44-5"><a></a>    <span class="fu">suppressWarnings</span>() <span class="sc">|&gt;</span></span>
-<span id="cb44-6"><a></a>    tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
-<span id="cb44-7"><a></a>  <span class="fu">names</span>(cis) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"ci"</span>, <span class="fu">names</span>(cis), <span class="at">sep =</span> <span class="st">"_"</span>)</span>
-<span id="cb44-8"><a></a></span>
-<span id="cb44-9"><a></a>  preds <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span></span>
-<span id="cb44-10"><a></a>    <span class="fu">predict</span>(<span class="at">interval =</span> <span class="st">"predict"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb44-11"><a></a>    <span class="fu">suppressWarnings</span>() <span class="sc">|&gt;</span></span>
-<span id="cb44-12"><a></a>    tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
-<span id="cb44-13"><a></a>  <span class="fu">names</span>(preds) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"pred"</span>, <span class="fu">names</span>(preds), <span class="at">sep =</span> <span class="st">"_"</span>)</span>
-<span id="cb44-14"><a></a>  dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(bw, cis, preds) <span class="sc">|&gt;</span></span>
-<span id="cb44-15"><a></a>    ggplot2<span class="sc">::</span><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb44-16"><a></a>    ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
-<span id="cb44-17"><a></a>      <span class="at">x =</span> .data<span class="sc">$</span>age, </span>
-<span id="cb44-18"><a></a>      <span class="at">y =</span> .data<span class="sc">$</span>weight, </span>
-<span id="cb44-19"><a></a>      <span class="at">col =</span> .data<span class="sc">$</span>sex</span>
-<span id="cb44-20"><a></a>    ) <span class="sc">+</span></span>
-<span id="cb44-21"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb44-22"><a></a>    ggplot2<span class="sc">::</span><span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
-<span id="cb44-23"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">y =</span> .data<span class="sc">$</span>ci_fit)) <span class="sc">+</span></span>
-<span id="cb44-24"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(</span>
-<span id="cb44-25"><a></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
-<span id="cb44-26"><a></a>        <span class="at">ymin =</span> .data<span class="sc">$</span>pred_lwr,</span>
-<span id="cb44-27"><a></a>        <span class="at">ymax =</span> .data<span class="sc">$</span>pred_upr</span>
-<span id="cb44-28"><a></a>      ),</span>
-<span id="cb44-29"><a></a>      <span class="at">alpha =</span> <span class="fl">0.2</span></span>
-<span id="cb44-30"><a></a>    ) <span class="sc">+</span></span>
-<span id="cb44-31"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(</span>
-<span id="cb44-32"><a></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
-<span id="cb44-33"><a></a>        <span class="at">ymin =</span> .data<span class="sc">$</span>ci_lwr,</span>
-<span id="cb44-34"><a></a>        <span class="at">ymax =</span> .data<span class="sc">$</span>ci_upr</span>
-<span id="cb44-35"><a></a>      ),</span>
-<span id="cb44-36"><a></a>      <span class="at">alpha =</span> <span class="fl">0.5</span></span>
-<span id="cb44-37"><a></a>    ) <span class="sc">+</span></span>
-<span id="cb44-38"><a></a>    ggplot2<span class="sc">::</span><span class="fu">facet_wrap</span>(<span class="sc">~</span>sex)</span>
-<span id="cb44-39"><a></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a></a><span class="fu">library</span>(rlang) <span class="co"># defines the `.data` pronoun</span></span>
+<span id="cb46-2"><a></a>plot_PIs_and_CIs <span class="ot">&lt;-</span> <span class="cf">function</span>(model, data) {</span>
+<span id="cb46-3"><a></a>  cis <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span></span>
+<span id="cb46-4"><a></a>    <span class="fu">predict</span>(<span class="at">interval =</span> <span class="st">"confidence"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-5"><a></a>    <span class="fu">suppressWarnings</span>() <span class="sc">|&gt;</span></span>
+<span id="cb46-6"><a></a>    tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
+<span id="cb46-7"><a></a>  <span class="fu">names</span>(cis) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"ci"</span>, <span class="fu">names</span>(cis), <span class="at">sep =</span> <span class="st">"_"</span>)</span>
+<span id="cb46-8"><a></a></span>
+<span id="cb46-9"><a></a>  preds <span class="ot">&lt;-</span> model <span class="sc">|&gt;</span></span>
+<span id="cb46-10"><a></a>    <span class="fu">predict</span>(<span class="at">interval =</span> <span class="st">"predict"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-11"><a></a>    <span class="fu">suppressWarnings</span>() <span class="sc">|&gt;</span></span>
+<span id="cb46-12"><a></a>    tibble<span class="sc">::</span><span class="fu">as_tibble</span>()</span>
+<span id="cb46-13"><a></a>  <span class="fu">names</span>(preds) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"pred"</span>, <span class="fu">names</span>(preds), <span class="at">sep =</span> <span class="st">"_"</span>)</span>
+<span id="cb46-14"><a></a>  dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(bw, cis, preds) <span class="sc">|&gt;</span></span>
+<span id="cb46-15"><a></a>    ggplot2<span class="sc">::</span><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb46-16"><a></a>    ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
+<span id="cb46-17"><a></a>      <span class="at">x =</span> .data<span class="sc">$</span>age, </span>
+<span id="cb46-18"><a></a>      <span class="at">y =</span> .data<span class="sc">$</span>weight, </span>
+<span id="cb46-19"><a></a>      <span class="at">col =</span> .data<span class="sc">$</span>sex</span>
+<span id="cb46-20"><a></a>    ) <span class="sc">+</span></span>
+<span id="cb46-21"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb46-22"><a></a>    ggplot2<span class="sc">::</span><span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb46-23"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_line</span>(ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">y =</span> .data<span class="sc">$</span>ci_fit)) <span class="sc">+</span></span>
+<span id="cb46-24"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(</span>
+<span id="cb46-25"><a></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
+<span id="cb46-26"><a></a>        <span class="at">ymin =</span> .data<span class="sc">$</span>pred_lwr,</span>
+<span id="cb46-27"><a></a>        <span class="at">ymax =</span> .data<span class="sc">$</span>pred_upr</span>
+<span id="cb46-28"><a></a>      ),</span>
+<span id="cb46-29"><a></a>      <span class="at">alpha =</span> <span class="fl">0.2</span></span>
+<span id="cb46-30"><a></a>    ) <span class="sc">+</span></span>
+<span id="cb46-31"><a></a>    ggplot2<span class="sc">::</span><span class="fu">geom_ribbon</span>(</span>
+<span id="cb46-32"><a></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(</span>
+<span id="cb46-33"><a></a>        <span class="at">ymin =</span> .data<span class="sc">$</span>ci_lwr,</span>
+<span id="cb46-34"><a></a>        <span class="at">ymax =</span> .data<span class="sc">$</span>ci_upr</span>
+<span id="cb46-35"><a></a>      ),</span>
+<span id="cb46-36"><a></a>      <span class="at">alpha =</span> <span class="fl">0.5</span></span>
+<span id="cb46-37"><a></a>    ) <span class="sc">+</span></span>
+<span id="cb46-38"><a></a>    ggplot2<span class="sc">::</span><span class="fu">facet_wrap</span>(<span class="sc">~</span>sex)</span>
+<span id="cb46-39"><a></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="fig-max-vs-intxn-fits" class="quarto-layout-panel">
@@ -2791,7 +2953,7 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 </figcaption><div aria-describedby="fig-max-vs-intxn-fits-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-max-vs-intxn-fits" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw_lm2, bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw_lm2, bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-fit-intxn" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-fit-intxn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> (linear with age:sex interaction)
@@ -2799,7 +2961,7 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-36-1.png" class="lightbox" data-gallery="fig-max-vs-intxn-fits" title="Figure&nbsp;7&nbsp;(a): Model 2 (linear with age:sex interaction)"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-36-1.png" data-ref-parent="fig-max-vs-intxn-fits" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-38-1.png" class="lightbox" data-gallery="fig-max-vs-intxn-fits" title="Figure&nbsp;7&nbsp;(a): Model 2 (linear with age:sex interaction)"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-38-1.png" data-ref-parent="fig-max-vs-intxn-fits" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -2809,7 +2971,7 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-max-vs-intxn-fits" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(lm_max, bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(lm_max, bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-fit-max" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-fit-max-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Saturated model
@@ -2817,7 +2979,7 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-37-1.png" class="lightbox" data-gallery="fig-max-vs-intxn-fits" title="Figure&nbsp;7&nbsp;(b): Saturated model"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-37-1.png" data-ref-parent="fig-max-vs-intxn-fits" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-39-1.png" class="lightbox" data-gallery="fig-max-vs-intxn-fits" title="Figure&nbsp;7&nbsp;(b): Saturated model"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-39-1.png" data-ref-parent="fig-max-vs-intxn-fits" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -2832,13 +2994,13 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 </div>
 </section><section class="slide level2"><p>We can calculate the log-likelihood of this model as usual:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a></a><span class="fu">logLik</span>(lm_max)</span>
-<span id="cb47-2"><a></a><span class="co">#&gt; 'log Lik.' -151.402 (df=13)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a></a><span class="fu">logLik</span>(lm_max)</span>
+<span id="cb49-2"><a></a><span class="co">#&gt; 'log Lik.' -151.402 (df=13)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>We can compare this model to our other models using chi-square tests, as usual:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a></a><span class="fu">lrtest</span>(lm_max, bw_lm2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a></a><span class="fu">lrtest</span>(lm_max, bw_lm2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -2861,11 +3023,11 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 <p>Similarly, the <em>least</em> complicated model we could fit would have only one mean parameter, an intercept:</p>
 <p><span class="math display">\[\text E[Y|X=x] = \beta_0\]</span> We can fit this model in R like so:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a></a>lm0 <span class="ot">&lt;-</span> <span class="fu">lm</span>(weight <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> bw)</span>
-<span id="cb49-2"><a></a></span>
-<span id="cb49-3"><a></a>lm0 <span class="sc">|&gt;</span></span>
-<span id="cb49-4"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
-<span id="cb49-5"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a></a>lm0 <span class="ot">&lt;-</span> <span class="fu">lm</span>(weight <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> bw)</span>
+<span id="cb51-2"><a></a></span>
+<span id="cb51-3"><a></a>lm0 <span class="sc">|&gt;</span></span>
+<span id="cb51-4"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
+<span id="cb51-5"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <table class="caption-top" style="width:100%;">
 <colgroup>
@@ -2895,7 +3057,7 @@ Figure&nbsp;7: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> and
 </table>
 </div>
 </div>
-</section><section class="slide level2"><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a></a>lm0 <span class="sc">|&gt;</span> <span class="fu">plot_PIs_and_CIs</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section><section class="slide level2"><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a></a>lm0 <span class="sc">|&gt;</span> <span class="fu">plot_PIs_and_CIs</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-null-model" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-null-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;8: Null model for birthweight data, with 95% confidence and prediction intervals.
@@ -2903,7 +3065,7 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-41-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;8: Null model for birthweight data, with 95% confidence and prediction intervals."><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-41-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-43-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;8: Null model for birthweight data, with 95% confidence and prediction intervals."><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-43-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -2913,13 +3075,13 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 </div>
 </section><section class="slide level2"><p>This model also has a likelihood:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a></a><span class="fu">logLik</span>(lm0)</span>
-<span id="cb51-2"><a></a><span class="co">#&gt; 'log Lik.' -168.955 (df=2)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a></a><span class="fu">logLik</span>(lm0)</span>
+<span id="cb53-2"><a></a><span class="co">#&gt; 'log Lik.' -168.955 (df=2)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>And we can compare it to more complicated models using a likelihood ratio test:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a></a><span class="fu">lrtest</span>(bw_lm2, lm0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a></a><span class="fu">lrtest</span>(bw_lm2, lm0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -2937,7 +3099,7 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 </ul>
 <p>In R, this test is:</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a></a><span class="fu">lrtest</span>(lm_max, lm0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a></a><span class="fu">lrtest</span>(lm_max, lm0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -2947,174 +3109,11 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 </div>
 </div>
 <p>This log-likelihood ratio statistic is called the <strong>null deviance</strong>. It tells us whether we have enough data to detect a difference between the null and full models.</p>
-</section></section><section><section id="rescaling" class="title-slide slide level1 center" data-number="6"><h1>
-<span class="header-section-number">6</span> Rescaling</h1>
-<aside class="notes"><p>Centering covariates (subtracting a constant from them) can make coefficient interpretations more meaningful, particularly for the intercept and main effect terms in models with interactions.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside></section><section id="rescale-age" class="slide level2 smaller" data-number="6.1"><h2>
-<span class="header-section-number">6.1</span> Rescale age</h2>
-<aside class="notes"><p>For example, the intercept <span class="math inline">\(\beta_0\)</span> in our interaction model represents the mean birthweight for females at age = 0 weeks, which is not a biologically plausible scenario. If we center age at 36 weeks instead, <span class="math inline">\(\beta_0\)</span> will represent the mean birthweight for females at 36 weeks, which is more interpretable.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a></a>bw <span class="ot">&lt;-</span></span>
-<span id="cb54-2"><a></a>  bw <span class="sc">|&gt;</span></span>
-<span id="cb54-3"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb54-4"><a></a>    <span class="st">`</span><span class="at">age - mean</span><span class="st">`</span> <span class="ot">=</span> age <span class="sc">-</span> <span class="fu">mean</span>(age),</span>
-<span id="cb54-5"><a></a>    <span class="st">`</span><span class="at">age - 36wks</span><span class="st">`</span> <span class="ot">=</span> age <span class="sc">-</span> <span class="dv">36</span></span>
-<span id="cb54-6"><a></a>  )</span>
-<span id="cb54-7"><a></a></span>
-<span id="cb54-8"><a></a>lm1_c <span class="ot">&lt;-</span> <span class="fu">lm</span>(weight <span class="sc">~</span> sex <span class="sc">+</span> <span class="st">`</span><span class="at">age - 36wks</span><span class="st">`</span>, <span class="at">data =</span> bw)</span>
-<span id="cb54-9"><a></a></span>
-<span id="cb54-10"><a></a>lm2_c <span class="ot">&lt;-</span> <span class="fu">lm</span>(weight <span class="sc">~</span> sex <span class="sc">+</span> <span class="st">`</span><span class="at">age - 36wks</span><span class="st">`</span> <span class="sc">+</span> sex<span class="sc">:</span><span class="st">`</span><span class="at">age - 36wks</span><span class="st">`</span>, <span class="at">data =</span> bw)</span>
-<span id="cb54-11"><a></a></span>
-<span id="cb54-12"><a></a><span class="fu">parameters</span>(lm2_c, <span class="at">ci_method =</span> <span class="st">"wald"</span>) <span class="sc">|&gt;</span> <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details><div class="cell-output-display">
-<table class="caption-top">
-<colgroup>
-<col style="width: 30%">
-<col style="width: 16%">
-<col style="width: 9%">
-<col style="width: 24%">
-<col style="width: 8%">
-<col style="width: 9%">
-</colgroup>
-<thead><tr class="header">
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: center;">Coefficient</th>
-<th style="text-align: center;">SE</th>
-<th style="text-align: center;">95% CI</th>
-<th style="text-align: center;">t(20)</th>
-<th style="text-align: center;">p</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">(Intercept)</td>
-<td style="text-align: center;">2552.73</td>
-<td style="text-align: center;">97.59</td>
-<td style="text-align: center;">(2349.16, 2756.30)</td>
-<td style="text-align: center;">26.16</td>
-<td style="text-align: center;">&lt; .001</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">sex (male)</td>
-<td style="text-align: center;">209.97</td>
-<td style="text-align: center;">129.75</td>
-<td style="text-align: center;">(-60.68, 480.63)</td>
-<td style="text-align: center;">1.62</td>
-<td style="text-align: center;">0.121</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">age - 36wks</td>
-<td style="text-align: center;">130.40</td>
-<td style="text-align: center;">30.00</td>
-<td style="text-align: center;">(67.82, 192.98)</td>
-<td style="text-align: center;">4.35</td>
-<td style="text-align: center;">&lt; .001</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">sex (male) × age - 36wks</td>
-<td style="text-align: center;">-18.42</td>
-<td style="text-align: center;">41.76</td>
-<td style="text-align: center;">(-105.52, 68.68)</td>
-<td style="text-align: center;">-0.44</td>
-<td style="text-align: center;">0.664</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>Compare with what we got without rescaling:</p>
-<div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a></a><span class="fu">parameters</span>(bw_lm2, <span class="at">ci_method =</span> <span class="st">"wald"</span>) <span class="sc">|&gt;</span> <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details><div class="cell-output-display">
-<table class="caption-top">
-<colgroup>
-<col style="width: 22%">
-<col style="width: 17%">
-<col style="width: 12%">
-<col style="width: 28%">
-<col style="width: 9%">
-<col style="width: 10%">
-</colgroup>
-<thead><tr class="header">
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: center;">Coefficient</th>
-<th style="text-align: center;">SE</th>
-<th style="text-align: center;">95% CI</th>
-<th style="text-align: center;">t(20)</th>
-<th style="text-align: center;">p</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">(Intercept)</td>
-<td style="text-align: center;">-2141.67</td>
-<td style="text-align: center;">1163.60</td>
-<td style="text-align: center;">(-4568.90, 285.56)</td>
-<td style="text-align: center;">-1.84</td>
-<td style="text-align: center;">0.081</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">sex (male)</td>
-<td style="text-align: center;">872.99</td>
-<td style="text-align: center;">1611.33</td>
-<td style="text-align: center;">(-2488.18, 4234.17)</td>
-<td style="text-align: center;">0.54</td>
-<td style="text-align: center;">0.594</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">age</td>
-<td style="text-align: center;">130.40</td>
-<td style="text-align: center;">30.00</td>
-<td style="text-align: center;">(67.82, 192.98)</td>
-<td style="text-align: center;">4.35</td>
-<td style="text-align: center;">&lt; .001</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">sex (male) × age</td>
-<td style="text-align: center;">-18.42</td>
-<td style="text-align: center;">41.76</td>
-<td style="text-align: center;">(-105.52, 68.68)</td>
-<td style="text-align: center;">-0.44</td>
-<td style="text-align: center;">0.664</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<aside class="notes"><p>Notice that the slope coefficients (<code>age - 36wks</code> and <code>sexmale:age - 36wks</code>) remain the same, but the intercept and <code>sexmale</code> coefficient have changed to reflect means at age = 36 weeks rather than age = 0 weeks.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside></section></section><section><section id="prediction" class="title-slide slide level1 center" data-number="7"><h1>
-<span class="header-section-number">7</span> Prediction</h1>
+</section></section><section><section id="prediction" class="title-slide slide level1 center" data-number="6"><h1>
+<span class="header-section-number">6</span> Prediction</h1>
 
-</section><section id="prediction-for-linear-models" class="slide level2" data-number="7.1"><h2>
-<span class="header-section-number">7.1</span> Prediction for linear models</h2>
+</section><section id="prediction-for-linear-models" class="slide level2" data-number="6.1"><h2>
+<span class="header-section-number">6.1</span> Prediction for linear models</h2>
 <div id="def-predicted-value" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 2 (Predicted value)</strong></span> In a regression model <span class="math inline">\(\text{p}(y|\tilde{x})\)</span>, the <strong>predicted value</strong> of <span class="math inline">\(y\)</span> given <span class="math inline">\(\tilde{x}\)</span> is the estimated mean of <span class="math inline">\(Y\)</span> given <span class="math inline">\(\tilde{X}=\tilde{x}\)</span>:</p>
 <p><span class="math display">\[\hat y \stackrel{\text{def}}{=}\hat{\text{E}}{\left[Y|\tilde{X}=\tilde{x}\right]}\]</span></p>
@@ -3127,8 +3126,8 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 &amp;= \hat\beta_0\cdot 1 + \hat\beta_1 x_1 + ... + \hat\beta_p x_p
 \end{aligned}
 \]</span></p>
-</section><section id="example-prediction-for-the-birthweight-data" class="slide level2" data-number="7.2"><h2>
-<span class="header-section-number">7.2</span> Example: prediction for the <code>birthweight</code> data</h2>
+</section><section id="example-prediction-for-the-birthweight-data" class="slide level2" data-number="6.2"><h2>
+<span class="header-section-number">6.2</span> Example: prediction for the <code>birthweight</code> data</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">40</span>)</span>
 <span id="cb56-2"><a></a><span class="fu">sum</span>(x <span class="sc">*</span> <span class="fu">coef</span>(bw_lm1))</span>
@@ -3169,8 +3168,8 @@ Figure&nbsp;8: Null model for birthweight data, with 95% confidence and predicti
 <span id="cb59-7"><a></a><span class="co">#&gt; 3225.49 2941.56 2983.70 3062.45</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-</section><section id="sec-se-fitted" class="slide level2" data-number="7.3"><h2>
-<span class="header-section-number">7.3</span> Confidence intervals</h2>
+</section><section id="sec-se-fitted" class="slide level2" data-number="6.3"><h2>
+<span class="header-section-number">6.3</span> Confidence intervals</h2>
 <p>Use <code>predict(se.fit = TRUE)</code> to compute SEs for predicted values:</p>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a></a>bw_lm1 <span class="sc">|&gt;</span></span>
@@ -3250,8 +3249,8 @@ Figure&nbsp;9: Predicted values and confidence bands for the <code>birthweight</
 </div>
 </figure>
 </div>
-</section><section id="sec-se-pred" class="slide level2" data-number="7.4"><h2>
-<span class="header-section-number">7.4</span> Prediction intervals</h2>
+</section><section id="sec-se-pred" class="slide level2" data-number="6.4"><h2>
+<span class="header-section-number">6.4</span> Prediction intervals</h2>
 <p>We can also construct <strong>prediction intervals</strong> for the value of a new observation <span class="math inline">\(Y^*\)</span>, given a covariate pattern <span class="math inline">\(\tilde{x}^*\)</span>:</p>
 <p><span id="eq-prediction-var"><span class="math display">\[
 \begin{aligned}
@@ -3314,8 +3313,8 @@ Figure&nbsp;10: Confidence and prediction intervals for <code>birthweight</code>
 </div>
 </figure>
 </div>
-</section></section><section><section id="sec-diagnose-LMs" class="title-slide slide level1 center" data-number="8"><h1>
-<span class="header-section-number">8</span> Diagnostics</h1>
+</section></section><section><section id="sec-diagnose-LMs" class="title-slide slide level1 center" data-number="7"><h1>
+<span class="header-section-number">7</span> Diagnostics</h1>
 <div class="callout callout-tip callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
@@ -3329,8 +3328,8 @@ Figure&nbsp;10: Confidence and prediction intervals for <code>birthweight</code>
 </div>
 </div>
 </div>
-</section><section id="assumptions-in-linear-regression-models" class="slide level2 smaller scrollable" data-number="8.1"><h2>
-<span class="header-section-number">8.1</span> Assumptions in linear regression models</h2>
+</section><section id="assumptions-in-linear-regression-models" class="slide level2 smaller scrollable" data-number="7.1"><h2>
+<span class="header-section-number">7.1</span> Assumptions in linear regression models</h2>
 <p><span class="math display">\[Y_i|\tilde{X}_i \sim_{{\color{red}\perp\!\!\!\perp}} {\color{blue}\text{N}}({\color{orange}\mu_i}, {\color{green}\sigma^2})\]</span> <span class="math display">\[{\color{orange}\mu_i = \tilde{x}\cdot \tilde{\beta}}\]</span></p>
 <ol type="1">
 <li><span class="math inline">\({\color{blue}\text{Normality}}\)</span></li>
@@ -3359,8 +3358,8 @@ Figure&nbsp;10: Confidence and prediction intervals for <code>birthweight</code>
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside></section><section id="direct-visualization" class="slide level2" data-number="8.2"><h2>
-<span class="header-section-number">8.2</span> Direct visualization</h2>
+      }</style></aside></section><section id="direct-visualization" class="slide level2" data-number="7.2"><h2>
+<span class="header-section-number">7.2</span> Direct visualization</h2>
 <aside class="notes"><p>The most direct way to examine the fit of a model is to compare it to the raw observed data.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -3494,23 +3493,23 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-with-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="dcekdyvhny" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#dcekdyvhny table {
+<div id="hbpgnognwb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hbpgnognwb table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#dcekdyvhny thead, #dcekdyvhny tbody, #dcekdyvhny tfoot, #dcekdyvhny tr, #dcekdyvhny td, #dcekdyvhny th {
+#hbpgnognwb thead, #hbpgnognwb tbody, #hbpgnognwb tfoot, #hbpgnognwb tr, #hbpgnognwb td, #hbpgnognwb th {
   border-style: none;
 }
 
-#dcekdyvhny p {
+#hbpgnognwb p {
   margin: 0;
   padding: 0;
 }
 
-#dcekdyvhny .gt_table {
+#hbpgnognwb .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -3536,12 +3535,12 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_caption {
+#hbpgnognwb .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#dcekdyvhny .gt_title {
+#hbpgnognwb .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3553,7 +3552,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#dcekdyvhny .gt_subtitle {
+#hbpgnognwb .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3565,7 +3564,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#dcekdyvhny .gt_heading {
+#hbpgnognwb .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3577,13 +3576,13 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_bottom_border {
+#hbpgnognwb .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_col_headings {
+#hbpgnognwb .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3598,7 +3597,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_col_heading {
+#hbpgnognwb .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3618,7 +3617,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#dcekdyvhny .gt_column_spanner_outer {
+#hbpgnognwb .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3630,15 +3629,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#dcekdyvhny .gt_column_spanner_outer:first-child {
+#hbpgnognwb .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dcekdyvhny .gt_column_spanner_outer:last-child {
+#hbpgnognwb .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dcekdyvhny .gt_column_spanner {
+#hbpgnognwb .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3650,11 +3649,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#dcekdyvhny .gt_spanner_row {
+#hbpgnognwb .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#dcekdyvhny .gt_group_heading {
+#hbpgnognwb .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3680,7 +3679,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#dcekdyvhny .gt_empty_group_heading {
+#hbpgnognwb .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3695,15 +3694,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#dcekdyvhny .gt_from_md > :first-child {
+#hbpgnognwb .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dcekdyvhny .gt_from_md > :last-child {
+#hbpgnognwb .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dcekdyvhny .gt_row {
+#hbpgnognwb .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3722,7 +3721,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#dcekdyvhny .gt_stub {
+#hbpgnognwb .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3735,7 +3734,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dcekdyvhny .gt_stub_row_group {
+#hbpgnognwb .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3749,15 +3748,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#dcekdyvhny .gt_row_group_first td {
+#hbpgnognwb .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#dcekdyvhny .gt_row_group_first th {
+#hbpgnognwb .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#dcekdyvhny .gt_summary_row {
+#hbpgnognwb .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3767,16 +3766,16 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dcekdyvhny .gt_first_summary_row {
+#hbpgnognwb .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_first_summary_row.thick {
+#hbpgnognwb .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#dcekdyvhny .gt_last_summary_row {
+#hbpgnognwb .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3786,7 +3785,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_grand_summary_row {
+#hbpgnognwb .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3796,7 +3795,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dcekdyvhny .gt_first_grand_summary_row {
+#hbpgnognwb .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3806,7 +3805,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_last_grand_summary_row_top {
+#hbpgnognwb .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3816,11 +3815,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_striped {
+#hbpgnognwb .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dcekdyvhny .gt_table_body {
+#hbpgnognwb .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3829,7 +3828,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_footnotes {
+#hbpgnognwb .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3843,7 +3842,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_footnote {
+#hbpgnognwb .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3852,7 +3851,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dcekdyvhny .gt_sourcenotes {
+#hbpgnognwb .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3866,7 +3865,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#dcekdyvhny .gt_sourcenote {
+#hbpgnognwb .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3874,72 +3873,72 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dcekdyvhny .gt_left {
+#hbpgnognwb .gt_left {
   text-align: left;
 }
 
-#dcekdyvhny .gt_center {
+#hbpgnognwb .gt_center {
   text-align: center;
 }
 
-#dcekdyvhny .gt_right {
+#hbpgnognwb .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dcekdyvhny .gt_font_normal {
+#hbpgnognwb .gt_font_normal {
   font-weight: normal;
 }
 
-#dcekdyvhny .gt_font_bold {
+#hbpgnognwb .gt_font_bold {
   font-weight: bold;
 }
 
-#dcekdyvhny .gt_font_italic {
+#hbpgnognwb .gt_font_italic {
   font-style: italic;
 }
 
-#dcekdyvhny .gt_super {
+#hbpgnognwb .gt_super {
   font-size: 65%;
 }
 
-#dcekdyvhny .gt_footnote_marks {
+#hbpgnognwb .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#dcekdyvhny .gt_asterisk {
+#hbpgnognwb .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#dcekdyvhny .gt_indent_1 {
+#hbpgnognwb .gt_indent_1 {
   text-indent: 5px;
 }
 
-#dcekdyvhny .gt_indent_2 {
+#hbpgnognwb .gt_indent_2 {
   text-indent: 10px;
 }
 
-#dcekdyvhny .gt_indent_3 {
+#hbpgnognwb .gt_indent_3 {
   text-indent: 15px;
 }
 
-#dcekdyvhny .gt_indent_4 {
+#hbpgnognwb .gt_indent_4 {
   text-indent: 20px;
 }
 
-#dcekdyvhny .gt_indent_5 {
+#hbpgnognwb .gt_indent_5 {
   text-indent: 25px;
 }
 
-#dcekdyvhny .katex-display {
+#hbpgnognwb .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#dcekdyvhny div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#hbpgnognwb div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -3996,23 +3995,23 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="wzuaconhpg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#wzuaconhpg table {
+<div id="jjsvkxiwxe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jjsvkxiwxe table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#wzuaconhpg thead, #wzuaconhpg tbody, #wzuaconhpg tfoot, #wzuaconhpg tr, #wzuaconhpg td, #wzuaconhpg th {
+#jjsvkxiwxe thead, #jjsvkxiwxe tbody, #jjsvkxiwxe tfoot, #jjsvkxiwxe tr, #jjsvkxiwxe td, #jjsvkxiwxe th {
   border-style: none;
 }
 
-#wzuaconhpg p {
+#jjsvkxiwxe p {
   margin: 0;
   padding: 0;
 }
 
-#wzuaconhpg .gt_table {
+#jjsvkxiwxe .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4038,12 +4037,12 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_caption {
+#jjsvkxiwxe .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#wzuaconhpg .gt_title {
+#jjsvkxiwxe .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4055,7 +4054,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#wzuaconhpg .gt_subtitle {
+#jjsvkxiwxe .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4067,7 +4066,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#wzuaconhpg .gt_heading {
+#jjsvkxiwxe .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4079,13 +4078,13 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_bottom_border {
+#jjsvkxiwxe .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_col_headings {
+#jjsvkxiwxe .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4100,7 +4099,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_col_heading {
+#jjsvkxiwxe .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4120,7 +4119,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#wzuaconhpg .gt_column_spanner_outer {
+#jjsvkxiwxe .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4132,15 +4131,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#wzuaconhpg .gt_column_spanner_outer:first-child {
+#jjsvkxiwxe .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#wzuaconhpg .gt_column_spanner_outer:last-child {
+#jjsvkxiwxe .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#wzuaconhpg .gt_column_spanner {
+#jjsvkxiwxe .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4152,11 +4151,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#wzuaconhpg .gt_spanner_row {
+#jjsvkxiwxe .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#wzuaconhpg .gt_group_heading {
+#jjsvkxiwxe .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4182,7 +4181,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#wzuaconhpg .gt_empty_group_heading {
+#jjsvkxiwxe .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4197,15 +4196,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#wzuaconhpg .gt_from_md > :first-child {
+#jjsvkxiwxe .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#wzuaconhpg .gt_from_md > :last-child {
+#jjsvkxiwxe .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#wzuaconhpg .gt_row {
+#jjsvkxiwxe .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4224,7 +4223,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#wzuaconhpg .gt_stub {
+#jjsvkxiwxe .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4237,7 +4236,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wzuaconhpg .gt_stub_row_group {
+#jjsvkxiwxe .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4251,15 +4250,15 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#wzuaconhpg .gt_row_group_first td {
+#jjsvkxiwxe .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#wzuaconhpg .gt_row_group_first th {
+#jjsvkxiwxe .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#wzuaconhpg .gt_summary_row {
+#jjsvkxiwxe .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4269,16 +4268,16 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wzuaconhpg .gt_first_summary_row {
+#jjsvkxiwxe .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_first_summary_row.thick {
+#jjsvkxiwxe .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#wzuaconhpg .gt_last_summary_row {
+#jjsvkxiwxe .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4288,7 +4287,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_grand_summary_row {
+#jjsvkxiwxe .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4298,7 +4297,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wzuaconhpg .gt_first_grand_summary_row {
+#jjsvkxiwxe .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4308,7 +4307,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_last_grand_summary_row_top {
+#jjsvkxiwxe .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4318,11 +4317,11 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_striped {
+#jjsvkxiwxe .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#wzuaconhpg .gt_table_body {
+#jjsvkxiwxe .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4331,7 +4330,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_footnotes {
+#jjsvkxiwxe .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4345,7 +4344,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_footnote {
+#jjsvkxiwxe .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4354,7 +4353,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wzuaconhpg .gt_sourcenotes {
+#jjsvkxiwxe .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4368,7 +4367,7 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#wzuaconhpg .gt_sourcenote {
+#jjsvkxiwxe .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4376,72 +4375,72 @@ Table&nbsp;13: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wzuaconhpg .gt_left {
+#jjsvkxiwxe .gt_left {
   text-align: left;
 }
 
-#wzuaconhpg .gt_center {
+#jjsvkxiwxe .gt_center {
   text-align: center;
 }
 
-#wzuaconhpg .gt_right {
+#jjsvkxiwxe .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#wzuaconhpg .gt_font_normal {
+#jjsvkxiwxe .gt_font_normal {
   font-weight: normal;
 }
 
-#wzuaconhpg .gt_font_bold {
+#jjsvkxiwxe .gt_font_bold {
   font-weight: bold;
 }
 
-#wzuaconhpg .gt_font_italic {
+#jjsvkxiwxe .gt_font_italic {
   font-style: italic;
 }
 
-#wzuaconhpg .gt_super {
+#jjsvkxiwxe .gt_super {
   font-size: 65%;
 }
 
-#wzuaconhpg .gt_footnote_marks {
+#jjsvkxiwxe .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#wzuaconhpg .gt_asterisk {
+#jjsvkxiwxe .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#wzuaconhpg .gt_indent_1 {
+#jjsvkxiwxe .gt_indent_1 {
   text-indent: 5px;
 }
 
-#wzuaconhpg .gt_indent_2 {
+#jjsvkxiwxe .gt_indent_2 {
   text-indent: 10px;
 }
 
-#wzuaconhpg .gt_indent_3 {
+#jjsvkxiwxe .gt_indent_3 {
   text-indent: 15px;
 }
 
-#wzuaconhpg .gt_indent_4 {
+#jjsvkxiwxe .gt_indent_4 {
   text-indent: 20px;
 }
 
-#wzuaconhpg .gt_indent_5 {
+#jjsvkxiwxe .gt_indent_5 {
   text-indent: 25px;
 }
 
-#wzuaconhpg .katex-display {
+#jjsvkxiwxe .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#wzuaconhpg div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#jjsvkxiwxe div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -4550,8 +4549,8 @@ Figure&nbsp;12: <code>hers</code> data models with and without intercepts
 </div>
 </figure>
 </div>
-</section><section id="residuals" class="slide level2" data-number="8.3"><h2>
-<span class="header-section-number">8.3</span> Residuals</h2>
+</section><section id="residuals" class="slide level2" data-number="7.3"><h2>
+<span class="header-section-number">7.3</span> Residuals</h2>
 <aside class="notes"><p>Maybe we can transform the data and model in some way to make it easier to inspect.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -4978,8 +4977,8 @@ Figure&nbsp;18: Residuals of interaction model for <code>hers</code> data, with 
 <p><span class="math display">\[
 r_i \ \sim_{\text{iid}}\ N(0,1)
 \]</span></p>
-</section><section id="marginal-distributions-of-residuals" class="slide level2" data-number="8.4"><h2>
-<span class="header-section-number">8.4</span> Marginal distributions of residuals</h2>
+</section><section id="marginal-distributions-of-residuals" class="slide level2" data-number="7.4"><h2>
+<span class="header-section-number">7.4</span> Marginal distributions of residuals</h2>
 <p>To look for problems with our model, we can check whether the residuals <span class="math inline">\(e_i\)</span> and standardized residuals <span class="math inline">\(r_i\)</span> look like they have the distributions that they are supposed to have, according to the model.</p>
 </section><section class="slide level2"><h3 id="standardized-residuals-in-r">Standardized residuals in R</h3>
 <div class="cell">
@@ -5143,8 +5142,8 @@ Figure&nbsp;20: Marginal distribution of standardized residuals
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside></section><section id="qq-plot-of-standardized-residuals" class="slide level2" data-number="8.5"><h2>
-<span class="header-section-number">8.5</span> QQ plot of standardized residuals</h2>
+      }</style></aside></section><section id="qq-plot-of-standardized-residuals" class="slide level2" data-number="7.5"><h2>
+<span class="header-section-number">7.5</span> QQ plot of standardized residuals</h2>
 <aside class="notes"><p>Another way to assess normality is the QQ plot of the standardized residuals versus normal quantiles:</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -5246,8 +5245,8 @@ Figure&nbsp;20: Marginal distribution of standardized residuals
 </div>
 </div>
 </div>
-</section><section id="conditional-distributions-of-residuals" class="slide level2" data-number="8.6"><h2>
-<span class="header-section-number">8.6</span> Conditional distributions of residuals</h2>
+</section><section id="conditional-distributions-of-residuals" class="slide level2" data-number="7.6"><h2>
+<span class="header-section-number">7.6</span> Conditional distributions of residuals</h2>
 <p>If our Gaussian linear regression model is correct, the residuals <span class="math inline">\(e_i\)</span> and standardized residuals <span class="math inline">\(r_i\)</span> should have:</p>
 <ul>
 <li>an approximately Gaussian distribution, with:</li>
@@ -5690,8 +5689,8 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside></section><section id="diagnostics-constructed-by-hand" class="slide level2" data-number="8.7"><h2>
-<span class="header-section-number">8.7</span> Diagnostics constructed by hand</h2>
+      }</style></aside></section><section id="diagnostics-constructed-by-hand" class="slide level2" data-number="7.7"><h2>
+<span class="header-section-number">7.7</span> Diagnostics constructed by hand</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb113"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a></a>bw <span class="ot">&lt;-</span></span>
 <span id="cb113-2"><a></a>  bw <span class="sc">|&gt;</span></span>
@@ -5772,8 +5771,8 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 </div>
 </div>
 </div>
-</section></section><section><section id="model-selection-1" class="title-slide slide level1 center" data-number="9"><h1>
-<span class="header-section-number">9</span> Model selection</h1>
+</section></section><section><section id="model-selection-1" class="title-slide slide level1 center" data-number="8"><h1>
+<span class="header-section-number">8</span> Model selection</h1>
 <p>(adapted from <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span> §6.3.3; for more information on prediction, see <span class="citation" data-cites="james2013introduction"><span class="nocase">James et al.</span> (<a href="#/references" role="doc-biblioref" onclick="">2013</a>)</span> and <span class="citation" data-cites="rms2e">Harrell (<a href="#/references" role="doc-biblioref" onclick="">2015</a>)</span>).</p>
 <aside class="notes"><p>If we have a lot of covariates in our dataset, we might want to choose a small subset to use in our model.</p>
 <p>There are a few possible metrics to consider for choosing a “best” model.</p>
@@ -5787,8 +5786,8 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside></section><section id="mean-squared-error" class="slide level2" data-number="9.1"><h2>
-<span class="header-section-number">9.1</span> Mean squared error</h2>
+      }</style></aside></section><section id="mean-squared-error" class="slide level2" data-number="8.1"><h2>
+<span class="header-section-number">8.1</span> Mean squared error</h2>
 <p>We might want to minimize the <strong>mean squared error</strong>, <span class="math inline">\(\text E[(y-\hat y)^2]\)</span>, for new observations that weren’t in our data set when we fit the model.</p>
 <p>Unfortunately, <span class="math display">\[\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2\]</span> gives a biased estimate of <span class="math inline">\(\text E[(y-\hat y)^2]\)</span> for new data. If we want an unbiased estimate, we will have to be clever.</p>
 </section><section class="slide level2"><h3 id="cross-validation">Cross-validation</h3>
@@ -5858,7 +5857,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.86991","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.33713","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.97622","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.41134","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -5989,11 +5988,11 @@ Figure&nbsp;31: Lasso selection
 <span id="cb126-7"><a></a><span class="co">#&gt; protein       0.944061</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-</section></section><section><section id="categorical-covariates-with-more-than-two-levels" class="title-slide slide level1 center" data-number="10"><h1>
-<span class="header-section-number">10</span> Categorical covariates with more than two levels</h1>
+</section></section><section><section id="categorical-covariates-with-more-than-two-levels" class="title-slide slide level1 center" data-number="9"><h1>
+<span class="header-section-number">9</span> Categorical covariates with more than two levels</h1>
 
-</section><section id="example-birthweight" class="slide level2" data-number="10.1"><h2>
-<span class="header-section-number">10.1</span> Example: <code>birthweight</code>
+</section><section id="example-birthweight" class="slide level2" data-number="9.1"><h2>
+<span class="header-section-number">9.1</span> Example: <code>birthweight</code>
 </h2>
 <p>In the birthweight example, the variable <code>sex</code> had only two observed values:</p>
 <div class="cell">
@@ -6003,8 +6002,8 @@ Figure&nbsp;31: Lasso selection
 </details>
 </div>
 <p>If there are more than two observed values, we can’t just use a single variable with 0s and 1s.</p>
-</section><section id="section" class="slide level2" data-number="10.2"><h2>
-<span class="header-section-number">10.2</span> </h2>
+</section><section id="section" class="slide level2" data-number="9.2"><h2>
+<span class="header-section-number">9.2</span> </h2>
 <aside class="notes"><p>For example, <a href="#/tbl-iris-data" class="quarto-xref">Table&nbsp;16</a> shows the <a href="https://www.meganstodel.com/posts/no-to-iris/">(in)famous</a> <code>iris</code> data (<span class="citation" data-cites="anderson1935irises">Anderson (<a href="#/references" role="doc-biblioref" onclick="">1935</a>)</span>), and <a href="#/tbl-iris-summary" class="quarto-xref">Table&nbsp;17</a> provides summary statistics. The data include three species: “setosa”, “versicolor”, and “virginica”.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -6217,8 +6216,8 @@ Table&nbsp;19: Model of <code>iris</code> data with numeric coding of <code>Spec
 </figure>
 </div>
 </div>
-</section><section id="lets-see-how-that-model-looks" class="slide level2" data-number="10.3"><h2>
-<span class="header-section-number">10.3</span> Let’s see how that model looks:</h2>
+</section><section id="lets-see-how-that-model-looks" class="slide level2" data-number="9.3"><h2>
+<span class="header-section-number">9.3</span> Let’s see how that model looks:</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb132"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a></a>iris_plot1 <span class="ot">&lt;-</span> iris <span class="sc">|&gt;</span></span>
 <span id="cb132-2"><a></a>  <span class="fu">ggplot</span>(</span>
@@ -6246,8 +6245,8 @@ Figure&nbsp;32: Model of <code>iris</code> data with numeric coding of <code>Spe
 </div>
 </div>
 <p>We have forced the model to use a straight line for the three estimated means. Maybe not a good idea?</p>
-</section><section id="lets-see-what-r-does-with-categorical-variables-by-default" class="slide level2" data-number="10.4"><h2>
-<span class="header-section-number">10.4</span> Let’s see what R does with categorical variables by default:</h2>
+</section><section id="lets-see-what-r-does-with-categorical-variables-by-default" class="slide level2" data-number="9.4"><h2>
+<span class="header-section-number">9.4</span> Let’s see what R does with categorical variables by default:</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb133"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb133-1"><a></a>iris_lm2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(Sepal.Length <span class="sc">~</span> Species, <span class="at">data =</span> iris)</span>
 <span id="cb133-2"><a></a>iris_lm2 <span class="sc">|&gt;</span></span>
@@ -6307,8 +6306,8 @@ Table&nbsp;20: Model of <code>iris</code> data with <code>Species</code> as a ca
 </figure>
 </div>
 </div>
-</section><section id="re-parametrize-with-no-intercept" class="slide level2" data-number="10.5"><h2>
-<span class="header-section-number">10.5</span> Re-parametrize with no intercept</h2>
+</section><section id="re-parametrize-with-no-intercept" class="slide level2" data-number="9.5"><h2>
+<span class="header-section-number">9.5</span> Re-parametrize with no intercept</h2>
 <p>If you don’t want the default and offset option, you can use “-1” like we’ve seen previously:</p>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb134"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a></a>iris_lm2_no_int <span class="ot">&lt;-</span> <span class="fu">lm</span>(Sepal.Length <span class="sc">~</span> Species <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> iris)</span>
@@ -6369,8 +6368,8 @@ Table&nbsp;21
 </figure>
 </div>
 </div>
-</section><section id="lets-see-what-these-new-models-look-like" class="slide level2" data-number="10.6"><h2>
-<span class="header-section-number">10.6</span> Let’s see what these new models look like:</h2>
+</section><section id="lets-see-what-these-new-models-look-like" class="slide level2" data-number="9.6"><h2>
+<span class="header-section-number">9.6</span> Let’s see what these new models look like:</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb135"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb135-1"><a></a>iris_plot2 <span class="ot">&lt;-</span></span>
 <span id="cb135-2"><a></a>  iris <span class="sc">|&gt;</span></span>
@@ -6399,8 +6398,8 @@ Figure&nbsp;33
 </div>
 </div>
 </div>
-</section><section id="lets-see-how-r-did-that" class="slide level2" data-number="10.7"><h2>
-<span class="header-section-number">10.7</span> Let’s see how R did that:</h2>
+</section><section id="lets-see-how-r-did-that" class="slide level2" data-number="9.7"><h2>
+<span class="header-section-number">9.7</span> Let’s see how R did that:</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb136"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb136-1"><a></a><span class="fu">formula</span>(iris_lm2)</span>
 <span id="cb136-2"><a></a><span class="co">#&gt; Sepal.Length ~ Species</span></span>
@@ -6455,8 +6454,8 @@ Table&nbsp;23
 </div>
 <p>This format is called a “group point parametrization” (e.g., in <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span>).</p>
 <p>There are more options; see <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span> §6.4.1 and the <a href="https://CRAN.R-project.org/package=codingMatrices"><code>codingMatrices</code> package</a> <a href="https://cran.r-project.org/web/packages/codingMatrices/vignettes/codingMatrices.pdf">vignette</a> (<span class="citation" data-cites="venablescodingMatrices">Venables (<a href="#/references" role="doc-biblioref" onclick="">2023</a>)</span>).</p>
-</section></section><section><section id="ordinal-covariates" class="title-slide slide level1 center" data-number="11"><h1>
-<span class="header-section-number">11</span> Ordinal covariates</h1>
+</section></section><section><section id="ordinal-covariates" class="title-slide slide level1 center" data-number="10"><h1>
+<span class="header-section-number">10</span> Ordinal covariates</h1>
 <p>(c.f. <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span> §2.4.4)</p>
 </section><section class="slide level2 scrollable"><aside class="notes"><p>We can create ordinal variables in R using the <code><a href="https://rdrr.io/r/base/factor.html">ordered()</a></code> function<sup>1</sup>.</p>
 <style type="text/css">
