@@ -192,7 +192,8 @@ $$\Pr(A) = \sum_{i=1}^{n} \Pr(A \mid B_i) \cd \Pr(B_i)$$
 Since $B_1, \ldots, B_n$ partition the sample space,
 the events $A \cap B_1, \ldots, A \cap B_n$ are mutually exclusive and their
 union is $A$.
-By property 3 of @def-probability and @thm-law-conditional-prob:
+By repeated application of property 3 of @def-probability,
+and then by @thm-law-conditional-prob:
 
 $$
 \ba
@@ -430,10 +431,6 @@ For any function $g$ of a *discrete* random variable $X$:
 
 $$\E{g(X)} = \sum_{x \in \rangef{X}} g(x) \cd \P(X=x)$$
 
-For any function $g$ of a *continuous* random variable $X$:
-
-$$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
-
 :::
 
 ---
@@ -467,6 +464,11 @@ LOTUS says that to compute $\E{g(X)}$,
 we do not need to first find the distribution of $g(X)$;
 we can compute the expectation directly using the distribution of $X$.
 
+For a *continuous* random variable $X$ with density $\p(X=x)$,
+the analogous formula is:
+
+$$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
+
 :::
 
 ---
@@ -493,11 +495,34 @@ $$
 
 ---
 
+:::{#def-cond-expectation}
+
+### Conditional expectation
+
+The **conditional expectation** of $Y$ given $X = x$,
+denoted $\E{Y \mid X = x}$,
+is the expected value of $Y$ restricted to the subpopulation where $X = x$.
+
+For discrete $Y$:
+
+$$\E{Y \mid X = x} = \sum_{y \in \rangef{Y}} y \cd \P(Y = y \mid X = x)$$
+
+For continuous $Y$:
+
+$$\E{Y \mid X = x} = \int_{y \in \rangef{Y}} y \cd \p(Y = y \mid X = x)\, dy$$
+
+The **conditional expectation function** $\E{Y \mid X}$ is the random variable
+obtained by evaluating $\E{Y \mid X = x}$ at the realized value of $X$.
+
+:::
+
+---
+
 :::{#thm-lie}
 
 ### Law of iterated expectations
 
-For any two random variables $X$ and $Y$:
+For any two *discrete* random variables $X$ and $Y$ with finite ranges:
 
 $$\E{Y} = \E{\E{Y \mid X}}$$
 
@@ -507,9 +532,10 @@ $$\E{Y} = \E{\E{Y \mid X}}$$
 
 ::: proof
 
-For discrete $X$,
-applying @def-expectation to $\E{\E{Y \mid X}}$
-and then the law of total probability (@thm-total-prob):
+Applying @def-expectation to $\E{\E{Y \mid X}}$
+and then the law of total probability (@thm-total-prob),
+treating the finite partition $\{X = x : x \in \rangef{X}\}$
+by repeated application of property 3 of @def-probability:
 
 $$
 \ba
