@@ -192,7 +192,14 @@ plot_PIs_and_CIs <- function(data, model = NULL) {
     rlang::abort("`model` must be supplied to `plot_PIs_and_CIs()`.")
   }
 
-  if (!inherits(data, "data.frame") && inherits(model, "data.frame")) {
+  if (!is.data.frame(data) && is.data.frame(model)) {
+    rlang::warn(
+      paste0(
+        "`plot_PIs_and_CIs()` received `model` as the first argument ",
+        "and `data` as the second. ",
+        "Please update the call to use `data` first and `model` second."
+      )
+    )
     tmp <- data
     data <- model
     model <- tmp
