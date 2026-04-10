@@ -1,0 +1,124 @@
+For Gaussian linear regression,
+the ordinary least squares (OLS) estimates $\hat\beta_k$ are exactly Gaussian
+when the error terms $\epsilon_i$ are Gaussian,
+for any sample size.
+See also the [table of Gaussian vs. MLE-based tests](intro-MLEs.qmd#tbl-gaussian-vs-mle-tests).
+
+#### Wald test statistic
+
+To test $H_0: \beta_k = \beta_{k,0}$ (typically $\beta_{k,0} = 0$):
+
+$$t_k = \frac{\hat\beta_k - \beta_{k,0}}{\widehat{SE}(\hat\beta_k)}$$
+
+Under $H_0$, $t_k \sim t_{n-p}$ exactly when errors are Gaussian.
+
+#### Confidence intervals for regression coefficients
+
+A 95% confidence interval for $\beta_k$ is:
+
+$$\hat\beta_k \pm t_{n-p}(0.975) \cdot \widehat{SE}(\hat\beta_k)$$
+
+#### In R
+
+In R, `parameters()` from the `parameters` package automatically computes
+Wald tests and confidence intervals for linear regression model coefficients:
+
+```{r}
+#| label: tbl-bw-wald-tests
+#| tbl-cap: "Wald tests and 95% CIs for `birthweight` linear regression"
+bw_lm2 |>
+  parameters() |>
+  print_md(
+    include_reference = TRUE
+  )
+```
+
+To understand what's happening,
+let's replicate these results by hand for the interaction term.
+
+#### P-values {.smaller}
+
+```{r}
+bw_lm2 |>
+  parameters(keep = "sexmale:age") |>
+  print_md(
+    include_reference = TRUE
+  )
+```
+
+```{r}
+beta_hat <- coef(summary(bw_lm2))["sexmale:age", "Estimate"]
+se_hat <- coef(summary(bw_lm2))["sexmale:age", "Std. Error"]
+dfresid <- bw_lm2$df.residual
+t_stat <- abs(beta_hat) / se_hat
+pval_t <-
+  pt(-t_stat, df = dfresid, lower.tail = TRUE) +
+  pt(t_stat, df = dfresid, lower.tail = FALSE)
+```
+
+$$
+\begin{aligned}
+&P\paren{
+| \hat \beta_{AM}  | >
+| `r coef(bw_lm2)["sexmale:age"]`| \middle| H_0
+}
+\\
+&= \Pr \paren{
+\abs{ \frac{\hat\beta_{AM}}{\hat{SE}(\hat\beta_{AM})} } >
+\abs{ \frac{`r beta_hat`}{`r se_hat`} } \middle| H_0
+}\\
+&= \Pr \paren{
+\abs{ T_{`r dfresid`} }  >  `r t_stat` | H_0
+}\\
+&= `r pval_t`
+\end{aligned}
+$$
+
+::: notes
+This matches the result in the table above.
+:::
+
+#### Confidence intervals {.smaller}
+
+```{r}
+#| label: confint-t
+q_t_upper <- qt(
+  p = 0.975,
+  df = dfresid,
+  lower.tail = TRUE
+)
+
+q_t_lower <- qt(
+  p = 0.025,
+  df = dfresid,
+  lower.tail = TRUE
+)
+
+confint_radius_t <-
+  se_hat * q_t_upper
+
+confint_t <- beta_hat + c(-1, 1) * confint_radius_t
+
+print(confint_t)
+```
+
+::: notes
+This also matches.
+:::
+
+#### Gaussian approximations {.smaller}
+
+For large samples, the t-distribution is well-approximated by the standard Gaussian:
+
+```{r}
+pval_z <- pnorm(abs(t_stat), lower = FALSE) * 2
+
+print(pval_z)
+```
+
+```{r}
+confint_radius_z <- se_hat * qnorm(0.975, lower = TRUE)
+confint_z <-
+  beta_hat + c(-1, 1) * confint_radius_z
+print(confint_z)
+```
