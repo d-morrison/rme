@@ -27,12 +27,14 @@ jobs:
       pull-requests: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tinytex: true
 
@@ -51,6 +53,14 @@ jobs:
         run: |
           R CMD INSTALL .
         shell: bash
+
+      - name: Cache Quarto freeze
+        uses: actions/cache@v4
+        with:
+          path: _freeze
+          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          restore-keys: |
+            quarto-freeze-${{ runner.os }}-
 
       - name: Render
         if: github.event.action != 'closed' # skip the build if the PR has been closed
@@ -72,14 +82,14 @@ jobs:
           comment: false
       
       - name: Delete old preview comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: steps.preview.outputs.deployment-action == 'deploy'
         with:
           header: pr-preview
           delete: true
       
       - name: Comment with preview link
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: steps.preview.outputs.deployment-action == 'deploy'
         with:
           header: pr-preview
@@ -92,7 +102,7 @@ jobs:
             <sub>Built to branch [`gh-pages`](${{ github.server_url }}/${{ github.repository }}/tree/gh-pages) at ${{ steps.preview.outputs.action-start-time }}.</sub>
       
       - name: Remove preview comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: steps.preview.outputs.deployment-action == 'remove'
         with:
           header: pr-preview
