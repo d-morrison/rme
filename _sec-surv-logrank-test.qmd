@@ -60,8 +60,8 @@ workflow:
 ```{r}
 library(survival)
 library(tidyr)
-drug6mp.v4 <-
-  drug6mp.v3 |>
+data_v4 <-
+  data_v3 |>
   select(pair, remstat, t1, t2, outcome) |>
   # here we are going to change the data from a wide format to long:
   pivot_longer(
@@ -93,10 +93,10 @@ Using this long data format, we can fit a Kaplan-Meier curve for each
 treatment group simultaneously:
 
 ```{r}
-drug6mp.km_model2 <-
+km_model2 <-
   survfit(
     formula = surv ~ treatment,
-    data = drug6mp.v4
+    data = data_v4
   )
 ```
 
@@ -105,7 +105,7 @@ drug6mp.km_model2 <-
 We can plot the curves in the same graph:
 
 ```{r}
-drug6mp.km_model2 |> autoplot()
+km_model2 |> autoplot()
 ```
 
 ---
@@ -116,7 +116,7 @@ is that the curves are the same:
 :::{#tbl-logrank-6mp}
 ```{r}
 
-o_e <- drug6mp.v4 |>
+o_e <- data_v4 |>
   arrange(exit_time) |>
   mutate(
     .by = treatment,
@@ -211,7 +211,7 @@ R gives us both the exact and approximate results:
 ```{r}
 survdiff(
   formula = surv ~ treatment,
-  data = drug6mp.v4
+  data = data_v4
 )
 ```
 
@@ -225,7 +225,7 @@ but we can use `strata()` to perform something similar to a paired t-test:
 ```{r}
 lrank_test <- survdiff(
   formula = surv ~ treatment + strata(pair),
-  data = drug6mp.v4
+  data = data_v4
 )
 lrank_test
 ```
