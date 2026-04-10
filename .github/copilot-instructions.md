@@ -106,6 +106,19 @@ Key macros to use:
 
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
 
+- **Transpose**: Use `\tp{v}` (renders as $v'$) instead of the raw prime `v'` notation.
+  However, `\tp{v}` appends `^{\top}` to the argument, so if the argument already carries a superscript
+  (e.g., `\vxs` expands to `{{\vec{x}^*}}` which has `^*`), wrap it in parentheses first:
+  use `\tp{(\vxs)}` not `\tp{\vxs}`.
+  This avoids LaTeX "Double superscript" errors.
+
+## Math Derivations
+
+Include as many intermediate steps as possible in math derivations.
+Every non-trivial algebraic manipulation should be shown explicitly on its own line inside an aligned equation.
+Do not skip steps even if they seem obvious.
+This helps readers follow the logic and makes errors easier to spot.
+
 ## CI/CD Workflow Debugging
 
 When investigating CI/CD failures (build, test, or lint workflow issues):
