@@ -1,0 +1,137 @@
+
+::: {#exr-rescaling-interaction}
+Let $A^* = A - 32$ weeks.
+
+Consider a new version of [Model @eq-BW-lm-interact],
+with $A^*$ in place of $A$:
+
+$$
+\E{Y|M=m, A^*=a^*} = \gamma_0 + \gamma_M m + \gamma_{A^*} a^* + \gamma_{A^*M} (m \cdot a^*)
+$$ {#eq-BW-lm-interact-rescaled}
+
+Let the coefficients of this model be $\gamma$s instead of $\beta$s.
+
+What are the interpretations of the $\gamma$s?
+How do they relate to the $\beta$s in [Model @eq-BW-lm-interact]?
+Which have the same interpretation?
+Which are different, and how do they differ?
+What is the pattern?
+:::
+
+---
+
+::: {.solution}
+
+**Interpretation of $\gamma_0$:**
+
+From [Model @eq-BW-lm-interact-rescaled], $\g_0$ is the mean birthweight among females ($M = 0$) with $A^* = 0$ (i.e., $A = 32$ weeks):
+
+$$
+\g_0 = \E{Y|M=0, A^*=0} = \E{Y|M=0, A=32}
+$$
+
+Substituting into [Model @eq-BW-lm-interact]:
+
+$$
+\ba
+\g_0
+&= \b_0 + \b_M \cdot 0 + \b_A \cdot 32 + \b_{AM} \cdot 0 \cdot 32\\
+&= \b_0 + 32\b_A
+\ea
+$$
+
+This differs from $\b_0 = \E{Y|M=0, A=0}$,
+which is the mean birthweight among females at $A = 0$ weeks.
+
+**Interpretation of $\gamma_M$:**
+
+From [Model @eq-BW-lm-interact-rescaled], $\g_M$ is the sex difference in mean birthweight at $A^* = 0$ (i.e., $A = 32$ weeks):
+
+$$
+\ba
+\g_M
+&= \E{Y|M=1, A^*=0} - \E{Y|M=0, A^*=0}\\
+&= \E{Y|M=1, A=32} - \E{Y|M=0, A=32}
+\ea
+$$
+
+Substituting into [Model @eq-BW-lm-interact]:
+
+$$
+\ba
+\g_M
+&= (\b_0 + \b_M + \b_A \cdot 32 + \b_{AM} \cdot 32) - (\b_0 + \b_A \cdot 32)\\
+&= \b_M + 32\b_{AM}
+\ea
+$$
+
+This differs from $\b_M$,
+which is the sex difference at $A = 0$ weeks.
+
+**Interpretation of $\gamma_{A^*}$:**
+
+From [Model @eq-BW-lm-interact-rescaled], $\g_{A^*}$ is the slope of mean birthweight with respect to $A^*$ among females ($M = 0$):
+
+$$
+\ba
+\g_{A^*}
+&= \frac{d}{da^*}\E{Y|M=0, A^*=a^*}\\
+&= \frac{d}{da^*}\E{Y|M=0, A=a^*+32}\\
+&= \frac{d}{da}\E{Y|M=0, A=a}
+\ea
+$$
+
+Substituting into [Model @eq-BW-lm-interact]:
+
+$$
+\ba
+\g_{A^*}
+&= \frac{d}{da}\left(\b_0 + \b_A \cdot a\right)\\
+&= \b_A
+\ea
+$$
+
+Since shifting $A$ by a constant does not change the slope,
+$\g_{A^*} = \b_A$:
+these two coefficients have the same value and interpretation.
+
+**Interpretation of $\gamma_{A^*M}$:**
+
+From [Model @eq-BW-lm-interact-rescaled], $\g_{A^*M}$ is the difference in slope with respect to $A^*$ between males and females:
+
+$$
+\ba
+\g_{A^*M}
+&= \frac{d}{da^*}\E{Y|M=1, A^*=a^*} - \frac{d}{da^*}\E{Y|M=0, A^*=a^*}\\
+&= \frac{d}{da}\E{Y|M=1, A=a} - \frac{d}{da}\E{Y|M=0, A=a}
+\ea
+$$
+
+Substituting into [Model @eq-BW-lm-interact]:
+
+$$
+\ba
+\g_{A^*M}
+&= (\b_A + \b_{AM}) - \b_A\\
+&= \b_{AM}
+\ea
+$$
+
+Since shifting $A$ by a constant does not change slopes,
+$\g_{A^*M} = \b_{AM}$:
+these two coefficients have the same value and interpretation.
+
+**The pattern:**
+
+Slope coefficients ($\g_{A^*}$ and $\g_{A^*M}$) are unchanged by rescaling:
+they have the same values and interpretations as the corresponding $\b$s.
+
+Coefficients change only for variables that have interactions with the rescaled variable $A$.
+This includes the intercept
+(which can be viewed as the main effect of a variable that interacts with $A$ via $\b_A$),
+and the main effect of $M$
+(which interacts with $A$ via $\b_{AM}$).
+Shifting $A$ by 32 weeks changes the reference point from $A = 0$ to $A = 32$,
+so these coefficients now represent quantities evaluated at $A = 32$ weeks
+rather than at $A = 0$ weeks.
+:::
