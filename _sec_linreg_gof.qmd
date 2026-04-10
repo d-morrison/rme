@@ -1,5 +1,5 @@
 
-## AIC and BIC
+### AIC and BIC
 
 ::: notes
 This section is adapted from @vittinghoff2e [§4.5] and @kleinbaum2014applied [§15].
@@ -77,7 +77,7 @@ models [@vittinghoff2e; @kleinbaum2014applied].
 
 ---
 
-### AIC in R
+#### AIC in R
 
 ```{r}
 -2 * logLik(bw_lm2) |> as.numeric() +
@@ -86,7 +86,7 @@ models [@vittinghoff2e; @kleinbaum2014applied].
 AIC(bw_lm2)
 ```
 
-### BIC in R
+#### BIC in R
 
 ```{r}
 -2 * logLik(bw_lm2) |> as.numeric() +
@@ -113,7 +113,7 @@ BIC(bw_lm2)
 -   BIC tends to favor simpler models than AIC,
     especially when the sample size is large.
 
-## (Residual) Deviance
+### (Residual) Deviance
 
 Let $q$ be the number of distinct covariate combinations in a data set.
 
@@ -141,7 +141,7 @@ Unique covariate combinations in the `birthweight` data, with replicate counts
 ---
 
 ::: {#def-replicates}
-### Replicates
+#### Replicates
 If a given covariate pattern has more than one observation in a dataset, 
 those observations are called **replicates**.
 :::
@@ -150,7 +150,7 @@ those observations are called **replicates**.
 
 ::: {#exm-replicate-bw}
 
-### Replicates in the `birthweight` data
+#### Replicates in the `birthweight` data
 
 In the `birthweight` dataset, there are 2 replicates of the combination "female, age 36" (@tbl-bw-x-combos).
 
@@ -160,7 +160,7 @@ In the `birthweight` dataset, there are 2 replicates of the combination "female,
 
 ::: {#exr-replicate-bw}
 
-### Replicates in the `birthweight` data
+#### Replicates in the `birthweight` data
 
 Which covariate pattern(s) in the `birthweight` data has the most replicates?
 
@@ -170,7 +170,7 @@ Which covariate pattern(s) in the `birthweight` data has the most replicates?
 
 ::: {#sol-replicate-bw}
 
-### Replicates in the `birthweight` data
+#### Replicates in the `birthweight` data
 
 Two covariate patterns are tied for most replicates: males at age 40 weeks 
 and females at age 40 weeks.
@@ -184,7 +184,7 @@ bw_X_unique |> dplyr::filter(n == max(n))
 
 ---
 
-### Saturated models {.smaller}
+#### Saturated models {.smaller}
 
 The most complicated model we could fit would have one parameter (a mean) for each covariate pattern, plus a variance parameter:
 
@@ -207,48 +207,6 @@ lm_max |>
 We call this model the **full**, **maximal**, or **saturated** model for this dataset.
 
 ---
-
-```{r}
-library(rlang) # defines the `.data` pronoun
-plot_PIs_and_CIs <- function(model, data) {
-  cis <- model |>
-    predict(interval = "confidence") |>
-    suppressWarnings() |>
-    tibble::as_tibble()
-  names(cis) <- paste("ci", names(cis), sep = "_")
-
-  preds <- model |>
-    predict(interval = "predict") |>
-    suppressWarnings() |>
-    tibble::as_tibble()
-  names(preds) <- paste("pred", names(preds), sep = "_")
-  dplyr::bind_cols(bw, cis, preds) |>
-    ggplot2::ggplot() +
-    ggplot2::aes(
-      x = .data$age, 
-      y = .data$weight, 
-      col = .data$sex
-    ) +
-    ggplot2::geom_point() +
-    ggplot2::theme(legend.position = "bottom") +
-    ggplot2::geom_line(ggplot2::aes(y = .data$ci_fit)) +
-    ggplot2::geom_ribbon(
-      ggplot2::aes(
-        ymin = .data$pred_lwr,
-        ymax = .data$pred_upr
-      ),
-      alpha = 0.2
-    ) +
-    ggplot2::geom_ribbon(
-      ggplot2::aes(
-        ymin = .data$ci_lwr,
-        ymax = .data$ci_upr
-      ),
-      alpha = 0.5
-    ) +
-    ggplot2::facet_wrap(~sex)
-}
-```
 
 :::{#fig-max-vs-intxn-fits layout-ncol=2}
 
@@ -299,7 +257,7 @@ This statistic is called the **deviance** or **residual deviance** for our two-s
 
 The corresponding p-value tells us whether there we have enough evidence to detect that our two-slopes, two-intercepts model is a worse fit for the data than the maximal model; in other words, it tells us if there's evidence that we missed any important patterns. (Remember, a nonsignificant p-value could mean that we didn't miss anything and a more complicated model is unnecessary, or it could mean we just don't have enough data to tell the difference between these models.)
 
-## Null Deviance
+### Null Deviance
 
 Similarly, the *least* complicated model we could fit would have only one mean parameter, an intercept:
 
