@@ -77,6 +77,19 @@ Example:
 # First, check if the input is valid. Then, process the data. Finally, return the result.
 ```
 
+## Math Notation
+
+This repository uses custom LaTeX macros defined in `latex-macros/macros.qmd` (a git submodule).
+Always use the custom macros instead of raw LaTeX equivalents.
+
+Key macros to use:
+- **Expectation operator**: Use `\E{Y|X=x}` (renders as $\text{E}[Y|X=x]$), **not** raw `E[Y|X=x]`
+- **Aligned equations**: Use `\ba` / `\ea` for `\begin{aligned}` / `\end{aligned}`
+- **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
+- **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
+
+Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
+
 ## CI/CD Workflow Debugging
 
 When investigating CI/CD failures (build, test, or lint workflow issues):
