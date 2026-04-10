@@ -3055,9 +3055,7 @@ Figure&nbsp;6: Chi-square distribution
 
 </section><section id="aic-and-bic" class="slide level2" data-number="5.1"><h2>
 <span class="header-section-number">5.1</span> AIC and BIC</h2>
-<aside class="notes"><p>When we use likelihood ratio tests, we are comparing how well different models fit the data.</p>
-<p>Likelihood ratio tests require “nested” models: one must be a special case of the other.</p>
-<p>If we have non-nested models, we can instead use the Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC):</p>
+<aside class="notes"><p>This section is adapted from <span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="#/references" role="doc-biblioref" onclick="">2012, sec. 4.5</a>)</span> and <span class="citation" data-cites="kleinbaum2014applied">Kleinbaum et al. (<a href="#/references" role="doc-biblioref" onclick="">2014, sec. 15</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -3068,13 +3066,58 @@ Figure&nbsp;6: Chi-square distribution
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside><ul>
-<li><p>AIC = <span class="math inline">\(-2 * \ell(\hat\theta) + 2 * p\)</span></p></li>
-<li><p>BIC = <span class="math inline">\(-2 * \ell(\hat\theta) + p * \text{log}(n)\)</span></p></li>
+      }</style></aside><p>When we use likelihood ratio tests, we are comparing how well different models fit the data.</p>
+<p>Likelihood ratio tests require <strong>nested</strong> models: one must be a special case of the other.</p>
+<p>AIC and BIC can be used to compare both nested and non-nested models.</p>
+</section><section class="slide level2"><h3 id="formulas">Formulas</h3>
+<div id="def-aic" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition 1 (Akaike Information Criterion (AIC))</strong></span> <span class="math display">\[\text{AIC} = -2 \ell(\hat\theta) + 2 p\]</span></p>
+<p>where <span class="math inline">\(\ell(\hat\theta)\)</span> is the log-likelihood evaluated at the maximum-likelihood estimates <span class="math inline">\(\hat\theta\)</span>, <span class="math inline">\(p\)</span> is the number of estimated parameters (including <span class="math inline">\(\hat\sigma^2\)</span> for Gaussian models), and <span class="math inline">\(n\)</span> is the number of observations.</p>
+</div>
+</section><section class="slide level2"><div id="def-bic" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition 2 (Bayesian Information Criterion (BIC))</strong></span> <span class="math display">\[\text{BIC} = -2 \ell(\hat\theta) + p \log(n)\]</span></p>
+<p>where <span class="math inline">\(\ell(\hat\theta)\)</span>, <span class="math inline">\(p\)</span>, and <span class="math inline">\(n\)</span> are defined as in <a href="#/def-aic" class="quarto-xref">Definition&nbsp;1</a>.</p>
+</div>
+</section><section class="slide level2"><h3 id="conceptual-basis">Conceptual basis</h3>
+<p>Each criterion has two components:</p>
+<ul>
+<li><p><strong>Fit term</strong> (<span class="math inline">\(-2\ell(\hat\theta)\)</span>): measures lack of fit — lower is better. A model with more parameters will always achieve a higher (or equal) log-likelihood on the observed data.</p></li>
+<li><p><strong>Penalty term</strong> (<span class="math inline">\(2 p\)</span> for AIC; <span class="math inline">\(p \log(n)\)</span> for BIC): penalizes model complexity to guard against overfitting.</p></li>
 </ul>
-<p>where <span class="math inline">\(\ell\)</span> is the log-likelihood of the data evaluated using the parameter estimates <span class="math inline">\(\hat\theta\)</span>, <span class="math inline">\(p\)</span> is the number of estimated parameters in the model (including <span class="math inline">\(\hat\sigma^2\)</span>), and <span class="math inline">\(n\)</span> is the number of observations.</p>
-<p>You can calculate these criteria using the <code><a href="https://rdrr.io/r/stats/logLik.html">logLik()</a></code> function, or use the built-in R functions:</p>
-<h3 id="aic-in-r">AIC in R</h3>
+<p>Together, they balance <strong>goodness of fit</strong> against <strong>parsimony</strong>.</p>
+<aside class="notes"><p>The AIC was introduced by <span class="citation" data-cites="akaike1974new">Akaike (<a href="#/references" role="doc-biblioref" onclick="">1974</a>)</span> and is grounded in information theory (specifically, the Kullback-Leibler divergence). The BIC was introduced by <span class="citation" data-cites="schwarz1978estimating">Schwarz (<a href="#/references" role="doc-biblioref" onclick="">1978</a>)</span> as an approximation to the Bayes factor for model comparison.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside></section><section class="slide level2"><h3 id="aic-vs.-bic">AIC vs.&nbsp;BIC</h3>
+<table class="caption-top">
+<thead><tr class="header">
+<th>Criterion</th>
+<th>Penalty per parameter</th>
+<th>Tends to select</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>AIC</td>
+<td><span class="math inline">\(2\)</span></td>
+<td>larger models</td>
+</tr>
+<tr class="even">
+<td>BIC</td>
+<td><span class="math inline">\(\log(n)\)</span></td>
+<td>smaller models</td>
+</tr>
+</tbody>
+</table>
+<p>The BIC penalty exceeds the AIC penalty whenever <span class="math inline">\(\log(n) &gt; 2\)</span>, i.e., when <span class="math inline">\(n &gt; e^2 \approx 7.4\)</span>. In practice, BIC almost always penalizes additional parameters more heavily than AIC and therefore tends to select simpler (more parsimonious) models <span class="citation" data-cites="vittinghoff2e kleinbaum2014applied">(<a href="#/references" role="doc-biblioref" onclick="">Vittinghoff et al. 2012</a>; <a href="#/references" role="doc-biblioref" onclick="">Kleinbaum et al. 2014</a>)</span>.</p>
+</section><section class="slide level2"><h3 id="aic-in-r">AIC in R</h3>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a></a><span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> <span class="fu">logLik</span>(bw_lm2) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>() <span class="sc">+</span></span>
 <span id="cb40-2"><a></a>  <span class="dv">2</span> <span class="sc">*</span> (<span class="fu">length</span>(<span class="fu">coef</span>(bw_lm2)) <span class="sc">+</span> <span class="dv">1</span>) <span class="co"># sigma counts as a parameter here</span></span>
@@ -3094,19 +3137,13 @@ Figure&nbsp;6: Chi-square distribution
 <span id="cb41-6"><a></a><span class="co">#&gt; [1] 329.049</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Large values of AIC and BIC are worse than small values. There are no hypothesis tests or p-values associated with these criteria.</p>
-<aside class="notes"><p>To compare models using AIC or BIC, calculate the criterion for each model and choose the model with the smallest value. A difference of more than 2 units in AIC is often considered meaningful, though this is just a rough guideline. BIC tends to favor simpler models than AIC, especially when the sample size is large.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside></section><section id="residual-deviance" class="slide level2" data-number="5.2"><h2>
+</section><section class="slide level2"><h3 id="interpretation">Interpretation</h3>
+<ul>
+<li><p><strong>Lower values are better.</strong> There are no hypothesis tests or p-values associated with these criteria.</p></li>
+<li><p>To compare models, calculate the criterion for each model and choose the model with the <strong>smallest value</strong>.</p></li>
+<li><p>Differences of less than 2 units are generally considered negligible; differences greater than 10 are considered strong evidence in favor of the lower-criterion model.</p></li>
+<li><p>BIC tends to favor simpler models than AIC, especially when the sample size is large.</p></li>
+</ul></section><section id="residual-deviance" class="slide level2" data-number="5.2"><h2>
 <span class="header-section-number">5.2</span> (Residual) Deviance</h2>
 <p>Let <span class="math inline">\(q\)</span> be the number of distinct covariate combinations in a data set.</p>
 <div class="cell">
@@ -3136,7 +3173,7 @@ Table&nbsp;14: Unique covariate combinations in the <code>birthweight</code> dat
 </figure>
 </div>
 </section><section class="slide level2"><div id="def-replicates" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 1 (Replicates)</strong></span> If a given covariate pattern has more than one observation in a dataset, those observations are called <strong>replicates</strong>.</p>
+<p><span class="theorem-title"><strong>Definition 3 (Replicates)</strong></span> If a given covariate pattern has more than one observation in a dataset, those observations are called <strong>replicates</strong>.</p>
 </div>
 </section><section class="slide level2"><div id="exm-replicate-bw" class="theorem example">
 <p><span class="theorem-title"><strong>Example 2 (Replicates in the <code>birthweight</code> data)</strong></span> In the <code>birthweight</code> dataset, there are 2 replicates of the combination “female, age 36” (<a href="#/tbl-bw-x-combos" class="quarto-xref">Table&nbsp;14</a>).</p>
@@ -3633,7 +3670,7 @@ D = 2\sum_{i=1}^n
 </section><section id="prediction-for-linear-models" class="slide level2" data-number="6.1"><h2>
 <span class="header-section-number">6.1</span> Prediction for linear models</h2>
 <div id="def-predicted-value" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 2 (Predicted value)</strong></span> In a regression model <span class="math inline">\(\text{p}(y|\tilde{x})\)</span>, the <strong>predicted value</strong> of <span class="math inline">\(y\)</span> given <span class="math inline">\(\tilde{x}\)</span> is the estimated mean of <span class="math inline">\(Y\)</span> given <span class="math inline">\(\tilde{X}=\tilde{x}\)</span>:</p>
+<p><span class="theorem-title"><strong>Definition 4 (Predicted value)</strong></span> In a regression model <span class="math inline">\(\text{p}(y|\tilde{x})\)</span>, the <strong>predicted value</strong> of <span class="math inline">\(y\)</span> given <span class="math inline">\(\tilde{x}\)</span> is the estimated mean of <span class="math inline">\(Y\)</span> given <span class="math inline">\(\tilde{X}=\tilde{x}\)</span>:</p>
 <p><span class="math display">\[\hat y \stackrel{\text{def}}{=}\hat{\text{E}}{\left[Y|\tilde{X}=\tilde{x}\right]}\]</span></p>
 </div>
 </section><section class="slide level2"><p>For linear models, the predicted value can be straightforwardly calculated by multiplying each predictor value <span class="math inline">\(x_j\)</span> by its corresponding coefficient <span class="math inline">\(\beta_j\)</span> and adding up the results:</p>
@@ -3673,7 +3710,7 @@ D = 2\sum_{i=1}^n
 </div>
 <p>These special predictions are called the <em>fitted values</em> of the dataset:</p>
 <div id="def-fitted-value" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 3</strong></span> For a given dataset <span class="math inline">\((\tilde{Y}, \mathbf{X})\)</span> and corresponding fitted model <span class="math inline">\(\text{p}_{\hat \beta}(\tilde{y}|\mathbf{x})\)</span>, the <strong>fitted value</strong> of <span class="math inline">\(y_i\)</span> is the predicted value of <span class="math inline">\(y\)</span> when <span class="math inline">\(\tilde{X}=\tilde{x}_i\)</span> using the estimate parameters <span class="math inline">\(\hat \beta\)</span>.</p>
+<p><span class="theorem-title"><strong>Definition 5</strong></span> For a given dataset <span class="math inline">\((\tilde{Y}, \mathbf{X})\)</span> and corresponding fitted model <span class="math inline">\(\text{p}_{\hat \beta}(\tilde{y}|\mathbf{x})\)</span>, the <strong>fitted value</strong> of <span class="math inline">\(y_i\)</span> is the predicted value of <span class="math inline">\(y\)</span> when <span class="math inline">\(\tilde{X}=\tilde{x}_i\)</span> using the estimate parameters <span class="math inline">\(\hat \beta\)</span>.</p>
 </div>
 <p>R has an extra function to get these values:</p>
 <div class="cell">
@@ -4011,23 +4048,23 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-with-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="wchmoytwzg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#wchmoytwzg table {
+<div id="hmtizpdmld" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hmtizpdmld table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#wchmoytwzg thead, #wchmoytwzg tbody, #wchmoytwzg tfoot, #wchmoytwzg tr, #wchmoytwzg td, #wchmoytwzg th {
+#hmtizpdmld thead, #hmtizpdmld tbody, #hmtizpdmld tfoot, #hmtizpdmld tr, #hmtizpdmld td, #hmtizpdmld th {
   border-style: none;
 }
 
-#wchmoytwzg p {
+#hmtizpdmld p {
   margin: 0;
   padding: 0;
 }
 
-#wchmoytwzg .gt_table {
+#hmtizpdmld .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4053,12 +4090,12 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_caption {
+#hmtizpdmld .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#wchmoytwzg .gt_title {
+#hmtizpdmld .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4070,7 +4107,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#wchmoytwzg .gt_subtitle {
+#hmtizpdmld .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4082,7 +4119,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#wchmoytwzg .gt_heading {
+#hmtizpdmld .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4094,13 +4131,13 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_bottom_border {
+#hmtizpdmld .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_col_headings {
+#hmtizpdmld .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4115,7 +4152,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_col_heading {
+#hmtizpdmld .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4135,7 +4172,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#wchmoytwzg .gt_column_spanner_outer {
+#hmtizpdmld .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4147,15 +4184,15 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#wchmoytwzg .gt_column_spanner_outer:first-child {
+#hmtizpdmld .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#wchmoytwzg .gt_column_spanner_outer:last-child {
+#hmtizpdmld .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#wchmoytwzg .gt_column_spanner {
+#hmtizpdmld .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4167,11 +4204,11 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#wchmoytwzg .gt_spanner_row {
+#hmtizpdmld .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#wchmoytwzg .gt_group_heading {
+#hmtizpdmld .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4197,7 +4234,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#wchmoytwzg .gt_empty_group_heading {
+#hmtizpdmld .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4212,15 +4249,15 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#wchmoytwzg .gt_from_md > :first-child {
+#hmtizpdmld .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#wchmoytwzg .gt_from_md > :last-child {
+#hmtizpdmld .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#wchmoytwzg .gt_row {
+#hmtizpdmld .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4239,7 +4276,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#wchmoytwzg .gt_stub {
+#hmtizpdmld .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4252,7 +4289,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wchmoytwzg .gt_stub_row_group {
+#hmtizpdmld .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4266,15 +4303,15 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#wchmoytwzg .gt_row_group_first td {
+#hmtizpdmld .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#wchmoytwzg .gt_row_group_first th {
+#hmtizpdmld .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#wchmoytwzg .gt_summary_row {
+#hmtizpdmld .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4284,16 +4321,16 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wchmoytwzg .gt_first_summary_row {
+#hmtizpdmld .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_first_summary_row.thick {
+#hmtizpdmld .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#wchmoytwzg .gt_last_summary_row {
+#hmtizpdmld .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4303,7 +4340,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_grand_summary_row {
+#hmtizpdmld .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4313,7 +4350,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wchmoytwzg .gt_first_grand_summary_row {
+#hmtizpdmld .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4323,7 +4360,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_last_grand_summary_row_top {
+#hmtizpdmld .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4333,11 +4370,11 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_striped {
+#hmtizpdmld .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#wchmoytwzg .gt_table_body {
+#hmtizpdmld .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4346,7 +4383,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_footnotes {
+#hmtizpdmld .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4360,7 +4397,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_footnote {
+#hmtizpdmld .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4369,7 +4406,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wchmoytwzg .gt_sourcenotes {
+#hmtizpdmld .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4383,7 +4420,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#wchmoytwzg .gt_sourcenote {
+#hmtizpdmld .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4391,72 +4428,72 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#wchmoytwzg .gt_left {
+#hmtizpdmld .gt_left {
   text-align: left;
 }
 
-#wchmoytwzg .gt_center {
+#hmtizpdmld .gt_center {
   text-align: center;
 }
 
-#wchmoytwzg .gt_right {
+#hmtizpdmld .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#wchmoytwzg .gt_font_normal {
+#hmtizpdmld .gt_font_normal {
   font-weight: normal;
 }
 
-#wchmoytwzg .gt_font_bold {
+#hmtizpdmld .gt_font_bold {
   font-weight: bold;
 }
 
-#wchmoytwzg .gt_font_italic {
+#hmtizpdmld .gt_font_italic {
   font-style: italic;
 }
 
-#wchmoytwzg .gt_super {
+#hmtizpdmld .gt_super {
   font-size: 65%;
 }
 
-#wchmoytwzg .gt_footnote_marks {
+#hmtizpdmld .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#wchmoytwzg .gt_asterisk {
+#hmtizpdmld .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#wchmoytwzg .gt_indent_1 {
+#hmtizpdmld .gt_indent_1 {
   text-indent: 5px;
 }
 
-#wchmoytwzg .gt_indent_2 {
+#hmtizpdmld .gt_indent_2 {
   text-indent: 10px;
 }
 
-#wchmoytwzg .gt_indent_3 {
+#hmtizpdmld .gt_indent_3 {
   text-indent: 15px;
 }
 
-#wchmoytwzg .gt_indent_4 {
+#hmtizpdmld .gt_indent_4 {
   text-indent: 20px;
 }
 
-#wchmoytwzg .gt_indent_5 {
+#hmtizpdmld .gt_indent_5 {
   text-indent: 25px;
 }
 
-#wchmoytwzg .katex-display {
+#hmtizpdmld .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#wchmoytwzg div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#hmtizpdmld div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -4513,23 +4550,23 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="zduxhkfrcg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#zduxhkfrcg table {
+<div id="lotuicgqst" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#lotuicgqst table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#zduxhkfrcg thead, #zduxhkfrcg tbody, #zduxhkfrcg tfoot, #zduxhkfrcg tr, #zduxhkfrcg td, #zduxhkfrcg th {
+#lotuicgqst thead, #lotuicgqst tbody, #lotuicgqst tfoot, #lotuicgqst tr, #lotuicgqst td, #lotuicgqst th {
   border-style: none;
 }
 
-#zduxhkfrcg p {
+#lotuicgqst p {
   margin: 0;
   padding: 0;
 }
 
-#zduxhkfrcg .gt_table {
+#lotuicgqst .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4555,12 +4592,12 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_caption {
+#lotuicgqst .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#zduxhkfrcg .gt_title {
+#lotuicgqst .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4572,7 +4609,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#zduxhkfrcg .gt_subtitle {
+#lotuicgqst .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4584,7 +4621,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#zduxhkfrcg .gt_heading {
+#lotuicgqst .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4596,13 +4633,13 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_bottom_border {
+#lotuicgqst .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_col_headings {
+#lotuicgqst .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4617,7 +4654,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_col_heading {
+#lotuicgqst .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4637,7 +4674,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#zduxhkfrcg .gt_column_spanner_outer {
+#lotuicgqst .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4649,15 +4686,15 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#zduxhkfrcg .gt_column_spanner_outer:first-child {
+#lotuicgqst .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#zduxhkfrcg .gt_column_spanner_outer:last-child {
+#lotuicgqst .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#zduxhkfrcg .gt_column_spanner {
+#lotuicgqst .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4669,11 +4706,11 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#zduxhkfrcg .gt_spanner_row {
+#lotuicgqst .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#zduxhkfrcg .gt_group_heading {
+#lotuicgqst .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4699,7 +4736,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#zduxhkfrcg .gt_empty_group_heading {
+#lotuicgqst .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4714,15 +4751,15 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#zduxhkfrcg .gt_from_md > :first-child {
+#lotuicgqst .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#zduxhkfrcg .gt_from_md > :last-child {
+#lotuicgqst .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#zduxhkfrcg .gt_row {
+#lotuicgqst .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4741,7 +4778,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#zduxhkfrcg .gt_stub {
+#lotuicgqst .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4754,7 +4791,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zduxhkfrcg .gt_stub_row_group {
+#lotuicgqst .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4768,15 +4805,15 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#zduxhkfrcg .gt_row_group_first td {
+#lotuicgqst .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#zduxhkfrcg .gt_row_group_first th {
+#lotuicgqst .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#zduxhkfrcg .gt_summary_row {
+#lotuicgqst .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4786,16 +4823,16 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zduxhkfrcg .gt_first_summary_row {
+#lotuicgqst .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_first_summary_row.thick {
+#lotuicgqst .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#zduxhkfrcg .gt_last_summary_row {
+#lotuicgqst .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4805,7 +4842,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_grand_summary_row {
+#lotuicgqst .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4815,7 +4852,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zduxhkfrcg .gt_first_grand_summary_row {
+#lotuicgqst .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4825,7 +4862,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_last_grand_summary_row_top {
+#lotuicgqst .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4835,11 +4872,11 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_striped {
+#lotuicgqst .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#zduxhkfrcg .gt_table_body {
+#lotuicgqst .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4848,7 +4885,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_footnotes {
+#lotuicgqst .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4862,7 +4899,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_footnote {
+#lotuicgqst .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -4871,7 +4908,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zduxhkfrcg .gt_sourcenotes {
+#lotuicgqst .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -4885,7 +4922,7 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#zduxhkfrcg .gt_sourcenote {
+#lotuicgqst .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -4893,72 +4930,72 @@ Table&nbsp;17: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#zduxhkfrcg .gt_left {
+#lotuicgqst .gt_left {
   text-align: left;
 }
 
-#zduxhkfrcg .gt_center {
+#lotuicgqst .gt_center {
   text-align: center;
 }
 
-#zduxhkfrcg .gt_right {
+#lotuicgqst .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#zduxhkfrcg .gt_font_normal {
+#lotuicgqst .gt_font_normal {
   font-weight: normal;
 }
 
-#zduxhkfrcg .gt_font_bold {
+#lotuicgqst .gt_font_bold {
   font-weight: bold;
 }
 
-#zduxhkfrcg .gt_font_italic {
+#lotuicgqst .gt_font_italic {
   font-style: italic;
 }
 
-#zduxhkfrcg .gt_super {
+#lotuicgqst .gt_super {
   font-size: 65%;
 }
 
-#zduxhkfrcg .gt_footnote_marks {
+#lotuicgqst .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#zduxhkfrcg .gt_asterisk {
+#lotuicgqst .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#zduxhkfrcg .gt_indent_1 {
+#lotuicgqst .gt_indent_1 {
   text-indent: 5px;
 }
 
-#zduxhkfrcg .gt_indent_2 {
+#lotuicgqst .gt_indent_2 {
   text-indent: 10px;
 }
 
-#zduxhkfrcg .gt_indent_3 {
+#lotuicgqst .gt_indent_3 {
   text-indent: 15px;
 }
 
-#zduxhkfrcg .gt_indent_4 {
+#lotuicgqst .gt_indent_4 {
   text-indent: 20px;
 }
 
-#zduxhkfrcg .gt_indent_5 {
+#lotuicgqst .gt_indent_5 {
   text-indent: 25px;
 }
 
-#zduxhkfrcg .katex-display {
+#lotuicgqst .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#zduxhkfrcg div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#lotuicgqst div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -5081,7 +5118,7 @@ Figure&nbsp;12: <code>hers</code> data models with and without intercepts
           overflow: hidden!important;
           display:block!important;
       }</style></aside><div id="def-resid-noise" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 4 (Residual noise/deviation from the population mean)</strong></span> The <strong>residual noise</strong> in a probabilistic model <span class="math inline">\(p(Y)\)</span>, also known as the <strong>residual deviation of an observation from its population mean</strong> or <strong>residual</strong> for short, is the difference between an observed value <span class="math inline">\(y\)</span> and its population mean:</p>
+<p><span class="theorem-title"><strong>Definition 6 (Residual noise/deviation from the population mean)</strong></span> The <strong>residual noise</strong> in a probabilistic model <span class="math inline">\(p(Y)\)</span>, also known as the <strong>residual deviation of an observation from its population mean</strong> or <strong>residual</strong> for short, is the difference between an observed value <span class="math inline">\(y\)</span> and its population mean:</p>
 <p><span id="eq-def-resid"><span class="math display">\[\varepsilon(y) \stackrel{\text{def}}{=}y - \text{E}{\left[Y\right]} \tag{21}\]</span></span></p>
 </div>
 <aside class="notes"><p>We use the same notation for residual noise that we used for <a href="./estimation.html#def-error">errors</a>.</p>
@@ -5105,7 +5142,7 @@ Figure&nbsp;12: <code>hers</code> data models with and without intercepts
 <p><span class="proof-title"><em>Proof</em>. </span>Left to the reader.</p>
 </div>
 </section><section class="slide level2"><div id="def-resid-fitted" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 5 (Residuals of a fitted model value)</strong></span> The <strong>residual of a fitted value <span class="math inline">\(\hat y\)</span></strong> (shorthand: “residual”) is its <a href="./estimation.html#def-error">error</a> relative to the observed data: <span class="math display">\[
+<p><span class="theorem-title"><strong>Definition 7 (Residuals of a fitted model value)</strong></span> The <strong>residual of a fitted value <span class="math inline">\(\hat y\)</span></strong> (shorthand: “residual”) is its <a href="./estimation.html#def-error">error</a> relative to the observed data: <span class="math display">\[
 \begin{aligned}
 e(\hat y) &amp;\stackrel{\text{def}}{=}\varepsilon{\left(\hat y\right)}
 \\&amp;= y - \hat y
@@ -5489,7 +5526,7 @@ Figure&nbsp;18: Residuals of interaction model for <code>hers</code> data, with 
 </figure>
 </div>
 </section><section class="slide level2"><div id="def-stred" class="theorem definition">
-<p><span class="theorem-title"><strong>Definition 6 (Standardized residuals)</strong></span> <span class="math display">\[r_i = \frac{e_i}{\widehat{SD}(e_i)}\]</span></p>
+<p><span class="theorem-title"><strong>Definition 8 (Standardized residuals)</strong></span> <span class="math display">\[r_i = \frac{e_i}{\widehat{SD}(e_i)}\]</span></p>
 </div>
 <p>Hence, with enough data and a correct model, the standardized residuals will be approximately standard Gaussian; that is,</p>
 <p><span class="math display">\[
@@ -6375,7 +6412,7 @@ Figure&nbsp;30: <code>birthweight</code> model with interactions (<a href="#/eq-
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.85774","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.38339","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.82024","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.71285","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -6500,10 +6537,10 @@ Figure&nbsp;31: Lasso selection
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb128"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a></a><span class="fu">coef</span>(cvfit, <span class="at">s =</span> <span class="st">"lambda.1se"</span>)</span>
 <span id="cb128-2"><a></a><span class="co">#&gt; 4 x 1 sparse Matrix of class "dgCMatrix"</span></span>
 <span id="cb128-3"><a></a><span class="co">#&gt;             lambda.1se</span></span>
-<span id="cb128-4"><a></a><span class="co">#&gt; (Intercept) 34.2044364</span></span>
+<span id="cb128-4"><a></a><span class="co">#&gt; (Intercept) 34.3091615</span></span>
 <span id="cb128-5"><a></a><span class="co">#&gt; age          .        </span></span>
-<span id="cb128-6"><a></a><span class="co">#&gt; weight      -0.0925966</span></span>
-<span id="cb128-7"><a></a><span class="co">#&gt; protein      0.8582398</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb128-6"><a></a><span class="co">#&gt; weight      -0.0800142</span></span>
+<span id="cb128-7"><a></a><span class="co">#&gt; protein      0.7640510</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section></section><section><section id="categorical-covariates-with-more-than-two-levels" class="title-slide slide level1 center" data-number="9"><h1>
@@ -7049,6 +7086,9 @@ Table&nbsp;28: HERS dataset
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-akaike1974new" class="csl-entry" role="listitem">
+Akaike, Hirotugu. 1974. <span>“A New Look at the Statistical Model Identification.”</span> <em>IEEE Transactions on Automatic Control</em> 19 (6): 716–23. <a href="https://doi.org/10.1109/TAC.1974.1100705">https://doi.org/10.1109/TAC.1974.1100705</a>.
+</div>
 <div id="ref-anderson1935irises" class="csl-entry" role="listitem">
 Anderson, Edgar. 1935. <span>“The Irises of the Gaspe Peninsula.”</span> <em>Bulletin of American Iris Society</em> 59: 2–5.
 </div>
@@ -7093,6 +7133,9 @@ Kutner, Michael H, Christopher J Nachtsheim, John Neter, and William Li. 2005. <
 </div>
 <div id="ref-polin2011fetal" class="csl-entry" role="listitem">
 Polin, Richard A, William W Fox, and Steven H Abman. 2011. <em>Fetal and Neonatal Physiology</em>. 4th ed. Elsevier health sciences.
+</div>
+<div id="ref-schwarz1978estimating" class="csl-entry" role="listitem">
+Schwarz, Gideon. 1978. <span>“Estimating the Dimension of a Model.”</span> <em>The Annals of Statistics</em> 6 (2): 461–64. <a href="https://doi.org/10.1214/aos/1176344136">https://doi.org/10.1214/aos/1176344136</a>.
 </div>
 <div id="ref-seber2012linear" class="csl-entry" role="listitem">
 Seber, George AF, and Alan J Lee. 2012. <em>Linear Regression Analysis</em>. 2nd ed. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/Linear+Regression+Analysis%2C+2nd+Edition-p-9781118274422">https://www.wiley.com/en-us/Linear+Regression+Analysis%2C+2nd+Edition-p-9781118274422</a>.
