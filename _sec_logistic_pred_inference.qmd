@@ -1,0 +1,187 @@
+{{< include latex-macros/macros.qmd >}}
+
+:::{#exr-ci-prob}
+
+Given
+a maximum likelihood estimate $\hb$
+and
+a corresponding estimated covariance matrix
+$\hS \eqdef \widehat{\Covt}(\hb)$,
+calculate a 95% confidence interval for the predicted probability
+$\pi(\vx) = \Pr(Y = 1 | \vX = \vx)$.
+
+:::
+
+---
+
+:::{#sol-ci-prob}
+
+::: notes
+
+By [the central limit theorem for MLEs](intro-MLEs.qmd#thm-dist-mle),
+a 95% confidence interval for $\pi(\vx)$
+can be constructed as:
+
+$$\hat\pi(\vx) \pm 1.96 * \HSE{\hat\pi(\vx)}$$
+
+However, $\HSE{\hat\pi(\vx)}$ seems difficult to compute;
+doing so would require using the
+[delta method](https://en.wikipedia.org/wiki/Delta_method).
+
+Instead, using the invariance property of MLEs,
+we can first calculate a confidence interval for the log-odds,
+
+$$\logodds(\vx) = \vx'\vb \in (L, R)$$
+
+and then apply $\expit$ to the endpoints of that log-odds-scale confidence interval:
+
+:::
+
+$$\pi(\vx) \in (\expit(L), \expit(R))$${#eq-ci-prob-exp}
+
+:::
+
+---
+
+:::{#exr-logodds-ci}
+
+Find a 95% confidence interval for the log-odds $\logodds(\vx) = \vx'\vb$.
+
+:::
+
+---
+
+:::{#sol-logodds-ci}
+
+By [the central limit theorem for MLEs](intro-MLEs.qmd#thm-dist-mle),
+a 95% confidence interval for $\logodds(\vx)$
+can be constructed as:
+
+$$\hat\logodds(\vx) \pm 1.96 * \blue{\HSE{\hat\logodds(\vx)}}$$
+
+where $\hat\logodds(\vx) = \vx'\hb$.
+
+:::
+
+---
+
+:::{#exr-se-logodds}
+
+::: notes
+
+How can we estimate the standard error of
+$\hat\logodds(\vx)$?
+
+:::
+
+$$\blue{\HSE{\hat\logodds(\vx)}} = \blue{?}$$
+
+:::
+
+---
+
+:::{#sol-se-logodds}
+
+$$
+\green{\SE{\hat\logodds(\vx)}} =
+\sqrt{\red{\Var{\hat\logodds(\vx)}}}
+$${#eq-se-sqrt-var-logodds}
+
+By the definition $\hat\logodds(\vx) = \vx'\hb$
+and [the variance of a linear combination](probability.qmd#thm-var-lincom):
+
+$$
+\ba
+\red{\Var{\hat\logodds(\vx)}}
+&= \Var{\vx'\hb}
+\\
+&= \vx'\Cov{\hb}\vx
+\\
+&= \red{\tp{\vx}\Sigma\vx}
+\ea
+$${#eq-var-logodds}
+
+where $\Sigma \eqdef \Covt(\hb)$.
+
+---
+
+::: notes
+
+Expanding @eq-var-logodds out of matrix-vector notation, we have:
+
+:::
+
+$$
+\ba
+\red{\tp{\vx}\Sigma\vx}
+&= \sumip\sumjp x_i \Sigma_{ij} x_j
+\\
+&= \red{\sumip\sumjp x_i \Covt(\hb_i,\hb_j) x_j}
+\ea
+$$
+
+---
+
+Combining @eq-var-logodds and MLE invariance:
+
+:::{#thm-est-se-logodds}
+
+#### Estimated variance and standard error of log-odds
+
+$$
+\orange{\hVar{\hat\logodds(\vx)}} = \orange{\tp{\vx}\hat{\Sigma}\vx}
+$${#eq-est-var-logodds}
+
+$$
+\blue{\HSE{\hat\logodds(\vx)}} =
+\blue{\sqrt{\tp{\vx}\hat{\Sigma}\vx}}
+$${#eq-est-se-logodds}
+
+:::
+
+::: notes
+
+Note: on the RHS, we have plugged in $\hat{\Sigma}$,
+our estimate of $\Sigma$.
+
+Compare this result with [confidence intervals for odds ratios](logistic-regression.qmd#sec-or-inference),
+where $\vx$ replaces $\diffvx$.
+
+:::
+
+:::
+
+---
+
+#### In R
+
+In R, `predict()` with `type = "link"` and `se.fit = TRUE`
+computes the estimated log-odds $\hat\logodds(\vx) = \vx'\hb$
+and its estimated standard error for each covariate pattern:
+
+```{r}
+#| label: tbl-beetles-pred-logodds
+#| tbl-cap: "Predicted log-odds and 95% CI for `beetles` logistic regression"
+library(dplyr)
+new_doses <- tibble(dose = c(1.7, 1.8, 1.9))
+
+pred_logodds <-
+  beetles_glm_ungrouped |>
+  predict(
+    newdata = new_doses,
+    type = "link",
+    se.fit = TRUE
+  )
+
+new_doses |>
+  mutate(
+    logodds_hat = pred_logodds$fit,
+    se = pred_logodds$se.fit,
+    ci_lower_logodds = logodds_hat - 1.96 * se,
+    ci_upper_logodds = logodds_hat + 1.96 * se,
+    pi_hat = plogis(logodds_hat),
+    ci_lower_prob = plogis(ci_lower_logodds),
+    ci_upper_prob = plogis(ci_upper_logodds)
+  ) |>
+  knitr::kable(digits = 3)
+```
