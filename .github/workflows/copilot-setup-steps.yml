@@ -64,7 +64,18 @@ jobs:
             libjpeg-dev \
             poppler-utils \
             tesseract-ocr \
-            tesseract-ocr-eng
+            tesseract-ocr-eng \
+            maxima \
+            python3-pip
+
+      # Install SymPy - a Python computer algebra system (CAS) for symbolic mathematics.
+      # SymPy can perform symbolic differentiation, integration, simplification,
+      # equation solving, and many other algebraic operations needed for this
+      # statistics/mathematics textbook.
+      # Maxima (installed above via apt-get) provides a complementary full-featured CAS
+      # accessible from the command line.
+      - name: Install SymPy (Python CAS)
+        run: pip3 install --break-system-packages sympy
       
       # Set up pandoc for documentation
       - name: Set up Pandoc
@@ -85,6 +96,8 @@ jobs:
         uses: quarto-dev/quarto-actions/setup@v2
         with:
           tinytex: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       # Install R dependencies using renv
       # This project uses renv for package management
@@ -153,5 +166,20 @@ jobs:
           Rscript -e 'cat("renv active:", !is.null(renv::project()), "\n")'
           Rscript -e 'cat("renv library path:", .libPaths()[1], "\n")'
           
+          # Verify SymPy (Python CAS) is installed
+          echo ""
+          echo "=== SymPy CAS Status ==="
+          python3 -c "import sympy; from sympy import symbols, diff, solve, latex; x = symbols('x'); e = x**3 + 2*x**2 - x - 2; print('SymPy', sympy.__version__, '| diff:', diff(e, x), '| roots:', solve(e, x)); print('SymPy: OK')"
+
+          # Verify Maxima (CAS) is installed
+          echo ""
+          echo "=== Maxima CAS Status ==="
+          if which maxima > /dev/null 2>&1; then
+            echo "diff(x^3 + 2*x^2 - x - 2, x);" | maxima --very-quiet
+            echo "Maxima: OK"
+          else
+            echo "Maxima not found in PATH"
+          fi
+
           echo ""
           echo "Development environment setup complete!"
