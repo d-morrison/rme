@@ -601,7 +601,8 @@ window.Quarto = {
   <ul class="collapse">
 <li><a href="#gaussian-linear-regression-deviance" id="toc-gaussian-linear-regression-deviance" class="nav-link" data-scroll-target="#gaussian-linear-regression-deviance"><span class="header-section-number">6.2.1</span> Gaussian linear regression deviance</a></li>
   <li><a href="#non-gaussian-glm-deviance" id="toc-non-gaussian-glm-deviance" class="nav-link" data-scroll-target="#non-gaussian-glm-deviance"><span class="header-section-number">6.2.2</span> Non-Gaussian GLM deviance</a></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">6.2.3</span> Summary</a></li>
+  <li><a href="#sec-sat-vs-full" id="toc-sec-sat-vs-full" class="nav-link" data-scroll-target="#sec-sat-vs-full"><span class="header-section-number">6.2.3</span> Saturated vs.&nbsp;fully parametrized models with replicates</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">6.2.4</span> Summary</a></li>
   </ul>
 </li>
   <li>
@@ -639,7 +640,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2026-04-11: 0:02:49 (UTC)</p>
+      <p class="date">Last modified: 2026-04-11: 0:17:24 (UTC)</p>
     </div>
   </div>
   
@@ -4414,7 +4415,7 @@ Figure&nbsp;12: Null model for birthweight data, with 95% confidence and predict
 - \frac{1}{2\hat\sigma^2}
   \sum_{i=1}^n(y_i - \hat{y}_i)^2
 \]</span></p>
-<p>The saturated model sets <span class="math inline">\(\hat\mu_i = y_i\)</span> for each observation (one free parameter per observation), so its residual sum of squares is zero:</p>
+<p>The saturated model has one free mean parameter per distinct covariate pattern. When there are no replicates (each covariate pattern appears exactly once), it sets <span class="math inline">\(\hat\mu_i = y_i\)</span> for every observation, so its residual sum of squares is zero:</p>
 <p><span class="math display">\[\ell_{\text{sat}}(\hat\sigma^2) = -\frac{n}{2}\log(2\pi\hat\sigma^2)\]</span></p>
 <p>Substituting into <a href="#eq-deviance-general" class="quarto-xref">Equation&nbsp;20</a>, the Gaussian deviance simplifies to the <strong>residual sum of squares</strong> (RSS), scaled by <span class="math inline">\(\hat\sigma^2\)</span>:</p>
 <p><span class="math display">\[
@@ -4472,8 +4473,96 @@ D = 2\sum_{i=1}^n
 <p>For Poisson and Binomial models, the dispersion parameter <span class="math inline">\(\phi = 1\)</span> is <strong>fixed</strong> rather than estimated. Consequently, the difference in deviances between two nested models follows an approximate <span class="math inline">\(\chi^2\)</span> distribution:</p>
 <p><span class="math display">\[D_1 - D_2 \;\dot \sim\; \chi^2_{p_2 - p_1}\]</span></p>
 <p>This asymptotic result replaces the exact F-test used for Gaussian models.</p>
-</section><section id="summary" class="level3" data-number="6.2.3"><h3 data-number="6.2.3" class="anchored" data-anchor-id="summary">
-<span class="header-section-number">6.2.3</span> Summary</h3>
+</section><section id="sec-sat-vs-full" class="level3" data-number="6.2.3"><h3 data-number="6.2.3" class="anchored" data-anchor-id="sec-sat-vs-full">
+<span class="header-section-number">6.2.3</span> Saturated vs.&nbsp;fully parametrized models with replicates</h3>
+<p>When some covariate patterns appear more than once (i.e., when there are <strong>replicates</strong>), it is important to distinguish between two special models:</p>
+<ul>
+<li>The <strong>saturated model</strong> has one free mean parameter per <strong>distinct covariate pattern</strong> (<span class="math inline">\(q\)</span> parameters, where <span class="math inline">\(q \leq n\)</span> is the number of unique patterns).</li>
+<li>The <strong>fully parametrized model</strong> has one free mean parameter per <strong>observation</strong> (<span class="math inline">\(n\)</span> parameters).</li>
+</ul>
+<p>When there are no replicates (<span class="math inline">\(q = n\)</span>), these two coincide. When there are replicates (<span class="math inline">\(q &lt; n\)</span>), the saturated model constrains all observations sharing a covariate pattern to have the same mean, but places no constraint on means across different patterns. See <span class="citation" data-cites="kleinbaum2010logistic">Kleinbaum and Klein (<a href="#ref-kleinbaum2010logistic" role="doc-biblioref">2010</a>)</span> for further discussion of this distinction.</p>
+<p>Deviance is always measured relative to the <strong>saturated model</strong>, not the fully parametrized model.</p>
+<section id="gaussian-deviance-with-replicates" class="level4"><h4 class="anchored" data-anchor-id="gaussian-deviance-with-replicates">Gaussian deviance with replicates</h4>
+<p>When covariate pattern <span class="math inline">\(k\)</span> has <span class="math inline">\(n_k\)</span> replicates with sample mean <span class="math inline">\(\bar{y}_k\)</span>, the saturated model fits <span class="math inline">\(\hat\mu_k = \bar{y}_k\)</span> for each pattern <span class="math inline">\(k\)</span>, so its residual sum of squares equals the <strong>within-group (pure error) SS</strong>:</p>
+<p><span class="math display">\[
+\text{RSS}_{\text{sat}}
+= \sum_{k=1}^q \sum_{i: \tilde{x}_i = \tilde{x}_k} (y_i - \bar{y}_k)^2
+\]</span></p>
+<p>This is nonzero whenever any covariate pattern has replicates with different response values. The Gaussian deviance relative to the saturated model is therefore:</p>
+<p><span class="math display">\[
+D
+= 2(\ell_{\text{sat}} - \ell(\hat\beta))
+= \frac{\text{RSS} - \text{RSS}_{\text{sat}}}{\hat\sigma^2}
+\]</span></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>R’s <code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> applied to an <code>lm</code> object returns the <strong>total fitted-model RSS</strong>, not the deviance relative to the saturated model. To compute the deviance relative to the saturated model, subtract the saturated model’s RSS: <code>deviance(lm_fit) - deviance(lm_saturated)</code>.</p>
+</div>
+</div>
+<p>For the <code>birthweight</code> data, we can verify this directly using <code>bw_lm2</code> (the interaction model) and <code>lm_max</code> (the saturated model):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb83"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/deviance.html">deviance</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span>                      <span class="co"># total RSS of fitted model</span></span>
+<span><span class="co">#&gt; [1] 652425</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/deviance.html">deviance</a></span><span class="op">(</span><span class="va">lm_max</span><span class="op">)</span>                      <span class="co"># within-group (pure error) SS</span></span>
+<span><span class="co">#&gt; [1] 423783</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/deviance.html">deviance</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/deviance.html">deviance</a></span><span class="op">(</span><span class="va">lm_max</span><span class="op">)</span>   <span class="co"># lack-of-fit SS (deviance vs. saturated)</span></span>
+<span><span class="co">#&gt; [1] 228642</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="notes">
+<p>The lack-of-fit SS (<code>deviance(bw_lm2) - deviance(lm_max)</code>) measures how much additional unexplained variation remains after accounting for pure measurement error within covariate patterns.</p>
+</div>
+</section><section id="glm-deviance-with-replicates" class="level4"><h4 class="anchored" data-anchor-id="glm-deviance-with-replicates">GLM deviance with replicates</h4>
+<p>For a Binomial GLM fit to data <strong>grouped by covariate pattern</strong> (with <span class="math inline">\(y_k\)</span> events and <span class="math inline">\(n_k\)</span> observations for pattern <span class="math inline">\(k\)</span>), the saturated model sets <span class="math inline">\(\hat\pi_k^{\text{sat}} = y_k / n_k\)</span> for each pattern <span class="math inline">\(k\)</span>. R’s <code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> correctly computes <span class="math inline">\(2(\ell_{\text{sat}} - \ell(\hat\beta))\)</span> using this grouping:</p>
+<p><span class="math display">\[
+D = 2\sum_{k=1}^q
+\left[
+  y_k \log\!\left(\frac{y_k / n_k}{\hat\pi_k}\right)
+  + (n_k - y_k)\log\!\left(\frac{1 - y_k/n_k}{1 - \hat\pi_k}\right)
+\right]
+\]</span></p>
+<div class="notes">
+<p>By convention, terms with <span class="math inline">\(y_k = 0\)</span> or <span class="math inline">\(y_k = n_k\)</span> contribute zero to the sum, since <span class="math inline">\(0\log(0) = 0\)</span> in the limit.</p>
+</div>
+<p>When binomial data is <strong>ungrouped</strong> (individual Bernoulli observations, <span class="math inline">\(n_i = 1\)</span>), R uses the <strong>fully parametrized</strong> model as its reference — assigning <span class="math inline">\(\hat\pi_i = y_i \in \{0, 1\}\)</span> to each individual observation. Since each predicted probability is exactly 0 or 1, every Bernoulli likelihood contribution equals 1, and hence <span class="math inline">\(\ell_{\text{fp}} = 0\)</span>. Thus R’s <code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> returns <span class="math inline">\(-2\ell(\hat\beta)\)</span>.</p>
+<p>We can verify this directly: observations are ungrouped Bernoulli with repeated covariate patterns (<span class="math inline">\(x \in \{0, 1\}\)</span> appears three times each).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb84"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">x_ug</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">1</span>, each <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">y_ug</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">1L</span>, <span class="fl">0L</span>, <span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">0L</span><span class="op">)</span></span>
+<span><span class="va">fit_ug</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span><span class="va">y_ug</span> <span class="op">~</span> <span class="va">x_ug</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/deviance.html">deviance</a></span><span class="op">(</span><span class="va">fit_ug</span><span class="op">)</span>                     <span class="co"># R's deviance</span></span>
+<span><span class="co">#&gt; [1] 7.63817</span></span>
+<span><span class="op">-</span><span class="fl">2</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/logLik.html">logLik</a></span><span class="op">(</span><span class="va">fit_ug</span><span class="op">)</span><span class="op">)</span>      <span class="co"># -2 * log-likelihood (using ell_fp = 0)</span></span>
+<span><span class="co">#&gt; [1] 7.63817</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="notes">
+<p>The two values are equal, confirming that R uses <span class="math inline">\(\ell_{\text{fp}} = 0\)</span> as its reference when data are ungrouped.</p>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This reference model is the <strong>fully parametrized</strong> model (one parameter per observation), not the <strong>saturated</strong> model (one parameter per distinct covariate pattern). They coincide only when there are no repeated covariate patterns (<span class="math inline">\(q = n\)</span>). When patterns do repeat (<span class="math inline">\(q &lt; n\)</span>), the saturated model sets <span class="math inline">\(\hat\pi_k = y_k/n_k\)</span> per pattern, giving <span class="math inline">\(\ell_{\text{sat}} &lt; 0\)</span>.</p>
+<p><code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> for ungrouped data <strong>cannot</strong> be used as a goodness-of-fit test against the <span class="math inline">\(\chi^2\)</span> distribution when <span class="math inline">\(q &lt; n\)</span>. The correct GOF statistic is <span class="math inline">\(2(\ell_{\text{sat}} - \ell(\hat\beta))\)</span>, but R’s <code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> for ungrouped data returns <span class="math inline">\(-2\ell(\hat\beta)\)</span> (using <span class="math inline">\(\ell_{\text{fp}} = 0\)</span>). These two quantities differ by <span class="math inline">\(-2\ell_{\text{sat}} &gt; 0\)</span> whenever <span class="math inline">\(q &lt; n\)</span>. Even if each covariate pattern has many replicates (large <span class="math inline">\(n_k\)</span>), R’s ungrouped deviance is the wrong statistic to compare against <span class="math inline">\(\chi^2(q - p)\)</span>. To obtain a valid GOF test when patterns repeat, fit the model using <strong>grouped</strong> data (one row per pattern with <span class="math inline">\(y_k\)</span> and <span class="math inline">\(n_k\)</span>), so that R uses the saturated model as its reference.</p>
+<p>For further discussion, see <span class="citation" data-cites="dunn2018generalized">Dunn and Smyth (<a href="#ref-dunn2018generalized" role="doc-biblioref">2018, chap. 9</a>)</span> and <a href="https://stats.stackexchange.com/questions/626597/is-there-a-justification-for-the-bernoulli-deviance-in-the-r-stats-package">this Stats Stack Exchange thread</a>.</p>
+</div>
+</div>
+</section></section><section id="summary" class="level3" data-number="6.2.4"><h3 data-number="6.2.4" class="anchored" data-anchor-id="summary">
+<span class="header-section-number">6.2.4</span> Summary</h3>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -4488,24 +4577,29 @@ D = 2\sum_{i=1}^n
 <tbody>
 <tr class="odd">
 <td>Deviance formula</td>
-<td><span class="math inline">\(\text{RSS}/\hat\sigma^2\)</span></td>
+<td><span class="math inline">\((\text{RSS} - \text{RSS}_{\text{sat}})/\hat\sigma^2\)</span></td>
 <td><span class="math inline">\(2(\ell_{\text{sat}} - \ell(\hat\beta))\)</span></td>
 </tr>
 <tr class="even">
 <td>
 <code><a href="https://rdrr.io/r/stats/deviance.html">deviance()</a></code> in R</td>
-<td>Returns RSS</td>
+<td>Returns total RSS</td>
 <td>Returns <span class="math inline">\(2(\ell_{\text{sat}} - \ell(\hat\beta))\)</span>
 </td>
 </tr>
 <tr class="odd">
+<td>Saturated model reference</td>
+<td>Per covariate pattern</td>
+<td>Per covariate pattern (grouped) or per observation (ungrouped)</td>
+</tr>
+<tr class="even">
 <td>Dispersion <span class="math inline">\(\phi\)</span>
 </td>
 <td>Unknown; estimated as <span class="math inline">\(s^2 = \text{RSS}/(n-p)\)</span>
 </td>
 <td>Fixed (<span class="math inline">\(\phi = 1\)</span>)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Test for nested models</td>
 <td>F-test (exact)</td>
 <td>
@@ -4555,7 +4649,7 @@ Tip
 <p>The most direct way to examine the fit of a model is to compare it to the raw observed data.</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb83"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb85"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    predlm2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span></span>
@@ -4587,7 +4681,7 @@ Figure&nbsp;13: Birthweight model with interaction term
 <p>Consider the <code>hers</code> data from <span class="citation" data-cites="vittinghoff2e">Vittinghoff et al. (<a href="#ref-vittinghoff2e" role="doc-biblioref">2012</a>)</span>.</p>
 <p>The “heart and estrogen/progestin study” (HERS) was a clinical trial of hormone therapy for prevention of recurrent heart attacks and death among 2,763 post-menopausal women with existing coronary heart disease (CHD) <span class="citation" data-cites="HulleyStephen1998RToE">(<a href="#ref-HulleyStephen1998RToE" role="doc-biblioref">Hulley et al. 1998</a>)</span>.</p>
 </div>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb84"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path_package.html">path_package</a></span><span class="op">(</span><span class="st">"rme"</span>, <span class="st">"extdata/hersdata.dta"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb86"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path_package.html">path_package</a></span><span class="op">(</span><span class="st">"rme"</span>, <span class="st">"extdata/hersdata.dta"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">haven</span><span class="fu">::</span><span class="fu"><a href="https://haven.tidyverse.org/reference/read_dta.html">read_dta</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">hers</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-hers-data" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -4611,7 +4705,7 @@ Table&nbsp;25: <code>hers</code> data
 <p>Suppose we consider models with and without intercept terms (i.e., possibly forcing the intercept to go through 0):</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb85"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers_lm_with_int</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb87"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers_lm_with_int</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
 <span>  na.action <span class="op">=</span> <span class="va">na.exclude</span>,</span>
 <span>  <span class="va">LDL</span> <span class="op">~</span> <span class="va">smoking</span> <span class="op">*</span> <span class="va">age</span>, data <span class="op">=</span> <span class="va">hers</span></span>
 <span><span class="op">)</span></span>
@@ -4626,7 +4720,7 @@ Table&nbsp;25: <code>hers</code> data
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb86"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers_lm_no_int</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb88"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers_lm_no_int</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
 <span>  na.action <span class="op">=</span> <span class="va">na.exclude</span>,</span>
 <span>  <span class="va">LDL</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">smoking</span><span class="op">:</span><span class="va">age</span> <span class="op">-</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">hers</span></span>
 <span><span class="op">)</span></span>
@@ -4645,7 +4739,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-maybe-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="tbl-hers-maybe-int" style="flex-basis: 50.0%;justify-content: center;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb87"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ddsjoberg/gtsummary">gtsummary</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb89"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ddsjoberg/gtsummary">gtsummary</a></span><span class="op">)</span></span>
 <span><span class="va">hers_lm_with_int</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_regression.html">tbl_regression</a></span><span class="op">(</span>intercept <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-hers-with-int" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -4654,23 +4748,23 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-with-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="jjvwwirztn" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#jjvwwirztn table {
+<div id="qeayjdrzqo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qeayjdrzqo table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#jjvwwirztn thead, #jjvwwirztn tbody, #jjvwwirztn tfoot, #jjvwwirztn tr, #jjvwwirztn td, #jjvwwirztn th {
+#qeayjdrzqo thead, #qeayjdrzqo tbody, #qeayjdrzqo tfoot, #qeayjdrzqo tr, #qeayjdrzqo td, #qeayjdrzqo th {
   border-style: none;
 }
 
-#jjvwwirztn p {
+#qeayjdrzqo p {
   margin: 0;
   padding: 0;
 }
 
-#jjvwwirztn .gt_table {
+#qeayjdrzqo .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -4696,12 +4790,12 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_caption {
+#qeayjdrzqo .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#jjvwwirztn .gt_title {
+#qeayjdrzqo .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -4713,7 +4807,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#jjvwwirztn .gt_subtitle {
+#qeayjdrzqo .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -4725,7 +4819,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#jjvwwirztn .gt_heading {
+#qeayjdrzqo .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -4737,13 +4831,13 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_bottom_border {
+#qeayjdrzqo .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_col_headings {
+#qeayjdrzqo .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4758,7 +4852,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_col_heading {
+#qeayjdrzqo .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4778,7 +4872,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#jjvwwirztn .gt_column_spanner_outer {
+#qeayjdrzqo .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4790,15 +4884,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#jjvwwirztn .gt_column_spanner_outer:first-child {
+#qeayjdrzqo .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#jjvwwirztn .gt_column_spanner_outer:last-child {
+#qeayjdrzqo .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#jjvwwirztn .gt_column_spanner {
+#qeayjdrzqo .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -4810,11 +4904,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#jjvwwirztn .gt_spanner_row {
+#qeayjdrzqo .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#jjvwwirztn .gt_group_heading {
+#qeayjdrzqo .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4840,7 +4934,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#jjvwwirztn .gt_empty_group_heading {
+#qeayjdrzqo .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -4855,15 +4949,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#jjvwwirztn .gt_from_md > :first-child {
+#qeayjdrzqo .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#jjvwwirztn .gt_from_md > :last-child {
+#qeayjdrzqo .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#jjvwwirztn .gt_row {
+#qeayjdrzqo .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4882,7 +4976,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#jjvwwirztn .gt_stub {
+#qeayjdrzqo .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4895,7 +4989,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jjvwwirztn .gt_stub_row_group {
+#qeayjdrzqo .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -4909,15 +5003,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#jjvwwirztn .gt_row_group_first td {
+#qeayjdrzqo .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#jjvwwirztn .gt_row_group_first th {
+#qeayjdrzqo .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#jjvwwirztn .gt_summary_row {
+#qeayjdrzqo .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4927,16 +5021,16 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jjvwwirztn .gt_first_summary_row {
+#qeayjdrzqo .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_first_summary_row.thick {
+#qeayjdrzqo .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#jjvwwirztn .gt_last_summary_row {
+#qeayjdrzqo .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4946,7 +5040,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_grand_summary_row {
+#qeayjdrzqo .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -4956,7 +5050,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jjvwwirztn .gt_first_grand_summary_row {
+#qeayjdrzqo .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4966,7 +5060,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_last_grand_summary_row_top {
+#qeayjdrzqo .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -4976,11 +5070,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_striped {
+#qeayjdrzqo .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#jjvwwirztn .gt_table_body {
+#qeayjdrzqo .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -4989,7 +5083,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_footnotes {
+#qeayjdrzqo .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5003,7 +5097,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_footnote {
+#qeayjdrzqo .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -5012,7 +5106,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jjvwwirztn .gt_sourcenotes {
+#qeayjdrzqo .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5026,7 +5120,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#jjvwwirztn .gt_sourcenote {
+#qeayjdrzqo .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -5034,72 +5128,72 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#jjvwwirztn .gt_left {
+#qeayjdrzqo .gt_left {
   text-align: left;
 }
 
-#jjvwwirztn .gt_center {
+#qeayjdrzqo .gt_center {
   text-align: center;
 }
 
-#jjvwwirztn .gt_right {
+#qeayjdrzqo .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#jjvwwirztn .gt_font_normal {
+#qeayjdrzqo .gt_font_normal {
   font-weight: normal;
 }
 
-#jjvwwirztn .gt_font_bold {
+#qeayjdrzqo .gt_font_bold {
   font-weight: bold;
 }
 
-#jjvwwirztn .gt_font_italic {
+#qeayjdrzqo .gt_font_italic {
   font-style: italic;
 }
 
-#jjvwwirztn .gt_super {
+#qeayjdrzqo .gt_super {
   font-size: 65%;
 }
 
-#jjvwwirztn .gt_footnote_marks {
+#qeayjdrzqo .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#jjvwwirztn .gt_asterisk {
+#qeayjdrzqo .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#jjvwwirztn .gt_indent_1 {
+#qeayjdrzqo .gt_indent_1 {
   text-indent: 5px;
 }
 
-#jjvwwirztn .gt_indent_2 {
+#qeayjdrzqo .gt_indent_2 {
   text-indent: 10px;
 }
 
-#jjvwwirztn .gt_indent_3 {
+#qeayjdrzqo .gt_indent_3 {
   text-indent: 15px;
 }
 
-#jjvwwirztn .gt_indent_4 {
+#qeayjdrzqo .gt_indent_4 {
   text-indent: 20px;
 }
 
-#jjvwwirztn .gt_indent_5 {
+#qeayjdrzqo .gt_indent_5 {
   text-indent: 25px;
 }
 
-#jjvwwirztn .katex-display {
+#qeayjdrzqo .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#jjvwwirztn div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#qeayjdrzqo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -5148,7 +5242,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="tbl-hers-maybe-int" style="flex-basis: 50.0%;justify-content: center;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb88"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers_lm_no_int</span> <span class="op">|&gt;</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers_lm_no_int</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://www.danieldsjoberg.com/gtsummary/reference/tbl_regression.html">tbl_regression</a></span><span class="op">(</span>intercept <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-hers-no-int" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-tbl figure"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-tbl" id="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -5156,23 +5250,23 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="tbl-hers-no-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
-<div id="dxvgnlzunw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#dxvgnlzunw table {
+<div id="tdtkqiqmqt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#tdtkqiqmqt table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#dxvgnlzunw thead, #dxvgnlzunw tbody, #dxvgnlzunw tfoot, #dxvgnlzunw tr, #dxvgnlzunw td, #dxvgnlzunw th {
+#tdtkqiqmqt thead, #tdtkqiqmqt tbody, #tdtkqiqmqt tfoot, #tdtkqiqmqt tr, #tdtkqiqmqt td, #tdtkqiqmqt th {
   border-style: none;
 }
 
-#dxvgnlzunw p {
+#tdtkqiqmqt p {
   margin: 0;
   padding: 0;
 }
 
-#dxvgnlzunw .gt_table {
+#tdtkqiqmqt .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -5198,12 +5292,12 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-left-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_caption {
+#tdtkqiqmqt .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#dxvgnlzunw .gt_title {
+#tdtkqiqmqt .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -5215,7 +5309,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-width: 0;
 }
 
-#dxvgnlzunw .gt_subtitle {
+#tdtkqiqmqt .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -5227,7 +5321,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-width: 0;
 }
 
-#dxvgnlzunw .gt_heading {
+#tdtkqiqmqt .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -5239,13 +5333,13 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_bottom_border {
+#tdtkqiqmqt .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_col_headings {
+#tdtkqiqmqt .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5260,7 +5354,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_col_heading {
+#tdtkqiqmqt .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5280,7 +5374,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#dxvgnlzunw .gt_column_spanner_outer {
+#tdtkqiqmqt .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5292,15 +5386,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 4px;
 }
 
-#dxvgnlzunw .gt_column_spanner_outer:first-child {
+#tdtkqiqmqt .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dxvgnlzunw .gt_column_spanner_outer:last-child {
+#tdtkqiqmqt .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dxvgnlzunw .gt_column_spanner {
+#tdtkqiqmqt .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -5312,11 +5406,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   width: 100%;
 }
 
-#dxvgnlzunw .gt_spanner_row {
+#tdtkqiqmqt .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#dxvgnlzunw .gt_group_heading {
+#tdtkqiqmqt .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5342,7 +5436,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   text-align: left;
 }
 
-#dxvgnlzunw .gt_empty_group_heading {
+#tdtkqiqmqt .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -5357,15 +5451,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: middle;
 }
 
-#dxvgnlzunw .gt_from_md > :first-child {
+#tdtkqiqmqt .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dxvgnlzunw .gt_from_md > :last-child {
+#tdtkqiqmqt .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dxvgnlzunw .gt_row {
+#tdtkqiqmqt .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5384,7 +5478,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   overflow-x: hidden;
 }
 
-#dxvgnlzunw .gt_stub {
+#tdtkqiqmqt .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5397,7 +5491,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dxvgnlzunw .gt_stub_row_group {
+#tdtkqiqmqt .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -5411,15 +5505,15 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   vertical-align: top;
 }
 
-#dxvgnlzunw .gt_row_group_first td {
+#tdtkqiqmqt .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#dxvgnlzunw .gt_row_group_first th {
+#tdtkqiqmqt .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#dxvgnlzunw .gt_summary_row {
+#tdtkqiqmqt .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5429,16 +5523,16 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dxvgnlzunw .gt_first_summary_row {
+#tdtkqiqmqt .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_first_summary_row.thick {
+#tdtkqiqmqt .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#dxvgnlzunw .gt_last_summary_row {
+#tdtkqiqmqt .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5448,7 +5542,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_grand_summary_row {
+#tdtkqiqmqt .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -5458,7 +5552,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dxvgnlzunw .gt_first_grand_summary_row {
+#tdtkqiqmqt .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5468,7 +5562,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-top-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_last_grand_summary_row_top {
+#tdtkqiqmqt .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -5478,11 +5572,11 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_striped {
+#tdtkqiqmqt .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dxvgnlzunw .gt_table_body {
+#tdtkqiqmqt .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -5491,7 +5585,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-bottom-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_footnotes {
+#tdtkqiqmqt .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5505,7 +5599,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_footnote {
+#tdtkqiqmqt .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -5514,7 +5608,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dxvgnlzunw .gt_sourcenotes {
+#tdtkqiqmqt .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -5528,7 +5622,7 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   border-right-color: #D3D3D3;
 }
 
-#dxvgnlzunw .gt_sourcenote {
+#tdtkqiqmqt .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -5536,72 +5630,72 @@ Table&nbsp;26: <code>hers</code> data models with and without intercepts
   padding-right: 5px;
 }
 
-#dxvgnlzunw .gt_left {
+#tdtkqiqmqt .gt_left {
   text-align: left;
 }
 
-#dxvgnlzunw .gt_center {
+#tdtkqiqmqt .gt_center {
   text-align: center;
 }
 
-#dxvgnlzunw .gt_right {
+#tdtkqiqmqt .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dxvgnlzunw .gt_font_normal {
+#tdtkqiqmqt .gt_font_normal {
   font-weight: normal;
 }
 
-#dxvgnlzunw .gt_font_bold {
+#tdtkqiqmqt .gt_font_bold {
   font-weight: bold;
 }
 
-#dxvgnlzunw .gt_font_italic {
+#tdtkqiqmqt .gt_font_italic {
   font-style: italic;
 }
 
-#dxvgnlzunw .gt_super {
+#tdtkqiqmqt .gt_super {
   font-size: 65%;
 }
 
-#dxvgnlzunw .gt_footnote_marks {
+#tdtkqiqmqt .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#dxvgnlzunw .gt_asterisk {
+#tdtkqiqmqt .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#dxvgnlzunw .gt_indent_1 {
+#tdtkqiqmqt .gt_indent_1 {
   text-indent: 5px;
 }
 
-#dxvgnlzunw .gt_indent_2 {
+#tdtkqiqmqt .gt_indent_2 {
   text-indent: 10px;
 }
 
-#dxvgnlzunw .gt_indent_3 {
+#tdtkqiqmqt .gt_indent_3 {
   text-indent: 15px;
 }
 
-#dxvgnlzunw .gt_indent_4 {
+#tdtkqiqmqt .gt_indent_4 {
   text-indent: 20px;
 }
 
-#dxvgnlzunw .gt_indent_5 {
+#tdtkqiqmqt .gt_indent_5 {
   text-indent: 25px;
 }
 
-#dxvgnlzunw .katex-display {
+#tdtkqiqmqt .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#dxvgnlzunw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#tdtkqiqmqt div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -5648,7 +5742,7 @@ Figure&nbsp;14: <code>hers</code> data models with and without intercepts
 </figcaption><div aria-describedby="fig-hers-maybe-int-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-hers-maybe-int" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb89"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://strengejacke.github.io/sjPlot/">sjPlot</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://strengejacke.github.io/sjPlot/">sjPlot</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">hers_plot1</span> <span class="op">&lt;-</span> <span class="va">hers_lm_no_int</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">sjPlot</span><span class="fu">::</span><span class="fu"><a href="https://strengejacke.github.io/sjPlot/reference/plot_model.html">plot_model</a></span><span class="op">(</span></span>
@@ -5668,7 +5762,7 @@ Figure&nbsp;14: <code>hers</code> data models with and without intercepts
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-66-1.png" class="lightbox" data-gallery="fig-hers-maybe-int" title="Figure&nbsp;14&nbsp;(a): No intercept"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-66-1.png" class="img-fluid figure-img" data-ref-parent="fig-hers-maybe-int" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-68-1.png" class="lightbox" data-gallery="fig-hers-maybe-int" title="Figure&nbsp;14&nbsp;(a): No intercept"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-68-1.png" class="img-fluid figure-img" data-ref-parent="fig-hers-maybe-int" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5678,7 +5772,7 @@ Figure&nbsp;14: <code>hers</code> data models with and without intercepts
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-hers-maybe-int" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://strengejacke.github.io/sjPlot/">sjPlot</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb92"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://strengejacke.github.io/sjPlot/">sjPlot</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">hers_plot2</span> <span class="op">&lt;-</span> <span class="va">hers_lm_with_int</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">sjPlot</span><span class="fu">::</span><span class="fu"><a href="https://strengejacke.github.io/sjPlot/reference/plot_model.html">plot_model</a></span><span class="op">(</span></span>
@@ -5698,7 +5792,7 @@ Figure&nbsp;14: <code>hers</code> data models with and without intercepts
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-67-1.png" class="lightbox" data-gallery="fig-hers-maybe-int" title="Figure&nbsp;14&nbsp;(b): With intercept"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-67-1.png" class="img-fluid figure-img" data-ref-parent="fig-hers-maybe-int" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-69-1.png" class="lightbox" data-gallery="fig-hers-maybe-int" title="Figure&nbsp;14&nbsp;(b): With intercept"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-69-1.png" class="img-fluid figure-img" data-ref-parent="fig-hers-maybe-int" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5745,7 +5839,7 @@ e(\hat y) &amp;\stackrel{\text{def}}{=}\varepsilon{\left(\hat y\right)}
 <hr>
 <div id="exm-resid-bw" class="theorem example">
 <p><span class="theorem-title"><strong>Example 4 (residuals in <code>birthweight</code> data)</strong></span> &nbsp;</p>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plot1_interact</span> <span class="op">+</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb93"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plot1_interact</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">sex</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
@@ -5765,7 +5859,7 @@ Figure&nbsp;15: Fitted values and residuals for interaction model for <code>birt
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-68-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17" title="Figure&nbsp;15: Fitted values and residuals for interaction model for birthweight data"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-68-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-70-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17" title="Figure&nbsp;15: Fitted values and residuals for interaction model for birthweight data"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-70-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5819,7 +5913,7 @@ e_i \ \sim_{\text{iid}}\ N(0, \hat\sigma^2)
 <hr></section><section id="computing-residuals-in-r" class="level4"><h4 class="anchored" data-anchor-id="computing-residuals-in-r">Computing residuals in R</h4>
 <p>R provides a function for residuals:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb92"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">resid</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb94"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">resid</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         1         2         3         4         5         6         7         8 </span></span>
 <span><span class="co">#&gt;  176.2667 -140.7333 -144.1333  -59.5333  177.4667 -126.9333  -68.9333  242.6667 </span></span>
 <span><span class="co">#&gt;         9        10        11        12        13        14        15        16 </span></span>
@@ -5835,7 +5929,7 @@ e_i \ \sim_{\text{iid}}\ N(0, \hat\sigma^2)
 <div class="proof solution">
 <p><span class="proof-title"><em>Solution</em>. </span>&nbsp;</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb93"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span><span class="op">$</span><span class="va">weight</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb95"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span><span class="op">$</span><span class="va">weight</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         1         2         3         4         5         6         7         8 </span></span>
 <span><span class="co">#&gt;  176.2667 -140.7333 -144.1333  -59.5333  177.4667 -126.9333  -68.9333  242.6667 </span></span>
 <span><span class="co">#&gt;         9        10        11        12        13        14        15        16 </span></span>
@@ -5853,7 +5947,7 @@ Figure&nbsp;16: Fitted values and residuals for interaction model for <code>birt
 </figcaption><div aria-describedby="fig-resid-bw-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-resid-bw" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb94"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plot1_interact</span> <span class="op">+</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb96"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plot1_interact</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">sex</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span></span>
@@ -5873,7 +5967,7 @@ Figure&nbsp;16: Fitted values and residuals for interaction model for <code>birt
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-71-1.png" class="lightbox" data-gallery="fig-resid-bw" title="Figure&nbsp;16&nbsp;(a): fitted values"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-71-1.png" class="img-fluid figure-img" data-ref-parent="fig-resid-bw" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-73-1.png" class="lightbox" data-gallery="fig-resid-bw" title="Figure&nbsp;16&nbsp;(a): fitted values"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-73-1.png" class="img-fluid figure-img" data-ref-parent="fig-resid-bw" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5883,7 +5977,7 @@ Figure&nbsp;16: Fitted values and residuals for interaction model for <code>birt
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-resid-bw" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb95"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb97"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span></span>
 <span><span class="va">bw</span> <span class="op">&lt;-</span> <span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    resids_intxn <span class="op">=</span></span>
@@ -5925,7 +6019,7 @@ Figure&nbsp;16: Fitted values and residuals for interaction model for <code>birt
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-72-1.png" class="lightbox" data-gallery="fig-resid-bw" title="Figure&nbsp;16&nbsp;(b): Residuals"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-72-1.png" class="img-fluid figure-img" data-ref-parent="fig-resid-bw" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-74-1.png" class="lightbox" data-gallery="fig-resid-bw" title="Figure&nbsp;16&nbsp;(b): Residuals"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-74-1.png" class="img-fluid figure-img" data-ref-parent="fig-resid-bw" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5940,7 +6034,7 @@ Figure&nbsp;16: Fitted values and residuals for interaction model for <code>birt
 </div>
 <hr></section><section id="residuals-versus-predictors" class="level4"><h4 class="anchored" data-anchor-id="residuals-versus-predictors">Residuals versus predictors</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb96"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers</span> <span class="op">&lt;-</span> <span class="va">hers</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb98"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers</span> <span class="op">&lt;-</span> <span class="va">hers</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    resids_no_intcpt <span class="op">=</span></span>
 <span>      <span class="va">LDL</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span><span class="op">(</span><span class="va">hers_lm_no_int</span><span class="op">)</span>,</span>
@@ -5955,7 +6049,7 @@ Figure&nbsp;17: Residuals of <code>hers</code> data vs predictors
 </figcaption><div aria-describedby="fig-resids-hers-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-resids-hers-1" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb97"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb99"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">age</span>, y <span class="op">=</span> <span class="va">resids_no_intcpt</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">smoking</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -5971,7 +6065,7 @@ Figure&nbsp;17: Residuals of <code>hers</code> data vs predictors
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-74-1.png" class="lightbox" data-gallery="fig-resids-hers-1" title="Figure&nbsp;17&nbsp;(a): no intercept"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-74-1.png" class="img-fluid figure-img" data-ref-parent="fig-resids-hers-1" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-76-1.png" class="lightbox" data-gallery="fig-resids-hers-1" title="Figure&nbsp;17&nbsp;(a): no intercept"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-76-1.png" class="img-fluid figure-img" data-ref-parent="fig-resids-hers-1" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -5981,7 +6075,7 @@ Figure&nbsp;17: Residuals of <code>hers</code> data vs predictors
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-resids-hers-1" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb98"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb100"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">age</span>, y <span class="op">=</span> <span class="va">resids_with_intcpt</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">smoking</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -5997,7 +6091,7 @@ Figure&nbsp;17: Residuals of <code>hers</code> data vs predictors
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-75-1.png" class="lightbox" data-gallery="fig-resids-hers-1" title="Figure&nbsp;17&nbsp;(b): with intercept"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-75-1.png" class="img-fluid figure-img" data-ref-parent="fig-resids-hers-1" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-77-1.png" class="lightbox" data-gallery="fig-resids-hers-1" title="Figure&nbsp;17&nbsp;(b): with intercept"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-77-1.png" class="img-fluid figure-img" data-ref-parent="fig-resids-hers-1" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6015,7 +6109,7 @@ Figure&nbsp;17: Residuals of <code>hers</code> data vs predictors
 <p>If the model contains multiple continuous covariates, how do we check for errors in the mean structure assumption?</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb99"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb101"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
 <span><span class="va">hers_lm_no_int</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span>na.action <span class="op">=</span> <span class="va">na.omit</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span></span>
@@ -6038,7 +6132,7 @@ Figure&nbsp;18: Residuals of interaction model for <code>hers</code> data
 <hr>
 <p>We can add a LOESS smooth to visualize where the residual mean is nonzero:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb100"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb102"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
 <span><span class="va">hers_lm_no_int</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span>na.action <span class="op">=</span> <span class="va">na.omit</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span></span>
@@ -6064,7 +6158,7 @@ Figure&nbsp;20: Residuals of interaction model for <code>hers</code> data, with 
 </figcaption><div aria-describedby="fig-resid-hers-compare-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-resid-hers-compare" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb101"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb103"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
 <span><span class="va">hers_lm_no_int</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span>na.action <span class="op">=</span> <span class="va">na.omit</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span></span>
@@ -6079,7 +6173,7 @@ Figure&nbsp;20: Residuals of interaction model for <code>hers</code> data, with 
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-76-1.png" class="lightbox" data-gallery="fig-resid-hers-compare" title="Figure&nbsp;20&nbsp;(a): no intercept term"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-76-1.png" class="img-fluid figure-img" data-ref-parent="fig-resid-hers-compare" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-78-1.png" class="lightbox" data-gallery="fig-resid-hers-compare" title="Figure&nbsp;20&nbsp;(a): no intercept term"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-78-1.png" class="img-fluid figure-img" data-ref-parent="fig-resid-hers-compare" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6089,7 +6183,7 @@ Figure&nbsp;20: Residuals of interaction model for <code>hers</code> data, with 
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-resid-hers-compare" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb102"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers_lm_with_int</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb104"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hers_lm_with_int</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span>na.action <span class="op">=</span> <span class="va">na.omit</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span></span>
 <span>    which <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -6103,7 +6197,7 @@ Figure&nbsp;20: Residuals of interaction model for <code>hers</code> data, with 
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-77-1.png" class="lightbox" data-gallery="fig-resid-hers-compare" title="Figure&nbsp;20&nbsp;(b): with intercept term"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-77-1.png" class="img-fluid figure-img" data-ref-parent="fig-resid-hers-compare" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-79-1.png" class="lightbox" data-gallery="fig-resid-hers-compare" title="Figure&nbsp;20&nbsp;(b): with intercept term"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-79-1.png" class="img-fluid figure-img" data-ref-parent="fig-resid-hers-compare" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6130,7 +6224,7 @@ r_i \ \sim_{\text{iid}}\ N(0,1)
 <hr>
 <section id="standardized-residuals-in-r" class="level4"><h4 class="anchored" data-anchor-id="standardized-residuals-in-r">Standardized residuals in R</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb103"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">rstandard</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb105"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">rstandard</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          1          2          3          4          5          6          7 </span></span>
 <span><span class="co">#&gt;  1.1598166 -0.9260109 -0.8747917 -0.3472255  1.0350665 -0.7347315 -0.3990086 </span></span>
 <span><span class="co">#&gt;          8          9         10         11         12         13         14 </span></span>
@@ -6155,7 +6249,7 @@ r_i \ \sim_{\text{iid}}\ N(0,1)
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb104"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rstandard_compare_plot</span> <span class="op">&lt;-</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb106"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rstandard_compare_plot</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
 <span>    x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">resid</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/stats/sigma.html">sigma</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span>,</span>
 <span>    y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">rstandard</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span></span>
@@ -6179,7 +6273,7 @@ r_i \ \sim_{\text{iid}}\ N(0,1)
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">rstandard_compare_plot</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-79-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-26"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-79-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-81-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-26"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-81-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6187,7 +6281,7 @@ r_i \ \sim_{\text{iid}}\ N(0,1)
 <hr>
 <p>Let’s add these residuals to the <code>tibble</code> of our dataset:</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb105"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb107"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    fitted_lm2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span>,</span>
@@ -6219,7 +6313,7 @@ r_i \ \sim_{\text{iid}}\ N(0,1)
 <p>Now let’s build histograms:</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb106"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resid_marginal_hist</span> <span class="op">&lt;-</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb108"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resid_marginal_hist</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">resid_lm2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html">geom_histogram</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -6241,7 +6335,7 @@ Figure&nbsp;21: Marginal distribution of (nonstandardized) residuals
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb107"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">std_resid_marginal_hist</span> <span class="op">&lt;-</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb109"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">std_resid_marginal_hist</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">std_resid_lm2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html">geom_histogram</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -6268,7 +6362,7 @@ Figure&nbsp;22: Marginal distribution of standardized residuals
 <p>Another way to assess normality is the QQ plot of the standardized residuals versus normal quantiles:</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb108"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb110"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
 <span><span class="co"># needed to make ggplot2::autoplot() work for `lm` objects</span></span>
 <span></span>
 <span><span class="va">qqplot_lm2_auto</span> <span class="op">&lt;-</span></span>
@@ -6282,7 +6376,7 @@ Figure&nbsp;22: Marginal distribution of standardized residuals
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">qqplot_lm2_auto</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-81-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-29"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-81-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-83-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-29"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-83-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6298,7 +6392,7 @@ Figure&nbsp;22: Marginal distribution of standardized residuals
 <p>Let’s construct it by hand:</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb109"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span> <span class="va">bw</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb111"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span> <span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    p <span class="op">=</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rank.html">rank</a></span><span class="op">(</span><span class="va">std_resid_lm2</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span>, <span class="co"># "Blom's method"</span></span>
 <span>    expected_quantiles_lm2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span>
@@ -6337,7 +6431,7 @@ Figure&nbsp;22: Marginal distribution of standardized residuals
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">qqplot_lm2</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-82-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-30"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-82-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-84-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-30"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-84-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6360,7 +6454,7 @@ Figure&nbsp;22: Marginal distribution of standardized residuals
 <div class="notes">
 <p>To look for these issues, we can plot the residuals <span class="math inline">\(e_i\)</span> against the fitted values <span class="math inline">\(\hat y_i\)</span> (<a href="#fig-bw_lm2-resid-vs-fitted" class="quarto-xref">Figure&nbsp;23</a>).</p>
 </div>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb110"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bw_lm2</span>, which <span class="op">=</span> <span class="fl">1</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb112"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bw_lm2</span>, which <span class="op">=</span> <span class="fl">1</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-bw_lm2-resid-vs-fitted" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bw_lm2-resid-vs-fitted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;23: <code>birthweight</code> model (<a href="#eq-BW-lm-interact" class="quarto-xref">Equation&nbsp;2</a>): residuals versus fitted values
@@ -6368,7 +6462,7 @@ Figure&nbsp;23: <code>birthweight</code> model (<a href="#eq-BW-lm-interact" cla
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-83-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-31" title="Figure&nbsp;23: birthweight model (Equation&nbsp;2): residuals versus fitted values"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-83-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-85-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-31" title="Figure&nbsp;23: birthweight model (Equation&nbsp;2): residuals versus fitted values"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-85-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6383,7 +6477,7 @@ Figure&nbsp;23: <code>birthweight</code> model (<a href="#eq-BW-lm-interact" cla
 <hr></section><section id="example-plos-medicine-title-length-data" class="level4"><h4 class="anchored" data-anchor-id="example-plos-medicine-title-length-data">Example: PLOS Medicine title length data</h4>
 <p>(Adapted from <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="#ref-dobson4e" role="doc-biblioref">2018</a>)</span>, §6.7.1)</p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb111"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">PLOS</span>, package <span class="op">=</span> <span class="st">"dobson"</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb113"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">PLOS</span>, package <span class="op">=</span> <span class="st">"dobson"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="va">fig1</span> <span class="op">=</span> </span>
 <span>  <span class="va">PLOS</span> <span class="op">|&gt;</span> </span>
@@ -6410,12 +6504,12 @@ Figure&nbsp;24: Number of authors versus title length in <em>PLOS Medicine</em> 
 <hr>
 <section id="linear-fit" class="level5"><h5 class="anchored" data-anchor-id="linear-fit">Linear fit</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb112"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_PLOS_linear</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb114"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_PLOS_linear</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">nchar</span> <span class="op">~</span> <span class="va">authors</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">PLOS</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb113"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig2</span> <span class="op">=</span> <span class="va">fig1</span> <span class="op">+</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb115"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig2</span> <span class="op">=</span> <span class="va">fig1</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span></span>
 <span>    method <span class="op">=</span> <span class="st">"lm"</span>, </span>
 <span>              fullrange <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -6455,12 +6549,12 @@ Figure&nbsp;25: Number of authors versus title length in <em>PLOS Medicine</em>,
 </div>
 <hr></section><section id="quadratic-fit" class="level5 smaller"><h5 class="smaller anchored" data-anchor-id="quadratic-fit">Quadratic fit</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb114"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_PLOS_quad</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb116"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_PLOS_quad</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">nchar</span> <span class="op">~</span> <span class="va">authors</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">authors</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">PLOS</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb115"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig3</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb117"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig3</span> <span class="op">=</span> </span>
 <span>  <span class="va">fig2</span> <span class="op">+</span> </span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span></span>
 <span>    method <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -6501,7 +6595,7 @@ Figure&nbsp;26: Number of authors versus title length in <em>PLOS Medicine</em>,
 </figure>
 </div>
 <hr></section><section id="linear-versus-quadratic-fits" class="level5"><h5 class="anchored" data-anchor-id="linear-versus-quadratic-fits">Linear versus quadratic fits</h5>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb116"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb118"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sinhrks/ggfortify">ggfortify</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">lm_PLOS_linear</span>, which <span class="op">=</span> <span class="fl">1</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">lm_PLOS_quad</span>, which <span class="op">=</span> <span class="fl">1</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -6536,12 +6630,12 @@ Figure&nbsp;27: Residuals versus fitted plot for linear and quadratic fits to <c
 </div>
 <hr></section><section id="cubic-fit" class="level5"><h5 class="anchored" data-anchor-id="cubic-fit">Cubic fit</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb117"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_PLOS_cub</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb119"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_PLOS_cub</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
 <span>  formula <span class="op">=</span> <span class="va">nchar</span> <span class="op">~</span> <span class="va">authors</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">authors</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">authors</span><span class="op">^</span><span class="fl">3</span><span class="op">)</span>, </span>
 <span>  data <span class="op">=</span> <span class="va">PLOS</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb118"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig4</span> <span class="op">=</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb120"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig4</span> <span class="op">=</span> </span>
 <span>  <span class="va">fig3</span> <span class="op">+</span> </span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span></span>
 <span>    method <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -6583,10 +6677,10 @@ Figure&nbsp;28: Number of authors versus title length in <em>PLOS Medicine</em>,
 </div>
 <hr></section><section id="logarithmic-fit" class="level5"><h5 class="anchored" data-anchor-id="logarithmic-fit">Logarithmic fit</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb119"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_PLOS_log</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">nchar</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">authors</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">PLOS</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb121"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_PLOS_log</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">nchar</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">authors</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">PLOS</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb120"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig5</span> <span class="op">=</span> <span class="va">fig4</span> <span class="op">+</span> </span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb122"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig5</span> <span class="op">=</span> <span class="va">fig4</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span></span>
 <span>    method <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>    fullrange <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -6627,7 +6721,7 @@ Figure&nbsp;29: logarithmic fit
 </div>
 <hr></section><section id="model-selection" class="level5 smaller"><h5 class="smaller anchored" data-anchor-id="model-selection">Model selection</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb121"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span><span class="va">lm_PLOS_linear</span>, <span class="va">lm_PLOS_quad</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb123"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span><span class="va">lm_PLOS_linear</span>, <span class="va">lm_PLOS_quad</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-plos-lin-quad-anova" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-plos-lin-quad-anova-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;27: linear vs quadratic
@@ -6644,7 +6738,7 @@ Table&nbsp;27: linear vs quadratic
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb122"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span><span class="va">lm_PLOS_quad</span>, <span class="va">lm_PLOS_cub</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb124"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span><span class="va">lm_PLOS_quad</span>, <span class="va">lm_PLOS_cub</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-plos-quad-cub-anova" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-plos-quad-cub-anova-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;28: quadratic vs cubic
@@ -6662,21 +6756,21 @@ Table&nbsp;28: quadratic vs cubic
 </div>
 <hr></section><section id="aicbic" class="level5 smaller"><h5 class="smaller anchored" data-anchor-id="aicbic">AIC/BIC</h5>
 <div class="cell">
-<details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb123"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">AIC</a></span><span class="op">(</span><span class="va">lm_PLOS_quad</span><span class="op">)</span></span>
+<details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb125"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">AIC</a></span><span class="op">(</span><span class="va">lm_PLOS_quad</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 8567.61</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">AIC</a></span><span class="op">(</span><span class="va">lm_PLOS_cub</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 8554.51</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb124"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">AIC</a></span><span class="op">(</span><span class="va">lm_PLOS_cub</span><span class="op">)</span></span>
+<details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb126"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">AIC</a></span><span class="op">(</span><span class="va">lm_PLOS_cub</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 8554.51</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">AIC</a></span><span class="op">(</span><span class="va">lm_PLOS_log</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 8543.63</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb125"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">BIC</a></span><span class="op">(</span><span class="va">lm_PLOS_cub</span><span class="op">)</span></span>
+<details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb127"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">BIC</a></span><span class="op">(</span><span class="va">lm_PLOS_cub</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 8578.4</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html">BIC</a></span><span class="op">(</span><span class="va">lm_PLOS_log</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 8557.97</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -6684,7 +6778,7 @@ Table&nbsp;28: quadratic vs cubic
 </div>
 <hr></section><section id="extrapolation-is-dangerous" class="level5"><h5 class="anchored" data-anchor-id="extrapolation-is-dangerous">Extrapolation is dangerous</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb126"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig_all</span> <span class="op">=</span> <span class="va">fig5</span> <span class="op">+</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb128"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fig_all</span> <span class="op">=</span> <span class="va">fig5</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">60</span><span class="op">)</span></span>
 <span><span class="va">fig_all</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
@@ -6703,7 +6797,7 @@ Figure&nbsp;30: Number of authors versus title length in <em>PLOS Medicine</em>
 <p>We can also plot the square roots of the absolute values of the standardized residuals against the fitted values (<a href="#fig-bw-scale-loc" class="quarto-xref">Figure&nbsp;31</a>).</p>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb127"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bw_lm2</span>, which <span class="op">=</span> <span class="fl">3</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb129"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bw_lm2</span>, which <span class="op">=</span> <span class="fl">3</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-bw-scale-loc" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bw-scale-loc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -6722,7 +6816,7 @@ Figure&nbsp;31: Scale-location plot of <code>birthweight</code> data
 <div class="notes">
 <p>We can also plot our standardized residuals against “leverage”, which roughly speaking is a measure of how unusual each <span class="math inline">\(x_i\)</span> value is. Very unusual <span class="math inline">\(x_i\)</span> values can have extreme effects on the model fit, so we might want to remove those observations as outliers, particularly if they have large residuals.</p>
 </div>
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb128"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bw_lm2</span>, which <span class="op">=</span> <span class="fl">5</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb130"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bw_lm2</span>, which <span class="op">=</span> <span class="fl">5</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-bw_lm2_resid-vs-leverage" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bw_lm2_resid-vs-leverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-BW-lm-interact" class="quarto-xref">Equation&nbsp;2</a>): residuals versus leverage
@@ -6730,7 +6824,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-89-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-45" title="Figure&nbsp;32: birthweight model with interactions (Equation&nbsp;2): residuals versus leverage"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-89-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-91-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-45" title="Figure&nbsp;32: birthweight model with interactions (Equation&nbsp;2): residuals versus leverage"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-91-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6744,7 +6838,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <hr></section></section><section id="diagnostics-constructed-by-hand" class="level3" data-number="6.3.7"><h3 data-number="6.3.7" class="anchored" data-anchor-id="diagnostics-constructed-by-hand">
 <span class="header-section-number">6.3.7</span> Diagnostics constructed by hand</h3>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb129"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb131"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
 <span>    predlm2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">bw_lm2</span><span class="op">)</span>,</span>
@@ -6757,7 +6851,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 </div>
 <section id="residuals-vs-fitted" class="level5"><h5 class="anchored" data-anchor-id="residuals-vs-fitted">Residuals vs fitted</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb130"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resid_vs_fit</span> <span class="op">&lt;-</span> <span class="va">bw</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb132"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resid_vs_fit</span> <span class="op">&lt;-</span> <span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">predlm2</span>, y <span class="op">=</span> <span class="va">residlm2</span>, col <span class="op">=</span> <span class="va">sex</span>, shape <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
@@ -6768,14 +6862,14 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">resid_vs_fit</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-91-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-46"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-91-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-93-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-46"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-93-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
 </section><section id="standardized-residuals-vs-fitted" class="level5"><h5 class="anchored" data-anchor-id="standardized-residuals-vs-fitted">Standardized residuals vs fitted</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb131"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb133"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">predlm2</span>, y <span class="op">=</span> <span class="va">std_resid</span>, col <span class="op">=</span> <span class="va">sex</span>, shape <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
@@ -6784,14 +6878,14 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-92-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-47"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-92-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-94-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-47"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-94-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
 </section><section id="standardized-residuals-vs-gestational-age" class="level5"><h5 class="anchored" data-anchor-id="standardized-residuals-vs-gestational-age">Standardized residuals vs gestational age</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb132"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb134"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">age</span>, y <span class="op">=</span> <span class="va">std_resid</span>, col <span class="op">=</span> <span class="va">sex</span>, shape <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
@@ -6800,7 +6894,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-93-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-48"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-93-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-95-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-48"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-95-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6809,7 +6903,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <code>sqrt(abs(rstandard()))</code> vs fitted</h5>
 <p>Compare with <code>autoplot(bw_lm2, 3)</code></p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb133"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb135"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">predlm2</span>, y <span class="op">=</span> <span class="va">sqrt_abs_std_resid</span>, col <span class="op">=</span> <span class="va">sex</span>, shape <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
@@ -6818,7 +6912,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-94-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-49"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-94-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-96-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-49"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-96-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6837,7 +6931,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <hr>
 <section id="cross-validation" class="level4"><h4 class="anchored" data-anchor-id="cross-validation">Cross-validation</h4>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb134"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"carbohydrate"</span>, package <span class="op">=</span> <span class="st">"dobson"</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb136"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"carbohydrate"</span>, package <span class="op">=</span> <span class="st">"dobson"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">cvTools</span><span class="op">)</span></span>
 <span><span class="va">full_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">carbohydrate</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">carbohydrate</span><span class="op">)</span></span>
 <span><span class="va">cv_full</span> <span class="op">&lt;-</span></span>
@@ -6857,7 +6951,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb135"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">results_reduced</span> <span class="op">&lt;-</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb137"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">results_reduced</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
 <span>    model <span class="op">=</span> <span class="st">"wgt+protein"</span>,</span>
 <span>    errs <span class="op">=</span> <span class="va">cv_reduced</span><span class="op">$</span><span class="va">reps</span><span class="op">[</span><span class="op">]</span></span>
@@ -6876,7 +6970,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html">geom_boxplot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-96-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-50"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-96-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-98-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-50"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-98-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6884,7 +6978,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <hr>
 <section id="comparing-metrics" class="level5"><h5 class="anchored" data-anchor-id="comparing-metrics">comparing metrics</h5>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb136"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">compare_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb138"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">compare_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span><span class="va">model</span>, <span class="op">~</span><span class="va">cvRMSE</span>, <span class="op">~</span><span class="va">r.squared</span>, <span class="op">~</span><span class="va">adj.r.squared</span>, <span class="op">~</span><span class="va">trainRMSE</span>, <span class="op">~</span><span class="va">loglik</span>,</span>
 <span>  <span class="st">"full"</span>,</span>
 <span>  <span class="va">cv_full</span><span class="op">$</span><span class="va">cv</span>,</span>
@@ -6904,14 +6998,14 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.81579","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.58177","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.69408","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.62291","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb137"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span><span class="va">full_model</span>, <span class="va">reduced_model</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb139"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span><span class="va">full_model</span>, <span class="va">reduced_model</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -6942,7 +7036,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb138"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://olsrr.rsquaredacademy.com/">olsrr</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb140"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://olsrr.rsquaredacademy.com/">olsrr</a></span><span class="op">)</span></span>
 <span><span class="fu">olsrr</span><span class="fu">:::</span><span class="fu"><a href="https://olsrr.rsquaredacademy.com/reference/ols_step_both_aic.html">ols_step_both_aic</a></span><span class="op">(</span><span class="va">full_model</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; </span></span>
@@ -6995,7 +7089,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 <hr></section><section id="lasso" class="level4"><h4 class="anchored" data-anchor-id="lasso">Lasso</h4>
 <p><span class="math display">\[\arg \max_{\theta} {\left\{\ell(\theta) - \lambda \sum_{j=1}^p|\beta_j|\right\}}\]</span></p>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb139"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glmnet.stanford.edu">glmnet</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb141"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glmnet.stanford.edu">glmnet</a></span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">carbohydrate</span><span class="op">$</span><span class="va">carbohydrate</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">carbohydrate</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">weight</span>, <span class="va">protein</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -7005,7 +7099,7 @@ Figure&nbsp;32: <code>birthweight</code> model with interactions (<a href="#eq-B
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb140"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">fit</span>, xvar <span class="op">=</span> <span class="st">"lambda"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb142"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">fit</span>, xvar <span class="op">=</span> <span class="st">"lambda"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-carbs-lasso" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-carbs-lasso-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -7019,18 +7113,18 @@ Figure&nbsp;33: Lasso selection
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb141"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html">cv.glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb143"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html">cv.glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">cvfit</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-101-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-52"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-101-1.png" class="img-fluid figure-img" width="672"></a></p>
+<figure class="figure"><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-103-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-52"><img src="Linear-models-overview_files/figure-html/unnamed-chunk-103-1.png" class="img-fluid figure-img" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb142"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">cvfit</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb144"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">cvfit</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 4 x 1 sparse Matrix of class "dgCMatrix"</span></span>
 <span><span class="co">#&gt;             lambda.1se</span></span>
 <span><span class="co">#&gt; (Intercept) 34.3091615</span></span>
@@ -7581,71 +7675,71 @@ Weisberg, Sanford. 2005. <em>Applied Linear Regression</em>. Vol. 528. John Wile
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb143" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb143-1"><a href="#cb143-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb143-2"><a href="#cb143-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Linear (Gaussian) Models"</span></span>
-<span id="cb143-3"><a href="#cb143-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb143-4"><a href="#cb143-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html: default</span></span>
-<span id="cb143-5"><a href="#cb143-5" aria-hidden="true" tabindex="-1"></a><span class="co">  revealjs:</span></span>
-<span id="cb143-6"><a href="#cb143-6" aria-hidden="true" tabindex="-1"></a><span class="co">    output-file: Linear-models-overview-slides.html</span></span>
-<span id="cb143-7"><a href="#cb143-7" aria-hidden="true" tabindex="-1"></a><span class="co">  pdf:</span></span>
-<span id="cb143-8"><a href="#cb143-8" aria-hidden="true" tabindex="-1"></a><span class="co">    output-file: Linear-models-overview-handout.pdf</span></span>
-<span id="cb143-9"><a href="#cb143-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb143-10"><a href="#cb143-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-11"><a href="#cb143-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-12"><a href="#cb143-12" aria-hidden="true" tabindex="-1"></a>{{&lt; include shared-config.qmd &gt;}}</span>
-<span id="cb143-13"><a href="#cb143-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-16"><a href="#cb143-16" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb143-17"><a href="#cb143-17" aria-hidden="true" tabindex="-1"></a>include_reference_lines <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb143-18"><a href="#cb143-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb143-19"><a href="#cb143-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-20"><a href="#cb143-20" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb143-21"><a href="#cb143-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-22"><a href="#cb143-22" aria-hidden="true" tabindex="-1"></a>:::{.callout-note}</span>
-<span id="cb143-23"><a href="#cb143-23" aria-hidden="true" tabindex="-1"></a>This content is adapted from:</span>
-<span id="cb143-24"><a href="#cb143-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-25"><a href="#cb143-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@dobson4e, Chapters 2-6</span>
-<span id="cb143-26"><a href="#cb143-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@dunn2018generalized, Chapters 2-3</span>
-<span id="cb143-27"><a href="#cb143-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@vittinghoff2e, Chapter 4</span>
-<span id="cb143-28"><a href="#cb143-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-29"><a href="#cb143-29" aria-hidden="true" tabindex="-1"></a>There are numerous textbooks specifically for linear regression, including:</span>
-<span id="cb143-30"><a href="#cb143-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-31"><a href="#cb143-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@kutner2005applied: used for UCLA Biostatistics MS level linear models class</span>
-<span id="cb143-32"><a href="#cb143-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@chatterjee2015regression: used for Stanford MS-level linear models class</span>
-<span id="cb143-33"><a href="#cb143-33" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@seber2012linear: used for UCLA Biostatistics PhD level linear models class and UC Davis STA 108.</span>
-<span id="cb143-34"><a href="#cb143-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@kleinbaum2014applied: same first author as @kleinbaum2010logistic and @kleinbaum2012survival</span>
-<span id="cb143-35"><a href="#cb143-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Linear Models with R* <span class="co">[</span><span class="ot">@Faraway2025-io</span><span class="co">]</span></span>
-<span id="cb143-36"><a href="#cb143-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Applied Linear Regression* by Sanford Weisberg <span class="co">[</span><span class="ot">@weisberg2005applied</span><span class="co">]</span></span>
-<span id="cb143-37"><a href="#cb143-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-38"><a href="#cb143-38" aria-hidden="true" tabindex="-1"></a>For more recommendations, see the discussion on <span class="co">[</span><span class="ot">Reddit</span><span class="co">](https://www.reddit.com/r/statistics/comments/qwgctl/q_books_on_applied_linear_modelsregression_for/)</span>.</span>
-<span id="cb143-39"><a href="#cb143-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-40"><a href="#cb143-40" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>see also <span class="ot">&lt;https://web.stanford.edu/class/stats191&gt;</span></span>
-<span id="cb143-41"><a href="#cb143-41" aria-hidden="true" tabindex="-1"></a>^<span class="co">[</span><span class="ot">the current version of the first regression course I ever took</span><span class="co">]</span></span>
-<span id="cb143-42"><a href="#cb143-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-43"><a href="#cb143-43" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb143-44"><a href="#cb143-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-45"><a href="#cb143-45" aria-hidden="true" tabindex="-1"></a><span class="fu"># Overview</span></span>
-<span id="cb143-46"><a href="#cb143-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-47"><a href="#cb143-47" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_overview.qmd &gt;}}</span>
-<span id="cb143-48"><a href="#cb143-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-49"><a href="#cb143-49" aria-hidden="true" tabindex="-1"></a><span class="fu"># Understanding Gaussian Linear Regression Models {#sec-understand-LMs}</span></span>
-<span id="cb143-50"><a href="#cb143-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-51"><a href="#cb143-51" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_understanding.qmd &gt;}}</span>
-<span id="cb143-52"><a href="#cb143-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-53"><a href="#cb143-53" aria-hidden="true" tabindex="-1"></a><span class="fu"># Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}</span></span>
-<span id="cb143-54"><a href="#cb143-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-55"><a href="#cb143-55" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_est.qmd &gt;}}</span>
-<span id="cb143-56"><a href="#cb143-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-57"><a href="#cb143-57" aria-hidden="true" tabindex="-1"></a><span class="fu"># Inference about Gaussian Linear Regression Models {#sec-infer-LMs}</span></span>
-<span id="cb143-58"><a href="#cb143-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-59"><a href="#cb143-59" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_inference.qmd &gt;}}</span>
-<span id="cb143-60"><a href="#cb143-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-61"><a href="#cb143-61" aria-hidden="true" tabindex="-1"></a><span class="fu"># Prediction</span></span>
-<span id="cb143-62"><a href="#cb143-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-63"><a href="#cb143-63" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_prediction.qmd &gt;}}</span>
-<span id="cb143-64"><a href="#cb143-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-65"><a href="#cb143-65" aria-hidden="true" tabindex="-1"></a><span class="fu"># Assessing model fit</span></span>
-<span id="cb143-66"><a href="#cb143-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb143-67"><a href="#cb143-67" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_assess.qmd &gt;}}</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb145" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb145-1"><a href="#cb145-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb145-2"><a href="#cb145-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Linear (Gaussian) Models"</span></span>
+<span id="cb145-3"><a href="#cb145-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb145-4"><a href="#cb145-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html: default</span></span>
+<span id="cb145-5"><a href="#cb145-5" aria-hidden="true" tabindex="-1"></a><span class="co">  revealjs:</span></span>
+<span id="cb145-6"><a href="#cb145-6" aria-hidden="true" tabindex="-1"></a><span class="co">    output-file: Linear-models-overview-slides.html</span></span>
+<span id="cb145-7"><a href="#cb145-7" aria-hidden="true" tabindex="-1"></a><span class="co">  pdf:</span></span>
+<span id="cb145-8"><a href="#cb145-8" aria-hidden="true" tabindex="-1"></a><span class="co">    output-file: Linear-models-overview-handout.pdf</span></span>
+<span id="cb145-9"><a href="#cb145-9" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb145-10"><a href="#cb145-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-11"><a href="#cb145-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-12"><a href="#cb145-12" aria-hidden="true" tabindex="-1"></a>{{&lt; include shared-config.qmd &gt;}}</span>
+<span id="cb145-13"><a href="#cb145-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-16"><a href="#cb145-16" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb145-17"><a href="#cb145-17" aria-hidden="true" tabindex="-1"></a>include_reference_lines <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb145-18"><a href="#cb145-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb145-19"><a href="#cb145-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-20"><a href="#cb145-20" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb145-21"><a href="#cb145-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-22"><a href="#cb145-22" aria-hidden="true" tabindex="-1"></a>:::{.callout-note}</span>
+<span id="cb145-23"><a href="#cb145-23" aria-hidden="true" tabindex="-1"></a>This content is adapted from:</span>
+<span id="cb145-24"><a href="#cb145-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-25"><a href="#cb145-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@dobson4e, Chapters 2-6</span>
+<span id="cb145-26"><a href="#cb145-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@dunn2018generalized, Chapters 2-3</span>
+<span id="cb145-27"><a href="#cb145-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@vittinghoff2e, Chapter 4</span>
+<span id="cb145-28"><a href="#cb145-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-29"><a href="#cb145-29" aria-hidden="true" tabindex="-1"></a>There are numerous textbooks specifically for linear regression, including:</span>
+<span id="cb145-30"><a href="#cb145-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-31"><a href="#cb145-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@kutner2005applied: used for UCLA Biostatistics MS level linear models class</span>
+<span id="cb145-32"><a href="#cb145-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@chatterjee2015regression: used for Stanford MS-level linear models class</span>
+<span id="cb145-33"><a href="#cb145-33" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@seber2012linear: used for UCLA Biostatistics PhD level linear models class and UC Davis STA 108.</span>
+<span id="cb145-34"><a href="#cb145-34" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>@kleinbaum2014applied: same first author as @kleinbaum2010logistic and @kleinbaum2012survival</span>
+<span id="cb145-35"><a href="#cb145-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Linear Models with R* <span class="co">[</span><span class="ot">@Faraway2025-io</span><span class="co">]</span></span>
+<span id="cb145-36"><a href="#cb145-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>*Applied Linear Regression* by Sanford Weisberg <span class="co">[</span><span class="ot">@weisberg2005applied</span><span class="co">]</span></span>
+<span id="cb145-37"><a href="#cb145-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-38"><a href="#cb145-38" aria-hidden="true" tabindex="-1"></a>For more recommendations, see the discussion on <span class="co">[</span><span class="ot">Reddit</span><span class="co">](https://www.reddit.com/r/statistics/comments/qwgctl/q_books_on_applied_linear_modelsregression_for/)</span>.</span>
+<span id="cb145-39"><a href="#cb145-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-40"><a href="#cb145-40" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>see also <span class="ot">&lt;https://web.stanford.edu/class/stats191&gt;</span></span>
+<span id="cb145-41"><a href="#cb145-41" aria-hidden="true" tabindex="-1"></a>^<span class="co">[</span><span class="ot">the current version of the first regression course I ever took</span><span class="co">]</span></span>
+<span id="cb145-42"><a href="#cb145-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-43"><a href="#cb145-43" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb145-44"><a href="#cb145-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-45"><a href="#cb145-45" aria-hidden="true" tabindex="-1"></a><span class="fu"># Overview</span></span>
+<span id="cb145-46"><a href="#cb145-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-47"><a href="#cb145-47" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_overview.qmd &gt;}}</span>
+<span id="cb145-48"><a href="#cb145-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-49"><a href="#cb145-49" aria-hidden="true" tabindex="-1"></a><span class="fu"># Understanding Gaussian Linear Regression Models {#sec-understand-LMs}</span></span>
+<span id="cb145-50"><a href="#cb145-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-51"><a href="#cb145-51" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_understanding.qmd &gt;}}</span>
+<span id="cb145-52"><a href="#cb145-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-53"><a href="#cb145-53" aria-hidden="true" tabindex="-1"></a><span class="fu"># Estimating Linear Models via Maximum Likelihood {#sec-est-LMs}</span></span>
+<span id="cb145-54"><a href="#cb145-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-55"><a href="#cb145-55" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_est.qmd &gt;}}</span>
+<span id="cb145-56"><a href="#cb145-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-57"><a href="#cb145-57" aria-hidden="true" tabindex="-1"></a><span class="fu"># Inference about Gaussian Linear Regression Models {#sec-infer-LMs}</span></span>
+<span id="cb145-58"><a href="#cb145-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-59"><a href="#cb145-59" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_inference.qmd &gt;}}</span>
+<span id="cb145-60"><a href="#cb145-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-61"><a href="#cb145-61" aria-hidden="true" tabindex="-1"></a><span class="fu"># Prediction</span></span>
+<span id="cb145-62"><a href="#cb145-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-63"><a href="#cb145-63" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_prediction.qmd &gt;}}</span>
+<span id="cb145-64"><a href="#cb145-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-65"><a href="#cb145-65" aria-hidden="true" tabindex="-1"></a><span class="fu"># Assessing model fit</span></span>
+<span id="cb145-66"><a href="#cb145-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-67"><a href="#cb145-67" aria-hidden="true" tabindex="-1"></a>{{&lt; include _sec_linreg_assess.qmd &gt;}}</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
