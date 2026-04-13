@@ -206,6 +206,63 @@ This repository uses JAGS (Just Another Gibbs Sampler) for Bayesian analysis:
 - R packages `rjags` and `runjags` depend on JAGS being installed
 - The lint workflow also needs these packages installed to avoid false positives
 
+## Computer Algebra Systems (CAS)
+
+The Copilot environment includes two computer algebra systems for symbolic mathematics.
+Use them to verify or derive formulas, derivatives, integrals, and algebraic simplifications
+when working on the mathematical content in this repository.
+
+### SymPy (Python)
+
+SymPy is available as `python3 -c "import sympy; ..."` or in a Python script.
+It supports symbolic differentiation, integration, equation solving, simplification, and LaTeX output.
+
+```python
+from sympy import symbols, diff, integrate, simplify, solve, latex, exp, log
+
+x, mu, sigma = symbols('x mu sigma', real=True)
+
+# Differentiate the normal log-likelihood with respect to mu
+log_lik = -((x - mu)**2) / (2 * sigma**2)
+score = diff(log_lik, mu)
+print(score)          # (x - mu) / sigma**2
+print(latex(score))   # \frac{x - \mu}{\sigma^{2}}
+```
+
+Common SymPy operations:
+- `diff(expr, x)` — symbolic derivative
+- `integrate(expr, x)` — symbolic integral
+- `solve(expr, x)` — solve equation for x
+- `simplify(expr)` — algebraic simplification
+- `latex(expr)` — convert to LaTeX string for use in `.qmd` files
+- `factor(expr)` / `expand(expr)` — factor or expand polynomials
+
+### Maxima
+
+Maxima is available from the shell as the `maxima` command.
+It is a full-featured CAS with strong support for calculus and algebra.
+
+```bash
+# Single expression (non-interactive)
+echo "diff(x^3 + 2*x^2 - x - 2, x);" | maxima --very-quiet
+
+# Multi-step batch computation saved to a file
+cat > /tmp/cas_check.mac << 'EOF'
+expr: x^3 + 2*x^2 - x - 2;
+factor(expr);
+diff(expr, x);
+integrate(expr, x);
+EOF
+maxima --very-quiet --batch=/tmp/cas_check.mac
+```
+
+### When to use CAS tools
+
+- **Verifying derivations**: Check that hand-derived formulas match CAS output before including them in documents.
+- **Generating LaTeX**: Use `sympy.latex()` to produce correct LaTeX for complex expressions.
+- **Solving equations**: Use `sympy.solve()` or Maxima's `solve()` to find closed-form solutions.
+- **Simplifying expressions**: Use `sympy.simplify()` or Maxima's `ratsimp()` to confirm algebraic equivalences.
+
 ## Quarto Rendering
 
 **CRITICAL REQUIREMENTS** before requesting code review:

@@ -4,11 +4,11 @@ This section is adapted from @dobson4e [§6.2-6.3] and
 @dunn2018generalized [Chapter 3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_3).
 :::
 
-## Assumptions in linear regression models {.smaller .scrollable}
+### Assumptions in linear regression models {.smaller .scrollable}
 
 {{< include _sec-linreg-assumptions.qmd >}}
 
-## Direct visualization
+### Direct visualization
 
 ::: notes
 The most direct way to examine the fit of a model is 
@@ -40,7 +40,7 @@ it becomes even harder to visualize the raw data.
 
 ---
 
-### Fitted model for `hers` data {.smaller}
+#### Fitted model for `hers` data {.smaller}
 
 ::: notes
 Consider the `hers` data from @vittinghoff2e.
@@ -168,7 +168,7 @@ With intercept
 
 :::
 
-## Residuals
+### Residuals
 
 ::: notes
 Maybe we can transform the data and model in some way 
@@ -180,7 +180,7 @@ to make it easier to inspect.
 ---
 
 :::{#thm-gaussian-resid-noise}
-### Residuals in Gaussian models
+#### Residuals in Gaussian models
 
 If $Y$ has a Gaussian distribution, 
 then $\err(Y)$ also has a Gaussian distribution, and vice versa.
@@ -193,7 +193,7 @@ Left to the reader.
 ---
 
 :::{#def-resid-fitted}
-### Residuals of a fitted model value
+#### Residuals of a fitted model value
 
 The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error) relative to the observed data:
 $$
@@ -208,7 +208,7 @@ $$
 
 :::{#exm-resid-bw}
 
-### residuals in `birthweight` data
+#### residuals in `birthweight` data
 
 :::{#fig-bw-resids1}
 
@@ -236,7 +236,7 @@ Fitted values and residuals for interaction model for `birthweight` data
 
 ---
 
-### Residuals of fitted values vs residual noise
+#### Residuals of fitted values vs residual noise
 
 $e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
 
@@ -249,7 +249,7 @@ $$
 
 ---
 
-### General characteristics of residuals
+#### General characteristics of residuals
 
 :::{#thm-resid-unbiased}
 If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
@@ -291,7 +291,7 @@ $$
 
 ---
 
-### Characteristics of residuals in Gaussian models
+#### Characteristics of residuals in Gaussian models
 
 With enough data and a correct model, 
 the residuals will be approximately Gaussian distributed, 
@@ -305,7 +305,7 @@ $$
 
 ---
 
-### Computing residuals in R
+#### Computing residuals in R
 
 R provides a function for residuals:
 
@@ -331,7 +331,7 @@ This matches R's output!
 
 ---
 
-### Graphing the residuals
+#### Graphing the residuals
 
 :::{#fig-resid-bw layout-ncol=2}
 
@@ -403,7 +403,7 @@ Fitted values and residuals for interaction model for `birthweight` data
 
 ---
 
-### Residuals versus predictors
+#### Residuals versus predictors
 
 ```{r}
 hers <- hers |>
@@ -458,7 +458,7 @@ Residuals of `hers` data vs predictors
 
 ---
 
-### Residuals versus fitted values
+#### Residuals versus fitted values
 
 ::: notes
 If the model contains multiple continuous covariates,
@@ -544,7 +544,7 @@ Residuals of interaction model for `hers` data, with and without intercept term
 
 :::{#def-stred}
 
-### Standardized residuals
+#### Standardized residuals
 
 $$r_i = \frac{e_i}{\widehat{SD}(e_i)}$$
 
@@ -556,13 +556,13 @@ $$
 r_i \siid N(0,1)
 $$
 
-## Marginal distributions of residuals
+### Marginal distributions of residuals
 
 To look for problems with our model, we can check whether the residuals $e_i$ and standardized residuals $r_i$ look like they have the distributions that they are supposed to have, according to the model.
 
 ---
 
-### Standardized residuals in R
+#### Standardized residuals in R
 
 ```{r}
 rstandard(bw_lm2)
@@ -674,7 +674,7 @@ Still hard to tell if the distribution is Gaussian.
 
 ---
 
-## QQ plot of standardized residuals
+### QQ plot of standardized residuals
 
 ::: notes
 Another way to assess normality is the QQ plot of the standardized residuals versus normal quantiles:
@@ -707,7 +707,7 @@ See also @dunn2018generalized [§3.5.4](https://link.springer.com/chapter/10.100
 
 ---
 
-### QQ plot - how it's built
+#### QQ plot - how it's built
 
 ::: notes
 Let's construct it by hand:
@@ -755,7 +755,7 @@ print(qqplot_lm2)
 
 ---
 
-## Conditional distributions of residuals
+### Conditional distributions of residuals
 
 If our Gaussian linear regression model is correct, the residuals $e_i$ and standardized residuals $r_i$ should have:
 
@@ -776,7 +776,7 @@ Regardless of whether we guessed the mean function correctly, ther the variance 
 
 ---
 
-### Residuals versus fitted values
+#### Residuals versus fitted values
 
 ::: notes
 To look for these issues, we can plot the residuals $e_i$ against the fitted values $\hat y_i$ (@fig-bw_lm2-resid-vs-fitted).
@@ -803,7 +803,7 @@ If not, we probably need to change the functional form of linear component of th
 {{< include exm-plot-fits.qmd >}}
 ---
 
-### Scale-location plot
+#### Scale-location plot
 
 ::: notes
 We can also plot the square roots of the absolute values of the standardized residuals against the fitted values (@fig-bw-scale-loc).
@@ -825,7 +825,7 @@ and we might need to transform our outcome $Y$
 
 ---
 
-### Residuals versus leverage
+#### Residuals versus leverage
 
 ::: notes
 
@@ -848,7 +848,7 @@ The blue line should be relatively flat and close to 0 here.
 
 ---
 
-## Diagnostics constructed by hand
+### Diagnostics constructed by hand
 
 ```{r}
 bw <-
@@ -862,7 +862,7 @@ bw <-
   )
 ```
 
-#### Residuals vs fitted
+##### Residuals vs fitted
 
 ```{r}
 resid_vs_fit <- bw |>
@@ -877,7 +877,7 @@ print(resid_vs_fit)
 ```
 
 
-#### Standardized residuals vs fitted
+##### Standardized residuals vs fitted
 
 ```{r}
 bw |>
@@ -889,7 +889,7 @@ bw |>
   geom_hline(yintercept = 0)
 ```
 
-#### Standardized residuals vs gestational age
+##### Standardized residuals vs gestational age
 
 ```{r}
 bw |>
@@ -901,7 +901,7 @@ bw |>
   geom_hline(yintercept = 0)
 ```
 
-#### `sqrt(abs(rstandard()))` vs fitted
+##### `sqrt(abs(rstandard()))` vs fitted
 
 Compare with `autoplot(bw_lm2, 3)`
 

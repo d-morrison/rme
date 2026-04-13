@@ -1,23 +1,83 @@
 
-## AIC and BIC
+### AIC and BIC
 
 ::: notes
-When we use likelihood ratio tests, we are comparing how well different models fit the data.
-
-Likelihood ratio tests require "nested" models: one must be a special case of the other.
-
-If we have non-nested models, we can instead use the Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC):
+This section is adapted from @vittinghoff2e [§4.5] and @kleinbaum2014applied [§15].
 :::
 
--   AIC = $-2 * \ell(\hat\theta) + 2 * p$
+When we use likelihood ratio tests, we are comparing how well different models fit the data.
 
--   BIC = $-2 * \ell(\hat\theta) + p * \text{log}(n)$
+Likelihood ratio tests require **nested** models: one must be a special case of the other.
 
-where $\ell$ is the log-likelihood of the data evaluated using the parameter estimates $\hat\theta$, $p$ is the number of estimated parameters in the model (including $\hat\sigma^2$), and $n$ is the number of observations.
+AIC and BIC can be used to compare both nested and non-nested models.
 
-You can calculate these criteria using the `logLik()` function, or use the built-in R functions:
+---
 
-### AIC in R
+### Formulas
+
+:::{#def-aic}
+### Akaike Information Criterion (AIC)
+
+$$\text{AIC} = -2 \ell(\hat\theta) + 2 p$$
+
+where $\ell(\hat\theta)$ is the log-likelihood evaluated at the
+maximum-likelihood estimates $\hat\theta$,
+$p$ is the number of estimated parameters
+(including $\hat\sigma^2$ for Gaussian models),
+and $n$ is the number of observations.
+:::
+
+---
+
+:::{#def-bic}
+### Bayesian Information Criterion (BIC)
+
+$$\text{BIC} = -2 \ell(\hat\theta) + p \log(n)$$
+
+where $\ell(\hat\theta)$, $p$, and $n$ are defined as in @def-aic.
+:::
+
+---
+
+### Conceptual basis
+
+Each criterion has two components:
+
+-   **Fit term** ($-2\ell(\hat\theta)$):
+    measures lack of fit — lower is better.
+    A model with more parameters will always achieve a higher (or equal)
+    log-likelihood on the observed data.
+
+-   **Penalty term** ($2 p$ for AIC; $p \log(n)$ for BIC):
+    penalizes model complexity to guard against overfitting.
+
+Together, they balance **goodness of fit** against **parsimony**.
+
+::: notes
+The AIC was introduced by @akaike1974new and is grounded in
+information theory (specifically, the Kullback-Leibler divergence).
+The BIC was introduced by @schwarz1978estimating as an approximation
+to the Bayes factor for model comparison.
+:::
+
+---
+
+### AIC vs. BIC
+
+| Criterion | Penalty per parameter | Tends to select |
+|-----------|----------------------|-----------------|
+| AIC       | $2$                  | larger models   |
+| BIC       | $\log(n)$            | smaller models  |
+
+The BIC penalty exceeds the AIC penalty whenever $\log(n) > 2$,
+i.e., when $n > e^2 \approx 7.4$.
+In practice, BIC almost always penalizes additional parameters more
+heavily than AIC and therefore tends to select simpler (more parsimonious)
+models [@vittinghoff2e; @kleinbaum2014applied].
+
+---
+
+#### AIC in R
 
 ```{r}
 -2 * logLik(bw_lm2) |> as.numeric() +
@@ -26,7 +86,7 @@ You can calculate these criteria using the `logLik()` function, or use the built
 AIC(bw_lm2)
 ```
 
-### BIC in R
+#### BIC in R
 
 ```{r}
 -2 * logLik(bw_lm2) |> as.numeric() +
@@ -35,19 +95,25 @@ AIC(bw_lm2)
 BIC(bw_lm2)
 ```
 
-Large values of AIC and BIC are worse than small values. 
-There are no hypothesis tests or p-values associated with these criteria.
+---
 
-::: notes
-To compare models using AIC or BIC, 
-calculate the criterion for each model and choose the model with the smallest value.
-A difference of more than 2 units in AIC is often considered meaningful, 
-though this is just a rough guideline.
-BIC tends to favor simpler models than AIC, 
-especially when the sample size is large.
-:::
+### Interpretation
 
-## (Residual) Deviance
+-   **Lower values are better.**
+    There are no hypothesis tests or p-values associated with these
+    criteria.
+
+-   To compare models, calculate the criterion for each model and
+    choose the model with the **smallest value**.
+
+-   Differences of less than 2 units are generally considered negligible;
+    differences greater than 10 are considered strong evidence in favor
+    of the lower-criterion model.
+
+-   BIC tends to favor simpler models than AIC,
+    especially when the sample size is large.
+
+### (Residual) Deviance
 
 Let $q$ be the number of distinct covariate combinations in a data set.
 
@@ -75,7 +141,7 @@ Unique covariate combinations in the `birthweight` data, with replicate counts
 ---
 
 ::: {#def-replicates}
-### Replicates
+#### Replicates
 If a given covariate pattern has more than one observation in a dataset, 
 those observations are called **replicates**.
 :::
@@ -84,7 +150,7 @@ those observations are called **replicates**.
 
 ::: {#exm-replicate-bw}
 
-### Replicates in the `birthweight` data
+#### Replicates in the `birthweight` data
 
 In the `birthweight` dataset, there are 2 replicates of the combination "female, age 36" (@tbl-bw-x-combos).
 
@@ -94,7 +160,7 @@ In the `birthweight` dataset, there are 2 replicates of the combination "female,
 
 ::: {#exr-replicate-bw}
 
-### Replicates in the `birthweight` data
+#### Replicates in the `birthweight` data
 
 Which covariate pattern(s) in the `birthweight` data has the most replicates?
 
@@ -104,7 +170,7 @@ Which covariate pattern(s) in the `birthweight` data has the most replicates?
 
 ::: {#sol-replicate-bw}
 
-### Replicates in the `birthweight` data
+#### Replicates in the `birthweight` data
 
 Two covariate patterns are tied for most replicates: males at age 40 weeks 
 and females at age 40 weeks.
@@ -118,7 +184,7 @@ bw_X_unique |> dplyr::filter(n == max(n))
 
 ---
 
-### Saturated models {.smaller}
+#### Saturated models {.smaller}
 
 The most complicated model we could fit would have one parameter (a mean) for each covariate pattern, plus a variance parameter:
 
@@ -142,54 +208,12 @@ We call this model the **full**, **maximal**, or **saturated** model for this da
 
 ---
 
-```{r}
-library(rlang) # defines the `.data` pronoun
-plot_PIs_and_CIs <- function(model, data) {
-  cis <- model |>
-    predict(interval = "confidence") |>
-    suppressWarnings() |>
-    tibble::as_tibble()
-  names(cis) <- paste("ci", names(cis), sep = "_")
-
-  preds <- model |>
-    predict(interval = "predict") |>
-    suppressWarnings() |>
-    tibble::as_tibble()
-  names(preds) <- paste("pred", names(preds), sep = "_")
-  dplyr::bind_cols(bw, cis, preds) |>
-    ggplot2::ggplot() +
-    ggplot2::aes(
-      x = .data$age, 
-      y = .data$weight, 
-      col = .data$sex
-    ) +
-    ggplot2::geom_point() +
-    ggplot2::theme(legend.position = "bottom") +
-    ggplot2::geom_line(ggplot2::aes(y = .data$ci_fit)) +
-    ggplot2::geom_ribbon(
-      ggplot2::aes(
-        ymin = .data$pred_lwr,
-        ymax = .data$pred_upr
-      ),
-      alpha = 0.2
-    ) +
-    ggplot2::geom_ribbon(
-      ggplot2::aes(
-        ymin = .data$ci_lwr,
-        ymax = .data$ci_upr
-      ),
-      alpha = 0.5
-    ) +
-    ggplot2::facet_wrap(~sex)
-}
-```
-
 :::{#fig-max-vs-intxn-fits layout-ncol=2}
 
 :::{#fig-fit-intxn}
 
 ```{r}
-plot_PIs_and_CIs(bw_lm2, bw)
+plot_PIs_and_CIs(bw, bw_lm2)
 ```
 Model [-@eq-BW-lm-interact] (linear with age:sex interaction)
 :::
@@ -197,7 +221,7 @@ Model [-@eq-BW-lm-interact] (linear with age:sex interaction)
 :::{#fig-fit-max}
 
 ```{r}
-plot_PIs_and_CIs(lm_max, bw)
+plot_PIs_and_CIs(bw |> mutate(age = factor(age)), lm_max)
 ```
 Saturated model
 :::
@@ -233,7 +257,7 @@ This statistic is called the **deviance** or **residual deviance** for our two-s
 
 The corresponding p-value tells us whether there we have enough evidence to detect that our two-slopes, two-intercepts model is a worse fit for the data than the maximal model; in other words, it tells us if there's evidence that we missed any important patterns. (Remember, a nonsignificant p-value could mean that we didn't miss anything and a more complicated model is unnecessary, or it could mean we just don't have enough data to tell the difference between these models.)
 
-## Null Deviance
+### Null Deviance
 
 Similarly, the *least* complicated model we could fit would have only one mean parameter, an intercept:
 
@@ -251,7 +275,7 @@ lm0 |>
 
 :::{#fig-null-model}
 ```{r}
-lm0 |> plot_PIs_and_CIs()
+plot_PIs_and_CIs(bw, lm0)
 ```
 
 Null model for birthweight data, with 95% confidence and prediction intervals.
