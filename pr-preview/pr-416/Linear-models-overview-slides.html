@@ -2676,16 +2676,95 @@ X'y &amp;= \mathbf{X}'\mathbf{X}\beta\\
 <p><span class="math display">\[
 \hat\sigma^2_{ML} = \frac{1}{n} (Y-X\hat\beta)'(Y-X\hat\beta)
 \]</span></p>
-<p>And</p>
+</section><section id="residual-standard-deviation" class="slide level2" data-number="3.6"><h2>
+<span class="header-section-number">3.6</span> Residual Standard Deviation</h2>
+<aside class="notes"><p><span class="math inline">\(\hat \sigma\)</span> represents an <em>estimate</em> of the <em>Residual Standard Deviation</em> parameter, <span class="math inline">\(\sigma\)</span>. We can extract <span class="math inline">\(\hat \sigma\)</span> from the fitted model, using the <code><a href="https://rdrr.io/r/stats/sigma.html">sigma()</a></code> function:</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><div class="cell">
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a></a><span class="fu">sigma</span>(bw_lm2)</span>
+<span id="cb36-2"><a></a><span class="co">#&gt; [1] 180.613</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section><section class="slide level2"><h3 id="sigma-is-not-residual-standard-error">
+<span class="math inline">\(\sigma\)</span> is NOT “Residual standard error”</h3>
+<aside class="notes"><p>In the <code><a href="https://rdrr.io/r/stats/summary.lm.html">summary.lm()</a></code> output, this estimate is labeled as <code>"Residual standard error"</code>:</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside><div class="cell">
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a></a><span class="fu">summary</span>(bw_lm2)</span>
+<span id="cb37-2"><a></a><span class="co">#&gt; </span></span>
+<span id="cb37-3"><a></a><span class="co">#&gt; Call:</span></span>
+<span id="cb37-4"><a></a><span class="co">#&gt; lm(formula = weight ~ sex + age + sex:age, data = bw)</span></span>
+<span id="cb37-5"><a></a><span class="co">#&gt; </span></span>
+<span id="cb37-6"><a></a><span class="co">#&gt; Residuals:</span></span>
+<span id="cb37-7"><a></a><span class="co">#&gt;    Min     1Q Median     3Q    Max </span></span>
+<span id="cb37-8"><a></a><span class="co">#&gt; -246.7 -138.1  -39.1  176.6  274.3 </span></span>
+<span id="cb37-9"><a></a><span class="co">#&gt; </span></span>
+<span id="cb37-10"><a></a><span class="co">#&gt; Coefficients:</span></span>
+<span id="cb37-11"><a></a><span class="co">#&gt;             Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
+<span id="cb37-12"><a></a><span class="co">#&gt; (Intercept)  -2141.7     1163.6   -1.84  0.08057 .  </span></span>
+<span id="cb37-13"><a></a><span class="co">#&gt; sexmale        873.0     1611.3    0.54  0.59395    </span></span>
+<span id="cb37-14"><a></a><span class="co">#&gt; age            130.4       30.0    4.35  0.00031 ***</span></span>
+<span id="cb37-15"><a></a><span class="co">#&gt; sexmale:age    -18.4       41.8   -0.44  0.66389    </span></span>
+<span id="cb37-16"><a></a><span class="co">#&gt; ---</span></span>
+<span id="cb37-17"><a></a><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span id="cb37-18"><a></a><span class="co">#&gt; </span></span>
+<span id="cb37-19"><a></a><span class="co">#&gt; Residual standard error: 181 on 20 degrees of freedom</span></span>
+<span id="cb37-20"><a></a><span class="co">#&gt; Multiple R-squared:  0.643,  Adjusted R-squared:  0.59 </span></span>
+<span id="cb37-21"><a></a><span class="co">#&gt; F-statistic:   12 on 3 and 20 DF,  p-value: 0.000101</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<aside class="notes"><p>However, this is a misnomer: see note in <code><a href="https://rdrr.io/r/stats/sigma.html">?stats::sigma</a></code></p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside></section></section><section><section id="sec-infer-LMs" class="title-slide slide level1 center" data-number="4"><h1>
+<span class="header-section-number">4</span> Inference about Gaussian Linear Regression Models</h1>
+
+</section><section id="motivating-example-birthweight-data" class="slide level2" data-number="4.1"><h2>
+<span class="header-section-number">4.1</span> Motivating example: <code>birthweight</code> data</h2>
+<p>Research question: is there really an interaction between sex and age?</p>
+<p><span class="math inline">\(H_0: \beta_{AM} = 0\)</span></p>
+<p><span class="math inline">\(H_A: \beta_{AM} \neq 0\)</span></p>
+<p><span class="math inline">\(P(|\hat\beta_{AM}| &gt; |-18.417241| \mid H_0)\)</span> = ?</p>
+</section><section id="inference-for-individual-predictor-coefficients" class="slide level2" data-number="4.2"><h2>
+<span class="header-section-number">4.2</span> Inference for individual predictor coefficients</h2>
+<h3 id="sec-linreg-sampling-dist">Sampling distribution of <span class="math inline">\(\hat\beta\)</span>
+</h3>
+<p>The <a href="./intro-MLEs.html">Fisher information</a> for <span class="math inline">\(\beta\)</span> is:</p>
 <p><span class="math display">\[
 \begin{aligned}
-\mathcal I_{\beta} &amp;= E[-\ell_{\beta, \beta'} ''(Y|X,\beta, \sigma^2)]\\
+\mathcal I_{\beta} &amp;= \text{E}{\left[-\ell_{\beta, \beta'}''(Y|X,\beta, \sigma^2)\right]}\\
 &amp;= \frac{1}{\sigma^2}\mathbf{X}'\mathbf{X}
 \end{aligned}
 \]</span></p>
-</section><section class="slide level2"><p>So:</p>
+</section><section class="slide level2"><p>Therefore:</p>
 <p><span class="math display">\[
-Var(\hat \beta) \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}
+\text{Var}{\left(\hat \beta\right)} \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (\mathbf{X}'\mathbf{X})^{-1}
 \]</span></p>
 <p>and</p>
 <p><span class="math display">\[
@@ -2706,14 +2785,15 @@ Var(\hat \beta) \approx (\mathcal I_{\beta})^{-1} = \sigma^2 (\mathbf{X}'\mathbf
 <p><span class="math display">\[
 \frac{\hat\beta_j}{\widehat{\text{se}}{\left(\hat\beta_j\right)}} \ \sim \ t_{n-p}
 \]</span></p>
-</section><section class="slide level2"><div id="exm-bw-inference" class="theorem example">
+</section><section class="slide level2"><h3 id="estimated-covariance-matrix-and-standard-errors">Estimated covariance matrix and standard errors</h3>
+<div id="exm-bw-inference" class="theorem example">
 <p><span class="theorem-title"><strong>Example 2 (MLEs for birthweight data)</strong></span> In model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> above, <span class="math inline">\(\hat{\mathcal{I}}(\beta)\)</span> is:</p>
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a></a>bw_lm2 <span class="sc">|&gt;</span> <span class="fu">vcov</span>()</span>
-<span id="cb36-2"><a></a><span class="co">#&gt;             (Intercept)  sexmale        age sexmale:age</span></span>
-<span id="cb36-3"><a></a><span class="co">#&gt; (Intercept)     1353968 -1353968 -34870.966   34870.966</span></span>
-<span id="cb36-4"><a></a><span class="co">#&gt; sexmale        -1353968  2596387  34870.966  -67210.974</span></span>
-<span id="cb36-5"><a></a><span class="co">#&gt; age              -34871    34871    899.896    -899.896</span></span>
-<span id="cb36-6"><a></a><span class="co">#&gt; sexmale:age       34871   -67211   -899.896    1743.548</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a></a>bw_lm2 <span class="sc">|&gt;</span> <span class="fu">vcov</span>()</span>
+<span id="cb38-2"><a></a><span class="co">#&gt;             (Intercept)  sexmale        age sexmale:age</span></span>
+<span id="cb38-3"><a></a><span class="co">#&gt; (Intercept)     1353968 -1353968 -34870.966   34870.966</span></span>
+<span id="cb38-4"><a></a><span class="co">#&gt; sexmale        -1353968  2596387  34870.966  -67210.974</span></span>
+<span id="cb38-5"><a></a><span class="co">#&gt; age              -34871    34871    899.896    -899.896</span></span>
+<span id="cb38-6"><a></a><span class="co">#&gt; sexmale:age       34871   -67211   -899.896    1743.548</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-vcov" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-vcov-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;17: Covariance matrix of <span class="math inline">\(\hat{\tilde{\beta}}\)</span> for <code>birthweight</code> model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> (with interaction term)
@@ -2736,18 +2816,18 @@ Table&nbsp;17: Covariance matrix of <span class="math inline">\(\hat{\tilde{\bet
           overflow: hidden!important;
           display:block!important;
       }</style></aside><div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb37-2"><a></a>  <span class="fu">vcov</span>() <span class="sc">|&gt;</span></span>
-<span id="cb37-3"><a></a>  <span class="fu">diag</span>() <span class="sc">|&gt;</span></span>
-<span id="cb37-4"><a></a>  <span class="fu">sqrt</span>()</span>
-<span id="cb37-5"><a></a><span class="co">#&gt; (Intercept)     sexmale         age sexmale:age </span></span>
-<span id="cb37-6"><a></a><span class="co">#&gt;   1163.6015   1611.3309     29.9983     41.7558</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
+<span id="cb39-2"><a></a>  <span class="fu">vcov</span>() <span class="sc">|&gt;</span></span>
+<span id="cb39-3"><a></a>  <span class="fu">diag</span>() <span class="sc">|&gt;</span></span>
+<span id="cb39-4"><a></a>  <span class="fu">sqrt</span>()</span>
+<span id="cb39-5"><a></a><span class="co">#&gt; (Intercept)     sexmale         age sexmale:age </span></span>
+<span id="cb39-6"><a></a><span class="co">#&gt;   1163.6015   1611.3309     29.9983     41.7558</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
-<span id="cb38-2"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
-<span id="cb38-3"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
+<span id="cb40-2"><a></a>  <span class="fu">parameters</span>() <span class="sc">|&gt;</span></span>
+<span id="cb40-3"><a></a>  <span class="fu">print_md</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-mod-intx" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mod-intx-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;18: Estimated model for <code>birthweight</code> data with interaction term
@@ -2823,83 +2903,6 @@ Table&nbsp;18: Estimated model for <code>birthweight</code> data with interactio
           display:block!important;
       }</style></aside>
 </div>
-</section><section id="residual-standard-deviation" class="slide level2" data-number="3.6"><h2>
-<span class="header-section-number">3.6</span> Residual Standard Deviation</h2>
-<aside class="notes"><p><span class="math inline">\(\hat \sigma\)</span> represents an <em>estimate</em> of the <em>Residual Standard Deviation</em> parameter, <span class="math inline">\(\sigma\)</span>. We can extract <span class="math inline">\(\hat \sigma\)</span> from the fitted model, using the <code><a href="https://rdrr.io/r/stats/sigma.html">sigma()</a></code> function:</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside><div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a></a><span class="fu">sigma</span>(bw_lm2)</span>
-<span id="cb39-2"><a></a><span class="co">#&gt; [1] 180.613</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-</section><section class="slide level2"><h3 id="sigma-is-not-residual-standard-error">
-<span class="math inline">\(\sigma\)</span> is NOT “Residual standard error”</h3>
-<aside class="notes"><p>In the <code><a href="https://rdrr.io/r/stats/summary.lm.html">summary.lm()</a></code> output, this estimate is labeled as <code>"Residual standard error"</code>:</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside><div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a></a><span class="fu">summary</span>(bw_lm2)</span>
-<span id="cb40-2"><a></a><span class="co">#&gt; </span></span>
-<span id="cb40-3"><a></a><span class="co">#&gt; Call:</span></span>
-<span id="cb40-4"><a></a><span class="co">#&gt; lm(formula = weight ~ sex + age + sex:age, data = bw)</span></span>
-<span id="cb40-5"><a></a><span class="co">#&gt; </span></span>
-<span id="cb40-6"><a></a><span class="co">#&gt; Residuals:</span></span>
-<span id="cb40-7"><a></a><span class="co">#&gt;    Min     1Q Median     3Q    Max </span></span>
-<span id="cb40-8"><a></a><span class="co">#&gt; -246.7 -138.1  -39.1  176.6  274.3 </span></span>
-<span id="cb40-9"><a></a><span class="co">#&gt; </span></span>
-<span id="cb40-10"><a></a><span class="co">#&gt; Coefficients:</span></span>
-<span id="cb40-11"><a></a><span class="co">#&gt;             Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
-<span id="cb40-12"><a></a><span class="co">#&gt; (Intercept)  -2141.7     1163.6   -1.84  0.08057 .  </span></span>
-<span id="cb40-13"><a></a><span class="co">#&gt; sexmale        873.0     1611.3    0.54  0.59395    </span></span>
-<span id="cb40-14"><a></a><span class="co">#&gt; age            130.4       30.0    4.35  0.00031 ***</span></span>
-<span id="cb40-15"><a></a><span class="co">#&gt; sexmale:age    -18.4       41.8   -0.44  0.66389    </span></span>
-<span id="cb40-16"><a></a><span class="co">#&gt; ---</span></span>
-<span id="cb40-17"><a></a><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span id="cb40-18"><a></a><span class="co">#&gt; </span></span>
-<span id="cb40-19"><a></a><span class="co">#&gt; Residual standard error: 181 on 20 degrees of freedom</span></span>
-<span id="cb40-20"><a></a><span class="co">#&gt; Multiple R-squared:  0.643,  Adjusted R-squared:  0.59 </span></span>
-<span id="cb40-21"><a></a><span class="co">#&gt; F-statistic:   12 on 3 and 20 DF,  p-value: 0.000101</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<aside class="notes"><p>However, this is a misnomer: see note in <code><a href="https://rdrr.io/r/stats/sigma.html">?stats::sigma</a></code></p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside></section></section><section><section id="sec-infer-LMs" class="title-slide slide level1 center" data-number="4"><h1>
-<span class="header-section-number">4</span> Inference about Gaussian Linear Regression Models</h1>
-
-</section><section id="motivating-example-birthweight-data" class="slide level2" data-number="4.1"><h2>
-<span class="header-section-number">4.1</span> Motivating example: <code>birthweight</code> data</h2>
-<p>Research question: is there really an interaction between sex and age?</p>
-<p><span class="math inline">\(H_0: \beta_{AM} = 0\)</span></p>
-<p><span class="math inline">\(H_A: \beta_{AM} \neq 0\)</span></p>
-<p><span class="math inline">\(P(|\hat\beta_{AM}| &gt; |-18.417241| \mid H_0)\)</span> = ?</p>
-</section><section id="inference-for-individual-predictor-coefficients" class="slide level2" data-number="4.2"><h2>
-<span class="header-section-number">4.2</span> Inference for individual predictor coefficients</h2>
 <h3 id="wald-tests-and-confidence-intervals">Wald tests and confidence intervals</h3>
 <p>For Gaussian linear regression, the ordinary least squares (OLS) estimates <span class="math inline">\(\hat\beta_k\)</span> are exactly Gaussian when the error terms <span class="math inline">\(\epsilon_i\)</span> are Gaussian, for any sample size. See also the <a href="./intro-MLEs.html#tbl-gaussian-vs-mle-tests">table of Gaussian vs.&nbsp;MLE-based tests</a>.</p>
 <h4 id="wald-test-statistic">Wald test statistic</h4>
@@ -3836,7 +3839,7 @@ Figure&nbsp;9: Predicted values and confidence bands for the <code>birthweight</
 <span id="cb64-56"><a></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw_lm2, bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw, bw_lm2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-pred-int-bw" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-pred-int-bw-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;10: Confidence and prediction intervals for <code>birthweight</code> model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a>
@@ -4144,7 +4147,7 @@ Figure&nbsp;11: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> an
 </figcaption><div aria-describedby="fig-max-vs-intxn-fits-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-max-vs-intxn-fits" style="flex-basis: 50.0%;justify-content: flex-start;">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw_lm2, bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw, bw_lm2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-fit-intxn" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-fit-intxn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> (linear with age:sex interaction)
@@ -4247,7 +4250,7 @@ Figure&nbsp;11: Model <a href="#/eq-BW-lm-interact" class="quarto-xref">2</a> an
 </table>
 </div>
 </div>
-</section><section class="slide level2"><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a></a>lm0 <span class="sc">|&gt;</span> <span class="fu">plot_PIs_and_CIs</span>(bw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section><section class="slide level2"><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a></a><span class="fu">plot_PIs_and_CIs</span>(bw, lm0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-null-model" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-null-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;12: Null model for birthweight data, with 95% confidence and prediction intervals.
