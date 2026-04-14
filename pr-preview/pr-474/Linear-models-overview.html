@@ -642,7 +642,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2026-04-14: 20:57:05 (UTC)</p>
+      <p class="date">Last modified: 2026-04-14: 23:30:18 (UTC)</p>
     </div>
   </div>
   
@@ -2998,18 +2998,19 @@ Table&nbsp;4.1: Covariance matrix of <span class="math inline">\(\hat{\tilde{\be
 </div>
 </figure>
 </div>
+</div>
 <section id="interpreting-the-layout-of-the-covariance-matrix" class="level4"><h4 class="anchored" data-anchor-id="interpreting-the-layout-of-the-covariance-matrix">Interpreting the layout of the covariance matrix</h4>
-<p>The covariance matrix <span class="math inline">\(\widehat{\text{Cov}}(\hat{\tilde{\beta}})\)</span> is a <span class="math inline">\(p \times p\)</span> symmetric matrix, where <span class="math inline">\(p\)</span> is the number of regression coefficients (including the intercept, if present). Its rows and columns are indexed by the coefficients <span class="math inline">\(\hat\beta_1, \ldots, \hat\beta_p\)</span>, where <span class="math inline">\(\hat\beta_1\)</span> corresponds to the intercept when one is included.</p>
+<p>The covariance matrix <span class="math inline">\(\widehat{\text{Cov}}(\hat{\tilde{\beta}})\)</span> is a <span class="math inline">\(p \times p\)</span> symmetric matrix, where <span class="math inline">\(p\)</span> is the number of regression coefficients (including the intercept, if present). Its rows and columns correspond to those <span class="math inline">\(p\)</span> coefficient estimates. When an intercept is included, the coefficients are typically written <span class="math inline">\(\hat\beta_0, \hat\beta_1, \ldots\)</span>, with <span class="math inline">\(\hat\beta_0\)</span> denoting the intercept. The matrix entries themselves are still indexed by position, so matrix row/column index <span class="math inline">\(1\)</span> corresponds to the intercept term when one is included.</p>
 <p>The general layout is:</p>
 <p><span class="math display">\[
 \widehat{\text{Cov}}(\hat{\tilde{\beta}}) =
 \begin{array}{c|cccc}
-  &amp; \hat\beta_1 &amp; \hat\beta_2 &amp; \cdots &amp; \hat\beta_p \\
+  &amp; \hat\beta_0 &amp; \hat\beta_1 &amp; \cdots &amp; \hat\beta_{p-1} \\
 \hline
-\hat\beta_1 &amp; \text{Var}{\left(\hat\beta_1\right)}             &amp; \text{Cov}{\left(\hat\beta_1, \hat\beta_2\right)} &amp; \cdots &amp; \text{Cov}{\left(\hat\beta_1, \hat\beta_p\right)} \\
-\hat\beta_2 &amp; \text{Cov}{\left(\hat\beta_2, \hat\beta_1\right)} &amp; \text{Var}{\left(\hat\beta_2\right)}             &amp; \cdots &amp; \text{Cov}{\left(\hat\beta_2, \hat\beta_p\right)} \\
-\vdots      &amp; \vdots                          &amp; \vdots                          &amp; \ddots &amp; \vdots \\
-\hat\beta_p &amp; \text{Cov}{\left(\hat\beta_p, \hat\beta_1\right)} &amp; \text{Cov}{\left(\hat\beta_p, \hat\beta_2\right)} &amp; \cdots &amp; \text{Var}{\left(\hat\beta_p\right)}
+\hat\beta_0     &amp; \text{Var}{\left(\hat\beta_0\right)}                    &amp; \text{Cov}{\left(\hat\beta_0, \hat\beta_1\right)}     &amp; \cdots &amp; \text{Cov}{\left(\hat\beta_0, \hat\beta_{p-1}\right)}     \\
+\hat\beta_1     &amp; \text{Cov}{\left(\hat\beta_1, \hat\beta_0\right)}         &amp; \text{Var}{\left(\hat\beta_1\right)}                &amp; \cdots &amp; \text{Cov}{\left(\hat\beta_1, \hat\beta_{p-1}\right)}     \\
+\vdots       &amp; \vdots                             &amp; \vdots                        &amp; \ddots &amp; \vdots \\
+\hat\beta_{p-1} &amp; \text{Cov}{\left(\hat\beta_{p-1}, \hat\beta_0\right)}     &amp; \text{Cov}{\left(\hat\beta_{p-1}, \hat\beta_1\right)} &amp; \cdots &amp; \text{Var}{\left(\hat\beta_{p-1}\right)}
 \end{array}
 \]</span></p>
 <p>That is:</p>
@@ -3017,8 +3018,9 @@ Table&nbsp;4.1: Covariance matrix of <span class="math inline">\(\hat{\tilde{\be
 <li>The <strong>diagonal</strong> entries are the <strong>variances</strong> of the individual coefficient estimates: <span class="math inline">\(\widehat{\text{Cov}}(\hat{\tilde{\beta}})_{jj} = \text{Var}{\left(\hat\beta_j\right)}\)</span>.</li>
 <li>The <strong>off-diagonal</strong> entries are the <strong>covariances</strong> between pairs of coefficient estimates: <span class="math inline">\(\widehat{\text{Cov}}(\hat{\tilde{\beta}})_{ij} = \text{Cov}{\left(\hat\beta_i, \hat\beta_j\right)}\)</span> for <span class="math inline">\(i \neq j\)</span>.</li>
 <li>The matrix is <strong>symmetric</strong>: <span class="math inline">\(\text{Cov}{\left(\hat\beta_i, \hat\beta_j\right)} = \text{Cov}{\left(\hat\beta_j, \hat\beta_i\right)}\)</span>.</li>
-</ul></section><section id="schematic-for-the-birthweight-model" class="level4"><h4 class="anchored" data-anchor-id="schematic-for-the-birthweight-model">Schematic for the birthweight model</h4>
-<p>For model <a href="#eq-BW-lm-interact" class="quarto-xref">2.2</a>, which has four coefficients <span class="math inline">\((\hat\beta_0, \hat\beta_M, \hat\beta_A, \hat\beta_{AM})\)</span>, the covariance matrix has the following layout:</p>
+</ul>
+<div id="exm-vcov-bw" class="theorem example">
+<p><span class="theorem-title"><strong>Example 4.2 (Schematic for the birthweight model)</strong></span> For model <a href="#eq-BW-lm-interact" class="quarto-xref">2.2</a>, which has four coefficients <span class="math inline">\((\hat\beta_0, \hat\beta_M, \hat\beta_A, \hat\beta_{AM})\)</span>, the covariance matrix has the following layout:</p>
 <p><span class="math display">\[
 \widehat{\text{Cov}}(\hat{\tilde{\beta}}) =
 \begin{array}{c|cccc}
@@ -3111,9 +3113,8 @@ Table&nbsp;4.2: Estimated model for <code>birthweight</code> data with interacti
 <div class="notes">
 <p>So we can do confidence intervals, hypothesis tests, and p-values exactly as in the one-variable case we looked at previously.</p>
 </div>
-</section>
 </div>
-</section><section id="wald-tests-and-confidence-intervals" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="wald-tests-and-confidence-intervals">
+</section></section><section id="wald-tests-and-confidence-intervals" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="wald-tests-and-confidence-intervals">
 <span class="header-section-number">4.2.3</span> Wald tests and confidence intervals</h3>
 <p>For Gaussian linear regression, the ordinary least squares (OLS) estimates <span class="math inline">\(\hat\beta_k\)</span> are exactly Gaussian when the error terms <span class="math inline">\(\epsilon_i\)</span> are Gaussian, for any sample size. See also the <a href="./intro-MLEs.html#tbl-gaussian-vs-mle-tests">table of Gaussian vs.&nbsp;MLE-based tests</a>.</p>
 <section id="wald-test-statistic" class="level4"><h4 class="anchored" data-anchor-id="wald-test-statistic">Wald test statistic</h4>
@@ -7198,7 +7199,7 @@ Figure&nbsp;6.22: <code>birthweight</code> model with interactions (<a href="#eq
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">carbohydrate</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">weight</span>, <span class="va">protein</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/glmnet/man/glmnet.html">glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/glmnet.html">glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <hr>
@@ -7217,7 +7218,7 @@ Figure&nbsp;6.23: Lasso selection
 </div>
 <hr>
 <div class="cell">
-<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb143"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/glmnet/man/cv.glmnet.html">cv.glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb143"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cvfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html">cv.glmnet</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">cvfit</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
