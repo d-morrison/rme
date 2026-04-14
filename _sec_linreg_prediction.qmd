@@ -144,21 +144,65 @@ Predicted values and confidence bands for the `birthweight` model with interacti
 
 We can also construct **prediction intervals** for 
 the value of a new observation $Y^*$,
-given a covariate pattern $\vx^*$:
+given a covariate pattern $\vxs$.
+
+A new observation $Y^*$ at $\vxs$ follows the same linear model as the training data:
+
+$$Y^* = \tp{(\vxs)}\vb + \eps^*$$
+
+where $\eps^* \sim \ndist{0, \sigma^2}$ is independent of the training data
+(and therefore independent of $\hb$).
+
+The predicted value of $Y^*$ is:
+
+$$\hat{Y}^* \eqdef \hat\mu(\vxs) = \tp{(\vxs)}\hb$$
+
+We base the prediction interval on the **prediction error** $Y^* - \hat{Y}^*$:
 
 $$
 \ba
-\hat{Y^*} &= \hat\mu({\vx}^*) + \hat{\epsilon}^*
-\\ \Var{\hat{Y}} &= \Var{\hat\mu} + \Var{\hat\epsilon}
-\\ \Var{\hat{Y}} &= \Var{x'\hb} + \Var{\hat\epsilon}
-\\ &= {{\vx}^{*\top}} \Var{\hb} {{\vx}^*} + \sigma^2
-\\ &=  {{\vx}^{*\top}} \paren{\sigma^2(\mX'\mX)^{-1}} {{\vx}^*} + \sigma^2
-\\ &= \sigma^2 {{\vx}^{*\top}} (\mX'\mX)^{-1} {{\vx}^*} + \sigma^2
+Y^* - \hat{Y}^*
+&= \tp{(\vxs)}\vb + \eps^* - \tp{(\vxs)}\hb
+\\
+&= \eps^* - \tp{(\vxs)}(\hb - \vb)
+\ea
+$$
+
+The prediction error is unbiased:
+
+$$
+\ba
+\E{Y^* - \hat{Y}^*}
+&= \E{\eps^*} - \tp{(\vxs)}\E{\hb - \vb}
+\\
+&= 0 - \tp{(\vxs)} \cdot 0
+\\
+&= 0
+\ea
+$$
+
+The variance of the prediction error is:
+
+$$
+\ba
+\Var{Y^* - \hat{Y}^*}
+&= \Var{\eps^* - \tp{(\vxs)}(\hb - \vb)}
+\\
+&= \Var{\eps^*} + \Var{\tp{(\vxs)}\hb}
+\quad \text{(since } \eps^* \ind \hb\text{)}
+\\
+&= \sigma^2 + \tp{(\vxs)}\Var{\hb}\vxs
+\\
+&= \sigma^2 + \tp{(\vxs)}\paren{\sigma^2(\mX'\mX)^{-1}}\vxs
+\\
+&= \sigma^2 + \sigma^2\tp{(\vxs)}(\mX'\mX)^{-1}\vxs
+\\
+&= \sigma^2\paren{1 + \tp{(\vxs)}(\mX'\mX)^{-1}\vxs}
 \ea
 $${#eq-prediction-var}
 
 ::: notes
-See @hoggtanis2015 §7.6 (p. 340) for a longer version.
+See @hoggtanis2015 §7.6 (p. 340).
 :::
 
 ```{r}
