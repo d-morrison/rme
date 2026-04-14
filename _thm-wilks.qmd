@@ -1,0 +1,138 @@
+:::{#thm-wilks}
+
+#### Wilks' theorem
+
+Under regularity conditions,
+if $H_0$ imposes $q$ constraints on the parameters $\vth$,
+then under $H_0$, as $n\to\infty$:
+
+$$
+\Lambda \eqdef 2\paren{\llik(\hthml) - \llik(\hat\th_0)}
+\overset{d}{\to}
+\chi^2_q
+$$
+
+where
+$\hthml$ is the unrestricted MLE
+and $\hat\th_0$ is the MLE under $H_0$.
+
+:::
+
+---
+
+:::{.proof}
+
+We sketch the argument for the scalar case ($p = 1$ free parameter under $H_0: \theta = \theta_0$);
+the multivariate case follows the same steps in matrix form
+(see @dobson4e §5.7 or @wilks1938 for the full proof).
+
+**Step 1: Taylor expansion of $\llik(\th_0)$ around $\hthml$.**
+
+Since $\hthml$ maximizes $\llik$, the score at $\hthml$ is zero:
+$$
+\score(\hthml) = 0
+$$
+
+Expanding $\llik(\th_0)$ around $\hthml$ by Taylor's theorem:
+$$
+\ba
+\llik(\th_0)
+&\approx
+\llik(\hthml)
++ \underbrace{\score(\hthml)}_{= \, 0}(\th_0 - \hthml)
++ \frac{1}{2}\hess(\hthml)(\th_0 - \hthml)^2
+\ea
+$$
+
+Since the score term vanishes:
+$$
+\ba
+\llik(\th_0)
+&\approx
+\llik(\hthml)
++ \frac{1}{2}\hess(\hthml)(\th_0 - \hthml)^2
+\ea
+$$
+
+Rearranging:
+$$
+\ba
+2\paren{\llik(\hthml) - \llik(\th_0)}
+&\approx
+-\hess(\hthml)(\hthml - \th_0)^2
+\\&=
+\paren{-\hess(\hthml)}(\hthml - \th_0)^2
+\ea
+$$
+
+**Step 2: Recognizing the observed information.**
+
+The negative Hessian is the observed information $\oinff{\hthml} = -\hess(\hthml)$,
+which by the law of large numbers
+converges to the total Fisher information $n \einf(\th_0)$:
+$$
+\ba
+2\paren{\llik(\hthml) - \llik(\th_0)}
+&\approx
+n \einf(\th_0) \cdot (\hthml - \th_0)^2
+\ea
+$$
+
+**Step 3: Standardizing to a squared standard normal.**
+
+Define the standardized estimation error:
+$$
+z
+\eqdef
+\sqrt{n \einf(\th_0)}
+\cdot (\hthml - \th_0)
+$$
+
+Then:
+$$
+\ba
+2\paren{\llik(\hthml) - \llik(\th_0)}
+&\approx
+z^2
+\ea
+$$
+
+**Step 4: Applying the CLT for MLEs.**
+
+By @thm-dist-mle (the CLT for MLEs):
+$$
+\hthml
+\dsim
+\ndist{\th_0,\; \sb{n\einf(\th_0)}^{-1}}
+$$
+
+Therefore:
+$$
+z
+= \sqrt{n \einf(\th_0)} \cdot (\hthml - \th_0)
+\dsim
+N(0, 1)
+$$
+
+and so:
+$$
+\Lambda
+=
+2\paren{\llik(\hthml) - \llik(\th_0)}
+\approx z^2
+\overset{d}{\to}
+\chi^2_1
+$$
+
+**Extension to $q$ constraints.**
+
+For the general case of $q$ constraints
+(comparing a full model with $p$ parameters to a restricted model with $p_0 = p - q$ free parameters),
+the argument proceeds in matrix form.
+The LR statistic is a quadratic form in the score vector at the restricted MLE,
+evaluated against the inverse of the observed information matrix.
+Under $H_0$, this score vector has $q$ non-zero components
+that are approximately jointly normal with the appropriate covariance structure,
+so the resulting quadratic form converges in distribution to $\chi^2_q$.
+
+:::
