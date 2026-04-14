@@ -677,8 +677,19 @@ Still hard to tell if the distribution is Gaussian.
 ### QQ plot of standardized residuals
 
 ::: notes
-Another way to assess normality is the QQ plot of the standardized residuals versus normal quantiles:
+Another way to assess whether the standardized residuals follow a standard normal distribution
+is a **quantile-quantile (QQ) plot**.
 
+A QQ plot compares the empirical distribution of a dataset to a theoretical reference distribution.
+Each point corresponds to one observation:
+
+- The **x-axis** (Theoretical Quantiles) shows the $N(0,1)$ quantile
+  corresponding to the plotting position $p_i = (\text{rank}_i - 0.5) / n$
+  assigned to each observation based on its rank.
+- The **y-axis** (Standardized Residuals) shows the observed standardized residual $r_i$.
+
+If the standardized residuals truly follow $N(0,1)$,
+the points should fall approximately on a straight line.
 :::
 
 ```{r}
@@ -697,7 +708,21 @@ print(qqplot_lm2_auto)
 ```
 
 ::: notes
-If the Gaussian model were correct, these points should follow the dotted line.
+If the Gaussian model were correct, the points should fall approximately on the reference line.
+
+The **reference line** passes through the pairs of theoretical and empirical quantiles
+at probabilities 0.25 and 0.75:
+it connects $(\Phi^{-1}(0.25),\, \hat{Q}_{0.25})$ and $(\Phi^{-1}(0.75),\, \hat{Q}_{0.75})$,
+where $\Phi^{-1}$ is the standard normal quantile function
+and $\hat{Q}_p$ is the $p$-th sample quantile of the standardized residuals.
+If the standardized residuals are truly $N(0,1)$,
+this line approximates the identity line $y = x$.
+
+Systematic deviations from the line suggest departures from normality:
+
+- **S-shaped curves**: heavier or lighter tails than the normal distribution
+- **Concave or convex curves**: skewness
+- **Individual points far from the line**: potential outliers
 
 Fig 2.4 panel (c) in @dobson4e is a little different; they didn't specify how they produced it, but other statistical analysis systems do things differently from R.
 
@@ -710,13 +735,25 @@ See also @dunn2018generalized [§3.5.4](https://link.springer.com/chapter/10.100
 #### QQ plot - how it's built
 
 ::: notes
-Let's construct it by hand:
+To construct a QQ plot by hand:
+
+1. Assign each standardized residual a **plotting position** $p_i$
+   based on its rank among the $n$ observations.
+   R's default formula for $n > 10$ is:
+   $$p_i = \frac{\text{rank}_i - 0.5}{n}$$
+2. Compute the **theoretical quantile**: $q_i = \Phi^{-1}(p_i)$,
+   the value from $N(0,1)$ that corresponds to probability $p_i$.
+3. Plot $(q_i, r_i)$ — theoretical quantile $q_i$ on the x-axis,
+   observed standardized residual $r_i$ (see @def-stred) on the y-axis.
+4. Add the **reference line** through the pairs of theoretical and empirical quantiles
+   at probabilities 0.25 and 0.75.
 :::
 
 ```{r}
 bw <- bw |>
   mutate(
-    p = (rank(std_resid_lm2) - 1 / 2) / n(), # "Blom's method"
+    # plotting position: (rank - 0.5) / n
+    p = (rank(std_resid_lm2) - 1 / 2) / n(),
     expected_quantiles_lm2 = qnorm(p)
   )
 
@@ -737,7 +774,8 @@ qqplot_lm2 <-
   xlab("Theoretical Quantiles") +
   ylab("Standardized residuals")
 
-# find the expected line:
+# find the reference line through the (theoretical, empirical) quantile pairs
+# at probabilities 0.25 and 0.75:
 
 ps <- c(.25, .75) # reference probabilities
 a <- quantile(rstandard(bw_lm2), ps) # empirical quantiles
