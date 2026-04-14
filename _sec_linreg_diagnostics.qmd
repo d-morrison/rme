@@ -733,6 +733,65 @@ See also @dunn2018generalized [§3.5.4](https://link.springer.com/chapter/10.100
 
 ---
 
+#### QQ plot: typical patterns
+
+:::{#fig-qqplot-patterns}
+
+```{r}
+#| fig-height: 5
+#| fig-width: 10
+set.seed(36) # seed chosen for Fig. 3.6 reproduction
+n <- 150     # sample size as in @dunn2018generalized Fig. 3.6
+
+sims <- list(
+  "Right skewed"    = rchisq(n, df = 3),
+  "Left skewed"     = -rchisq(n, df = 3),
+  "Tails too heavy" = rt(n, df = 3),
+  "Tails too light" = runif(n, -sqrt(3), sqrt(3)),
+  "True normal"     = rnorm(n),
+  "Bimodal"         = c(rnorm(n / 2, -2.5), rnorm(n / 2, 2.5))
+)
+
+old_par <- par(
+  mfcol = c(2, 6),
+  mar = c(3, 3, 2, 0.5),
+  oma = c(0, 0, 0, 0)
+)
+
+for (nm in names(sims)) {
+  qqnorm(
+    sims[[nm]],
+    main = nm,
+    xlab = "Theoretical Quantiles",
+    ylab = "Sample Quantiles",
+    pch = 1,
+    cex = 0.6
+  )
+  qqline(sims[[nm]])
+  hist(
+    sims[[nm]],
+    main = "",
+    xlab = "Residuals",
+    ylab = "Frequency",
+    col = "grey70",
+    border = "white",
+    breaks = 15
+  )
+}
+
+par(old_par)
+```
+
+Typical QQ-plot patterns for six types of residual distribution,
+reproduced from @dunn2018generalized [Fig. 3.6]
+using simulated data ($n = 150$).
+Each column shows one distribution scenario:
+a QQ plot (top) paired with a histogram of the simulated data (bottom).
+
+:::
+
+---
+
 #### QQ plot - how it's built
 
 ::: notes
