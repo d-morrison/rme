@@ -118,17 +118,17 @@ Use `\red{...}` and `\blue{...}` purposefully and consistently to help readers:
 
 1. **Focal coefficient**: Use `\red{...}` for the coefficient being interpreted or derived in the current context.
    This draws the reader's eye to the quantity that the surrounding text is about.
-   Example: When deriving that $\beta_A$ is the slope, color it `\red{\beta_A}` throughout the derivation.
+   Example: When deriving that $\b_A$ is the slope, color it `\red{\b_A}` throughout the derivation.
 
 2. **Differences between similar expressions**: When comparing two expressions that differ in certain components,
    use `\red{...}` for the unique/extra term and `\blue{...}` for the shared term.
    This makes it visually clear what cancels and what remains.
-   Example: Male slope $= \blue{\beta_A} + \red{\beta_{AM}}$, female slope $= \blue{\beta_A}$,
-   difference $= \blue{\beta_A} + \red{\beta_{AM}} - \blue{\beta_A} = \red{\beta_{AM}}$.
+   Example: Male slope $= \blue{\b_A} + \red{\b_{AM}}$, female slope $= \blue{\b_A}$,
+   difference $= \blue{\b_A} + \red{\b_{AM}} - \blue{\b_A} = \red{\b_{AM}}$.
 
 3. **Reference level constraints**: In models with interactions, coefficient interpretations are constrained
    to a specific reference level of other covariates.
-   Use `\red{0}` (or `\red{P=0}`, `\red{A=0}`, etc.) to highlight reference levels that constrain an interpretation.
+   Use `\red{0}` (or `\red{P = 0}`, `\red{A = 0}`, etc.) to highlight reference levels that constrain an interpretation.
    Use `\blue{m}` (or the generic variable name) when the interpretation holds for any value.
    This visually distinguishes interaction models (constrained) from additive models (unconstrained).
 
