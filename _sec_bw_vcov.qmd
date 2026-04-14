@@ -15,8 +15,57 @@ Covariance matrix of $\hvb$ for `birthweight` model [-@eq-BW-lm-interact] (with 
 
 :::
 
+#### Interpreting the layout of the covariance matrix
+
+The covariance matrix $\widehat{\Covt}(\hvb)$ is a $p \times p$ symmetric matrix,
+where $p$ is the number of regression coefficients
+(including the intercept, if present).
+Its rows and columns are indexed by the coefficients $\hat\beta_1, \ldots, \hat\beta_p$,
+where $\hat\beta_1$ corresponds to the intercept when one is included.
+
+The general layout is:
+
+$$
+\widehat{\Covt}(\hvb) =
+\begin{array}{c|cccc}
+  & \hat\beta_1 & \hat\beta_2 & \cdots & \hat\beta_p \\
+\hline
+\hat\beta_1 & \Var{\hat\beta_1}             & \Covs{\hat\beta_1}{\hat\beta_2} & \cdots & \Covs{\hat\beta_1}{\hat\beta_p} \\
+\hat\beta_2 & \Covs{\hat\beta_2}{\hat\beta_1} & \Var{\hat\beta_2}             & \cdots & \Covs{\hat\beta_2}{\hat\beta_p} \\
+\vdots      & \vdots                          & \vdots                          & \ddots & \vdots \\
+\hat\beta_p & \Covs{\hat\beta_p}{\hat\beta_1} & \Covs{\hat\beta_p}{\hat\beta_2} & \cdots & \Var{\hat\beta_p}
+\end{array}
+$$
+
+That is:
+
+- The **diagonal** entries are the **variances** of the individual coefficient estimates:
+  $\widehat{\Covt}(\hvb)_{jj} = \Var{\hat\beta_j}$.
+- The **off-diagonal** entries are the **covariances** between pairs of coefficient estimates:
+  $\widehat{\Covt}(\hvb)_{ij} = \Covs{\hat\beta_i}{\hat\beta_j}$ for $i \neq j$.
+- The matrix is **symmetric**: $\Covs{\hat\beta_i}{\hat\beta_j} = \Covs{\hat\beta_j}{\hat\beta_i}$.
+
+#### Schematic for the birthweight model
+
+For model [-@eq-BW-lm-interact],
+which has four coefficients
+$(\hat\b_0, \hat\b_M, \hat\b_A, \hat\b_{AM})$,
+the covariance matrix has the following layout:
+
+$$
+\widehat{\Covt}(\hvb) =
+\begin{array}{c|cccc}
+  & \hat\b_0 & \hat\b_M & \hat\b_A & \hat\b_{AM} \\
+\hline
+\hat\b_0   & \Var{\hat\b_0}                & \Covs{\hat\b_0}{\hat\b_M}    & \Covs{\hat\b_0}{\hat\b_A}    & \Covs{\hat\b_0}{\hat\b_{AM}}    \\
+\hat\b_M   & \Covs{\hat\b_M}{\hat\b_0}    & \Var{\hat\b_M}               & \Covs{\hat\b_M}{\hat\b_A}    & \Covs{\hat\b_M}{\hat\b_{AM}}    \\
+\hat\b_A   & \Covs{\hat\b_A}{\hat\b_0}    & \Covs{\hat\b_A}{\hat\b_M}    & \Var{\hat\b_A}               & \Covs{\hat\b_A}{\hat\b_{AM}}    \\
+\hat\b_{AM}& \Covs{\hat\b_{AM}}{\hat\b_0} & \Covs{\hat\b_{AM}}{\hat\b_M} & \Covs{\hat\b_{AM}}{\hat\b_A} & \Var{\hat\b_{AM}}
+\end{array}
+$$
+
 ::: notes
-If we take the square roots of the diagonals, we get the standard errors listed in the model output:
+The square roots of the diagonal entries give the standard errors of the coefficient estimates:
 :::
 
 ```{r}
