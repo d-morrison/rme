@@ -171,9 +171,13 @@ format:
     include-in-header:
       text: |
         \newcounter{chapter}
+        \renewcommand{\thechapter}{\arabic{section}}
         \usepackage{etoolbox}
-        \pretocmd{\section}{\stepcounter{chapter}}{}{}
-        \AtBeginDocument{\setcounter{chapter}{0}}
+        \makeatletter
+        \AtBeginDocument{%
+          \let\quarto@cl@chapter\cl@chapter
+          \appto\cl@section{\quarto@cl@chapter}}
+        \makeatother
 crossref:
   chapters: true
 comments:
