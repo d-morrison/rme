@@ -112,6 +112,34 @@ Always check `latex-macros/macros.qmd` for available macros before writing raw L
   use `\tp{(\vxs)}` not `\tp{\vxs}`.
   This avoids LaTeX "Double superscript" errors.
 
+## Color Coding Strategy for Math Expressions
+
+Use `\red{...}` and `\blue{...}` purposefully and consistently to help readers:
+
+1. **Focal coefficient**: Use `\red{...}` for the coefficient being interpreted or derived in the current context.
+   This draws the reader's eye to the quantity that the surrounding text is about.
+   Example: When deriving that $\b_A$ is the slope, color it `\red{\b_A}` throughout the derivation.
+
+2. **Differences between similar expressions**: When comparing two expressions that differ in certain components,
+   use `\red{...}` for the unique/extra term and `\blue{...}` for the shared term.
+   This makes it visually clear what cancels and what remains.
+   Example: Male slope $= \blue{\b_A} + \red{\b_{AM}}$, female slope $= \blue{\b_A}$,
+   difference $= \blue{\b_A} + \red{\b_{AM}} - \blue{\b_A} = \red{\b_{AM}}$.
+
+3. **Reference level constraints**: In models with interactions, coefficient interpretations are constrained
+   to a specific reference level of other covariates.
+   Use `\red{0}` (or `\red{P = 0}`, `\red{A = 0}`, etc.) to highlight reference levels that constrain an interpretation.
+   Use `\blue{m}` (or the generic variable name) when the interpretation holds for any value.
+   This visually distinguishes interaction models (constrained) from additive models (unconstrained).
+
+4. **Chain rule components**: When applying the chain rule, use `\red{...}` for the first factor
+   and `\blue{...}` for the second factor.
+   This connects the factored form to the simplified form on the next line.
+
+5. **Connected components across equations**: When a term is defined in one equation and expanded
+   or substituted in another, use the same color for the term and its expansion.
+   This creates a visual link between the definition and its use.
+
 ## Math Derivations
 
 Include as many intermediate steps as possible in math derivations.
