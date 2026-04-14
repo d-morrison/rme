@@ -93,7 +93,50 @@ Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
 
-## Math Notation
+## Figures and Tables: Use Div Format
+
+Always use the **Quarto div format** for figures and tables rather than chunk-option `fig-cap`/`tbl-cap`.
+The div format makes it easier to write and format multi-sentence captions.
+
+**Correct** (div format):
+```qmd
+::: {#fig-my-figure}
+
+```{r}
+plot(x, y)
+```
+
+Caption text here.
+This can span multiple lines and include *markdown*.
+
+:::
+```
+
+**Correct** (div format for tables):
+```qmd
+::: {#tbl-my-table}
+
+```{r}
+my_table
+```
+
+Caption text here.
+
+:::
+```
+
+**Incorrect** (chunk option format):
+```qmd
+```{r}
+#| label: fig-my-figure
+#| fig-cap: "Caption text here."
+plot(x, y)
+```
+```
+
+This applies to all new figures and tables in `.qmd` files.
+
+
 
 This repository uses custom LaTeX macros defined in `latex-macros/macros.qmd` (a git submodule).
 Always use the custom macros instead of raw LaTeX equivalents.

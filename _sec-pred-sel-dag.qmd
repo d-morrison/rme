@@ -82,14 +82,9 @@ The main causal question is:
 
 > What is the effect of hormone therapy (HT) on recurrent CHD events?
 
+::: {#fig-hers-dag}
+
 ```{r}
-#| label: fig-hers-dag
-#| fig-cap: "Directed Acyclic Graph (DAG) for the HERS study.
-#|   `HT` = hormone therapy (exposure);
-#|   `CHD` = recurrent coronary heart disease events (outcome);
-#|   `HDL` = high-density lipoprotein;
-#|   `LDL` = low-density lipoprotein;
-#|   `SBP` = systolic blood pressure."
 #| fig-width: 7
 #| fig-height: 5
 
@@ -112,7 +107,6 @@ hers_dag <- dagitty(
     HT -> HDL
     HT -> LDL
     age -> CHD
-    age -> HT
     smoking -> CHD
     smoking -> HDL
     BMI -> CHD
@@ -131,11 +125,22 @@ hers_dag <- dagitty(
 plot(hers_dag)
 ```
 
+Directed Acyclic Graph (DAG) for the HERS study.
+`HT` = hormone therapy (exposure);
+`CHD` = recurrent coronary heart disease events (outcome);
+`HDL` = high-density lipoprotein;
+`LDL` = low-density lipoprotein;
+`SBP` = systolic blood pressure.
+
+:::
+
 In @fig-hers-dag:
 
-- **`age`** is a confounder:
-older women were more likely to have CHD events and
-may differ in their hormone therapy assignment.
+- **`age`** is prognostic for CHD:
+older women are at higher risk of CHD events.
+Since HT was randomized in HERS,
+age is not a confounder of the HT → CHD relationship,
+but adjusting for age can improve precision.
 - **`LDL`** and **`HDL`** are *mediators*:
 hormone therapy affects lipid levels,
 which in turn affect CHD risk.
@@ -163,9 +168,10 @@ adjustmentSets(
 
 ::: notes
 
-According to the DAG in @fig-hers-dag,
-adjusting for `age` alone is sufficient to close all backdoor paths
-from HT to CHD.
+Since HT was randomized in HERS,
+there are no backdoor paths from HT to CHD.
+The `adjustmentSets()` function confirms that no adjustment is needed
+to estimate the total causal effect of HT on CHD.
 
 The variables `LDL` and `HDL` are mediators on the path
 HT → LDL/HDL → CHD,
@@ -210,9 +216,9 @@ hers_ldl <-
   )
 ```
 
+::: {#tbl-hers-ldl-full}
+
 ```{r}
-#| label: tbl-hers-ldl-full
-#| tbl-cap: "Summary table for LDL analysis variables in HERS"
 
 library(gtsummary)
 
@@ -223,11 +229,15 @@ hers_ldl |>
   bold_labels()
 ```
 
+Summary table for LDL analysis variables in HERS
+
+:::
+
 #### Unadjusted model
 
+::: {#tbl-hers-ldl-unadj}
+
 ```{r}
-#| label: tbl-hers-ldl-unadj
-#| tbl-cap: "Unadjusted linear regression for LDL in HERS"
 
 model_ldl_unadj <-
   lm(LDL ~ HT, data = hers_ldl)
@@ -236,6 +246,10 @@ model_ldl_unadj |>
   tbl_regression() |>
   bold_labels()
 ```
+
+Unadjusted linear regression for LDL in HERS
+
+:::
 
 #### Adjusted model
 
@@ -250,9 +264,9 @@ so confounding adjustment is not required to estimate the causal effect.
 However, adjusting for strong predictors of the outcome
 can improve precision.
 
+::: {#tbl-hers-ldl-adj}
+
 ```{r}
-#| label: tbl-hers-ldl-adj
-#| tbl-cap: "Adjusted linear regression for LDL in HERS"
 
 model_ldl_adj <-
   lm(LDL ~ HT + age + BMI + diabetes + statins, data = hers_ldl)
@@ -261,6 +275,10 @@ model_ldl_adj |>
   tbl_regression() |>
   bold_labels()
 ```
+
+Adjusted linear regression for LDL in HERS
+
+:::
 
 Note that `statins` is a strong predictor of LDL
 (statin medications are prescribed specifically to lower LDL).
