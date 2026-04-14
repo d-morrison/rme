@@ -1,0 +1,151 @@
+
+(adapted from @dobson4e §6.3.3; for more information on prediction, see @james2013introduction and @rms2e).
+
+::: notes
+If we have a lot of covariates in our dataset, we might want to choose a small subset to use in our model.
+
+There are a few possible metrics to consider for choosing a "best" model.
+:::
+
+### Mean squared error
+
+We might want to minimize the **mean squared error**, $\text E[(y-\hat y)^2]$, for new observations that weren't in our data set when we fit the model.
+
+Unfortunately, $$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$ gives a biased estimate of $\text E[(y-\hat y)^2]$ for new data. If we want an unbiased estimate, we will have to be clever.
+
+---
+
+#### Cross-validation
+
+```{r}
+data("carbohydrate", package = "dobson")
+library(cvTools)
+full_model <- lm(carbohydrate ~ ., data = carbohydrate)
+cv_full <-
+  full_model |> cvFit(
+    data = carbohydrate, K = 5, R = 10,
+    y = carbohydrate$carbohydrate
+  )
+
+reduced_model <- full_model |> update(formula = ~ . - age)
+
+cv_reduced <-
+  reduced_model |> cvFit(
+    data = carbohydrate, K = 5, R = 10,
+    y = carbohydrate$carbohydrate
+  )
+```
+
+---
+
+```{r}
+results_reduced <-
+  tibble(
+    model = "wgt+protein",
+    errs = cv_reduced$reps[]
+  )
+results_full <-
+  tibble(
+    model = "wgt+age+protein",
+    errs = cv_full$reps[]
+  )
+
+cv_results <-
+  bind_rows(results_reduced, results_full)
+
+cv_results |>
+  ggplot(aes(y = model, x = errs)) +
+  geom_boxplot()
+```
+
+---
+
+##### comparing metrics
+
+```{r}
+compare_results <- tribble(
+  ~model, ~cvRMSE, ~r.squared, ~adj.r.squared, ~trainRMSE, ~loglik,
+  "full",
+  cv_full$cv,
+  summary(full_model)$r.squared,
+  summary(full_model)$adj.r.squared,
+  sigma(full_model),
+  logLik(full_model) |> as.numeric(),
+  "reduced",
+  cv_reduced$cv,
+  summary(reduced_model)$r.squared,
+  summary(reduced_model)$adj.r.squared,
+  sigma(reduced_model),
+  logLik(reduced_model) |> as.numeric()
+)
+
+compare_results
+```
+
+---
+
+```{r}
+anova(full_model, reduced_model)
+```
+
+---
+
+#### stepwise regression
+
+::: {.callout-warning}
+## Caution about stepwise selection
+
+Stepwise regression has several known problems:
+
+- It tends to select too many variables (overfitting)
+- P-values and confidence intervals are biased after selection
+- It ignores model uncertainty
+- Results can be unstable across different samples
+
+Consider using cross-validation, penalized methods (like Lasso), 
+or subject-matter knowledge instead.
+See @rms2e and @heinze2018variable for more discussion.
+:::
+
+```{r}
+library(olsrr)
+olsrr:::ols_step_both_aic(full_model)
+```
+
+---
+
+#### Lasso
+
+$$\am_{\theta} \cb{\llik(\th) - \lambda \sum_{j=1}^p|\beta_j|}$$
+
+```{r}
+library(glmnet)
+y <- carbohydrate$carbohydrate
+x <- carbohydrate |>
+  select(age, weight, protein) |>
+  as.matrix()
+fit <- glmnet(x, y)
+```
+
+---
+
+```{r}
+#| fig-cap: "Lasso selection"
+#| label: fig-carbs-lasso
+autoplot(fit, xvar = "lambda")
+```
+
+---
+
+```{r}
+cvfit <- cv.glmnet(x, y)
+plot(cvfit)
+```
+
+---
+
+```{r}
+coef(cvfit, s = "lambda.1se")
+```
+
+

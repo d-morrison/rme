@@ -54,6 +54,14 @@ jobs:
           R CMD INSTALL .
         shell: bash
 
+      - name: Cache Quarto freeze
+        uses: actions/cache@v4
+        with:
+          path: _freeze
+          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          restore-keys: |
+            quarto-freeze-${{ runner.os }}-
+
       - name: Render
         if: github.event.action != 'closed' # skip the build if the PR has been closed
         uses: quarto-dev/quarto-actions/render@v2
