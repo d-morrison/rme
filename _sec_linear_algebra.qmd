@@ -1,0 +1,414 @@
+## Vectors
+
+:::{#def-column-vector}
+#### Column vector
+
+A **column vector** of length $p$ is an ordered list of $p$ numbers,
+written vertically:
+
+$$
+\vx =
+\begin{bmatrix}
+x_{1} \\
+x_{2} \\
+\vdots \\
+x_{p}
+\end{bmatrix}
+$$
+
+:::
+
+::: notes
+Column vectors are the default convention in these notes and in most statistics textbooks.
+They are also called *$p \times 1$ matrices*.
+:::
+
+---
+
+:::{#def-transpose}
+#### Transpose
+
+The **transpose** of a column vector $\vx$ is the **row vector**
+with the same sequence of entries, written horizontally:
+
+$$
+\tp{\vx} \equiv \vx' \equiv [x_1,\; x_2,\; \ldots,\; x_p]
+$$
+
+:::
+
+::: notes
+The transpose operation converts a column vector to a row vector,
+or more generally, swaps the rows and columns of a matrix
+(@def-matrix-transpose).
+:::
+
+---
+
+{{< include _def_lincom.qmd >}}
+
+---
+
+:::{#exm-dot-product-matmul}
+#### Dot product as matrix multiplication
+
+The dot product of two column vectors $\vx$ and $\vb$
+can be written as a matrix product of the row vector $\tp{\vx}$
+with the column vector $\vb$:
+
+$$
+\begin{aligned}
+\vx \cdot \vb
+&= \tp{\vx}\, \vb
+\\ &= [x_1,\; x_2,\; \ldots,\; x_p]
+\begin{bmatrix}
+\beta_{1} \\
+\beta_{2} \\
+\vdots \\
+\beta_{p}
+\end{bmatrix}
+\\ &=
+x_1\beta_1 + x_2\beta_2 + \cdots + x_p \beta_p
+\end{aligned}
+$$
+
+:::
+
+---
+
+## Matrices
+
+:::{#def-matrix}
+#### Matrix
+
+A **matrix** of dimensions $m \times n$
+is a rectangular array of $m \cdot n$ numbers,
+arranged in $m$ rows and $n$ columns:
+
+$$
+\matr{A} =
+\begin{bmatrix}
+a_{11} & a_{12} & \cdots & a_{1n} \\
+a_{21} & a_{22} & \cdots & a_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1} & a_{m2} & \cdots & a_{mn}
+\end{bmatrix}
+$$
+
+:::
+
+::: notes
+The entry in row $i$ and column $j$ is denoted $a_{ij}$
+or $(\matr{A})_{ij}$.
+A column vector of length $p$ is a special case: a $p \times 1$ matrix.
+A row vector of length $p$ is a $1 \times p$ matrix.
+:::
+
+---
+
+### Matrix transpose {#sec-matrix-transpose}
+
+:::{#def-matrix-transpose}
+#### Matrix transpose
+
+The **transpose** of an $m \times n$ matrix $\matr{A}$
+is the $n \times m$ matrix $\tp{\matr{A}}$ obtained by
+swapping the rows and columns of $\matr{A}$:
+
+$$(\tp{\matr{A}})_{ij} = a_{ji}$$
+
+:::
+
+---
+
+:::{#thm-transpose-sum}
+#### Transpose of a sum
+
+$$\tp{(\matr{A} + \matr{B})} = \tp{\matr{A}} + \tp{\matr{B}}$$
+
+In particular, for column vectors $\vx$ and $\vy$:
+
+$$\tp{(\vx + \vy)} = \tp{\vx} + \tp{\vy}$$
+
+:::
+
+---
+
+:::{#thm-transpose-product}
+#### Transpose of a product
+
+For compatible matrices $\matr{A}$ and $\matr{B}$:
+
+$$\tp{(\matr{A}\matr{B})} = \tp{\matr{B}}\,\tp{\matr{A}}$$
+
+:::
+
+::: notes
+The order of the factors reverses when transposing a product.
+:::
+
+---
+
+### Matrix addition
+
+:::{#def-matrix-addition}
+#### Matrix addition
+
+Two matrices $\matr{A}$ and $\matr{B}$ of the same dimensions $m \times n$
+can be added element-wise:
+
+$$(\matr{A} + \matr{B})_{ij} = a_{ij} + b_{ij}$$
+
+:::
+
+---
+
+### Scalar multiplication
+
+:::{#def-scalar-mult}
+#### Scalar multiplication
+
+A matrix $\matr{A}$ can be multiplied by a scalar $c$:
+
+$$(c\matr{A})_{ij} = c \cdot a_{ij}$$
+
+:::
+
+---
+
+### Matrix multiplication
+
+:::{#def-matrix-mult}
+#### Matrix multiplication
+
+The **product** of an $m \times k$ matrix $\matr{A}$
+and a $k \times n$ matrix $\matr{B}$
+is the $m \times n$ matrix $\matr{C} = \matr{A}\matr{B}$ with entries:
+
+$$c_{ij} = \sum_{l=1}^{k} a_{il}\, b_{lj}$$
+
+:::
+
+::: notes
+Matrix multiplication is only defined when the number of columns in
+$\matr{A}$ equals the number of rows in $\matr{B}$.
+
+Matrix multiplication is **not** commutative in general:
+$\matr{A}\matr{B} \neq \matr{B}\matr{A}$.
+:::
+
+---
+
+:::{#thm-matmul-assoc}
+#### Matrix multiplication is associative
+
+$$(\matr{A}\matr{B})\matr{C} = \matr{A}(\matr{B}\matr{C})$$
+
+:::
+
+---
+
+:::{#thm-matmul-distrib}
+#### Matrix multiplication is distributive over addition
+
+$$\matr{A}(\matr{B} + \matr{C}) = \matr{A}\matr{B} + \matr{A}\matr{C}$$
+
+$$(\matr{A} + \matr{B})\matr{C} = \matr{A}\matr{C} + \matr{B}\matr{C}$$
+
+:::
+
+---
+
+### Matrix-vector multiplication
+
+:::{#def-matvec-mult}
+#### Matrix-vector multiplication
+
+The product of an $m \times p$ matrix $\matr{A}$
+and a $p \times 1$ column vector $\vx$
+is the $m \times 1$ column vector $\matr{A}\vx$ with entries:
+
+$$(\matr{A}\vx)_i = \sum_{j=1}^{p} a_{ij}\, x_j$$
+
+:::
+
+::: notes
+Matrix-vector multiplication is a generalization of the dot product.
+Each entry of the result is a dot product of a row of $\matr{A}$
+with the vector $\vx$.
+:::
+
+---
+
+## Special Matrices
+
+:::{#def-identity-matrix}
+#### Identity matrix
+
+The $p \times p$ **identity matrix** $\matr{I}_p$
+(or $\matr{I}$ when the size is clear from context)
+has ones on the main diagonal and zeros elsewhere:
+
+$$
+(\matr{I}_p)_{ij} =
+\begin{cases}
+1 & \text{if } i = j \\
+0 & \text{if } i \neq j
+\end{cases}
+$$
+
+:::
+
+:::{#thm-identity}
+#### Identity matrix is a multiplicative identity
+
+For any $m \times p$ matrix $\matr{A}$:
+
+$$\matr{A}\,\matr{I}_p = \matr{A}$$
+
+$$\matr{I}_m\,\matr{A} = \matr{A}$$
+
+:::
+
+---
+
+:::{#def-symmetric-matrix}
+#### Symmetric matrix
+
+A square matrix $\matr{A}$ is **symmetric** if
+$\tp{\matr{A}} = \matr{A}$,
+i.e., $a_{ij} = a_{ji}$ for all $i$ and $j$.
+
+:::
+
+::: notes
+Covariance matrices and information matrices are symmetric.
+:::
+
+---
+
+:::{#def-diagonal-matrix}
+#### Diagonal matrix
+
+A square matrix $\matr{D}$ is a **diagonal matrix**
+if all off-diagonal entries are zero:
+$d_{ij} = 0$ whenever $i \neq j$.
+
+:::
+
+::: notes
+Diagonal matrices are denoted $\matr{D} = \text{diag}(d_1, d_2, \ldots, d_p)$,
+where $d_1, \ldots, d_p$ are the diagonal entries.
+:::
+
+---
+
+:::{#def-matrix-inverse}
+#### Matrix inverse
+
+For a square $p \times p$ matrix $\matr{A}$,
+the **inverse** $\matr{A}^{-1}$ (if it exists) is the unique matrix satisfying:
+
+$$\matr{A}\,\matr{A}^{-1} = \matr{A}^{-1}\,\matr{A} = \matr{I}_p$$
+
+:::
+
+::: notes
+A matrix that has an inverse is called **invertible** or **non-singular**.
+:::
+
+---
+
+:::{#thm-inverse-product}
+#### Inverse of a product
+
+For invertible matrices $\matr{A}$ and $\matr{B}$:
+
+$$(\matr{A}\matr{B})^{-1} = \matr{B}^{-1}\matr{A}^{-1}$$
+
+:::
+
+---
+
+## Quadratic Forms
+
+:::{#def-quadratic-form}
+#### Quadratic form
+
+A **quadratic form** is a mathematical expression of the structure
+
+$$\tp{\vx}\, \matr{S}\, \vx$$
+
+where $\vx$ is a $p \times 1$ vector
+and $\matr{S}$ is a $p \times p$ matrix.
+
+:::
+
+::: notes
+Quadratic forms are the matrix generalizations of the scalar expression $c x^2$.
+They occur frequently in statistics:
+
+- The residual sum of squares in linear regression
+  (@sec-vector-calculus) is a quadratic form.
+- The variance of a linear combination of estimates
+  (@sec-linreg-inference) is a quadratic form:
+  $\Var{\tp{\vx}\hat{\vb}} = \tp{\vx}\,\Var{\hat{\vb}}\,\vx$.
+:::
+
+---
+
+:::{#thm-quadratic-form-symmetric}
+#### Quadratic form with a symmetric matrix
+
+If $\matr{S}$ is symmetric, the quadratic form $\tp{\vx}\matr{S}\vx$
+is a scalar (a $1 \times 1$ matrix).
+
+:::
+
+---
+
+## Design Matrix
+
+:::{#def-design-matrix}
+#### Design matrix
+
+In a regression model with $n$ observations and $p$ predictors,
+the **design matrix** (or **model matrix**) $\mX$
+is the $n \times p$ matrix whose $i$-th row is the covariate vector $\tp{\vx_i}$
+for observation $i$:
+
+$$
+\mX =
+\begin{bmatrix}
+\tp{\vx_1} \\
+\tp{\vx_2} \\
+\vdots \\
+\tp{\vx_n}
+\end{bmatrix}
+=
+\begin{bmatrix}
+x_{11} & x_{12} & \cdots & x_{1p} \\
+x_{21} & x_{22} & \cdots & x_{2p} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{n1} & x_{n2} & \cdots & x_{np}
+\end{bmatrix}
+$$
+
+:::
+
+::: notes
+The product $\mX\vb$ collects all the linear predictors
+$\tp{\vx_i}\vb$ into a single $n \times 1$ vector:
+
+$$
+\mX\vb =
+\begin{bmatrix}
+\tp{\vx_1}\vb \\
+\vdots \\
+\tp{\vx_n}\vb
+\end{bmatrix}
+$$
+
+The matrix $\tp{\mX}\mX$ is a $p \times p$ symmetric matrix
+that appears in the OLS estimator $\hat{\vb} = (\tp{\mX}\mX)^{-1}\tp{\mX}\vy$.
+:::
