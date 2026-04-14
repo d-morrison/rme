@@ -1,0 +1,157 @@
+{{< include latex-macros/macros.qmd >}}
+
+### Evaluating a predictor of primary interest {#sec-pred-sel-eval-primary}
+
+::: notes
+
+When the goal is to estimate the causal effect of
+a specific exposure on an outcome,
+the central challenge in observational data is **confounding**.
+Relatively inclusive models — those including more potential confounders —
+are better at minimizing confounding bias.
+
+:::
+
+The following principles guide predictor selection for this goal.
+
+### Including predictors for face validity {#sec-pred-sel-face-validity}
+
+Some predictors are such well-established causal antecedents of the outcome
+that they should be included regardless of their statistical significance
+in the current data.
+This ensures the **face validity** of the model:
+readers and reviewers can be confident that obvious confounders
+have been accounted for.
+
+For example, age and smoking are established CHD risk factors
+and would be included in any model for CHD outcomes,
+even if they are not statistically significant in a small sample.
+
+### Selecting confounders on statistical grounds {#sec-pred-sel-confounders}
+
+In addition to variables included for face validity,
+we may consider other potential confounders
+identified in previous studies or on substantive grounds.
+
+A practical approach is **backward selection with a liberal criterion**:
+
+1. Start with a full model including all pre-specified candidates.
+2. At each step, remove the predictor with the largest p-value,
+   provided it exceeds a liberal threshold (e.g., $p > 0.2$).
+3. Stop when all remaining predictors meet the retention criterion.
+
+The liberal threshold ($p > 0.2$ rather than $p > 0.05$)
+is important for confounding control:
+in small samples, even important confounders may have large p-values,
+and removing them could introduce bias.
+
+An alternative retention criterion is the
+**10% change-in-estimate rule**:
+retain a variable if removing it changes the coefficient
+for the primary predictor by more than 10–15%.
+
+::: {.callout-note}
+# Collinearity between confounders is not a problem
+
+Unlike collinearity between a predictor of primary interest
+and other covariates (which inflates its standard error),
+collinearity *among* adjustment variables does not affect
+the precision of the primary predictor's estimate.
+Thus, two collinear confounders can both be retained
+if both are judged necessary on substantive grounds.
+:::
+
+### Example: backward selection for CHD confounders {#sec-pred-sel-backward-hers}
+
+In the HERS data, we can use backward selection
+to identify which baseline covariates confound
+the effect of hormone therapy on LDL.
+Since HT was randomized in HERS,
+adjustment is needed for precision, not confounding;
+but this illustrates the procedure.
+
+```{r}
+#| label: backward-ldl-hers
+
+library(MASS)
+
+full_model <- lm(
+  LDL ~ HT + age + BMI + diabetes + smoking + statins + SBP,
+  data = hers_ldl
+)
+
+# Backward selection using AIC
+back_model <- stepAIC(full_model, direction = "backward", trace = FALSE)
+summary(back_model)
+```
+
+::: notes
+
+The backward selection procedure retains the predictors that
+most improve model fit according to AIC.
+In this setting, since HT was randomized,
+we interpret the selected set as prognostic covariates
+that improve precision of the HT estimate,
+not as confounders.
+
+:::
+
+### Interactions with the primary predictor {#sec-pred-sel-interactions}
+
+A useful check on the validity of the selected model is to test
+for **interactions** between the primary predictor and
+key covariates.
+Particularly for novel findings,
+showing that the association is consistent across subgroups
+strengthens credibility.
+
+::: notes
+
+If a substantial and biologically plausible interaction is found,
+the analysis must account for it.
+However, exploratory interaction tests are susceptible to
+false-positive findings,
+and unexpected interactions should be interpreted cautiously.
+
+:::
+
+### Randomized experiments {#sec-pred-sel-rct}
+
+In randomized trials, participants are allocated to treatment randomly,
+so the treatment indicator is by design uncorrelated
+with pre-treatment covariates in expectation.
+Confounding adjustment is therefore **not required** for causal inference.
+
+However, there are several reasons to include covariates
+in trial analyses:
+
+1. **Improving precision** (continuous outcomes).
+   Adjusting for strong predictors of the outcome
+   reduces residual variance and tightens the treatment effect estimate.
+   Because treatment is uncorrelated with the covariates by randomization,
+   variance inflation is negligible.
+
+2. **De-attenuation** (binary and survival outcomes).
+   In logistic and Cox models,
+   omitting important predictors attenuates the treatment effect estimate.
+   Adjusting for them moves the estimate closer to the true subject-specific effect.
+
+3. **Accounting for stratified designs**.
+   In stratified or cluster-randomized trials,
+   including stratification variables in the model
+   yields correct standard errors and p-values.
+
+4. **Correcting for chance imbalances**.
+   In small trials, randomization may leave residual imbalance
+   in important prognostic covariates.
+   Adjusted analyses demonstrate that the main inference
+   is not materially affected by any such imbalance.
+
+::: {.callout-note}
+# Pre-specification is important in trials
+
+Adjusted analyses in clinical trials should ideally be
+**pre-specified in the study protocol**,
+to prevent post-hoc selection of covariates
+that minimize the treatment effect p-value.
+:::

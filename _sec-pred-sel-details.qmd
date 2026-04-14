@@ -1,0 +1,189 @@
+{{< include latex-macros/macros.qmd >}}
+
+### Collinearity {#sec-pred-sel-collinearity}
+
+:::{#def-collinearity}
+#### Collinearity
+
+**Collinearity** refers to high correlation between predictors,
+sufficient to substantially degrade the precision of
+one or more regression coefficient estimates.
+
+:::
+
+When two predictors are highly correlated,
+each appears unimportant in the model adjusting for the other,
+even if both are statistically significant in simpler models.
+The joint F-test for both predictors may be highly significant,
+while the individual t-tests are not.
+
+How we handle collinearity depends on the inferential goal:
+
+- **Prediction**: If including both collinear predictors reduces PE,
+  include both.
+  Cross-validation determines whether each contributes.
+
+- **Evaluating a primary predictor**: If the primary predictor
+  remains statistically significant after adjusting for a collinear confounder,
+  the evidence for an independent effect is convincing.
+  If collinearity with a *required* confounder inflates the primary
+  predictor's standard error,
+  we may need to accept reduced precision or
+  present sensitivity analyses.
+
+- **Collinearity among confounders**: Does not affect
+  the precision of the primary predictor's estimate.
+  Both variables can be retained if needed for confounding control.
+
+- **Identifying multiple predictors**: Choose among collinear variables
+  on substantive grounds (causal plausibility, measurement quality,
+  fewer missing values).
+
+#### Variance inflation factor {#sec-pred-sel-vif}
+
+The **variance inflation factor (VIF)** for predictor $j$ measures
+how much its variance is inflated by correlation with other predictors:
+
+$$\text{VIF}_j = \frac{1}{1 - R_j^2}$$
+
+where $R_j^2$ is the $R^2$ from regressing $x_j$ on all other predictors.
+
+A VIF $> 10$ (or equivalently, $R_j^2 > 0.9$) indicates
+problematic collinearity.
+
+```{r}
+#| label: vif-hers
+
+library(car)
+
+model_full <- lm(
+  LDL ~ HT + age + BMI + diabetes + smoking + statins + SBP,
+  data = hers_ldl
+)
+vif(model_full)
+```
+
+::: notes
+
+VIFs close to 1 indicate minimal collinearity.
+In the HERS LDL model,
+we expect relatively modest collinearity among the predictors,
+since they represent distinct pathways (see @fig-hers-dag).
+
+:::
+
+### Number of predictors {#sec-pred-sel-epv}
+
+A widely used rule of thumb specifies a minimum number of
+observations (or events) per predictor:
+
+- **Linear models**: at least 10 observations per predictor.
+- **Logistic and Cox models**: at least 10 events per predictor (EPV).
+
+This guideline exists because with too many parameters
+relative to information in the data,
+coefficient estimates become imprecise and logistic/Cox models
+can behave poorly (e.g., converge to extreme estimates).
+
+::: {.callout-note}
+# The EPV rule is a flag, not a hard limit
+
+The precision of estimates depends on more than just the EPV:
+residual variance, effect size, and correlations among predictors
+all matter.
+Adding covariates that are weakly correlated with the primary predictor
+but explain substantial outcome variance can *improve* precision.
+Conversely, adding a single collinear covariate can degrade it severely.
+:::
+
+The rule is best used as a **warning flag**:
+if the EPV falls below 10,
+check whether the standard errors are unusually large,
+and whether Wald and likelihood ratio test p-values
+give consistent results.
+If problems are detected, tighten the backward selection criterion
+(e.g., to $p < 0.15$ or $p < 0.10$)
+and verify that a more parsimonious model gives consistent results.
+
+### Alternatives to backward selection {#sec-pred-sel-alts}
+
+The main alternatives to backward selection are:
+
+- **Best subsets**: screens all possible subsets of candidate predictors
+  and selects the model minimizing a summary measure
+  (adjusted $R^2$, AIC, or a cross-validated PE measure).
+  Computationally intensive for large sets of predictors.
+
+- **Forward selection**: starts with an empty model and adds
+  the predictor providing the greatest improvement at each step.
+  More prone to missing *negatively confounded* sets of variables
+  (sets where no member appears important unless all are included).
+
+- **Stepwise selection**: augments forward selection by
+  also allowing previously added variables to be removed.
+  Better than pure forward but still misses some models
+  that backward selection would find.
+
+- **Bivariate screening**: evaluates each candidate predictor
+  individually before multivariable modeling.
+  Convenient but shares the limitation of forward selection.
+
+::: {.callout-note}
+# Why backward selection is preferred
+
+Backward selection begins with the full set of candidates,
+so it is **less likely to miss negatively confounded sets** of variables —
+groups of variables that appear unimportant individually
+but are jointly important.
+Forward and stepwise selection will only include such sets
+if at least one member passes the inclusion criterion on its own.
+:::
+
+### Model selection complicates inference {#sec-pred-sel-inference}
+
+When predictors are selected from the data,
+the p-values and confidence intervals computed as if the model
+were pre-specified are no longer valid.
+
+Specific problems include:
+
+- **Inflated type-I error**: searching over many models
+  greatly increases the chance of at least one spurious finding.
+- **Testimation bias**: selected predictors tend to have
+  overstated estimated effects,
+  because we select those that appear large by chance.
+- **Biased CIs**: confidence intervals are too narrow
+  because they do not account for model uncertainty.
+
+How much these issues matter depends on the inferential goal:
+
+- **Prediction** (Goal 1):
+  Cross-validation of a PE measure protects against overfitting
+  without relying on p-values,
+  so inference is least affected.
+
+- **Evaluating a primary predictor** (Goal 2):
+  The primary predictor is included by default in all candidate models,
+  so its estimate is relatively unaffected by selection.
+  Post-selection inference is most problematic
+  when the primary predictor is of borderline significance.
+
+- **Identifying multiple predictors** (Goal 3):
+  Selection most severely complicates inference here,
+  since p-values for all retained predictors are of direct interest.
+  Careful pre-specification, use of inclusive models,
+  and the Allen–Cady procedure (see @sec-pred-sel-allen-cady)
+  reduce, but do not eliminate, this problem.
+
+::: {.callout-tip}
+# Best practices for reporting
+
+When selection procedures are used:
+
+1. Report the **full candidate predictor list**.
+2. Report the **selection criterion and procedure** used.
+3. Interpret **novel, weak, and borderline significant** findings
+   with explicit caution.
+4. Examine **alternative models** with different predictor subsets
+   and report consistency of key results.
+:::

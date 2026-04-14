@@ -22,9 +22,25 @@ This content is adapted from:
 
 {{< include _sec-pred-sel-overview.qmd >}}
 
+# Inferential Goals {#sec-pred-sel-goals-chapter}
+
+{{< include _sec-pred-sel-goals.qmd >}}
+
+# Prediction {#sec-pred-sel-prediction}
+
+{{< include _sec-pred-sel-prediction.qmd >}}
+
 # Causal Thinking and DAGs {#sec-pred-sel-causal}
 
 {{< include _sec-pred-sel-dag.qmd >}}
+
+# Evaluating a Predictor of Primary Interest {#sec-pred-sel-eval}
+
+{{< include _sec-pred-sel-primary.qmd >}}
+
+# Identifying Multiple Important Predictors {#sec-pred-sel-multiple-chapter}
+
+{{< include _sec-pred-sel-multiple.qmd >}}
 
 # Testing-based selection {#sec-pred-sel-stepwise}
 
@@ -104,9 +120,9 @@ especially for large $n$.
 
 ## Comparing models for LDL
 
+::: {#tbl-model-comparison}
+
 ```{r}
-#| label: tbl-model-comparison
-#| tbl-cap: "Comparison of LDL models by AIC and BIC"
 
 library(tibble)
 
@@ -134,6 +150,10 @@ tibble(
   )
 )
 ```
+
+Comparison of LDL models by AIC, BIC, and adjusted $R^2$.
+
+:::
 
 # Penalized regression {#sec-pred-sel-lasso}
 
@@ -168,9 +188,9 @@ The optimal $\lambda$ is usually chosen by cross-validation.
 
 ## Example: LASSO for LDL
 
+::: {#fig-lasso-ldl}
+
 ```{r}
-#| label: fig-lasso-ldl
-#| fig-cap: "LASSO coefficient paths for LDL predictors in HERS"
 
 library(glmnet)
 library(ggfortify)
@@ -197,25 +217,35 @@ autoplot(lasso_fit, xvar = "lambda") +
   theme_bw()
 ```
 
+LASSO coefficient paths for LDL predictors in HERS.
+Each line traces one predictor's coefficient as $\lambda$ increases.
+Coefficients shrink toward zero as the penalty grows;
+some reach exactly zero (variables excluded from the model).
+
+:::
+
+
 ---
 
+::: {#fig-lasso-cv}
+
 ```{r}
-#| label: fig-lasso-cv
-#| fig-cap: "Cross-validated LASSO for LDL: MSE vs. log(lambda)"
 
 cv_lasso <- cv.glmnet(x_ldl, y_ldl)
 plot(cv_lasso)
 ```
 
+Cross-validated LASSO for LDL: mean squared error vs.\ $\log(\lambda)$.
+The left dashed line marks `lambda.min` (minimum CV error);
+the right dashed line marks `lambda.1se` (largest $\lambda$ within 1 SE of the minimum).
+
+:::
+
 ---
 
+::: {#tbl-lasso-coefs}
+
 ```{r}
-#| label: tbl-lasso-coefs
-#| tbl-cap: "LASSO coefficients at two values of the regularization parameter:
-#|   `lambda.min` minimizes cross-validation error;
-#|   `lambda.1se` uses a more conservative (larger) lambda,
-#|   within one standard error of the minimum,
-#|   producing a sparser model."
 
 data.frame(
   lambda.min = as.vector(coef(cv_lasso, s = "lambda.min")),
@@ -223,6 +253,14 @@ data.frame(
   row.names = rownames(coef(cv_lasso))
 )
 ```
+
+LASSO coefficients at two values of the regularization parameter.
+`lambda.min` minimizes cross-validation error;
+`lambda.1se` uses a more conservative (larger) $\lambda$,
+within one standard error of the minimum,
+producing a sparser model.
+
+:::
 
 ::: notes
 
@@ -233,28 +271,83 @@ in @fig-hers-dag.
 
 :::
 
+# Some Details {#sec-pred-sel-details}
+
+{{< include _sec-pred-sel-details.qmd >}}
+
 # Summary {#sec-pred-sel-summary}
 
-Key principles for predictor selection:
+Predictor selection is the process of choosing appropriate variables
+for inclusion in a multivariable regression model.
+The right approach depends on the **inferential goal**:
 
-1. **Start with subject-matter knowledge**.
-Draw a DAG to identify confounders, mediators, and colliders.
+**For prediction** (Goal 1):
 
-2. **Adjust for confounders** to remove bias in causal effect estimates.
+- Pre-specify well-motivated candidate predictors.
+- Use cross-validation of a target PE measure
+  to select among models without overfitting.
+- Shrinkage methods (LASSO, ridge) are effective
+  when there are many candidates.
 
-3. **Do not adjust for mediators** if you want the total causal effect.
+**For evaluating a predictor of primary interest** (Goal 2):
 
-4. **Do not adjust for colliders** to avoid introducing bias.
+- Use a DAG to identify confounders, mediators, and colliders.
+- Include all well-established confounders for face validity.
+- Use backward selection with a liberal criterion ($p < 0.2$)
+  to remove apparent non-confounders.
+- In randomized trials, covariates are not required for confounding control
+  but improve precision (and de-attenuate estimates in logistic/Cox models).
+- Pre-specify adjusted analyses in trial protocols.
 
-5. **Use AIC/BIC** to compare models of similar types.
+**For identifying multiple important predictors** (Goal 3):
 
-6. **Be cautious with stepwise selection**.
-It tends to overfit and produces biased inference.
+- Apply the same inclusive strategy as Goal 2.
+- Consider the Allen–Cady modified backward selection procedure
+  to limit false-positive findings.
+- Interpret novel, weak, and borderline significant associations
+  cautiously; report all candidate predictors considered.
 
-7. **Consider penalized regression** (LASSO, ridge)
-when there are many candidate predictors.
+**Across all goals**:
 
-8. **In randomized trials** (like HERS),
-confounding adjustment is not required for causal inference,
-but adjusting for strong predictors of the outcome
-can improve precision.
+- Collinearity between a primary predictor and a confounder
+  can inflate standard errors; between adjustment variables, it does not.
+- The EPV rule (10 events per predictor) flags potential problems
+  but is not a hard limit.
+- Model selection complicates inference:
+  nominal p-values and confidence intervals are anticonservative
+  when predictors have been selected from the data.
+
+# Learning Objectives {#sec-pred-sel-objectives .unnumbered}
+
+After completing this chapter, students should be able to:
+
+1. **Identify the inferential goal** of a predictor selection problem
+   (prediction, evaluating a primary predictor,
+   or identifying multiple important predictors)
+   and choose an appropriate strategy.
+
+2. **Use a DAG** to identify confounders, mediators, and colliders,
+   and determine which covariates to include or exclude.
+
+3. **Apply backward selection with a liberal criterion**
+   to select confounders in observational studies.
+
+4. **Use AIC and BIC** to compare alternative models.
+
+5. **Apply and interpret the LASSO**,
+   including cross-validated selection of $\lambda$.
+
+6. **Explain why stepwise selection is problematic**
+   and describe its known pitfalls.
+
+7. **Describe the bias–variance trade-off** and explain
+   why cross-validation provides a less optimistic estimate of PE
+   than naive within-sample measures.
+
+8. **Identify and handle collinearity**,
+   including using the VIF and understanding its implications
+   for different inferential goals.
+
+9. **Articulate how model selection complicates inference**
+   and describe best practices for reporting in each inferential context.
+
