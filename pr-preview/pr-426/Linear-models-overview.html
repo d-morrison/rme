@@ -642,7 +642,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2026-04-13: 19:29:25 (UTC)</p>
+      <p class="date">Last modified: 2026-04-14: 17:47:45 (UTC)</p>
     </div>
   </div>
   
@@ -3845,19 +3845,52 @@ Figure&nbsp;5.1: Predicted values and confidence bands for the <code>birthweight
 </div>
 </section><section id="sec-se-pred" class="level2" data-number="5.4"><h2 data-number="5.4" class="anchored" data-anchor-id="sec-se-pred">
 <span class="header-section-number">5.4</span> Prediction intervals</h2>
-<p>We can also construct <strong>prediction intervals</strong> for the value of a new observation <span class="math inline">\(Y^*\)</span>, given a covariate pattern <span class="math inline">\(\tilde{x}^*\)</span>:</p>
+<p>We can also construct <strong>prediction intervals</strong> for the value of a new observation <span class="math inline">\(Y^*\)</span>, given a covariate pattern <span class="math inline">\({\tilde{x}^*}\)</span>.</p>
+<p>A new observation <span class="math inline">\(Y^*\)</span> at <span class="math inline">\({\tilde{x}^*}\)</span> follows the same linear model as the training data:</p>
+<p><span class="math display">\[Y^* = {({\tilde{x}^*})}^{\top}\tilde{\beta}+ \varepsilon^*\]</span></p>
+<p>where <span class="math inline">\(\varepsilon^* \sim \text{N}{\left(0, \sigma^2\right)}\)</span> is independent of the training data (and therefore independent of <span class="math inline">\(\hat \beta\)</span>).</p>
+<p>The predicted value of <span class="math inline">\(Y^*\)</span> is:</p>
+<p><span class="math display">\[\hat{Y}^* \stackrel{\text{def}}{=}\hat\mu({\tilde{x}^*}) = {({\tilde{x}^*})}^{\top}\hat \beta\]</span></p>
+<p>We base the prediction interval on the <strong>prediction error</strong> <span class="math inline">\(Y^* - \hat{Y}^*\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y^* - \hat{Y}^*
+&amp;= {({\tilde{x}^*})}^{\top}\tilde{\beta}+ \varepsilon^* - {({\tilde{x}^*})}^{\top}\hat \beta
+\\
+&amp;= \varepsilon^* - {({\tilde{x}^*})}^{\top}(\hat \beta- \tilde{\beta})
+\end{aligned}
+\]</span></p>
+<p>The prediction error is unbiased:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\text{E}{\left[Y^* - \hat{Y}^*\right]}
+&amp;= \text{E}{\left[\varepsilon^*\right]} - {({\tilde{x}^*})}^{\top}\text{E}{\left[\hat \beta- \tilde{\beta}\right]}
+\\
+&amp;= 0 - {({\tilde{x}^*})}^{\top} \cdot 0
+\\
+&amp;= 0
+\end{aligned}
+\]</span></p>
+<p>The variance of the prediction error is:</p>
 <p><span id="eq-prediction-var"><span class="math display">\[
 \begin{aligned}
-\hat{Y^*} &amp;= \hat\mu({\tilde{x}}^*) + \hat{\epsilon}^*
-\\ \text{Var}{\left(\hat{Y}\right)} &amp;= \text{Var}{\left(\hat\mu\right)} + \text{Var}{\left(\hat\epsilon\right)}
-\\ \text{Var}{\left(\hat{Y}\right)} &amp;= \text{Var}{\left(x'\hat \beta\right)} + \text{Var}{\left(\hat\epsilon\right)}
-\\ &amp;= {{\tilde{x}}^{*\top}} \text{Var}{\left(\hat \beta\right)} {{\tilde{x}}^*} + \sigma^2
-\\ &amp;=  {{\tilde{x}}^{*\top}} {\left(\sigma^2(\mathbf{X}'\mathbf{X})^{-1}\right)} {{\tilde{x}}^*} + \sigma^2
-\\ &amp;= \sigma^2 {{\tilde{x}}^{*\top}} (\mathbf{X}'\mathbf{X})^{-1} {{\tilde{x}}^*} + \sigma^2
+\text{Var}{\left(Y^* - \hat{Y}^*\right)}
+&amp;= \text{Var}{\left(\varepsilon^* - {({\tilde{x}^*})}^{\top}(\hat \beta- \tilde{\beta})\right)}
+\\
+&amp;= \text{Var}{\left(\varepsilon^*\right)} + \text{Var}{\left({({\tilde{x}^*})}^{\top}\hat \beta\right)}
+\quad \text{(since } \varepsilon^* \perp\!\!\!\perp\hat \beta\text{)}
+\\
+&amp;= \sigma^2 + {({\tilde{x}^*})}^{\top}\text{Var}{\left(\hat \beta\right)}{\tilde{x}^*}
+\\
+&amp;= \sigma^2 + {({\tilde{x}^*})}^{\top}{\left(\sigma^2(\mathbf{X}'\mathbf{X})^{-1}\right)}{\tilde{x}^*}
+\\
+&amp;= \sigma^2 + \sigma^2{({\tilde{x}^*})}^{\top}(\mathbf{X}'\mathbf{X})^{-1}{\tilde{x}^*}
+\\
+&amp;= \sigma^2{\left(1 + {({\tilde{x}^*})}^{\top}(\mathbf{X}'\mathbf{X})^{-1}{\tilde{x}^*}\right)}
 \end{aligned}
 \tag{5.1}\]</span></span></p>
 <div class="notes">
-<p>See <span class="citation" data-cites="hoggtanis2015">Hogg et al. (<a href="#ref-hoggtanis2015" role="doc-biblioref">2015</a>)</span> §7.6 (p.&nbsp;340) for a longer version.</p>
+<p>See <span class="citation" data-cites="hoggtanis2015">Hogg et al. (<a href="#ref-hoggtanis2015" role="doc-biblioref">2015</a>)</span> §7.6 (p.&nbsp;340).</p>
 </div>
 <div class="cell">
 <details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw_lm2</span> <span class="op">|&gt;</span></span>
