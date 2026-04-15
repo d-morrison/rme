@@ -56,6 +56,27 @@ here::here() |>
   load()
 ```
 
+```{r}
+#| label: label-wcgs
+wcgs <- wcgs |>
+  labelled::set_variable_labels(
+    age = "Age (years)",
+    chol = "Cholesterol (mg/dL)",
+    sbp = "Systolic BP (mmHg)",
+    dbp = "Diastolic BP (mmHg)",
+    bmi = "BMI (kg/m\u00B2)",
+    weight = "Weight (lbs)",
+    ncigs = "Cigarettes per day",
+    chd69 = "CHD event by 1969",
+    smoke = "Current smoker",
+    arcus = "Arcus senilis",
+    dibpat = "Behavioral pattern (A/B)",
+    behpat = "Behavioral pattern (A1/A2/B3/B4)",
+    wghtcat = "Weight category",
+    agec = "Age group"
+  )
+```
+
 # Types of variables
 
 Before summarizing data,
@@ -263,15 +284,7 @@ wcgs |>
       gtsummary::all_continuous() ~
         "{mean} ({sd}); {median} [{p25}, {p75}]"
     ),
-    digits = gtsummary::all_continuous() ~ 1,
-    label = list(
-      age ~ "Age (years)",
-      chol ~ "Cholesterol (mg/dL)",
-      sbp ~ "Systolic BP (mmHg)",
-      dbp ~ "Diastolic BP (mmHg)",
-      bmi ~ "BMI (kg/m²)",
-      weight ~ "Weight (lbs)"
-    )
+    digits = gtsummary::all_continuous() ~ 1
   )
 ```
 
@@ -286,15 +299,7 @@ the natural descriptive statistics are
 #| tbl-cap: "Frequency table for categorical variables in the WCGS dataset"
 wcgs |>
   dplyr::select(chd69, smoke, dibpat, behpat, wghtcat) |>
-  gtsummary::tbl_summary(
-    label = list(
-      chd69 ~ "CHD event by 1969",
-      smoke ~ "Current smoker",
-      dibpat ~ "Behavioral pattern (A/B)",
-      behpat ~ "Behavioral pattern (A1/A2/B3/B4)",
-      wghtcat ~ "Weight category"
-    )
-  )
+  gtsummary::tbl_summary()
 ```
 
 # Graphical methods
@@ -311,10 +316,11 @@ by dividing its range into bins and counting the number of observations in each.
 #| label: fig-hist-chol
 #| fig-cap: "Histogram of total cholesterol in the WCGS dataset"
 wcgs |>
-  ggplot2::ggplot(ggplot2::aes(x = chol)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(x = chol) +
   ggplot2::geom_histogram(bins = 30, fill = "steelblue", color = "white") +
   ggplot2::labs(
-    x = "Total Cholesterol (mg/dL)",
+    x = labelled::var_label(wcgs$chol),
     y = "Count"
   )
 ```
@@ -334,10 +340,11 @@ which can be easier to interpret than a histogram.
 #| label: fig-density-chol
 #| fig-cap: "Density plot of total cholesterol in the WCGS dataset"
 wcgs |>
-  ggplot2::ggplot(ggplot2::aes(x = chol)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(x = chol) +
   ggplot2::geom_density(fill = "steelblue", alpha = 0.5) +
   ggplot2::labs(
-    x = "Total Cholesterol (mg/dL)",
+    x = labelled::var_label(wcgs$chol),
     y = "Density"
   )
 ```
@@ -357,10 +364,11 @@ Points beyond the whiskers are plotted individually as potential outliers.
 #| label: fig-box-chol
 #| fig-cap: "Box plot of total cholesterol in the WCGS dataset"
 wcgs |>
-  ggplot2::ggplot(ggplot2::aes(y = chol)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(y = chol) +
   ggplot2::geom_boxplot(fill = "steelblue") +
   ggplot2::labs(
-    y = "Total Cholesterol (mg/dL)"
+    y = labelled::var_label(wcgs$chol)
   ) +
   ggplot2::theme(axis.text.x = ggplot2::element_blank())
 ```
@@ -374,10 +382,11 @@ of a categorical variable.
 #| label: fig-bar-behpat
 #| fig-cap: "Bar chart of behavioral pattern in the WCGS dataset"
 wcgs |>
-  ggplot2::ggplot(ggplot2::aes(x = behpat)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(x = behpat) +
   ggplot2::geom_bar(fill = "steelblue") +
   ggplot2::labs(
-    x = "Behavioral Pattern",
+    x = labelled::var_label(wcgs$behpat),
     y = "Count"
   )
 ```
@@ -393,12 +402,13 @@ the points fall close to the diagonal reference line.
 #| label: fig-qq-chol
 #| fig-cap: "Normal Q-Q plot for total cholesterol in the WCGS dataset"
 wcgs |>
-  ggplot2::ggplot(ggplot2::aes(sample = chol)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(sample = chol) +
   ggplot2::stat_qq() +
   ggplot2::stat_qq_line(color = "red") +
   ggplot2::labs(
     x = "Theoretical quantiles",
-    y = "Sample quantiles (Cholesterol, mg/dL)"
+    y = labelled::var_label(wcgs$chol)
   )
 ```
 
@@ -415,12 +425,13 @@ by plotting each observation as a point.
 #| label: fig-scatter-chol-sbp
 #| fig-cap: "Cholesterol vs. systolic BP in the WCGS dataset"
 wcgs |>
-  ggplot2::ggplot(ggplot2::aes(x = sbp, y = chol)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(x = sbp, y = chol) +
   ggplot2::geom_point(alpha = 0.3) +
   ggplot2::geom_smooth(method = "lm", se = TRUE, color = "red") +
   ggplot2::labs(
-    x = "Systolic Blood Pressure (mmHg)",
-    y = "Total Cholesterol (mg/dL)"
+    x = labelled::var_label(wcgs$sbp),
+    y = labelled::var_label(wcgs$chol)
   )
 ```
 
@@ -472,12 +483,13 @@ continuous variable across groups defined by a categorical variable.
 #| label: fig-box-chol-by-smoke
 #| fig-cap: "Box plots of cholesterol by smoking status in the WCGS dataset"
 wcgs |>
-  ggplot2::ggplot(ggplot2::aes(x = smoke, y = chol, fill = smoke)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(x = smoke, y = chol, fill = smoke) +
   ggplot2::geom_boxplot() +
   ggplot2::labs(
-    x = "Current smoker",
-    y = "Total Cholesterol (mg/dL)",
-    fill = "Current smoker"
+    x = labelled::var_label(wcgs$smoke),
+    y = labelled::var_label(wcgs$chol),
+    fill = labelled::var_label(wcgs$smoke)
   ) +
   ggplot2::theme(legend.position = "none")
 ```
@@ -488,12 +500,13 @@ wcgs |>
 #| label: fig-box-chol-by-behpat
 #| fig-cap: "Box plots of cholesterol by behavioral pattern in the WCGS dataset"
 wcgs |>
-  ggplot2::ggplot(ggplot2::aes(x = behpat, y = chol, fill = behpat)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(x = behpat, y = chol, fill = behpat) +
   ggplot2::geom_boxplot() +
   ggplot2::labs(
-    x = "Behavioral Pattern",
-    y = "Total Cholesterol (mg/dL)",
-    fill = "Pattern"
+    x = labelled::var_label(wcgs$behpat),
+    y = labelled::var_label(wcgs$chol),
+    fill = labelled::var_label(wcgs$behpat)
   ) +
   ggplot2::theme(legend.position = "none")
 ```
@@ -513,12 +526,7 @@ wcgs |>
       gtsummary::all_continuous() ~
         "{mean} ({sd})"
     ),
-    digits = gtsummary::all_continuous() ~ 1,
-    label = list(
-      chol ~ "Cholesterol (mg/dL)",
-      sbp ~ "Systolic BP (mmHg)",
-      bmi ~ "BMI (kg/m²)"
-    )
+    digits = gtsummary::all_continuous() ~ 1
   ) |>
   gtsummary::add_overall() |>
   gtsummary::add_p()
@@ -558,10 +566,7 @@ Using `gtsummary` for a formatted table:
 #| tbl-cap: "Smoking status and CHD event in WCGS"
 wcgs |>
   dplyr::select(smoke, chd69) |>
-  gtsummary::tbl_summary(
-    by = chd69,
-    label = list(smoke ~ "Current smoker")
-  ) |>
+  gtsummary::tbl_summary(by = chd69) |>
   gtsummary::add_overall() |>
   gtsummary::add_p()
 ```
@@ -588,14 +593,24 @@ The WCGS dataset already contains the log-transformed versions of some variables
 #| label: fig-hist-sbp-log
 #| fig-cap: "SBP distribution: raw and log scale (WCGS)"
 p1 <- wcgs |>
-  ggplot2::ggplot(ggplot2::aes(x = sbp)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(x = sbp) +
   ggplot2::geom_histogram(bins = 30, fill = "steelblue", color = "white") +
-  ggplot2::labs(x = "SBP (mmHg)", y = "Count", title = "Raw scale")
+  ggplot2::labs(
+    x = labelled::var_label(wcgs$sbp),
+    y = "Count",
+    title = "Raw scale"
+  )
 
 p2 <- wcgs |>
-  ggplot2::ggplot(ggplot2::aes(x = lnsbp)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(x = lnsbp) +
   ggplot2::geom_histogram(bins = 30, fill = "coral", color = "white") +
-  ggplot2::labs(x = "log(SBP)", y = "Count", title = "Log scale")
+  ggplot2::labs(
+    x = labelled::var_label(wcgs$lnsbp),
+    y = "Count",
+    title = "Log scale"
+  )
 
 gridExtra::grid.arrange(p1, p2, ncol = 2)
 ```
@@ -636,19 +651,5 @@ wcgs |>
     age, chol, sbp, dbp, bmi, weight, ncigs,
     chd69, smoke, dibpat, behpat
   ) |>
-  gtsummary::tbl_summary(
-    label = list(
-      age ~ "Age (years)",
-      chol ~ "Cholesterol (mg/dL)",
-      sbp ~ "Systolic BP (mmHg)",
-      dbp ~ "Diastolic BP (mmHg)",
-      bmi ~ "BMI (kg/m²)",
-      weight ~ "Weight (lbs)",
-      ncigs ~ "Cigarettes per day",
-      chd69 ~ "CHD event by 1969",
-      smoke ~ "Current smoker",
-      dibpat ~ "Behavioral pattern (A/B)",
-      behpat ~ "Behavioral pattern (A1/A2/B3/B4)"
-    )
-  )
+  gtsummary::tbl_summary()
 ```
