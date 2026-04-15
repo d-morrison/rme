@@ -58,6 +58,18 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Citation Grammar Conventions
+
+When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
+treat the citation as a **singular** subject and use third-person singular verb forms:
+
+- **Correct**: `@dobson4e omits … but describes …`
+- **Incorrect**: `@dobson4e omit … but describe …`
+
+This applies whether the citation refers to one author or multiple authors (e.g., "Dobson and Barnett").
+Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
+but grammatically the citation key itself is treated as a singular pronoun/name.
+
 ## Code Formatting Guidelines
 
 When adding or editing text in source code (such as comments, documentation strings, or error messages) or in Quarto document text chunks:
