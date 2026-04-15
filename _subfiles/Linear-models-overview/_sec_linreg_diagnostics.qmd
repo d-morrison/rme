@@ -688,14 +688,21 @@ Each point corresponds to one observation:
   assigned to each observation based on its rank.
 - The **y-axis** (Standardized Residuals) shows the observed standardized residual $r_i$.
   In QQ-plot terminology,
-  these plotted $r_i$ values are the ordered sample quantiles
-  (order statistics)
-  of the empirical standardized residual distribution
-  at the corresponding plotting positions.
+  these values are sample quantiles.
+  Let $r_{(1)} \le \cdots \le r_{(n)}$ be the ordered standardized residuals
+  (the order statistics).
+  The empirical sample-quantile function is
+  $$\hat Q(p) = \inf\{t : \hat F_r(t) \ge p\}, \quad 0 < p < 1,$$
+  where $\hat F_r$ is the empirical CDF of the standardized residuals.
+  For plotting positions $p_i = (i - 0.5) / n$,
+  the QQ plot uses points
+  $$\left(\Phi^{-1}(p_i),\, r_{(i)}\right), \quad i = 1, \ldots, n.$$
+  Since $r_{(i)} = \hat Q(p_i)$,
+  each plotted standardized residual is exactly the sample quantile at $p_i$.
   So both labels are correct:
-  `qqnorm()` calls them "Sample Quantiles"
-  because ordered standardized residuals are sample quantiles,
-  while `autoplot.lm()` calls those same values "Standardized residuals".
+  `qqnorm()` emphasizes the quantile role ("Sample Quantiles"),
+  while `autoplot.lm()` emphasizes the underlying values
+  ("Standardized residuals").
 
 If the standardized residuals approximately follow $N(0,1)$,
 the points should fall approximately on a straight line.
