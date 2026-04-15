@@ -190,7 +190,7 @@ then $\err(Y)$ also has a Gaussian distribution, and vice versa.
 \ 
 
 By @def-resid-noise, $\err(Y) = Y - \Expf{Y}$.
-Since $\err(Y)$ is an affine function of $Y$,
+Since $\err(Y)$ is an affine function of $Y$ (a linear function plus a constant),
 and Gaussian distributions are closed under affine transformations,
 if $Y \sim \Normal(\mu, \ss)$, then:
 
@@ -276,6 +276,8 @@ the exact variance of the $i$-th residual is:
 $$\Var{e_i} = \ss(1 - h_{ii})$$ {#eq-var-resid-unbiased}
 
 where $h_{ii}$ is the $i$-th diagonal element of the **hat matrix**
+(also called the **projection matrix**,
+the matrix that projects observations onto the column space of $\mX$):
 $\matr{H} \eqdef \mX\inv{\tp{\mX}\mX}\tp{\mX}$.
 For large $n$, $h_{ii} \approx 0$, so $\Var{e_i} \approx \ss$.
 
@@ -346,7 +348,9 @@ $$
 
 For large $n$,
 the leverage $h_{ii} = \tp{\vxi}\inv{\tp{\mX}\mX}\vxi \to 0$
-(each observation has diminishing influence on its own fitted value),
+(where $\vxi$ is the vector of covariates for observation $i$,
+i.e., the $i$-th row of $\mX$ written as a column vector),
+meaning each observation has diminishing influence on its own fitted value,
 so $\Var{e_i} = \ss(1 - h_{ii}) \to \ss$.
 
 :::
@@ -362,9 +366,10 @@ the residuals $e_i$ are marginally normally distributed:
 $$e_i \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
 
 where $h_{ii}$ is the $i$-th diagonal element of the hat matrix.
-For large $n$, $h_{ii} \approx 0$, giving the approximation:
+For large $n$, $h_{ii} \approx 0$, so $\ss(1-h_{ii}) \approx \ss$;
+replacing the unknown $\ss$ with its estimate $\hat\ss$ gives:
 
-$$e_i \approx \Normal(0, \ss) \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
+$$e_i \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
 
 :::
 
