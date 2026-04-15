@@ -277,7 +277,9 @@ $$\Var{e_i} = \ss(1 - h_{ii})$$ {#eq-var-resid-unbiased}
 
 where $h_{ii}$ is the $i$-th diagonal element of the **hat matrix**
 (also called the **projection matrix**,
-the matrix that projects observations onto the column space of $\mX$):
+the matrix that projects observations onto the column space of $\mX$).
+Assuming $\mX$ has **full column rank** (so $\tp{\mX}\mX$ is invertible),
+the hat matrix is defined as:
 $\matr{H} \eqdef \mX\inv{\tp{\mX}\mX}\tp{\mX}$.
 Equivalently,
 
@@ -285,7 +287,8 @@ $$h_{ii} = \tp{\vxi}\inv{\tp{\mX}\mX}\vxi$$
 
 where $\vxi$ is the vector of covariates for observation $i$
 (the $i$-th row of $\mX$, written as a column vector).
-For large $n$, $h_{ii} \approx 0$, so $\Var{e_i} \approx \ss$.
+Under standard regularity conditions (fixed $p$, asymptotically balanced design),
+$h_{ii} \to 0$ as $n \to \infty$, so $\Var{e_i} \approx \ss$ for large $n$.
 
 :::
 
@@ -356,6 +359,11 @@ For large $n$,
 the leverage $h_{ii} = \tp{\vxi}\inv{\tp{\mX}\mX}\vxi \to 0$,
 meaning each observation has diminishing influence on its own fitted value,
 so $\Var{e_i} = \ss(1 - h_{ii}) \to \ss$.
+This limit holds under standard regularity conditions:
+fixed number of predictors $p$,
+and $\frac{1}{n}\tp{\mX}\mX \to \Sigma$ for some positive definite matrix $\Sigma$
+(i.e., the design is asymptotically balanced),
+which implies $h_{ii} = O(p/n) \to 0$.
 
 :::
 
@@ -364,13 +372,16 @@ so $\Var{e_i} = \ss(1 - h_{ii}) \to \ss$.
 #### Characteristics of residuals in Gaussian models
 
 :::{#thm-resid-gaussian}
+#### Marginal distribution of residuals in Gaussian models
+
 In a Gaussian linear regression model,
 the residuals $e_i$ are marginally normally distributed:
 
 $$e_i \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
 
 where $h_{ii}$ is the $i$-th diagonal element of the hat matrix.
-For large $n$, $h_{ii} \approx 0$, so $\ss(1-h_{ii}) \approx \ss$;
+Under the regularity conditions described in @thm-resid-unbiased,
+$h_{ii} \to 0$ as $n \to \infty$, so $\ss(1-h_{ii}) \approx \ss$ for large $n$;
 replacing the unknown $\ss$ with its estimate $\hat\ss$ gives:
 
 $$e_i \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
