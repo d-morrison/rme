@@ -139,6 +139,91 @@ bw_lm2 |>
 Predicted values and confidence bands for the `birthweight` model with interaction term
 :::
 
+### Why are confidence bands narrower near the center of the data? {#sec-why-ci-narrower}
+
+The confidence bands in @fig-pred-int are visibly narrower
+near the center of the gestational age range.
+To understand why,
+consider a simple linear regression with one predictor $a$ (gestational age)
+and an intercept.
+The covariate vector for a new observation at age $a$ is $\vx = (1, a)'$,
+and the general variance formula for the predicted mean specializes to:
+
+$$
+\ba
+\Var{\hat\mu(a)}
+&= \sigma^2\, \tp{\vx}(\mX'\mX)^{-1}\vx \\
+&= \red{\sigma^2 \left(\frac{1}{n} + \frac{(a - \bar{a})^2}{S_{AA}}\right)}
+\ea
+$${#eq-var-fitted-slr}
+
+where $\bar{a} = \frac{1}{n}\sumin a_i$ is the mean gestational age
+and $S_{AA} = \sumin (a_i - \bar{a})^2$ is the total variation in gestational age.
+
+To derive @eq-var-fitted-slr,
+first note that for $n$ observations with design matrix rows $(1, a_i)$:
+
+$$
+\mX'\mX
+= \begin{pmatrix} n & n\bar{a} \\ n\bar{a} & \sumin a_i^2 \end{pmatrix}
+$$
+
+The determinant of $\mX'\mX$ is:
+
+$$
+\ba
+\det(\mX'\mX)
+&= n \cdot \sumin a_i^2 - (n\bar{a})^2 \\
+&= n\left(\sumin a_i^2 - n\bar{a}^2\right) \\
+&= n\, S_{AA}
+\ea
+$$
+
+so its inverse is:
+
+$$
+(\mX'\mX)^{-1}
+= \frac{1}{n\, S_{AA}}
+  \begin{pmatrix} \sumin a_i^2 & -n\bar{a} \\ -n\bar{a} & n \end{pmatrix}
+$$
+
+Substituting $\vx = (1, a)'$ into the quadratic form:
+
+$$
+\ba
+\tp{\vx}(\mX'\mX)^{-1}\vx
+&= \frac{1}{n\, S_{AA}}
+  (1,\; a)
+  \begin{pmatrix} \sumin a_i^2 & -n\bar{a} \\ -n\bar{a} & n \end{pmatrix}
+  \begin{pmatrix} 1 \\ a \end{pmatrix} \\
+&= \frac{\sumin a_i^2 - 2n\bar{a}\,a + na^2}{n\, S_{AA}} \\
+&= \frac{\left(\sumin a_i^2 - n\bar{a}^2\right) + n(a - \bar{a})^2}{n\, S_{AA}} \\
+&= \frac{S_{AA} + n(a - \bar{a})^2}{n\, S_{AA}} \\
+&= \frac{1}{n} + \frac{(a - \bar{a})^2}{S_{AA}}
+\ea
+$$
+
+Therefore the estimated standard error of the predicted mean at age $a$ is:
+
+$$
+\HSE{\hat\mu(a)}
+= \hs \sqrt{\frac{1}{n} + \frac{(a - \bar{a})^2}{S_{AA}}}
+$${#eq-se-fitted-slr}
+
+Since $(a - \bar{a})^2 \geq 0$ and equals zero when $a = \bar{a}$,
+the standard error is minimized at the mean gestational age $\bar{a}$
+and increases as $a$ moves away from $\bar{a}$ in either direction.
+Consequently, confidence intervals are narrowest at $\bar{a}$
+and widen toward the extremes of the gestational age range.
+
+Intuitively, the fitted line is "anchored" at the center of the data:
+any fitted line must pass near the mean point $(\bar{a}, \bar{y})$,
+so the estimated mean at $\bar{a}$ is relatively stable across different samples.
+Moving away from $\bar{a}$,
+small changes in the estimated slope
+cause the fitted line to "pivot" around that anchor,
+producing larger changes in the predicted mean
+the further $a$ is from $\bar{a}$.
 
 ## Prediction intervals {#sec-se-pred}
 
