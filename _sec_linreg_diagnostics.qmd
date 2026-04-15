@@ -187,7 +187,20 @@ then $\err(Y)$ also has a Gaussian distribution, and vice versa.
 :::
 
 :::{.proof}
-Left to the reader.
+\ 
+
+By @def-resid-noise, $\err(Y) = Y - \Expf{Y}$.
+Since $\err(Y)$ is an affine function of $Y$,
+and Gaussian distributions are closed under affine transformations,
+if $Y \sim \Normal(\mu, \ss)$, then:
+
+$$
+\err(Y) = Y - \mu \sim \Normal(\mu - \mu, \ss) = \Normal(0, \ss)
+$$
+
+Conversely, since $Y = \Expf{Y} + \err(Y) = \mu + \err(Y)$,
+if $\err(Y) \sim \Normal(0, \ss)$, then $Y = \mu + \err(Y) \sim \Normal(\mu, \ss)$.
+
 :::
 
 ---
@@ -255,8 +268,16 @@ $$
 If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
 estimator of the mean $\Expf{Y}$, then:
 
-$$\E{e(y)} = 0$$ {#eq-mean-resid-unbiased}
-$$\Var{e(y)} \approx \ss$$ {#eq-var-resid-unbiased}
+$$\E{e_i} = 0$$ {#eq-mean-resid-unbiased}
+
+In a Gaussian linear regression model,
+the exact variance of the $i$-th residual is:
+
+$$\Var{e_i} = \ss(1 - h_{ii})$$ {#eq-var-resid-unbiased}
+
+where $h_{ii}$ is the $i$-th diagonal element of the **hat matrix**
+$\matr{H} \eqdef \mX\inv{\tp{\mX}\mX}\tp{\mX}$.
+For large $n$, $h_{ii} \approx 0$, so $\Var{e_i} \approx \ss$.
 
 :::
 
@@ -269,39 +290,114 @@ $$\Var{e(y)} \approx \ss$$ {#eq-var-resid-unbiased}
 
 $$
 \ba
-\Ef{e(y)} &= \Ef{y - \hat y}
-\\ &= \Ef{y} - \Ef{\hat y}
-\\ &= \Ef{y} - \Ef{y}
+\Ef{e_i} &= \Ef{y_i - \hat y_i}
+\\ &= \Ef{y_i} - \Ef{\hat y_i}
+\\ &= \Ef{y_i} - \Ef{y_i}
 \\ &= 0
 \ea
 $$
 
 @eq-var-resid-unbiased:
 
+In a Gaussian linear model,
+the fitted value $\hat y_i$ is a linear combination of the observations
+via the hat matrix $\matr{H} \eqdef \mX\inv{\tp{\mX}\mX}\tp{\mX}$:
+
+$$\hat y_i = \sum_{j=1}^n h_{ij} \, y_j$$
+
+where $h_{ij} = [\matr{H}]_{ij}$.
+Using the independence of observations ($\Cov{y_i, y_j} = 0$ for $i \neq j$):
+
 $$
 \ba
-\Var{e(y)} &= \Var{y - \hy}
-\\ &= \Var{y} + \Var{\hy} - 2 \Cov{y, \hy}
-\\ &{\dot{\approx}} \Var{y} + 0 - 2 \cdot 0
-\\ &= \Var{y}
-\\ &= \ss
+\Cov{y_i, \hat y_i}
+&= \Cov{y_i, \textstyle\sum_j h_{ij} y_j}
+\\ &= \sum_j h_{ij} \Cov{y_i, y_j}
+\\ &= h_{ii} \Var{y_i}
+\\ &= h_{ii} \ss
 \ea
 $$
+
+The hat matrix is symmetric ($\matr{H} = \tp{\matr{H}}$)
+and idempotent ($\matr{H}^2 = \matr{H}$),
+so $\sum_j h_{ij}^2 = [\matr{H}^2]_{ii} = [\matr{H}]_{ii} = h_{ii}$, giving:
+
+$$
+\ba
+\Var{\hat y_i}
+&= \Var{\textstyle\sum_j h_{ij} y_j}
+\\ &= \sum_j h_{ij}^2 \Var{y_j}
+\\ &= \ss \sum_j h_{ij}^2
+\\ &= \ss \, h_{ii}
+\ea
+$$
+
+Therefore:
+
+$$
+\ba
+\Var{e_i}
+&= \Var{y_i - \hat y_i}
+\\ &= \Var{y_i} + \Var{\hat y_i} - 2 \Cov{y_i, \hat y_i}
+\\ &= \ss + \ss \, h_{ii} - 2 \ss \, h_{ii}
+\\ &= \ss (1 - h_{ii})
+\ea
+$$
+
+For large $n$,
+the leverage $h_{ii} = \tp{\vxi}\inv{\tp{\mX}\mX}\vxi \to 0$
+(each observation has diminishing influence on its own fitted value),
+so $\Var{e_i} = \ss(1 - h_{ii}) \to \ss$.
+
 :::
 
 ---
 
 #### Characteristics of residuals in Gaussian models
 
-With enough data and a correct model, 
-the residuals will be approximately Gaussian distributed, 
-with variance $\sigma^2$, 
-which we can estimate using $\hat\sigma^2$;
-that is:
+:::{#thm-resid-gaussian}
+In a Gaussian linear regression model,
+the residuals $e_i$ are marginally normally distributed:
+
+$$e_i \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
+
+where $h_{ii}$ is the $i$-th diagonal element of the hat matrix.
+For large $n$, $h_{ii} \approx 0$, giving the approximation:
+
+$$e_i \approx \Normal(0, \ss) \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
+
+:::
+
+---
+
+:::{.proof}
+\ 
+
+Since $\hat y_i = \sum_{j=1}^n h_{ij} y_j$,
+the residual is a linear combination of the observations:
+
+$$e_i = y_i - \hat y_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, y_j$$
+
+where $\delta_{ij}$ is the Kronecker delta
+($\delta_{ij} = 1$ if $i = j$, else $\delta_{ij} = 0$).
+
+Since $y_1, \ldots, y_n$ are independent Gaussian random variables
+(by the Gaussian model assumption),
+and linear combinations of independent Gaussians are Gaussian,
+$e_i$ is normally distributed.
+
+The mean and variance follow from @thm-resid-unbiased:
 
 $$
-e_i \siid N(0, \hat\sigma^2)
+\ba
+\Ef{e_i} &= 0
+\\ \Var{e_i} &= \ss(1 - h_{ii})
+\ea
 $$
+
+Therefore $e_i \sim \Normal(0, \ss(1 - h_{ii}))$.
+
+:::
 
 ---
 
