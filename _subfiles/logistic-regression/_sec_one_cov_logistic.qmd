@@ -1,0 +1,186 @@
+{{< include latex-macros/macros.qmd >}}
+
+---
+
+::: notes
+
+* In @exm-oc-mi, we estimated the risk and the odds of MI for two groups,
+defined by oral contraceptive use.
+
+* If the predictor is quantitative (dose) or there is more than one predictor, the task becomes more difficult.
+
+* In this case, we will use logistic regression, which is a generalization of the linear regression models you have been using that can account for a binary response instead of a continuous one.
+
+:::
+
+### Independent binary outcomes - general  {.smaller}
+
+{{< include _subfiles/logistic-regression/_exr-bernoulli-lik.qmd >}}
+
+---
+
+### Modeling $\pi_i$ as a function of $X_i$
+
+If there are only a few distinct $X_i$ values, we can model $\pi_i$
+separately for each value of $X_i$.
+
+Otherwise, we need regression.
+
+$$
+\begin{aligned}
+\pi(x) &\equiv \text{E}(Y=1|X=x)\\
+&= f(x^\top\beta)
+\end{aligned}
+$$
+
+Typically, we use the $\expit$ inverse-link:
+
+$$\pi(\vec x) = \expit(\vx'\beta)$${#eq-logistic-link}
+
+
+### Meet the beetles
+
+:::{#tbl-beetles-data}
+
+```{r}
+
+library(glmx)
+library(dplyr)
+data(BeetleMortality, package = "glmx")
+beetles <- BeetleMortality |>
+  mutate(
+    pct = died / n,
+    survived = n - died,
+    dose_c = dose - mean(dose)
+  )
+beetles
+```
+
+Mortality rates of adult flour beetles after five hours’ exposure to gaseous carbon disulphide [@bliss1935beetles]
+
+:::
+
+---
+
+:::{#fig-beetles_1a}
+
+```{r}
+library(ggplot2)
+plot1 <-
+  beetles |>
+  ggplot(aes(x = dose, y = pct)) +
+  geom_point(aes(size = n)) +
+  xlab("Dose (log mg/L)") +
+  ylab("Mortality rate (%)") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_size(range = c(1, 2)) +
+  theme_bw(base_size = 18)
+
+print(plot1)
+```
+
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
+
+:::
+
+### Why don't we use linear regression?
+
+:::{#fig-beetles_2}
+
+```{r}
+beetles_long <- beetles |>
+  reframe(
+    .by = everything(),
+    outcome = c(
+      rep(1, times = died),
+      rep(0, times = survived)
+    )
+  ) |>
+  as_tibble()
+
+lm1 <- beetles_long |> lm(formula = outcome ~ dose)
+f_linear <- function(x) predict(lm1, newdata = data.frame(dose = x))
+
+range1 <- range(beetles$dose) + c(-.2, .2)
+
+plot2 <-
+  plot1 +
+  geom_function(
+    fun = f_linear,
+    aes(col = "Straight line")
+  ) +
+  labs(colour = "Model", size = "")
+
+plot2 |> print()
+```
+
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
+
+:::
+
+### Zoom out
+
+:::{#fig-beetles_3}
+
+```{r}
+(plot2 + expand_limits(x = c(1.6, 2))) |> print()
+```
+
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
+
+:::
+
+### log transformation of dose?
+
+:::{#fig-beetles_4}
+
+```{r}
+lm2 <- beetles_long |> lm(formula = outcome ~ log(dose))
+f_linearlog <- function(x) predict(lm2, newdata = data.frame(dose = x))
+
+plot3 <- plot2 +
+  expand_limits(x = c(1.6, 2)) +
+  geom_function(fun = f_linearlog, aes(col = "Log-transform dose"))
+(plot3 + expand_limits(x = c(1.6, 2))) |> print()
+```
+
+Mortality rates of adult flour beetles after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles]
+
+:::
+
+### Logistic regression
+
+:::{#fig-beetles_5}
+
+```{r}
+beetles_glm_grouped <- beetles |>
+  glm(formula = cbind(died, survived) ~ dose, family = "binomial")
+f <- function(x) {
+  beetles_glm_grouped |>
+    predict(newdata = data.frame(dose = x), type = "response")
+}
+
+plot4 <- plot3 + geom_function(fun = f, aes(col = "Logistic regression"))
+plot4 |> print()
+```
+
+Mortality rates of adult flour beetles
+after five hours' exposure to gaseous carbon disulphide [@bliss1935beetles].
+
+:::
+
+---
+
+### Three parts to regression models
+
+-   What distribution does the outcome have for a specific subpopulation
+defined by covariates? (outcome model)
+
+-   How does the combination of covariates relate to the mean? (link
+function)
+
+-   How do the covariates combine? (linear predictor, interactions)
+
+### Fitting and manipulating logistic regression models in R
+
+{{< include _subfiles/logistic-regression/_sec_logreg_in_R.qmd >}}

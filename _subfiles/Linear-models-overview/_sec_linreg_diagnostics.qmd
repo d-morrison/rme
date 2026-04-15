@@ -1,0 +1,1015 @@
+
+:::{.callout-tip}
+This section is adapted from @dobson4e [§6.2-6.3] and 
+@dunn2018generalized [Chapter 3](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_3).
+:::
+
+### Assumptions in linear regression models {.smaller .scrollable}
+
+{{< include _subfiles/Linear-models-overview/_sec-linreg-assumptions.qmd >}}
+
+### Direct visualization
+
+::: notes
+The most direct way to examine the fit of a model is 
+to compare it to the raw observed data.
+:::
+
+```{r}
+#| label: fig-bw-interaction2
+#| fig-cap: "Birthweight model with interaction term"
+bw <-
+  bw |>
+  mutate(
+    predlm2 = predict(bw_lm2)
+  ) |>
+  arrange(sex, age)
+
+plot1_interact <-
+  plot1 %+% bw +
+  geom_line(aes(y = predlm2))
+
+print(plot1_interact)
+```
+
+::: notes
+It's not easy to assess these assumptions from this model.
+If there are multiple continuous covariates, 
+it becomes even harder to visualize the raw data.
+:::
+
+---
+
+#### Fitted model for `hers` data {.smaller}
+
+::: notes
+Consider the `hers` data from @vittinghoff2e.
+
+{{< include _subfiles/shared/_sec_hers_intro.qmd >}}
+
+:::
+
+:::{#tbl-hers-data}
+
+```{r}
+hers <- fs::path_package("rme", "extdata/hersdata.dta") |> 
+  haven::read_dta()
+hers
+```
+
+`hers` data
+:::
+
+---
+
+::: notes
+Suppose we consider models with and without intercept terms (i.e.,
+possibly forcing the intercept to go through 0):
+:::
+
+```{r}
+hers_lm_with_int <- lm(
+  na.action = na.exclude,
+  LDL ~ smoking * age, data = hers
+)
+
+
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_with_int)
+```
+
+```{r}
+hers_lm_no_int <- lm(
+  na.action = na.exclude,
+  LDL ~ age + smoking:age - 1, data = hers
+)
+
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_no_int)
+```
+
+
+:::{#tbl-hers-maybe-int layout-ncol=2}
+
+:::{#tbl-hers-with-int}
+
+
+```{r}
+library(gtsummary)
+hers_lm_with_int |> 
+  tbl_regression(intercept = TRUE)
+```
+With intercept
+:::
+
+:::{#tbl-hers-no-int}
+
+```{r}
+hers_lm_no_int |> 
+  tbl_regression(intercept = TRUE)
+```
+
+No intercept
+:::
+
+`hers` data models with and without intercepts
+
+:::
+
+---
+
+:::{#fig-hers-maybe-int layout-ncol=2}
+
+
+:::{#fig-hers-no-int}
+
+```{r}
+library(sjPlot)
+
+hers_plot1 <- hers_lm_no_int |>
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "smoking"),
+    show.data = TRUE
+  ) +
+  facet_wrap(~group_col, ncol = 1) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
+
+hers_plot1
+```
+
+No intercept
+
+:::
+
+:::{#fig-hers-with-intercept}
+
+```{r}
+library(sjPlot)
+
+hers_plot2 <- hers_lm_with_int |>
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "smoking"),
+    show.data = TRUE
+  ) +
+  facet_wrap(~group_col, ncol = 1) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
+
+hers_plot2
+```
+
+With intercept
+:::
+
+`hers` data models with and without intercepts
+
+:::
+
+### Residuals
+
+::: notes
+Maybe we can transform the data and model in some way 
+to make it easier to inspect.
+:::
+
+{{< include _subfiles/Linear-models-overview/_def-residual-deviation.qmd >}}
+
+---
+
+:::{#thm-gaussian-resid-noise}
+#### Residuals in Gaussian models
+
+If $Y$ has a Gaussian distribution, 
+then $\err(Y)$ also has a Gaussian distribution, and vice versa.
+:::
+
+:::{.proof}
+Left to the reader.
+:::
+
+---
+
+:::{#def-resid-fitted}
+#### Residuals of a fitted model value
+
+The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error) relative to the observed data:
+$$
+\ba
+e(\hat y) &\eqdef \erf{\hat y}
+\\&= y - \hat y
+\ea
+$$
+:::
+
+---
+
+:::{#exm-resid-bw}
+
+#### residuals in `birthweight` data
+
+:::{#fig-bw-resids1}
+
+```{r}
+plot1_interact +
+  facet_wrap(~sex) +
+  geom_segment(
+    aes(
+      x = age,
+      y = predlm2,
+      xend = age,
+      yend = weight,
+      col = sex,
+      group = id
+    ),
+    linetype = "dotted"
+  )
+```
+
+Fitted values and residuals for interaction model for `birthweight` data
+
+:::
+
+:::
+
+---
+
+#### Residuals of fitted values vs residual noise
+
+$e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
+
+$$
+\ba
+e(\hy) &= y - \hat y
+\\ &= \hat\eps_{ML}
+\ea
+$$
+
+---
+
+#### General characteristics of residuals
+
+:::{#thm-resid-unbiased}
+If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
+estimator of the mean $\Expf{Y}$, then:
+
+$$\E{e(y)} = 0$$ {#eq-mean-resid-unbiased}
+$$\Var{e(y)} \approx \ss$$ {#eq-var-resid-unbiased}
+
+:::
+
+---
+
+:::{.proof}
+\ 
+
+@eq-mean-resid-unbiased:
+
+$$
+\ba
+\Ef{e(y)} &= \Ef{y - \hat y}
+\\ &= \Ef{y} - \Ef{\hat y}
+\\ &= \Ef{y} - \Ef{y}
+\\ &= 0
+\ea
+$$
+
+@eq-var-resid-unbiased:
+
+$$
+\ba
+\Var{e(y)} &= \Var{y - \hy}
+\\ &= \Var{y} + \Var{\hy} - 2 \Cov{y, \hy}
+\\ &{\dot{\approx}} \Var{y} + 0 - 2 \cdot 0
+\\ &= \Var{y}
+\\ &= \ss
+\ea
+$$
+:::
+
+---
+
+#### Characteristics of residuals in Gaussian models
+
+With enough data and a correct model, 
+the residuals will be approximately Gaussian distributed, 
+with variance $\sigma^2$, 
+which we can estimate using $\hat\sigma^2$;
+that is:
+
+$$
+e_i \siid N(0, \hat\sigma^2)
+$$
+
+---
+
+#### Computing residuals in R
+
+R provides a function for residuals:
+
+```{r}
+resid(bw_lm2)
+```
+
+
+---
+
+:::{#exr-calc-resids}
+Check R's output by computing the residuals directly.
+:::
+
+:::{.solution}
+\ 
+```{r}
+bw$weight - fitted(bw_lm2)
+```
+
+This matches R's output!
+:::
+
+---
+
+#### Graphing the residuals
+
+:::{#fig-resid-bw layout-ncol=2}
+
+:::{#fig-bw-resids1-c2}
+
+```{r}
+plot1_interact +
+  facet_wrap(~sex) +
+  geom_segment(
+    aes(
+      x = age,
+      y = predlm2,
+      xend = age,
+      yend = weight,
+      col = sex,
+      group = id
+    ),
+    linetype = "dotted"
+  )
+```
+
+fitted values
+
+:::
+
+:::{#fig-resids-intxn-bw}
+```{r}
+
+bw <- bw |>
+  mutate(
+    resids_intxn =
+      weight - fitted(bw_lm2)
+  )
+
+plot_bw_resid <-
+  bw |>
+  ggplot(aes(
+    x = age,
+    y = resids_intxn,
+    linetype = sex,
+    shape = sex,
+    col = sex
+  )) +
+  theme_bw() +
+  xlab("Gestational age (weeks)") +
+  ylab("residuals (grams)") +
+  theme(legend.position = "bottom") +
+  geom_hline(aes(
+    yintercept = 0,
+    col = sex
+  )) +
+  geom_segment(
+    aes(yend = 0),
+    linetype = "dotted"
+  ) +
+  geom_point()
+# expand_limits(y = 0, x = 0) +
+geom_point(alpha = .7)
+print(plot_bw_resid + facet_wrap(~sex))
+```
+
+Residuals
+
+:::
+
+Fitted values and residuals for interaction model for `birthweight` data
+
+:::
+
+---
+
+#### Residuals versus predictors
+
+```{r}
+hers <- hers |>
+  mutate(
+    resids_no_intcpt =
+      LDL - fitted(hers_lm_no_int),
+    resids_with_intcpt =
+      LDL - fitted(hers_lm_with_int)
+  )
+```
+
+:::{#fig-resids-hers-1 layout-ncol=2}
+
+:::{#fig-resid-hers-pred-no-intcpt} 
+
+```{r}
+hers |>
+  arrange(age) |>
+  ggplot() +
+  aes(x = age, y = resids_no_intcpt, col = factor(smoking)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0, col = factor(smoking))) +
+  facet_wrap(~smoking, labeller = "label_both") +
+  theme(legend.position = "bottom") +
+  geom_smooth(col = "blue")
+```
+
+no intercept
+:::
+
+:::{#fig-resid-hers-pred-no-intcpt}
+
+```{r}
+hers |>
+  arrange(age) |>
+  ggplot() +
+  aes(x = age, y = resids_with_intcpt, col = factor(smoking)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0, col = factor(smoking))) +
+  facet_wrap(~smoking, labeller = "label_both") +
+  theme(legend.position = "bottom") +
+  geom_smooth(col = "blue")
+```
+
+
+with intercept
+:::
+
+Residuals of `hers` data vs predictors
+
+:::
+
+---
+
+#### Residuals versus fitted values
+
+::: notes
+If the model contains multiple continuous covariates,
+how do we check for errors in the mean structure assumption?
+:::
+
+
+```{r}
+#| label: fig-resids-intxn-hers
+#| fig-cap: "Residuals of interaction model for `hers` data"
+
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1,
+    smooth.colour = NA
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+---
+
+We can add a LOESS smooth to visualize where the residual mean is nonzero:
+
+```{r}
+#| label: fig-resids-intxn-hers-smooth-no-int
+#| fig-cap: "Residuals of interaction model for `hers` data, no intercept term"
+
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+---
+
+:::{#fig-resid-hers-compare layout-ncol=2}
+
+:::{#fig-resids-intxn-hers-smooth-no-int-2}
+
+```{r}
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+no intercept term
+
+:::
+
+:::{#fig-resids-intxn-hers-smooth-with-int}
+
+```{r}
+hers_lm_with_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+with intercept term
+
+:::
+
+Residuals of interaction model for `hers` data, with and without intercept term
+
+:::
+
+---
+
+:::{#def-stred}
+
+#### Standardized residuals
+
+$$r_i = \frac{e_i}{\widehat{SD}(e_i)}$$
+
+:::
+
+Hence, with enough data and a correct model, the standardized residuals will be approximately standard Gaussian; that is,
+
+$$
+r_i \siid N(0,1)
+$$
+
+### Marginal distributions of residuals
+
+To look for problems with our model, we can check whether the residuals $e_i$ and standardized residuals $r_i$ look like they have the distributions that they are supposed to have, according to the model.
+
+---
+
+#### Standardized residuals in R
+
+```{r}
+rstandard(bw_lm2)
+resid(bw_lm2) / sigma(bw_lm2)
+```
+
+::: notes
+These are not quite the same, because R is doing something more complicated and precise to get the standard errors. Let's not worry about those details for now; the difference is pretty small in this case:
+
+:::
+
+---
+
+```{r}
+rstandard_compare_plot <-
+  tibble(
+    x = resid(bw_lm2) / sigma(bw_lm2),
+    y = rstandard(bw_lm2)
+  ) |>
+  ggplot(aes(x = x, y = y)) +
+  geom_point() +
+  theme_bw() +
+  coord_equal() +
+  xlab("resid(bw_lm2)/sigma(bw_lm2)") +
+  ylab("rstandard(bw_lm2)") +
+  geom_abline(
+    aes(
+      intercept = 0,
+      slope = 1,
+      col = "x=y"
+    )
+  ) +
+  labs(colour = "") +
+  scale_colour_manual(values = "red")
+
+print(rstandard_compare_plot)
+```
+
+---
+
+Let's add these residuals to the `tibble` of our dataset:
+
+```{r}
+bw <-
+  bw |>
+  mutate(
+    fitted_lm2 = fitted(bw_lm2),
+    resid_lm2 = resid(bw_lm2),
+    resid_lm2_alt = weight - fitted_lm2,
+    std_resid_lm2 = rstandard(bw_lm2),
+    std_resid_lm2_alt = resid_lm2 / sigma(bw_lm2)
+  )
+
+bw |>
+  select(
+    sex,
+    age,
+    weight,
+    fitted_lm2,
+    resid_lm2,
+    std_resid_lm2
+  )
+```
+
+---
+
+::: notes
+
+Now let's build histograms:
+
+:::
+
+```{r}
+#| fig-cap: "Marginal distribution of (nonstandardized) residuals"
+#| label: fig-marg-dist-resid
+resid_marginal_hist <-
+  bw |>
+  ggplot(aes(x = resid_lm2)) +
+  geom_histogram()
+
+print(resid_marginal_hist)
+```
+
+::: notes
+Hard to tell with this small amount of data, but I'm a bit concerned that the histogram doesn't show a bell-curve shape.
+
+:::
+
+---
+
+
+```{r}
+#| fig-cap: "Marginal distribution of standardized residuals"
+#| label: fig-marg-stresd
+std_resid_marginal_hist <-
+  bw |>
+  ggplot(aes(x = std_resid_lm2)) +
+  geom_histogram()
+
+print(std_resid_marginal_hist)
+```
+
+::: notes
+This looks similar, although the scale of the x-axis got narrower, because we divided by $\hat\sigma$ (roughly speaking).
+
+Still hard to tell if the distribution is Gaussian.
+
+:::
+
+---
+
+### QQ plot of standardized residuals
+
+::: notes
+Another way to assess whether the standardized residuals follow a standard normal distribution
+is a **quantile-quantile (QQ) plot**.
+
+A QQ plot compares the empirical distribution of a dataset to a theoretical reference distribution.
+Each point corresponds to one observation:
+
+- The **x-axis** (Theoretical Quantiles) shows the $N(0,1)$ quantile
+  corresponding to the plotting position $p_i = (\text{rank}_i - 0.5) / n$
+  assigned to each observation based on its rank.
+- The **y-axis** (Standardized Residuals) shows the observed standardized residual $r_i$.
+
+If the standardized residuals approximately follow $N(0,1)$,
+the points should fall approximately on a straight line.
+:::
+
+```{r}
+library(ggfortify)
+# needed to make ggplot2::autoplot() work for `lm` objects
+
+qqplot_lm2_auto <-
+  bw_lm2 |>
+  autoplot(
+    which = 2, # options are 1:6; can do multiple at once
+    ncol = 1
+  ) +
+  theme_classic()
+
+print(qqplot_lm2_auto)
+```
+
+::: notes
+If the Gaussian model were correct, the points should fall approximately on the reference line.
+
+The **reference line** passes through the pairs of theoretical and empirical quantiles
+at probabilities 0.25 and 0.75:
+it connects $(\Phi^{-1}(0.25),\, \hat{Q}_{0.25})$ and $(\Phi^{-1}(0.75),\, \hat{Q}_{0.75})$,
+where $\Phi^{-1}$ is the standard normal quantile function
+and $\hat{Q}_p$ is the $p$-th sample quantile of the standardized residuals.
+If the standardized residuals are approximately $N(0,1)$,
+this line should be close to the identity line $y = x$,
+and the points should fall roughly along a straight line.
+
+Systematic deviations from the line suggest departures from normality:
+
+- **S-shaped curves**: heavier or lighter tails than the normal distribution
+- **Concave or convex curves**: skewness
+- **Individual points far from the line**: potential outliers
+
+Fig 2.4 panel (c) in @dobson4e is a little different; they didn't specify how they produced it, but other statistical analysis systems do things differently from R.
+
+See also @dunn2018generalized [§3.5.4](https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_3#Sec14:~:text=3.5.4%20Q%E2%80%93Q%20Plots%20and%20Normality).
+
+:::
+
+---
+
+#### QQ plot: typical patterns
+
+:::{#fig-qqplot-patterns}
+
+```{r}
+#| fig-height: 5
+#| fig-width: 10
+set.seed(36) # seed chosen for Fig. 3.6 reproduction
+n <- 150     # sample size as in @dunn2018generalized Fig. 3.6
+
+sims <- list(
+  "Right skewed"    = rchisq(n, df = 3),
+  "Left skewed"     = -rchisq(n, df = 3),
+  "Tails too heavy" = rt(n, df = 3),
+  "Tails too light" = runif(n, -sqrt(3), sqrt(3)),
+  "True normal"     = rnorm(n),
+  "Bimodal"         = c(rnorm(n / 2, -2.5), rnorm(n / 2, 2.5))
+)
+
+old_par <- par(
+  mfcol = c(2, 6),
+  mar = c(3, 3, 2, 0.5),
+  oma = c(0, 0, 0, 0)
+)
+
+for (nm in names(sims)) {
+  qqnorm(
+    sims[[nm]],
+    main = nm,
+    xlab = "Theoretical Quantiles",
+    ylab = "Sample Quantiles",
+    pch = 1,
+    cex = 0.6
+  )
+  qqline(sims[[nm]])
+  hist(
+    sims[[nm]],
+    main = "",
+    xlab = "Residuals",
+    ylab = "Frequency",
+    col = "grey70",
+    border = "white",
+    breaks = 15
+  )
+}
+
+par(old_par)
+```
+
+Typical QQ-plot patterns for six types of residual distribution.
+Adapted from @dunn2018generalized [Fig. 3.6], with thanks to the authors;
+reproduced here using simulated data ($n = 150$).
+Each column shows one distribution scenario:
+a QQ plot (top) paired with a histogram of the simulated data (bottom).
+
+:::
+
+---
+
+#### QQ plot - how it's built
+
+::: notes
+To construct a QQ plot by hand:
+
+1. Assign each standardized residual a **plotting position** $p_i$
+   based on its rank among the $n$ observations.
+   R's default formula for $n > 10$ is:
+   $$p_i = \frac{\text{rank}_i - 0.5}{n}$$
+2. Compute the **theoretical quantile**: $q_i = \Phi^{-1}(p_i)$,
+   the value from $N(0,1)$ that corresponds to probability $p_i$.
+3. Plot $(q_i, r_i)$ — theoretical quantile $q_i$ on the x-axis,
+   observed standardized residual $r_i$ (see @def-stred) on the y-axis.
+4. Add the **reference line** through the pairs of theoretical and empirical quantiles
+   at probabilities 0.25 and 0.75.
+:::
+
+```{r}
+bw <- bw |>
+  mutate(
+    # plotting position: (rank - 0.5) / n
+    p = (rank(std_resid_lm2) - 1 / 2) / n(),
+    expected_quantiles_lm2 = qnorm(p)
+  )
+
+qqplot_lm2 <-
+  bw |>
+  ggplot(
+    aes(
+      x = expected_quantiles_lm2,
+      y = std_resid_lm2,
+      col = sex,
+      shape = sex
+    )
+  ) +
+  geom_point() +
+  theme_classic() +
+  theme(legend.position = "none") + # removing the plot legend
+  ggtitle("Normal Q-Q") +
+  xlab("Theoretical Quantiles") +
+  ylab("Standardized residuals")
+
+# find the reference line through the (theoretical, empirical) quantile pairs
+# at probabilities 0.25 and 0.75:
+
+ps <- c(.25, .75) # reference probabilities
+a <- quantile(rstandard(bw_lm2), ps) # empirical quantiles
+b <- qnorm(ps) # theoretical quantiles
+
+qq_slope <- diff(a) / diff(b)
+qq_intcpt <- a[1] - b[1] * qq_slope
+
+qqplot_lm2 <-
+  qqplot_lm2 +
+  geom_abline(slope = qq_slope, intercept = qq_intcpt)
+
+print(qqplot_lm2)
+```
+
+---
+
+### Conditional distributions of residuals
+
+If our Gaussian linear regression model is correct, the residuals $e_i$ and standardized residuals $r_i$ should have:
+
+-   an approximately Gaussian distribution, with:
+-   a mean of 0
+-   a constant variance
+
+This should be true **for every** value of $x$.
+
+---
+
+If we didn't correctly guess the functional form of the linear component of the mean, 
+$$\text{E}[Y|X=x] = \beta_0 + \beta_1 X_1 + ... + \beta_p X_p$$
+
+Then the residuals might have nonzero mean.
+
+Regardless of whether we guessed the mean function correctly, ther the variance of the residuals might differ between values of $x$.
+
+---
+
+#### Residuals versus fitted values
+
+::: notes
+To look for these issues, we can plot the residuals $e_i$ against the fitted values $\hat y_i$ (@fig-bw_lm2-resid-vs-fitted).
+:::
+
+:::{#fig-bw_lm2-resid-vs-fitted}
+
+```{r}
+autoplot(bw_lm2, which = 1, ncol = 1) |> print()
+```
+
+`birthweight` model  (@eq-BW-lm-interact): residuals versus fitted values
+:::
+
+::: notes
+If the model is correct, the blue line should stay flat and close to 0, and the cloud of dots should have the same vertical spread regardless of the fitted value.
+
+If not, we probably need to change the functional form of linear component of the mean, $$\text{E}[Y|X=x] = \beta_0 + \beta_1 X_1 + ... + \beta_p X_p$$
+
+:::
+
+---
+
+{{< include exm-plot-fits.qmd >}}
+---
+
+#### Scale-location plot
+
+::: notes
+We can also plot the square roots of the absolute values of the standardized residuals against the fitted values (@fig-bw-scale-loc).
+:::
+
+```{r}
+#| label: fig-bw-scale-loc
+#| fig-cap: "Scale-location plot of `birthweight` data"
+autoplot(bw_lm2, which = 3, ncol = 1) |> print()
+```
+
+::: notes
+Here, the blue line doesn't need to be near 0, 
+but it should be flat. 
+If not, the residual variance $\sigma^2$ might not be constant, 
+and we might need to transform our outcome $Y$ 
+(or use a model that allows non-constant variance).
+:::
+
+---
+
+#### Residuals versus leverage
+
+::: notes
+
+We can also plot our standardized residuals against "leverage", which roughly speaking is a measure of how unusual each $x_i$ value is. Very unusual $x_i$ values can have extreme effects on the model fit, so we might want to remove those observations as outliers, particularly if they have large residuals.
+
+:::
+
+::: {#fig-bw_lm2_resid-vs-leverage}
+
+```{r}
+autoplot(bw_lm2, which = 5, ncol = 1) |> print()
+```
+
+`birthweight` model with interactions (@eq-BW-lm-interact): residuals versus leverage
+:::
+
+::: notes
+The blue line should be relatively flat and close to 0 here.
+:::
+
+---
+
+### Diagnostics constructed by hand
+
+```{r}
+bw <-
+  bw |>
+  mutate(
+    predlm2 = predict(bw_lm2),
+    residlm2 = weight - predlm2,
+    std_resid = residlm2 / sigma(bw_lm2),
+    # std_resid_builtin = rstandard(bw_lm2), # uses leverage
+    sqrt_abs_std_resid = std_resid |> abs() |> sqrt()
+  )
+```
+
+##### Residuals vs fitted
+
+```{r}
+resid_vs_fit <- bw |>
+  ggplot(
+    aes(x = predlm2, y = residlm2, col = sex, shape = sex)
+  ) +
+  geom_point() +
+  theme_classic() +
+  geom_hline(yintercept = 0)
+
+print(resid_vs_fit)
+```
+
+
+##### Standardized residuals vs fitted
+
+```{r}
+bw |>
+  ggplot(
+    aes(x = predlm2, y = std_resid, col = sex, shape = sex)
+  ) +
+  geom_point() +
+  theme_classic() +
+  geom_hline(yintercept = 0)
+```
+
+##### Standardized residuals vs gestational age
+
+```{r}
+bw |>
+  ggplot(
+    aes(x = age, y = std_resid, col = sex, shape = sex)
+  ) +
+  geom_point() +
+  theme_classic() +
+  geom_hline(yintercept = 0)
+```
+
+##### `sqrt(abs(rstandard()))` vs fitted
+
+Compare with `autoplot(bw_lm2, 3)`
+
+```{r}
+bw |>
+  ggplot(
+    aes(x = predlm2, y = sqrt_abs_std_resid, col = sex, shape = sex)
+  ) +
+  geom_point() +
+  theme_classic() +
+  geom_hline(yintercept = 0)
+```
+
