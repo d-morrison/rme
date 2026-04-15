@@ -642,7 +642,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">Last modified: 2026-04-15: 2:01:33 (UTC)</p>
+      <p class="date">Last modified: 2026-04-15: 2:05:12 (UTC)</p>
     </div>
   </div>
   
@@ -2981,7 +2981,7 @@ X'y &amp;= \mathbf{X}'\mathbf{X}\beta\\
 <hr></section><section id="estimated-covariance-matrix-and-standard-errors" class="level3" data-number="4.2.2"><h3 data-number="4.2.2" class="anchored" data-anchor-id="estimated-covariance-matrix-and-standard-errors">
 <span class="header-section-number">4.2.2</span> Estimated covariance matrix and standard errors</h3>
 <div id="exm-bw-inference" class="theorem example">
-<p><span class="theorem-title"><strong>Example 4.1 (MLEs for birthweight data)</strong></span> In model <a href="#eq-BW-lm-interact" class="quarto-xref">2.2</a> above, <span class="math inline">\(\hat{\mathcal{I}}(\beta)\)</span> is:</p>
+<p><span class="theorem-title"><strong>Example 4.2 (MLEs for birthweight data)</strong></span> In model <a href="#eq-BW-lm-interact" class="quarto-xref">2.2</a> above, <span class="math inline">\(\hat{\mathcal{I}}(\beta)\)</span> is:</p>
 <details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw_lm2</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/vcov.html">vcov</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             (Intercept)  sexmale        age sexmale:age</span></span>
 <span><span class="co">#&gt; (Intercept)     1353968 -1353968 -34870.966   34870.966</span></span>
@@ -2998,8 +2998,41 @@ Table&nbsp;4.1: Covariance matrix of <span class="math inline">\(\hat{\tilde{\be
 </div>
 </figure>
 </div>
+<section id="interpreting-the-layout-of-the-covariance-matrix" class="level4"><h4 class="anchored" data-anchor-id="interpreting-the-layout-of-the-covariance-matrix">Interpreting the layout of the covariance matrix</h4>
+<p>The covariance matrix <span class="math inline">\(\widehat{\text{Cov}}(\hat{\tilde{\beta}})\)</span> is a <span class="math inline">\(p \times p\)</span> symmetric matrix, where <span class="math inline">\(p\)</span> is the number of regression coefficients (including the intercept, if present). Its rows and columns correspond to those <span class="math inline">\(p\)</span> coefficient estimates. When an intercept is included, the coefficients are typically written <span class="math inline">\(\hat\beta_0, \hat\beta_1, \ldots\)</span>, with <span class="math inline">\(\hat\beta_0\)</span> denoting the intercept. The matrix entries themselves are still indexed by position, so matrix row/column index <span class="math inline">\(1\)</span> corresponds to the intercept term when one is included.</p>
+<p>The general layout is:</p>
+<p><span class="math display">\[
+\widehat{\text{Cov}}(\hat{\tilde{\beta}}) =
+\begin{array}{c|cccc}
+  &amp; \hat\beta_0 &amp; \hat\beta_1 &amp; \cdots &amp; \hat\beta_{p-1} \\
+\hline
+\hat\beta_0     &amp; \text{Var}{\left(\hat\beta_0\right)}                    &amp; \text{Cov}{\left(\hat\beta_0, \hat\beta_1\right)}     &amp; \cdots &amp; \text{Cov}{\left(\hat\beta_0, \hat\beta_{p-1}\right)}     \\
+\hat\beta_1     &amp; \text{Cov}{\left(\hat\beta_1, \hat\beta_0\right)}         &amp; \text{Var}{\left(\hat\beta_1\right)}                &amp; \cdots &amp; \text{Cov}{\left(\hat\beta_1, \hat\beta_{p-1}\right)}     \\
+\vdots       &amp; \vdots                             &amp; \vdots                        &amp; \ddots &amp; \vdots \\
+\hat\beta_{p-1} &amp; \text{Cov}{\left(\hat\beta_{p-1}, \hat\beta_0\right)}     &amp; \text{Cov}{\left(\hat\beta_{p-1}, \hat\beta_1\right)} &amp; \cdots &amp; \text{Var}{\left(\hat\beta_{p-1}\right)}
+\end{array}
+\]</span></p>
+<p>That is:</p>
+<ul>
+<li>The <strong>diagonal</strong> entries are the <strong>variances</strong> of the individual coefficient estimates: the entry in matrix position <span class="math inline">\((j+1, j+1)\)</span> is <span class="math inline">\(\text{Var}{\left(\hat\beta_j\right)}\)</span>, for <span class="math inline">\(j = 0, 1, \ldots, p - 1\)</span>.</li>
+<li>The <strong>off-diagonal</strong> entries are the <strong>covariances</strong> between pairs of coefficient estimates: the entry in matrix position <span class="math inline">\((i+1, j+1)\)</span> is <span class="math inline">\(\text{Cov}{\left(\hat\beta_i, \hat\beta_j\right)}\)</span>, for <span class="math inline">\(i \neq j\)</span>.</li>
+<li>The matrix is <strong>symmetric</strong>: <span class="math inline">\(\text{Cov}{\left(\hat\beta_i, \hat\beta_j\right)} = \text{Cov}{\left(\hat\beta_j, \hat\beta_i\right)}\)</span>.</li>
+</ul>
+<div id="exm-vcov-bw" class="theorem example">
+<p><span class="theorem-title"><strong>Example 4.1 (Schematic for the birthweight model)</strong></span> For model <a href="#eq-BW-lm-interact" class="quarto-xref">2.2</a>, which has four coefficients <span class="math inline">\((\hat\beta_0, \hat\beta_M, \hat\beta_A, \hat\beta_{AM})\)</span>, the covariance matrix has the following layout:</p>
+<p><span class="math display">\[
+\widehat{\text{Cov}}(\hat{\tilde{\beta}}) =
+\begin{array}{c|cccc}
+  &amp; \hat\beta_0 &amp; \hat\beta_M &amp; \hat\beta_A &amp; \hat\beta_{AM} \\
+\hline
+\hat\beta_0   &amp; \text{Var}{\left(\hat\beta_0\right)}                &amp; \text{Cov}{\left(\hat\beta_0, \hat\beta_M\right)}    &amp; \text{Cov}{\left(\hat\beta_0, \hat\beta_A\right)}    &amp; \text{Cov}{\left(\hat\beta_0, \hat\beta_{AM}\right)}    \\
+\hat\beta_M   &amp; \text{Cov}{\left(\hat\beta_M, \hat\beta_0\right)}    &amp; \text{Var}{\left(\hat\beta_M\right)}               &amp; \text{Cov}{\left(\hat\beta_M, \hat\beta_A\right)}    &amp; \text{Cov}{\left(\hat\beta_M, \hat\beta_{AM}\right)}    \\
+\hat\beta_A   &amp; \text{Cov}{\left(\hat\beta_A, \hat\beta_0\right)}    &amp; \text{Cov}{\left(\hat\beta_A, \hat\beta_M\right)}    &amp; \text{Var}{\left(\hat\beta_A\right)}               &amp; \text{Cov}{\left(\hat\beta_A, \hat\beta_{AM}\right)}    \\
+\hat\beta_{AM}&amp; \text{Cov}{\left(\hat\beta_{AM}, \hat\beta_0\right)} &amp; \text{Cov}{\left(\hat\beta_{AM}, \hat\beta_M\right)} &amp; \text{Cov}{\left(\hat\beta_{AM}, \hat\beta_A\right)} &amp; \text{Var}{\left(\hat\beta_{AM}\right)}
+\end{array}
+\]</span></p>
 <div class="notes">
-<p>If we take the square roots of the diagonals, we get the standard errors listed in the model output:</p>
+<p>The square roots of the diagonal entries give the standard errors of the coefficient estimates:</p>
 </div>
 <div class="cell">
 <details open="" class="code-fold"><summary>Show R code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bw_lm2</span> <span class="op">|&gt;</span></span>
@@ -3079,6 +3112,8 @@ Table&nbsp;4.2: Estimated model for <code>birthweight</code> data with interacti
 <div class="notes">
 <p>So we can do confidence intervals, hypothesis tests, and p-values exactly as in the one-variable case we looked at previously.</p>
 </div>
+</div>
+</section>
 </div>
 </section><section id="wald-tests-and-confidence-intervals" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="wald-tests-and-confidence-intervals">
 <span class="header-section-number">4.2.3</span> Wald tests and confidence intervals</h3>
