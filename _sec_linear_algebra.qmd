@@ -420,6 +420,31 @@ with the vector $\vx$.
 See also @def-zero-matrix for the zero matrix.
 :::
 
+:::{#def-square-matrix}
+#### Square matrix
+
+A matrix is **square** if it has the same number of rows as columns.
+The number of rows (= columns) is the **order** of the matrix.
+
+:::
+
+---
+
+:::{#def-matrix-power}
+#### Matrix power
+
+For a square matrix $\matr{A}$ of order $p$
+and a positive integer $k$,
+the $k$-th **power** of $\matr{A}$ is:
+
+$$\matr{A}^k = \underbrace{\matr{A}\,\matr{A}\cdots\matr{A}}_{k \text{ copies}}$$
+
+In particular, $\matr{A}^2 = \matr{A}\matr{A}$.
+
+:::
+
+---
+
 :::{#def-identity-matrix}
 #### Identity matrix
 
@@ -522,6 +547,104 @@ For invertible matrices $\matr{A}$ and $\matr{B}$:
 
 $$(\matr{A}\matr{B})^{-1} = \matr{B}^{-1}\matr{A}^{-1}$$
 
+:::
+
+---
+
+:::{#def-idempotent-matrix}
+#### Idempotent matrix
+
+A square matrix $\matr{A}$ is **idempotent** if
+
+$$\matr{A}^2 = \matr{A}$$
+
+:::
+
+---
+
+:::{#def-projection-matrix}
+#### Projection matrix
+
+A square matrix $\matr{P}$ is a **projection matrix**
+(also called an **orthogonal projector**) if it is both symmetric and idempotent:
+
+$$\tp{\matr{P}} = \matr{P}
+\qquad \text{and} \qquad
+\matr{P}^2 = \matr{P}$$
+
+:::
+
+---
+
+:::{#thm-projection-complement}
+#### Complement of a projection matrix
+
+If $\matr{P}$ is a projection matrix, then $\matr{I} - \matr{P}$ is also a projection matrix.
+
+:::
+
+:::{.proof}
+We verify symmetry and idempotency.
+
+**Symmetry:**
+$$\tp{(\matr{I} - \matr{P})} = \tp{\matr{I}} - \tp{\matr{P}} = \matr{I} - \matr{P}$$
+
+**Idempotency:**
+$$\ba
+(\matr{I} - \matr{P})^2
+&= (\matr{I} - \matr{P})(\matr{I} - \matr{P}) \\
+&= \matr{I} - \matr{P} - \matr{P} + \matr{P}^2 \\
+&= \matr{I} - \matr{P} - \matr{P} + \matr{P} \\
+&= \matr{I} - \matr{P}
+\ea$$
+:::
+
+---
+
+:::{#thm-hat-matrix}
+#### Hat matrix is a projection matrix
+
+In a linear regression model with full-rank design matrix $\mX$,
+the **hat matrix**
+
+$$\matr{H} = \mX(\tp{\mX}\mX)^{-1}\tp{\mX}$$
+
+is a projection matrix.
+
+:::
+
+:::{.proof}
+We verify symmetry and idempotency.
+
+**Symmetry:**
+$$\ba
+\tp{\matr{H}}
+&= \tp{\left(\mX(\tp{\mX}\mX)^{-1}\tp{\mX}\right)} \\
+&= \tp{(\tp{\mX})} \cdot \tp{\left((\tp{\mX}\mX)^{-1}\right)} \cdot \tp{\mX} \\
+&= \mX \cdot (\tp{\mX}\mX)^{-1} \cdot \tp{\mX} \\
+&= \matr{H}
+\ea$$
+
+where the third line uses $\tp{(\tp{\mX})} = \mX$
+and the fact that $\tp{\mX}\mX$ is symmetric,
+so its inverse is also symmetric
+($\tp{\left((\tp{\mX}\mX)^{-1}\right)} = (\tp{\mX}\mX)^{-1}$).
+
+**Idempotency:**
+$$\ba
+\matr{H}^2
+&= \mX(\tp{\mX}\mX)^{-1}\tp{\mX} \cdot \mX(\tp{\mX}\mX)^{-1}\tp{\mX} \\
+&= \mX(\tp{\mX}\mX)^{-1}(\tp{\mX}\mX)(\tp{\mX}\mX)^{-1}\tp{\mX} \\
+&= \mX(\tp{\mX}\mX)^{-1}\tp{\mX} \\
+&= \matr{H}
+\ea$$
+:::
+
+::: notes
+The hat matrix appears in the formula for fitted values
+in linear regression:
+$\hat{\vy} = \mX\hat{\vb} = \mX(\tp{\mX}\mX)^{-1}\tp{\mX}\vy = \matr{H}\vy$.
+It "puts a hat" on $\vy$ — hence the name.
 :::
 
 ---
