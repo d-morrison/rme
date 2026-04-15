@@ -1,0 +1,324 @@
+## Partial F-test for nested linear models {#sec-partial-F-test}
+
+::: notes
+See @vittinghoff2e [§4.3] and @dobson4e [§6.3] for further discussion.
+:::
+
+### Setup {#sec-partial-F-test-setup}
+
+Suppose we have two **nested** linear regression models:
+
+::: {#def-nested-lm}
+#### Nested linear models
+
+$$
+\E{Y \mid \vx}
+= \tp{\vx}\vb
+= \beta_0 + \beta_1 x_1 + \cdots + \beta_{p_1 - 1} x_{p_1 - 1}
+$${#eq-lm-reduced}
+
+$$
+\E{Y \mid \vx, \vec{z}}
+= \tp{\vx}\vb + \tp{\vec{z}}\vec{\g}
+= \beta_0 + \beta_1 x_1 + \cdots + \beta_{p_1 - 1} x_{p_1 - 1}
+  + \gamma_1 z_1 + \cdots + \gamma_q z_q
+$${#eq-lm-full}
+
+The **reduced model** (@eq-lm-reduced) has $p_1$ parameters.
+The **full model** (@eq-lm-full) adds $q$ extra predictors
+and has $p_2 = p_1 + q$ parameters.
+The reduced model is a special case of the full model
+with the constraint $\vec{\g} = \vec 0$.
+:::
+
+---
+
+The null and alternative hypotheses are:
+
+$$H_0: \vec{\g} = \vec 0 \qquad \text{(reduced model)}$$
+$$H_A: \vec{\g} \neq \vec 0 \qquad \text{(full model)}$$
+
+---
+
+::: {#exm-nested-lm-bw}
+#### Nested models: `birthweight` data
+
+In the `birthweight` example, the **reduced model** has $p_1 = 3$ parameters:
+
+$$\E{\text{weight} \mid \text{sex}, \text{age}} = \beta_0 + \beta_{\text{sex}} \cdot \text{sex} + \beta_A \cdot \text{age}$$
+
+The **full model** adds an interaction term ($q = 1$ extra parameter, $p_2 = 4$):
+
+$$\E{\text{weight} \mid \text{sex}, \text{age}} = \beta_0 + \beta_{\text{sex}} \cdot \text{sex} + \beta_A \cdot \text{age} + \beta_{AM} \cdot \text{sex} \cdot \text{age}$$
+
+$H_0: \beta_{AM} = 0$ vs. $H_A: \beta_{AM} \neq 0$.
+:::
+
+---
+
+### F-statistic {#sec-F-statistic}
+
+::: {#def-partial-F-statistic}
+#### Partial F-statistic
+
+Let $\text{RSS}_0$ and $\text{RSS}_1$ denote the residual sums of squares
+from the reduced and full models, respectively.
+The **partial F-statistic** is:
+
+$$
+F
+= \frac{(\text{RSS}_0 - \text{RSS}_1) \,/\, q}
+       {\text{RSS}_1 \,/\, (n - p_2)}
+$${#eq-partial-F}
+
+where:
+
+-   $\text{RSS}_0 = \sumin (y_i - \hat{y}_i^{(0)})^2$ is the residual SS under $H_0$
+-   $\text{RSS}_1 = \sumin (y_i - \hat{y}_i^{(1)})^2$ is the residual SS under $H_A$
+-   $q = p_2 - p_1$ is the number of constraints (extra parameters in the full model)
+-   $n - p_2$ is the residual degrees of freedom of the full model
+:::
+
+---
+
+::: {#thm-partial-F-null-dist}
+#### Null distribution of the partial F-statistic
+
+Under $H_0$ and the Gaussian linear regression assumptions,
+
+$$
+F \dist F_{q,\; n - p_2}
+$${#eq-F-null-dist}
+
+This is an **exact** result (not an asymptotic approximation):
+it holds for any sample size $n$ when the errors $\epsilon_i \siid N(0, \sigma^2)$.
+:::
+
+---
+
+::: proof
+
+Under $H_0$, the extra predictors $\vec{z}$ contribute nothing,
+so the numerator $\text{RSS}_0 - \text{RSS}_1 \dist \sigma^2 \chi^2_q$
+and the denominator $\text{RSS}_1 \dist \sigma^2 \chi^2_{n-p_2}$
+are independent chi-squared random variables
+(this follows from the Gauss-Markov theorem and the properties
+of projections in the column spaces of the design matrices).
+Therefore,
+
+$$
+F
+= \frac{(\text{RSS}_0 - \text{RSS}_1)/q}{\text{RSS}_1/(n - p_2)}
+= \frac{\chi^2_q / q}{\chi^2_{n-p_2} / (n-p_2)}
+\dist F_{q,\; n-p_2}.
+$$
+
+:::
+
+---
+
+### Connection to deviance {#sec-F-test-deviance}
+
+From @sec-compare-lm-glm-deviance,
+the Gaussian deviance of model $k$ is
+$D_k = \text{RSS}_k / \hat\sigma^2$,
+where $\hat\sigma^2$ is an estimate of $\sigma^2$.
+Because $\hat\sigma^2$ appears in both the numerator and denominator
+of @eq-partial-F, it cancels:
+
+$$
+F
+= \frac{(D_0 - D_1) \,/\, q}{D_1 \,/\, (n - p_2)}
+= \frac{(\text{RSS}_0 - \text{RSS}_1) \,/\, q}{\text{RSS}_1 \,/\, (n - p_2)}
+$${#eq-F-from-deviance}
+
+The denominator $s^2 \eqdef \text{RSS}_1/(n - p_2)$
+is an unbiased estimator of $\sigma^2$ under both $H_0$ and $H_A$.
+
+---
+
+### Connection to the likelihood ratio test {#sec-F-test-LRT}
+
+The **approximate likelihood ratio test** (LRT) for MLEs
+(see @tbl-gaussian-vs-mle-tests and @sec-compare-lm-glm-deviance) uses the statistic:
+
+$$
+\lambda = 2(\llik_1 - \llik_0) \dot\sim \chi^2_q
+\quad \text{under } H_0 \text{ (asymptotically)}
+$${#eq-LRT-stat}
+
+For Gaussian linear regression,
+the MLE of $\sigma^2$ under model $k$ is $\hat\sigma^2_k = \text{RSS}_k / n$,
+so the log-likelihood at the MLE is:
+
+$$
+\ba
+\llik_k
+&= -\frac{n}{2}\log(2\pi\hat\sigma^2_k) - \frac{n}{2}
+\\
+&= -\frac{n}{2}\log\!\paren{\frac{2\pi\, \text{RSS}_k}{n}} - \frac{n}{2}
+\ea
+$${#eq-gaussian-loglik-at-MLE}
+
+Substituting into @eq-LRT-stat:
+
+$$
+\ba
+\lambda
+&= 2(\llik_1 - \llik_0)
+\\
+&= 2\left[
+   -\frac{n}{2}\log\!\paren{\frac{\text{RSS}_1}{n}}
+   +\frac{n}{2}\log\!\paren{\frac{\text{RSS}_0}{n}}
+   \right]
+\\
+&= n \log\!\paren{\frac{\text{RSS}_0}{\text{RSS}_1}}
+\ea
+$${#eq-gaussian-LRT}
+
+---
+
+#### Asymptotic equivalence of F-test and LRT
+
+For large $n$, $F$ and $\lambda$ are approximately related by:
+
+$$
+\lambda \approx q \cdot F
+$${#eq-F-LRT-approx}
+
+This follows because when $H_0$ is true and $n$ is large,
+$(\text{RSS}_0 - \text{RSS}_1) / \text{RSS}_1$ is small, and:
+
+$$
+\ba
+\lambda
+&= n \log\!\paren{\frac{\text{RSS}_0}{\text{RSS}_1}}
+\\
+&= n \log\!\paren{1 + \frac{\text{RSS}_0 - \text{RSS}_1}{\text{RSS}_1}}
+\\
+&\approx n \cdot \frac{\text{RSS}_0 - \text{RSS}_1}{\text{RSS}_1}
+\ea
+$$
+
+$$
+\ba
+q \cdot F
+&= q \cdot \frac{(\text{RSS}_0 - \text{RSS}_1)/q}{\text{RSS}_1/(n-p_2)}
+\\
+&= (n - p_2) \cdot \frac{\text{RSS}_0 - \text{RSS}_1}{\text{RSS}_1}
+\\
+&\approx n \cdot \frac{\text{RSS}_0 - \text{RSS}_1}{\text{RSS}_1}
+\ea
+$$
+
+So $\lambda \approx q \cdot F$ for large $n$,
+and both statistics have the same asymptotic null distribution $\chi^2_q$
+(since $q \cdot F_{q, n-p_2} \dot\sim \chi^2_q$ as $n \to \infty$).
+
+---
+
+::: {.callout-note}
+#### Why use the F-test instead of the LRT?
+
+For Gaussian linear regression:
+
+- The **F-test** is **exact** — it has the correct $F_{q,n-p_2}$ null distribution
+  for any sample size $n$,
+  provided the errors are Gaussian.
+  It accounts for the estimation of $\sigma^2$ via the residual degrees of freedom.
+
+- The **LRT** is **approximate** — it relies on the asymptotic $\chi^2_q$ distribution,
+  which requires large $n$ and treats $\sigma^2$ as known (fixed at its MLE).
+
+Both tests give similar p-values for large $n$.
+For small to moderate $n$, the F-test is preferred because it is exact.
+
+For non-Gaussian GLMs (Poisson, Binomial),
+the F-test is not applicable;
+the LRT (or Wald test) is the standard approach.
+:::
+
+---
+
+### In R {#sec-partial-F-test-R}
+
+In R, the partial F-test for two nested `lm` models
+is performed with `anova()`:
+
+```{r}
+#| label: tbl-partial-F-bw
+#| code-fold: false
+anova(bw_lm1, bw_lm2)
+```
+
+::: notes
+`anova(bw_lm1, bw_lm2)` performs the partial F-test comparing
+the reduced model `bw_lm1` (parallel slopes, no interaction)
+against the full model `bw_lm2` (with sex-age interaction).
+The output shows the RSS for each model, the difference, the F-statistic, and the p-value.
+:::
+
+---
+
+For comparison, the approximate likelihood ratio test using the `lmtest` package:
+
+```{r}
+#| label: tbl-LRT-bw-compare
+#| code-fold: false
+library(lmtest)
+lrtest(bw_lm1, bw_lm2)
+```
+
+::: notes
+Compare the p-values from `anova()` (exact F-test) and `lrtest()` (approximate LRT).
+They are similar but not identical:
+the F-test uses the $F_{1, n-4}$ distribution,
+while the LRT uses the asymptotic $\chi^2_1$ distribution.
+For large $n$, these p-values converge.
+:::
+
+---
+
+#### Extracting F-test components by hand
+
+To understand the computation, we can replicate the F-statistic manually:
+
+```{r}
+#| label: tbl-F-manual
+#| code-fold: false
+rss0 <- deviance(bw_lm1)   # RSS of reduced model
+rss1 <- deviance(bw_lm2)   # RSS of full model
+n    <- nobs(bw_lm2)
+p2   <- length(coef(bw_lm2))
+q    <- length(coef(bw_lm2)) - length(coef(bw_lm1))
+s2   <- rss1 / (n - p2)    # residual variance estimate from full model
+
+F_stat <- ((rss0 - rss1) / q) / s2
+p_val  <- pf(F_stat, df1 = q, df2 = n - p2, lower.tail = FALSE)
+
+cat("RSS_0 =", rss0, "\n")
+cat("RSS_1 =", rss1, "\n")
+cat("q     =", q,    "\n")
+cat("s^2   =", s2,   "\n")
+cat("F     =", F_stat, "\n")
+cat("p-val =", p_val,  "\n")
+```
+
+::: notes
+The LRT statistic $\lambda = n \log(\text{RSS}_0 / \text{RSS}_1) \approx q \cdot F$
+for large $n$.
+:::
+
+```{r}
+#| label: tbl-LRT-manual
+#| code-fold: false
+lambda <- n * log(rss0 / rss1)
+cat("LRT statistic lambda =", lambda, "\n")
+cat("q * F               =", q * F_stat, "\n")
+cat("LRT p-val (chi^2)   =", pchisq(lambda, df = q, lower.tail = FALSE), "\n")
+```
+
+::: notes
+The LRT statistic $\lambda$ and $q \cdot F$ are close in value,
+illustrating the asymptotic equivalence @eq-F-LRT-approx.
+:::
