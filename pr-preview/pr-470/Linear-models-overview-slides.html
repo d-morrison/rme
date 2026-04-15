@@ -3789,7 +3789,39 @@ Y^* - \hat{Y}^*
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside><div class="cell">
+      }</style></aside><p>The variance (<a href="#/eq-prediction-var" class="quarto-xref">Equation&nbsp;5.1</a>) has two components:</p>
+<ul>
+<li><p><span class="math inline">\(\text{Var}{\left(\varepsilon^*\right)} = \sigma^2\)</span>: the variance of the future observation’s own noise, which is irreducible.</p></li>
+<li><p><span class="math inline">\(\text{Var}{\left({({\tilde{x}^*})}^{\top}\hat \beta\right)} = {({\tilde{x}^*})}^{\top}\text{Var}{\left(\hat \beta\right)}{\tilde{x}^*}\)</span>: the variance due to estimating the mean <span class="math inline">\({({\tilde{x}^*})}^{\top}\tilde{\beta}\)</span> from the data.</p></li>
+</ul>
+<p>The first component is not present in the confidence interval for <span class="math inline">\(\hat\mu({\tilde{x}^*})\)</span>, which only accounts for estimation uncertainty. This is why prediction intervals are always wider than the corresponding confidence intervals: a prediction interval must additionally account for the irreducible noise <span class="math inline">\(\varepsilon^*\)</span> in a new observation.</p>
+<p>The <strong>standard error</strong> of the prediction error is the square root of its variance:</p>
+<p><span class="math display">\[
+\text{SE}{\left(Y^* - \hat{Y}^*\right)}
+= \sqrt{\text{Var}{\left(Y^* - \hat{Y}^*\right)}}
+= \sigma\sqrt{1 + {({\tilde{x}^*})}^{\top}(\mathbf{X}'\mathbf{X})^{-1}{\tilde{x}^*}}
+\]</span></p>
+<p>Replacing <span class="math inline">\(\sigma\)</span> with the residual standard error <span class="math inline">\(\hat \sigma\)</span> gives the estimated standard error:</p>
+<p><span id="eq-prediction-se"><span class="math display">\[
+\widehat{\text{SE}}{\left(Y^* - \hat{Y}^*\right)}
+= \hat \sigma\sqrt{1 + {({\tilde{x}^*})}^{\top}(\mathbf{X}'\mathbf{X})^{-1}{\tilde{x}^*}}
+\tag{5.2}\]</span></span></p>
+<p>Since <span class="math inline">\(\varepsilon^* \sim \text{N}{\left(0, \sigma^2\right)}\)</span> and <span class="math inline">\(\hat \beta\sim \text{N}{\left(\tilde{\beta}, \sigma^2(\mathbf{X}'\mathbf{X})^{-1}\right)}\)</span> are both normally distributed, and since <span class="math inline">\(\varepsilon^* \perp\!\!\!\perp\hat \beta\)</span> (as noted above in the variance derivation), their difference <span class="math inline">\(Y^* - \hat{Y}^* = \varepsilon^* - {({\tilde{x}^*})}^{\top}(\hat \beta- \tilde{\beta})\)</span> is also normally distributed, with mean 0 (as shown above) and variance given by <a href="#/eq-prediction-var" class="quarto-xref">Equation&nbsp;5.1</a>. Standardizing by dividing by <span class="math inline">\(\sigma\sqrt{1 + {({\tilde{x}^*})}^{\top}(\mathbf{X}'\mathbf{X})^{-1}{\tilde{x}^*}}\)</span> yields a standard normal random variable. Replacing <span class="math inline">\(\sigma\)</span> with <span class="math inline">\(\hat \sigma\)</span>, which is estimated with <span class="math inline">\(n-p\)</span> degrees of freedom and is independent of <span class="math inline">\(Y^* - \hat{Y}^*\)</span>, the standardized prediction error follows a <span class="math inline">\(t\)</span> distribution:</p>
+<p><span class="math display">\[
+\frac{Y^* - \hat{Y}^*}{\widehat{\text{SE}}{\left(Y^* - \hat{Y}^*\right)}} \sim t_{n-p}
+\]</span></p>
+<p>Therefore, a <span class="math inline">\((1-\alpha)\)</span> <strong>prediction interval</strong> for <span class="math inline">\(Y^*\)</span> is:</p>
+<p><span id="eq-prediction-interval"><span class="math display">\[
+Y^* \in
+{\left(
+\hat{Y}^*
+\pm
+t_{n-p}{\left(1 - \frac{\alpha}{2}\right)}
+\cdot
+\widehat{\text{SE}}{\left(Y^* - \hat{Y}^*\right)}
+\right)}
+\tag{5.3}\]</span></span></p>
+<div class="cell">
 <details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a></a>bw_lm2 <span class="sc">|&gt;</span></span>
 <span id="cb62-2"><a></a>  <span class="fu">predict</span>(<span class="at">newdata =</span> x, <span class="at">interval =</span> <span class="st">"predict"</span>)</span>
 <span id="cb62-3"><a></a><span class="co">#&gt;       fit     lwr     upr</span></span>
