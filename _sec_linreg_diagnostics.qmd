@@ -847,9 +847,57 @@ qq_intcpt <- a[1] - b[1] * qq_slope
 qqplot_lm2 <-
   qqplot_lm2 +
   geom_abline(slope = qq_slope, intercept = qq_intcpt)
+```
 
+:::{#fig-qqplot-comparison layout-ncol=3}
+
+:::{#fig-qqplot-manual}
+
+```{r}
 print(qqplot_lm2)
 ```
+
+`ggplot2` (manual construction)
+
+:::
+
+:::{#fig-qqplot-baser}
+
+```{r}
+qqnorm(
+  rstandard(bw_lm2),
+  main = "Normal Q-Q",
+  xlab = "Theoretical Quantiles",
+  ylab = "Standardized residuals"
+)
+qqline(rstandard(bw_lm2))
+```
+
+base R (`qqnorm` + `qqline`)
+
+:::
+
+:::{#fig-qqplot-autoplot}
+
+```{r}
+library(ggfortify)
+autoplot(
+  bw_lm2,
+  which = 2,
+  ncol = 1
+) +
+  theme_classic()
+```
+
+`ggfortify::autoplot()`
+
+:::
+
+Three equivalent ways to produce a QQ plot of the standardized residuals
+for the `birthweight` model (@eq-BW-lm-interact).
+All three plots show the same data and reference line.
+
+:::
 
 ---
 
