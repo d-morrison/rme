@@ -6434,7 +6434,13 @@ Figure&nbsp;6.12: Marginal distribution of standardized residuals
           overflow: hidden!important;
           display:block!important;
       }</style></aside></section><section class="slide level2"><h3 id="qq-plot-of-standardized-residuals">QQ plot of standardized residuals</h3>
-<aside class="notes"><p>Another way to assess normality is the QQ plot of the standardized residuals versus normal quantiles:</p>
+<aside class="notes"><p>Another way to assess whether the standardized residuals follow a standard normal distribution is a <strong>quantile-quantile (QQ) plot</strong>.</p>
+<p>A QQ plot compares the empirical distribution of a dataset to a theoretical reference distribution. Each point corresponds to one observation:</p>
+<ul>
+<li>The <strong>x-axis</strong> (Theoretical Quantiles) shows the <span class="math inline">\(N(0,1)\)</span> quantile corresponding to the plotting position <span class="math inline">\(p_i = (\text{rank}_i - 0.5) / n\)</span> assigned to each observation based on its rank.</li>
+<li>The <strong>y-axis</strong> (Standardized Residuals) shows the observed standardized residual <span class="math inline">\(r_i\)</span>.</li>
+</ul>
+<p>If the standardized residuals approximately follow <span class="math inline">\(N(0,1)\)</span>, the points should fall approximately on a straight line.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -6465,7 +6471,17 @@ Figure&nbsp;6.12: Marginal distribution of standardized residuals
 </div>
 </div>
 </div>
-<aside class="notes"><p>If the Gaussian model were correct, these points should follow the dotted line.</p>
+<aside class="notes"><p>If the Gaussian model were correct, the points should fall approximately on the reference line.</p>
+<p>The <strong>reference line</strong> passes through the pairs of theoretical and empirical quantiles at probabilities 0.25 and 0.75: it connects <span class="math inline">\((\Phi^{-1}(0.25),\, \hat{Q}_{0.25})\)</span> and <span class="math inline">\((\Phi^{-1}(0.75),\, \hat{Q}_{0.75})\)</span>, where <span class="math inline">\(\Phi^{-1}\)</span> is the standard normal quantile function and <span class="math inline">\(\hat{Q}_p\)</span> is the <span class="math inline">\(p\)</span>-th sample quantile of the standardized residuals. If the standardized residuals are approximately <span class="math inline">\(N(0,1)\)</span>, this line should be close to the identity line <span class="math inline">\(y = x\)</span>, and the points should fall roughly along a straight line.</p>
+<p>Systematic deviations from the line suggest departures from normality:</p>
+<ul>
+<li>
+<strong>S-shaped curves</strong>: heavier or lighter tails than the normal distribution</li>
+<li>
+<strong>Concave or convex curves</strong>: skewness</li>
+<li>
+<strong>Individual points far from the line</strong>: potential outliers</li>
+</ul>
 <p>Fig 2.4 panel (c) in <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span> is a little different; they didn’t specify how they produced it, but other statistical analysis systems do things differently from R.</p>
 <p>See also <span class="citation" data-cites="dunn2018generalized">Dunn and Smyth (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span> <a href="https://link.springer.com/chapter/10.1007/978-1-4419-0118-7_3#Sec14:~:text=3.5.4%20Q%E2%80%93Q%20Plots%20and%20Normality">§3.5.4</a>.</p>
 <style type="text/css">
@@ -6478,9 +6494,71 @@ Figure&nbsp;6.12: Marginal distribution of standardized residuals
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside></section><section class="slide level2"><h4 id="qq-plot---how-its-built">QQ plot - how it’s built</h4>
-<aside class="notes"><p>Let’s construct it by hand:</p>
-<style type="text/css">
+      }</style></aside></section><section class="slide level2"><h4 id="qq-plot-typical-patterns">QQ plot: typical patterns</h4>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb111"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a></a><span class="fu">set.seed</span>(<span class="dv">36</span>) <span class="co"># seed chosen for Fig. 3.6 reproduction</span></span>
+<span id="cb111-2"><a></a>n <span class="ot">&lt;-</span> <span class="dv">150</span>     <span class="co"># sample size as in @dunn2018generalized Fig. 3.6</span></span>
+<span id="cb111-3"><a></a></span>
+<span id="cb111-4"><a></a>sims <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb111-5"><a></a>  <span class="st">"Right skewed"</span>    <span class="ot">=</span> <span class="fu">rchisq</span>(n, <span class="at">df =</span> <span class="dv">3</span>),</span>
+<span id="cb111-6"><a></a>  <span class="st">"Left skewed"</span>     <span class="ot">=</span> <span class="sc">-</span><span class="fu">rchisq</span>(n, <span class="at">df =</span> <span class="dv">3</span>),</span>
+<span id="cb111-7"><a></a>  <span class="st">"Tails too heavy"</span> <span class="ot">=</span> <span class="fu">rt</span>(n, <span class="at">df =</span> <span class="dv">3</span>),</span>
+<span id="cb111-8"><a></a>  <span class="st">"Tails too light"</span> <span class="ot">=</span> <span class="fu">runif</span>(n, <span class="sc">-</span><span class="fu">sqrt</span>(<span class="dv">3</span>), <span class="fu">sqrt</span>(<span class="dv">3</span>)),</span>
+<span id="cb111-9"><a></a>  <span class="st">"True normal"</span>     <span class="ot">=</span> <span class="fu">rnorm</span>(n),</span>
+<span id="cb111-10"><a></a>  <span class="st">"Bimodal"</span>         <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">rnorm</span>(n <span class="sc">/</span> <span class="dv">2</span>, <span class="sc">-</span><span class="fl">2.5</span>), <span class="fu">rnorm</span>(n <span class="sc">/</span> <span class="dv">2</span>, <span class="fl">2.5</span>))</span>
+<span id="cb111-11"><a></a>)</span>
+<span id="cb111-12"><a></a></span>
+<span id="cb111-13"><a></a>old_par <span class="ot">&lt;-</span> <span class="fu">par</span>(</span>
+<span id="cb111-14"><a></a>  <span class="at">mfcol =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">6</span>),</span>
+<span id="cb111-15"><a></a>  <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="fl">0.5</span>),</span>
+<span id="cb111-16"><a></a>  <span class="at">oma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb111-17"><a></a>)</span>
+<span id="cb111-18"><a></a></span>
+<span id="cb111-19"><a></a><span class="cf">for</span> (nm <span class="cf">in</span> <span class="fu">names</span>(sims)) {</span>
+<span id="cb111-20"><a></a>  <span class="fu">qqnorm</span>(</span>
+<span id="cb111-21"><a></a>    sims[[nm]],</span>
+<span id="cb111-22"><a></a>    <span class="at">main =</span> nm,</span>
+<span id="cb111-23"><a></a>    <span class="at">xlab =</span> <span class="st">"Theoretical Quantiles"</span>,</span>
+<span id="cb111-24"><a></a>    <span class="at">ylab =</span> <span class="st">"Sample Quantiles"</span>,</span>
+<span id="cb111-25"><a></a>    <span class="at">pch =</span> <span class="dv">1</span>,</span>
+<span id="cb111-26"><a></a>    <span class="at">cex =</span> <span class="fl">0.6</span></span>
+<span id="cb111-27"><a></a>  )</span>
+<span id="cb111-28"><a></a>  <span class="fu">qqline</span>(sims[[nm]])</span>
+<span id="cb111-29"><a></a>  <span class="fu">hist</span>(</span>
+<span id="cb111-30"><a></a>    sims[[nm]],</span>
+<span id="cb111-31"><a></a>    <span class="at">main =</span> <span class="st">""</span>,</span>
+<span id="cb111-32"><a></a>    <span class="at">xlab =</span> <span class="st">"Residuals"</span>,</span>
+<span id="cb111-33"><a></a>    <span class="at">ylab =</span> <span class="st">"Frequency"</span>,</span>
+<span id="cb111-34"><a></a>    <span class="at">col =</span> <span class="st">"grey70"</span>,</span>
+<span id="cb111-35"><a></a>    <span class="at">border =</span> <span class="st">"white"</span>,</span>
+<span id="cb111-36"><a></a>    <span class="at">breaks =</span> <span class="dv">15</span></span>
+<span id="cb111-37"><a></a>  )</span>
+<span id="cb111-38"><a></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb112"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a></a></span>
+<span id="cb112-2"><a></a><span class="fu">par</span>(old_par)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><div id="fig-qqplot-patterns" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-qqplot-patterns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6.13: Typical QQ-plot patterns for six types of residual distribution. Adapted from <span class="citation" data-cites="dunn2018generalized">Dunn and Smyth (<a href="#/references" role="doc-biblioref" onclick="">2018, fig. 3.6</a>)</span>, with thanks to the authors; reproduced here using simulated data (<span class="math inline">\(n = 150\)</span>). Each column shows one distribution scenario: a QQ plot (top) paired with a histogram of the simulated data (bottom).
+</figcaption><div aria-describedby="fig-qqplot-patterns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-84-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-30" title="Figure&nbsp;6.13: Typical QQ-plot patterns for six types of residual distribution. Adapted from @dunn2018generalized [Fig. 3.6], with thanks to the authors; reproduced here using simulated data (n = 150). Each column shows one distribution scenario: a QQ plot (top) paired with a histogram of the simulated data (bottom)."><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-84-1.png" width="960"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</figure>
+</div>
+</section><section class="slide level2 scrollable"><h4 id="qq-plot---how-its-built">QQ plot - how it’s built</h4>
+<aside class="notes"><p>To construct a QQ plot by hand:</p>
+<ol type="1">
+<li>Assign each standardized residual a <strong>plotting position</strong> <span class="math inline">\(p_i\)</span> based on its rank among the <span class="math inline">\(n\)</span> observations. R’s default formula for <span class="math inline">\(n &gt; 10\)</span> is: <span class="math display">\[p_i = \frac{\text{rank}_i - 0.5}{n}\]</span>
+</li>
+<li>Compute the <strong>theoretical quantile</strong>: <span class="math inline">\(q_i = \Phi^{-1}(p_i)\)</span>, the value from <span class="math inline">\(N(0,1)\)</span> that corresponds to probability <span class="math inline">\(p_i\)</span>.</li>
+<li>Plot <span class="math inline">\((q_i, r_i)\)</span> — theoretical quantile <span class="math inline">\(q_i\)</span> on the x-axis, observed standardized residual <span class="math inline">\(r_i\)</span> (see <a href="#/def-stred" class="quarto-xref">Definition&nbsp;6.6</a>) on the y-axis.</li>
+<li>Add the <strong>reference line</strong> through the pairs of theoretical and empirical quantiles at probabilities 0.25 and 0.75.</li>
+</ol><style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
           clip: rect(1px, 1px, 1px, 1px);
@@ -6491,46 +6569,48 @@ Figure&nbsp;6.12: Marginal distribution of standardized residuals
           overflow: hidden!important;
           display:block!important;
       }</style></aside><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb111"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a></a>bw <span class="ot">&lt;-</span> bw <span class="sc">|&gt;</span></span>
-<span id="cb111-2"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb111-3"><a></a>    <span class="at">p =</span> (<span class="fu">rank</span>(std_resid_lm2) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">/</span> <span class="fu">n</span>(), <span class="co"># "Blom's method"</span></span>
-<span id="cb111-4"><a></a>    <span class="at">expected_quantiles_lm2 =</span> <span class="fu">qnorm</span>(p)</span>
-<span id="cb111-5"><a></a>  )</span>
-<span id="cb111-6"><a></a></span>
-<span id="cb111-7"><a></a>qqplot_lm2 <span class="ot">&lt;-</span></span>
-<span id="cb111-8"><a></a>  bw <span class="sc">|&gt;</span></span>
-<span id="cb111-9"><a></a>  <span class="fu">ggplot</span>(</span>
-<span id="cb111-10"><a></a>    <span class="fu">aes</span>(</span>
-<span id="cb111-11"><a></a>      <span class="at">x =</span> expected_quantiles_lm2,</span>
-<span id="cb111-12"><a></a>      <span class="at">y =</span> std_resid_lm2,</span>
-<span id="cb111-13"><a></a>      <span class="at">col =</span> sex,</span>
-<span id="cb111-14"><a></a>      <span class="at">shape =</span> sex</span>
-<span id="cb111-15"><a></a>    )</span>
-<span id="cb111-16"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb111-17"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb111-18"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
-<span id="cb111-19"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="co"># removing the plot legend</span></span>
-<span id="cb111-20"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"Normal Q-Q"</span>) <span class="sc">+</span></span>
-<span id="cb111-21"><a></a>  <span class="fu">xlab</span>(<span class="st">"Theoretical Quantiles"</span>) <span class="sc">+</span></span>
-<span id="cb111-22"><a></a>  <span class="fu">ylab</span>(<span class="st">"Standardized residuals"</span>)</span>
-<span id="cb111-23"><a></a></span>
-<span id="cb111-24"><a></a><span class="co"># find the expected line:</span></span>
-<span id="cb111-25"><a></a></span>
-<span id="cb111-26"><a></a>ps <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">75</span>) <span class="co"># reference probabilities</span></span>
-<span id="cb111-27"><a></a>a <span class="ot">&lt;-</span> <span class="fu">quantile</span>(<span class="fu">rstandard</span>(bw_lm2), ps) <span class="co"># empirical quantiles</span></span>
-<span id="cb111-28"><a></a>b <span class="ot">&lt;-</span> <span class="fu">qnorm</span>(ps) <span class="co"># theoretical quantiles</span></span>
-<span id="cb111-29"><a></a></span>
-<span id="cb111-30"><a></a>qq_slope <span class="ot">&lt;-</span> <span class="fu">diff</span>(a) <span class="sc">/</span> <span class="fu">diff</span>(b)</span>
-<span id="cb111-31"><a></a>qq_intcpt <span class="ot">&lt;-</span> a[<span class="dv">1</span>] <span class="sc">-</span> b[<span class="dv">1</span>] <span class="sc">*</span> qq_slope</span>
-<span id="cb111-32"><a></a></span>
-<span id="cb111-33"><a></a>qqplot_lm2 <span class="ot">&lt;-</span></span>
-<span id="cb111-34"><a></a>  qqplot_lm2 <span class="sc">+</span></span>
-<span id="cb111-35"><a></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> qq_slope, <span class="at">intercept =</span> qq_intcpt)</span>
-<span id="cb111-36"><a></a></span>
-<span id="cb111-37"><a></a><span class="fu">print</span>(qqplot_lm2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb113"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a></a>bw <span class="ot">&lt;-</span> bw <span class="sc">|&gt;</span></span>
+<span id="cb113-2"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb113-3"><a></a>    <span class="co"># plotting position: (rank - 0.5) / n</span></span>
+<span id="cb113-4"><a></a>    <span class="at">p =</span> (<span class="fu">rank</span>(std_resid_lm2) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">/</span> <span class="fu">n</span>(),</span>
+<span id="cb113-5"><a></a>    <span class="at">expected_quantiles_lm2 =</span> <span class="fu">qnorm</span>(p)</span>
+<span id="cb113-6"><a></a>  )</span>
+<span id="cb113-7"><a></a></span>
+<span id="cb113-8"><a></a>qqplot_lm2 <span class="ot">&lt;-</span></span>
+<span id="cb113-9"><a></a>  bw <span class="sc">|&gt;</span></span>
+<span id="cb113-10"><a></a>  <span class="fu">ggplot</span>(</span>
+<span id="cb113-11"><a></a>    <span class="fu">aes</span>(</span>
+<span id="cb113-12"><a></a>      <span class="at">x =</span> expected_quantiles_lm2,</span>
+<span id="cb113-13"><a></a>      <span class="at">y =</span> std_resid_lm2,</span>
+<span id="cb113-14"><a></a>      <span class="at">col =</span> sex,</span>
+<span id="cb113-15"><a></a>      <span class="at">shape =</span> sex</span>
+<span id="cb113-16"><a></a>    )</span>
+<span id="cb113-17"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb113-18"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb113-19"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb113-20"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="co"># removing the plot legend</span></span>
+<span id="cb113-21"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"Normal Q-Q"</span>) <span class="sc">+</span></span>
+<span id="cb113-22"><a></a>  <span class="fu">xlab</span>(<span class="st">"Theoretical Quantiles"</span>) <span class="sc">+</span></span>
+<span id="cb113-23"><a></a>  <span class="fu">ylab</span>(<span class="st">"Standardized residuals"</span>)</span>
+<span id="cb113-24"><a></a></span>
+<span id="cb113-25"><a></a><span class="co"># find the reference line through the (theoretical, empirical) quantile pairs</span></span>
+<span id="cb113-26"><a></a><span class="co"># at probabilities 0.25 and 0.75:</span></span>
+<span id="cb113-27"><a></a></span>
+<span id="cb113-28"><a></a>ps <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">75</span>) <span class="co"># reference probabilities</span></span>
+<span id="cb113-29"><a></a>a <span class="ot">&lt;-</span> <span class="fu">quantile</span>(<span class="fu">rstandard</span>(bw_lm2), ps) <span class="co"># empirical quantiles</span></span>
+<span id="cb113-30"><a></a>b <span class="ot">&lt;-</span> <span class="fu">qnorm</span>(ps) <span class="co"># theoretical quantiles</span></span>
+<span id="cb113-31"><a></a></span>
+<span id="cb113-32"><a></a>qq_slope <span class="ot">&lt;-</span> <span class="fu">diff</span>(a) <span class="sc">/</span> <span class="fu">diff</span>(b)</span>
+<span id="cb113-33"><a></a>qq_intcpt <span class="ot">&lt;-</span> a[<span class="dv">1</span>] <span class="sc">-</span> b[<span class="dv">1</span>] <span class="sc">*</span> qq_slope</span>
+<span id="cb113-34"><a></a></span>
+<span id="cb113-35"><a></a>qqplot_lm2 <span class="ot">&lt;-</span></span>
+<span id="cb113-36"><a></a>  qqplot_lm2 <span class="sc">+</span></span>
+<span id="cb113-37"><a></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> qq_slope, <span class="at">intercept =</span> qq_intcpt)</span>
+<span id="cb113-38"><a></a></span>
+<span id="cb113-39"><a></a><span class="fu">print</span>(qqplot_lm2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-84-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-30"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-84-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-85-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-31"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-85-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6547,7 +6627,7 @@ Figure&nbsp;6.12: Marginal distribution of standardized residuals
 <p>Then the residuals might have nonzero mean.</p>
 <p>Regardless of whether we guessed the mean function correctly, ther the variance of the residuals might differ between values of <span class="math inline">\(x\)</span>.</p>
 </section><section class="slide level2"><h4 id="residuals-versus-fitted-values-1">Residuals versus fitted values</h4>
-<aside class="notes"><p>To look for these issues, we can plot the residuals <span class="math inline">\(e_i\)</span> against the fitted values <span class="math inline">\(\hat y_i\)</span> (<a href="#/fig-bw_lm2-resid-vs-fitted" class="quarto-xref">Figure&nbsp;6.13</a>).</p>
+<aside class="notes"><p>To look for these issues, we can plot the residuals <span class="math inline">\(e_i\)</span> against the fitted values <span class="math inline">\(\hat y_i\)</span> (<a href="#/fig-bw_lm2-resid-vs-fitted" class="quarto-xref">Figure&nbsp;6.14</a>).</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -6558,15 +6638,15 @@ Figure&nbsp;6.12: Marginal distribution of standardized residuals
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb112"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a></a><span class="fu">autoplot</span>(bw_lm2, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+      }</style></aside><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb114"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a></a><span class="fu">autoplot</span>(bw_lm2, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-bw_lm2-resid-vs-fitted" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bw_lm2-resid-vs-fitted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.13: <code>birthweight</code> model (<a href="#/eq-BW-lm-interact" class="quarto-xref">Equation&nbsp;2.2</a>): residuals versus fitted values
+Figure&nbsp;6.14: <code>birthweight</code> model (<a href="#/eq-BW-lm-interact" class="quarto-xref">Equation&nbsp;2.2</a>): residuals versus fitted values
 </figcaption><div aria-describedby="fig-bw_lm2-resid-vs-fitted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-85-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-31" title="Figure&nbsp;6.13: birthweight model (Equation&nbsp;2.2): residuals versus fitted values"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-85-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-86-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-32" title="Figure&nbsp;6.14: birthweight model (Equation&nbsp;2.2): residuals versus fitted values"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-86-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6589,25 +6669,25 @@ Figure&nbsp;6.13: <code>birthweight</code> model (<a href="#/eq-BW-lm-interact" 
       }</style></aside></section><section class="slide level2"><h4 id="example-plos-medicine-title-length-data">Example: PLOS Medicine title length data</h4>
 <p>(Adapted from <span class="citation" data-cites="dobson4e">Dobson and Barnett (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span>, §6.7.1)</p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb113"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a></a><span class="fu">data</span>(PLOS, <span class="at">package =</span> <span class="st">"dobson"</span>)</span>
-<span id="cb113-2"><a></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb113-3"><a></a>fig1 <span class="ot">=</span> </span>
-<span id="cb113-4"><a></a>  PLOS <span class="sc">|&gt;</span> </span>
-<span id="cb113-5"><a></a>  <span class="fu">ggplot</span>(</span>
-<span id="cb113-6"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> authors,</span>
-<span id="cb113-7"><a></a>        <span class="at">y =</span> nchar)</span>
-<span id="cb113-8"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb113-9"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb113-10"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
-<span id="cb113-11"><a></a>  <span class="fu">labs</span>(<span class="at">col =</span> <span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb113-12"><a></a>  <span class="fu">guides</span>(<span class="at">col=</span><span class="fu">guide_legend</span>(<span class="at">ncol=</span><span class="dv">3</span>))</span>
-<span id="cb113-13"><a></a>fig1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb115"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a></a><span class="fu">data</span>(PLOS, <span class="at">package =</span> <span class="st">"dobson"</span>)</span>
+<span id="cb115-2"><a></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb115-3"><a></a>fig1 <span class="ot">=</span> </span>
+<span id="cb115-4"><a></a>  PLOS <span class="sc">|&gt;</span> </span>
+<span id="cb115-5"><a></a>  <span class="fu">ggplot</span>(</span>
+<span id="cb115-6"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> authors,</span>
+<span id="cb115-7"><a></a>        <span class="at">y =</span> nchar)</span>
+<span id="cb115-8"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb115-9"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb115-10"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb115-11"><a></a>  <span class="fu">labs</span>(<span class="at">col =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb115-12"><a></a>  <span class="fu">guides</span>(<span class="at">col=</span><span class="fu">guide_legend</span>(<span class="at">ncol=</span><span class="dv">3</span>))</span>
+<span id="cb115-13"><a></a>fig1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-plos" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-plos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.14: Number of authors versus title length in <em>PLOS Medicine</em> articles
+Figure&nbsp;6.15: Number of authors versus title length in <em>PLOS Medicine</em> articles
 </figcaption><div aria-describedby="fig-plos-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-32" title="Figure&nbsp;6.14: Number of authors versus title length in PLOS Medicine articles"><img data-src="Linear-models-overview_files/figure-html/fig-plos-1.png" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-33" title="Figure&nbsp;6.15: Number of authors versus title length in PLOS Medicine articles"><img data-src="Linear-models-overview_files/figure-html/fig-plos-1.png" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6615,23 +6695,23 @@ Figure&nbsp;6.14: Number of authors versus title length in <em>PLOS Medicine</em
 </div>
 </section><section class="slide level2"><h5 id="linear-fit">Linear fit</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb114"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a></a>lm_PLOS_linear <span class="ot">=</span> <span class="fu">lm</span>(</span>
-<span id="cb114-2"><a></a>  <span class="at">formula =</span> nchar <span class="sc">~</span> authors, </span>
-<span id="cb114-3"><a></a>  <span class="at">data =</span> PLOS)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb116"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a></a>lm_PLOS_linear <span class="ot">=</span> <span class="fu">lm</span>(</span>
+<span id="cb116-2"><a></a>  <span class="at">formula =</span> nchar <span class="sc">~</span> authors, </span>
+<span id="cb116-3"><a></a>  <span class="at">data =</span> PLOS)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb115"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a></a>fig2 <span class="ot">=</span> fig1 <span class="sc">+</span></span>
-<span id="cb115-2"><a></a>  <span class="fu">geom_smooth</span>(</span>
-<span id="cb115-3"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span>, </span>
-<span id="cb115-4"><a></a>              <span class="at">fullrange =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb115-5"><a></a>              <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"lm(y ~ x)"</span>))</span>
-<span id="cb115-6"><a></a>fig2</span>
-<span id="cb115-7"><a></a></span>
-<span id="cb115-8"><a></a><span class="fu">library</span>(ggfortify)</span>
-<span id="cb115-9"><a></a><span class="fu">autoplot</span>(lm_PLOS_linear, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb117"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a></a>fig2 <span class="ot">=</span> fig1 <span class="sc">+</span></span>
+<span id="cb117-2"><a></a>  <span class="fu">geom_smooth</span>(</span>
+<span id="cb117-3"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span>, </span>
+<span id="cb117-4"><a></a>              <span class="at">fullrange =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb117-5"><a></a>              <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"lm(y ~ x)"</span>))</span>
+<span id="cb117-6"><a></a>fig2</span>
+<span id="cb117-7"><a></a></span>
+<span id="cb117-8"><a></a><span class="fu">library</span>(ggfortify)</span>
+<span id="cb117-9"><a></a><span class="fu">autoplot</span>(lm_PLOS_linear, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-plos-lm" class="quarto-layout-panel">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-plos-lm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.15: Number of authors versus title length in <em>PLOS Medicine</em>, with linear model fit
+Figure&nbsp;6.16: Number of authors versus title length in <em>PLOS Medicine</em>, with linear model fit
 </figcaption><div aria-describedby="fig-plos-lm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-plos-lm" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -6639,7 +6719,7 @@ Figure&nbsp;6.15: Number of authors versus title length in <em>PLOS Medicine</em
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-lm-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Data and fit
 </figcaption><div aria-describedby="fig-plos-lm-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-lm-1.png" class="lightbox" data-gallery="fig-plos-lm" title="Figure&nbsp;6.15&nbsp;(a): Data and fit"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-1.png" data-ref-parent="fig-plos-lm" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-lm-1.png" class="lightbox" data-gallery="fig-plos-lm" title="Figure&nbsp;6.16&nbsp;(a): Data and fit"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-1.png" data-ref-parent="fig-plos-lm" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6649,7 +6729,7 @@ Figure&nbsp;6.15: Number of authors versus title length in <em>PLOS Medicine</em
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-lm-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Residuals vs fitted
 </figcaption><div aria-describedby="fig-plos-lm-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-lm-2.png" class="lightbox" data-gallery="fig-plos-lm" title="Figure&nbsp;6.15&nbsp;(b): Residuals vs fitted"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-2.png" data-ref-parent="fig-plos-lm" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-lm-2.png" class="lightbox" data-gallery="fig-plos-lm" title="Figure&nbsp;6.16&nbsp;(b): Residuals vs fitted"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-2.png" data-ref-parent="fig-plos-lm" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6660,25 +6740,25 @@ Figure&nbsp;6.15: Number of authors versus title length in <em>PLOS Medicine</em
 </div>
 </section><section class="slide level2"><h5 class="smaller" id="quadratic-fit">Quadratic fit</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb116"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a></a>lm_PLOS_quad <span class="ot">=</span> <span class="fu">lm</span>(</span>
-<span id="cb116-2"><a></a>  <span class="at">formula =</span> nchar <span class="sc">~</span> authors <span class="sc">+</span> <span class="fu">I</span>(authors<span class="sc">^</span><span class="dv">2</span>), </span>
-<span id="cb116-3"><a></a>  <span class="at">data =</span> PLOS)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb118"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a></a>lm_PLOS_quad <span class="ot">=</span> <span class="fu">lm</span>(</span>
+<span id="cb118-2"><a></a>  <span class="at">formula =</span> nchar <span class="sc">~</span> authors <span class="sc">+</span> <span class="fu">I</span>(authors<span class="sc">^</span><span class="dv">2</span>), </span>
+<span id="cb118-3"><a></a>  <span class="at">data =</span> PLOS)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb117"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a></a>fig3 <span class="ot">=</span> </span>
-<span id="cb117-2"><a></a>  fig2 <span class="sc">+</span> </span>
-<span id="cb117-3"><a></a><span class="fu">geom_smooth</span>(</span>
-<span id="cb117-4"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span>,</span>
-<span id="cb117-5"><a></a>    <span class="at">fullrange =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb117-6"><a></a>    <span class="at">formula =</span> y <span class="sc">~</span> x <span class="sc">+</span> <span class="fu">I</span>(x <span class="sc">^</span> <span class="dv">2</span>),</span>
-<span id="cb117-7"><a></a>    <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"lm(y ~ x + I(x^2))"</span>)</span>
-<span id="cb117-8"><a></a>  )</span>
-<span id="cb117-9"><a></a>fig3</span>
-<span id="cb117-10"><a></a></span>
-<span id="cb117-11"><a></a><span class="fu">autoplot</span>(lm_PLOS_quad, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb119"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a></a>fig3 <span class="ot">=</span> </span>
+<span id="cb119-2"><a></a>  fig2 <span class="sc">+</span> </span>
+<span id="cb119-3"><a></a><span class="fu">geom_smooth</span>(</span>
+<span id="cb119-4"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span>,</span>
+<span id="cb119-5"><a></a>    <span class="at">fullrange =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb119-6"><a></a>    <span class="at">formula =</span> y <span class="sc">~</span> x <span class="sc">+</span> <span class="fu">I</span>(x <span class="sc">^</span> <span class="dv">2</span>),</span>
+<span id="cb119-7"><a></a>    <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"lm(y ~ x + I(x^2))"</span>)</span>
+<span id="cb119-8"><a></a>  )</span>
+<span id="cb119-9"><a></a>fig3</span>
+<span id="cb119-10"><a></a></span>
+<span id="cb119-11"><a></a><span class="fu">autoplot</span>(lm_PLOS_quad, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-plos-lm-quad" class="quarto-layout-panel">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-plos-lm-quad-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.16: Number of authors versus title length in <em>PLOS Medicine</em>, with quadratic model fit
+Figure&nbsp;6.17: Number of authors versus title length in <em>PLOS Medicine</em>, with quadratic model fit
 </figcaption><div aria-describedby="fig-plos-lm-quad-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-plos-lm-quad" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -6686,7 +6766,7 @@ Figure&nbsp;6.16: Number of authors versus title length in <em>PLOS Medicine</em
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-lm-quad-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Data and fit
 </figcaption><div aria-describedby="fig-plos-lm-quad-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-lm-quad-1.png" class="lightbox" data-gallery="fig-plos-lm-quad" title="Figure&nbsp;6.16&nbsp;(a): Data and fit"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-quad-1.png" data-ref-parent="fig-plos-lm-quad" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-lm-quad-1.png" class="lightbox" data-gallery="fig-plos-lm-quad" title="Figure&nbsp;6.17&nbsp;(a): Data and fit"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-quad-1.png" data-ref-parent="fig-plos-lm-quad" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6696,7 +6776,7 @@ Figure&nbsp;6.16: Number of authors versus title length in <em>PLOS Medicine</em
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-lm-quad-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Residuals vs fitted
 </figcaption><div aria-describedby="fig-plos-lm-quad-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-lm-quad-2.png" class="lightbox" data-gallery="fig-plos-lm-quad" title="Figure&nbsp;6.16&nbsp;(b): Residuals vs fitted"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-quad-2.png" data-ref-parent="fig-plos-lm-quad" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-lm-quad-2.png" class="lightbox" data-gallery="fig-plos-lm-quad" title="Figure&nbsp;6.17&nbsp;(b): Residuals vs fitted"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-quad-2.png" data-ref-parent="fig-plos-lm-quad" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6706,13 +6786,13 @@ Figure&nbsp;6.16: Number of authors versus title length in <em>PLOS Medicine</em
 </figure>
 </div>
 </section><section class="slide level2"><h5 id="linear-versus-quadratic-fits">Linear versus quadratic fits</h5>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb118"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a></a><span class="fu">library</span>(ggfortify)</span>
-<span id="cb118-2"><a></a><span class="fu">autoplot</span>(lm_PLOS_linear, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
-<span id="cb118-3"><a></a></span>
-<span id="cb118-4"><a></a><span class="fu">autoplot</span>(lm_PLOS_quad, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb120"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a></a><span class="fu">library</span>(ggfortify)</span>
+<span id="cb120-2"><a></a><span class="fu">autoplot</span>(lm_PLOS_linear, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb120-3"><a></a></span>
+<span id="cb120-4"><a></a><span class="fu">autoplot</span>(lm_PLOS_quad, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-plos-lm-resid2" class="quarto-layout-panel">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-plos-lm-resid2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.17: Residuals versus fitted plot for linear and quadratic fits to <code>PLOS</code> data
+Figure&nbsp;6.18: Residuals versus fitted plot for linear and quadratic fits to <code>PLOS</code> data
 </figcaption><div aria-describedby="fig-plos-lm-resid2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-plos-lm-resid2" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -6720,7 +6800,7 @@ Figure&nbsp;6.17: Residuals versus fitted plot for linear and quadratic fits to 
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-lm-resid2-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Linear
 </figcaption><div aria-describedby="fig-plos-lm-resid2-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-lm-resid2-1.png" class="lightbox" data-gallery="fig-plos-lm-resid2" title="Figure&nbsp;6.17&nbsp;(a): Linear"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-resid2-1.png" data-ref-parent="fig-plos-lm-resid2" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-lm-resid2-1.png" class="lightbox" data-gallery="fig-plos-lm-resid2" title="Figure&nbsp;6.18&nbsp;(a): Linear"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-resid2-1.png" data-ref-parent="fig-plos-lm-resid2" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6730,7 +6810,7 @@ Figure&nbsp;6.17: Residuals versus fitted plot for linear and quadratic fits to 
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-lm-resid2-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Quadratic
 </figcaption><div aria-describedby="fig-plos-lm-resid2-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-lm-resid2-2.png" class="lightbox" data-gallery="fig-plos-lm-resid2" title="Figure&nbsp;6.17&nbsp;(b): Quadratic"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-resid2-2.png" data-ref-parent="fig-plos-lm-resid2" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-lm-resid2-2.png" class="lightbox" data-gallery="fig-plos-lm-resid2" title="Figure&nbsp;6.18&nbsp;(b): Quadratic"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-resid2-2.png" data-ref-parent="fig-plos-lm-resid2" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6741,25 +6821,25 @@ Figure&nbsp;6.17: Residuals versus fitted plot for linear and quadratic fits to 
 </div>
 </section><section class="slide level2"><h5 id="cubic-fit">Cubic fit</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb119"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a></a>lm_PLOS_cub <span class="ot">=</span> <span class="fu">lm</span>(</span>
-<span id="cb119-2"><a></a>  <span class="at">formula =</span> nchar <span class="sc">~</span> authors <span class="sc">+</span> <span class="fu">I</span>(authors<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(authors<span class="sc">^</span><span class="dv">3</span>), </span>
-<span id="cb119-3"><a></a>  <span class="at">data =</span> PLOS)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb121"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a></a>lm_PLOS_cub <span class="ot">=</span> <span class="fu">lm</span>(</span>
+<span id="cb121-2"><a></a>  <span class="at">formula =</span> nchar <span class="sc">~</span> authors <span class="sc">+</span> <span class="fu">I</span>(authors<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(authors<span class="sc">^</span><span class="dv">3</span>), </span>
+<span id="cb121-3"><a></a>  <span class="at">data =</span> PLOS)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb120"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a></a>fig4 <span class="ot">=</span> </span>
-<span id="cb120-2"><a></a>  fig3 <span class="sc">+</span> </span>
-<span id="cb120-3"><a></a><span class="fu">geom_smooth</span>(</span>
-<span id="cb120-4"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span>,</span>
-<span id="cb120-5"><a></a>    <span class="at">fullrange =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb120-6"><a></a>    <span class="at">formula =</span> y <span class="sc">~</span> x <span class="sc">+</span> <span class="fu">I</span>(x <span class="sc">^</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(x <span class="sc">^</span> <span class="dv">3</span>),</span>
-<span id="cb120-7"><a></a>    <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"lm(y ~ x + I(x^2) + I(x ^ 3))"</span>)</span>
-<span id="cb120-8"><a></a>  )</span>
-<span id="cb120-9"><a></a>fig4</span>
-<span id="cb120-10"><a></a></span>
-<span id="cb120-11"><a></a><span class="fu">autoplot</span>(lm_PLOS_cub, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb122"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb122-1"><a></a>fig4 <span class="ot">=</span> </span>
+<span id="cb122-2"><a></a>  fig3 <span class="sc">+</span> </span>
+<span id="cb122-3"><a></a><span class="fu">geom_smooth</span>(</span>
+<span id="cb122-4"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span>,</span>
+<span id="cb122-5"><a></a>    <span class="at">fullrange =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb122-6"><a></a>    <span class="at">formula =</span> y <span class="sc">~</span> x <span class="sc">+</span> <span class="fu">I</span>(x <span class="sc">^</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(x <span class="sc">^</span> <span class="dv">3</span>),</span>
+<span id="cb122-7"><a></a>    <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"lm(y ~ x + I(x^2) + I(x ^ 3))"</span>)</span>
+<span id="cb122-8"><a></a>  )</span>
+<span id="cb122-9"><a></a>fig4</span>
+<span id="cb122-10"><a></a></span>
+<span id="cb122-11"><a></a><span class="fu">autoplot</span>(lm_PLOS_cub, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-plos-lm-cubic" class="quarto-layout-panel">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-plos-lm-cubic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.18: Number of authors versus title length in <em>PLOS Medicine</em>, with cubic model fit
+Figure&nbsp;6.19: Number of authors versus title length in <em>PLOS Medicine</em>, with cubic model fit
 </figcaption><div aria-describedby="fig-plos-lm-cubic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-plos-lm-cubic" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -6767,7 +6847,7 @@ Figure&nbsp;6.18: Number of authors versus title length in <em>PLOS Medicine</em
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-lm-cubic-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Data and fit
 </figcaption><div aria-describedby="fig-plos-lm-cubic-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-lm-cubic-1.png" class="lightbox" data-gallery="fig-plos-lm-cubic" title="Figure&nbsp;6.18&nbsp;(a): Data and fit"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-cubic-1.png" data-ref-parent="fig-plos-lm-cubic" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-lm-cubic-1.png" class="lightbox" data-gallery="fig-plos-lm-cubic" title="Figure&nbsp;6.19&nbsp;(a): Data and fit"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-cubic-1.png" data-ref-parent="fig-plos-lm-cubic" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6777,7 +6857,7 @@ Figure&nbsp;6.18: Number of authors versus title length in <em>PLOS Medicine</em
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-lm-cubic-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Residuals vs fitted
 </figcaption><div aria-describedby="fig-plos-lm-cubic-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-lm-cubic-2.png" class="lightbox" data-gallery="fig-plos-lm-cubic" title="Figure&nbsp;6.18&nbsp;(b): Residuals vs fitted"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-cubic-2.png" data-ref-parent="fig-plos-lm-cubic" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-lm-cubic-2.png" class="lightbox" data-gallery="fig-plos-lm-cubic" title="Figure&nbsp;6.19&nbsp;(b): Residuals vs fitted"><img data-src="Linear-models-overview_files/figure-html/fig-plos-lm-cubic-2.png" data-ref-parent="fig-plos-lm-cubic" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6788,22 +6868,22 @@ Figure&nbsp;6.18: Number of authors versus title length in <em>PLOS Medicine</em
 </div>
 </section><section class="slide level2"><h5 id="logarithmic-fit">Logarithmic fit</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb121"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a></a>lm_PLOS_log <span class="ot">=</span> <span class="fu">lm</span>(nchar <span class="sc">~</span> <span class="fu">log</span>(authors), <span class="at">data =</span> PLOS)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb123"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a></a>lm_PLOS_log <span class="ot">=</span> <span class="fu">lm</span>(nchar <span class="sc">~</span> <span class="fu">log</span>(authors), <span class="at">data =</span> PLOS)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb122"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb122-1"><a></a>fig5 <span class="ot">=</span> fig4 <span class="sc">+</span> </span>
-<span id="cb122-2"><a></a>  <span class="fu">geom_smooth</span>(</span>
-<span id="cb122-3"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span>,</span>
-<span id="cb122-4"><a></a>    <span class="at">fullrange =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb122-5"><a></a>    <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">log</span>(x),</span>
-<span id="cb122-6"><a></a>    <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"lm(y ~ log(x))"</span>)</span>
-<span id="cb122-7"><a></a>  )</span>
-<span id="cb122-8"><a></a>fig5</span>
-<span id="cb122-9"><a></a></span>
-<span id="cb122-10"><a></a><span class="fu">autoplot</span>(lm_PLOS_log, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb124"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a></a>fig5 <span class="ot">=</span> fig4 <span class="sc">+</span> </span>
+<span id="cb124-2"><a></a>  <span class="fu">geom_smooth</span>(</span>
+<span id="cb124-3"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span>,</span>
+<span id="cb124-4"><a></a>    <span class="at">fullrange =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb124-5"><a></a>    <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">log</span>(x),</span>
+<span id="cb124-6"><a></a>    <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"lm(y ~ log(x))"</span>)</span>
+<span id="cb124-7"><a></a>  )</span>
+<span id="cb124-8"><a></a>fig5</span>
+<span id="cb124-9"><a></a></span>
+<span id="cb124-10"><a></a><span class="fu">autoplot</span>(lm_PLOS_log, <span class="at">which =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-plos-log" class="quarto-layout-panel">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-plos-log-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.19: logarithmic fit
+Figure&nbsp;6.20: logarithmic fit
 </figcaption><div aria-describedby="fig-plos-log-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="cell-output-display quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-plos-log" style="flex-basis: 50.0%;justify-content: flex-start;">
@@ -6811,7 +6891,7 @@ Figure&nbsp;6.19: logarithmic fit
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-log-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Data and fit
 </figcaption><div aria-describedby="fig-plos-log-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-log-1.png" class="lightbox" data-gallery="fig-plos-log" title="Figure&nbsp;6.19&nbsp;(a): Data and fit"><img data-src="Linear-models-overview_files/figure-html/fig-plos-log-1.png" data-ref-parent="fig-plos-log" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-log-1.png" class="lightbox" data-gallery="fig-plos-log" title="Figure&nbsp;6.20&nbsp;(a): Data and fit"><img data-src="Linear-models-overview_files/figure-html/fig-plos-log-1.png" data-ref-parent="fig-plos-log" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6821,7 +6901,7 @@ Figure&nbsp;6.19: logarithmic fit
 <figure class="quarto-float quarto-subfloat-fig"><figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-fig" id="fig-plos-log-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Residuals vs fitted
 </figcaption><div aria-describedby="fig-plos-log-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-log-2.png" class="lightbox" data-gallery="fig-plos-log" title="Figure&nbsp;6.19&nbsp;(b): Residuals vs fitted"><img data-src="Linear-models-overview_files/figure-html/fig-plos-log-2.png" data-ref-parent="fig-plos-log" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-log-2.png" class="lightbox" data-gallery="fig-plos-log" title="Figure&nbsp;6.20&nbsp;(b): Residuals vs fitted"><img data-src="Linear-models-overview_files/figure-html/fig-plos-log-2.png" data-ref-parent="fig-plos-log" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6832,7 +6912,7 @@ Figure&nbsp;6.19: logarithmic fit
 </div>
 </section><section class="slide level2"><h5 class="smaller" id="model-selection">Model selection</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb123"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a></a><span class="fu">anova</span>(lm_PLOS_linear, lm_PLOS_quad)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb125"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a></a><span class="fu">anova</span>(lm_PLOS_linear, lm_PLOS_quad)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-plos-lin-quad-anova" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-plos-lin-quad-anova-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;6.5: linear vs quadratic
@@ -6849,7 +6929,7 @@ Table&nbsp;6.5: linear vs quadratic
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb124"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a></a><span class="fu">anova</span>(lm_PLOS_quad, lm_PLOS_cub)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb126"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a></a><span class="fu">anova</span>(lm_PLOS_quad, lm_PLOS_cub)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="tbl-plos-quad-cub-anova" class="cell quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-plos-quad-cub-anova-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;6.6: quadratic vs cubic
@@ -6867,44 +6947,44 @@ Table&nbsp;6.6: quadratic vs cubic
 </div>
 </section><section class="slide level2"><h5 class="smaller" id="aicbic">AIC/BIC</h5>
 <div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb125"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a></a><span class="fu">AIC</span>(lm_PLOS_quad)</span>
-<span id="cb125-2"><a></a><span class="co">#&gt; [1] 8567.61</span></span>
-<span id="cb125-3"><a></a><span class="fu">AIC</span>(lm_PLOS_cub)</span>
-<span id="cb125-4"><a></a><span class="co">#&gt; [1] 8554.51</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb127"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a></a><span class="fu">AIC</span>(lm_PLOS_quad)</span>
+<span id="cb127-2"><a></a><span class="co">#&gt; [1] 8567.61</span></span>
+<span id="cb127-3"><a></a><span class="fu">AIC</span>(lm_PLOS_cub)</span>
+<span id="cb127-4"><a></a><span class="co">#&gt; [1] 8554.51</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb126"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a></a><span class="fu">AIC</span>(lm_PLOS_cub)</span>
-<span id="cb126-2"><a></a><span class="co">#&gt; [1] 8554.51</span></span>
-<span id="cb126-3"><a></a><span class="fu">AIC</span>(lm_PLOS_log)</span>
-<span id="cb126-4"><a></a><span class="co">#&gt; [1] 8543.63</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb128"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a></a><span class="fu">AIC</span>(lm_PLOS_cub)</span>
+<span id="cb128-2"><a></a><span class="co">#&gt; [1] 8554.51</span></span>
+<span id="cb128-3"><a></a><span class="fu">AIC</span>(lm_PLOS_log)</span>
+<span id="cb128-4"><a></a><span class="co">#&gt; [1] 8543.63</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
-<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb127"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a></a><span class="fu">BIC</span>(lm_PLOS_cub)</span>
-<span id="cb127-2"><a></a><span class="co">#&gt; [1] 8578.4</span></span>
-<span id="cb127-3"><a></a><span class="fu">BIC</span>(lm_PLOS_log)</span>
-<span id="cb127-4"><a></a><span class="co">#&gt; [1] 8557.97</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details open="" class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb129"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a></a><span class="fu">BIC</span>(lm_PLOS_cub)</span>
+<span id="cb129-2"><a></a><span class="co">#&gt; [1] 8578.4</span></span>
+<span id="cb129-3"><a></a><span class="fu">BIC</span>(lm_PLOS_log)</span>
+<span id="cb129-4"><a></a><span class="co">#&gt; [1] 8557.97</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><h5 id="extrapolation-is-dangerous">Extrapolation is dangerous</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb128"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a></a>fig_all <span class="ot">=</span> fig5 <span class="sc">+</span></span>
-<span id="cb128-2"><a></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">60</span>)</span>
-<span id="cb128-3"><a></a>fig_all</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb130"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a></a>fig_all <span class="ot">=</span> fig5 <span class="sc">+</span></span>
+<span id="cb130-2"><a></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">60</span>)</span>
+<span id="cb130-3"><a></a>fig_all</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-plos-multifit" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-plos-multifit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.20: Number of authors versus title length in <em>PLOS Medicine</em>
+Figure&nbsp;6.21: Number of authors versus title length in <em>PLOS Medicine</em>
 </figcaption><div aria-describedby="fig-plos-multifit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-plos-multifit-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-43" title="Figure&nbsp;6.20: Number of authors versus title length in PLOS Medicine"><img data-src="Linear-models-overview_files/figure-html/fig-plos-multifit-1.png" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-plos-multifit-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-44" title="Figure&nbsp;6.21: Number of authors versus title length in PLOS Medicine"><img data-src="Linear-models-overview_files/figure-html/fig-plos-multifit-1.png" width="672"></a>
 </div>
 </figure>
 </div>
 </div>
 </div>
 </section><section class="slide level2"><h4 id="scale-location-plot">Scale-location plot</h4>
-<aside class="notes"><p>We can also plot the square roots of the absolute values of the standardized residuals against the fitted values (<a href="#/fig-bw-scale-loc" class="quarto-xref">Figure&nbsp;6.21</a>).</p>
+<aside class="notes"><p>We can also plot the square roots of the absolute values of the standardized residuals against the fitted values (<a href="#/fig-bw-scale-loc" class="quarto-xref">Figure&nbsp;6.22</a>).</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -6916,13 +6996,13 @@ Figure&nbsp;6.20: Number of authors versus title length in <em>PLOS Medicine</em
           overflow: hidden!important;
           display:block!important;
       }</style></aside><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb129"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a></a><span class="fu">autoplot</span>(bw_lm2, <span class="at">which =</span> <span class="dv">3</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb131"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a></a><span class="fu">autoplot</span>(bw_lm2, <span class="at">which =</span> <span class="dv">3</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-bw-scale-loc" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bw-scale-loc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.21: Scale-location plot of <code>birthweight</code> data
+Figure&nbsp;6.22: Scale-location plot of <code>birthweight</code> data
 </figcaption><div aria-describedby="fig-bw-scale-loc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-bw-scale-loc-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-44" title="Figure&nbsp;6.21: Scale-location plot of birthweight data"><img data-src="Linear-models-overview_files/figure-html/fig-bw-scale-loc-1.png" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-bw-scale-loc-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-45" title="Figure&nbsp;6.22: Scale-location plot of birthweight data"><img data-src="Linear-models-overview_files/figure-html/fig-bw-scale-loc-1.png" width="672"></a>
 </div>
 </figure>
 </div>
@@ -6951,15 +7031,15 @@ Figure&nbsp;6.21: Scale-location plot of <code>birthweight</code> data
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb130"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a></a><span class="fu">autoplot</span>(bw_lm2, <span class="at">which =</span> <span class="dv">5</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+      }</style></aside><details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb132"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a></a><span class="fu">autoplot</span>(bw_lm2, <span class="at">which =</span> <span class="dv">5</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div id="fig-bw_lm2_resid-vs-leverage" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-bw_lm2_resid-vs-leverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.22: <code>birthweight</code> model with interactions (<a href="#/eq-BW-lm-interact" class="quarto-xref">Equation&nbsp;2.2</a>): residuals versus leverage
+Figure&nbsp;6.23: <code>birthweight</code> model with interactions (<a href="#/eq-BW-lm-interact" class="quarto-xref">Equation&nbsp;2.2</a>): residuals versus leverage
 </figcaption><div aria-describedby="fig-bw_lm2_resid-vs-leverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell">
 <div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-91-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-45" title="Figure&nbsp;6.22: birthweight model with interactions (Equation&nbsp;2.2): residuals versus leverage"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-91-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-92-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-46" title="Figure&nbsp;6.23: birthweight model with interactions (Equation&nbsp;2.2): residuals versus leverage"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-92-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -6980,44 +7060,28 @@ Figure&nbsp;6.22: <code>birthweight</code> model with interactions (<a href="#/e
           display:block!important;
       }</style></aside></section><section class="slide level2"><h3 id="diagnostics-constructed-by-hand">Diagnostics constructed by hand</h3>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb131"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a></a>bw <span class="ot">&lt;-</span></span>
-<span id="cb131-2"><a></a>  bw <span class="sc">|&gt;</span></span>
-<span id="cb131-3"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb131-4"><a></a>    <span class="at">predlm2 =</span> <span class="fu">predict</span>(bw_lm2),</span>
-<span id="cb131-5"><a></a>    <span class="at">residlm2 =</span> weight <span class="sc">-</span> predlm2,</span>
-<span id="cb131-6"><a></a>    <span class="at">std_resid =</span> residlm2 <span class="sc">/</span> <span class="fu">sigma</span>(bw_lm2),</span>
-<span id="cb131-7"><a></a>    <span class="co"># std_resid_builtin = rstandard(bw_lm2), # uses leverage</span></span>
-<span id="cb131-8"><a></a>    <span class="at">sqrt_abs_std_resid =</span> std_resid <span class="sc">|&gt;</span> <span class="fu">abs</span>() <span class="sc">|&gt;</span> <span class="fu">sqrt</span>()</span>
-<span id="cb131-9"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb133"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb133-1"><a></a>bw <span class="ot">&lt;-</span></span>
+<span id="cb133-2"><a></a>  bw <span class="sc">|&gt;</span></span>
+<span id="cb133-3"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb133-4"><a></a>    <span class="at">predlm2 =</span> <span class="fu">predict</span>(bw_lm2),</span>
+<span id="cb133-5"><a></a>    <span class="at">residlm2 =</span> weight <span class="sc">-</span> predlm2,</span>
+<span id="cb133-6"><a></a>    <span class="at">std_resid =</span> residlm2 <span class="sc">/</span> <span class="fu">sigma</span>(bw_lm2),</span>
+<span id="cb133-7"><a></a>    <span class="co"># std_resid_builtin = rstandard(bw_lm2), # uses leverage</span></span>
+<span id="cb133-8"><a></a>    <span class="at">sqrt_abs_std_resid =</span> std_resid <span class="sc">|&gt;</span> <span class="fu">abs</span>() <span class="sc">|&gt;</span> <span class="fu">sqrt</span>()</span>
+<span id="cb133-9"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <h5 id="residuals-vs-fitted">Residuals vs fitted</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb132"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a></a>resid_vs_fit <span class="ot">&lt;-</span> bw <span class="sc">|&gt;</span></span>
-<span id="cb132-2"><a></a>  <span class="fu">ggplot</span>(</span>
-<span id="cb132-3"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> predlm2, <span class="at">y =</span> residlm2, <span class="at">col =</span> sex, <span class="at">shape =</span> sex)</span>
-<span id="cb132-4"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb132-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb132-6"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
-<span id="cb132-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span>
-<span id="cb132-8"><a></a></span>
-<span id="cb132-9"><a></a><span class="fu">print</span>(resid_vs_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details><div class="cell-output-display">
-<div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-93-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-46"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-93-1.png" width="672"></a></p>
-</figure>
-</div>
-</div>
-</div>
-<h5 id="standardized-residuals-vs-fitted">Standardized residuals vs fitted</h5>
-<div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb133"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb133-1"><a></a>bw <span class="sc">|&gt;</span></span>
-<span id="cb133-2"><a></a>  <span class="fu">ggplot</span>(</span>
-<span id="cb133-3"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> predlm2, <span class="at">y =</span> std_resid, <span class="at">col =</span> sex, <span class="at">shape =</span> sex)</span>
-<span id="cb133-4"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb133-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb133-6"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
-<span id="cb133-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb134"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a></a>resid_vs_fit <span class="ot">&lt;-</span> bw <span class="sc">|&gt;</span></span>
+<span id="cb134-2"><a></a>  <span class="fu">ggplot</span>(</span>
+<span id="cb134-3"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> predlm2, <span class="at">y =</span> residlm2, <span class="at">col =</span> sex, <span class="at">shape =</span> sex)</span>
+<span id="cb134-4"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb134-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb134-6"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb134-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span>
+<span id="cb134-8"><a></a></span>
+<span id="cb134-9"><a></a><span class="fu">print</span>(resid_vs_fit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-94-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-47"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-94-1.png" width="672"></a></p>
@@ -7025,18 +7089,34 @@ Figure&nbsp;6.22: <code>birthweight</code> model with interactions (<a href="#/e
 </div>
 </div>
 </div>
-<h5 id="standardized-residuals-vs-gestational-age">Standardized residuals vs gestational age</h5>
+<h5 id="standardized-residuals-vs-fitted">Standardized residuals vs fitted</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb134"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a></a>bw <span class="sc">|&gt;</span></span>
-<span id="cb134-2"><a></a>  <span class="fu">ggplot</span>(</span>
-<span id="cb134-3"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> std_resid, <span class="at">col =</span> sex, <span class="at">shape =</span> sex)</span>
-<span id="cb134-4"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb134-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb134-6"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
-<span id="cb134-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb135"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb135-1"><a></a>bw <span class="sc">|&gt;</span></span>
+<span id="cb135-2"><a></a>  <span class="fu">ggplot</span>(</span>
+<span id="cb135-3"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> predlm2, <span class="at">y =</span> std_resid, <span class="at">col =</span> sex, <span class="at">shape =</span> sex)</span>
+<span id="cb135-4"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb135-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb135-6"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb135-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
 <figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-95-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-48"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-95-1.png" width="672"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<h5 id="standardized-residuals-vs-gestational-age">Standardized residuals vs gestational age</h5>
+<div class="cell">
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb136"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb136-1"><a></a>bw <span class="sc">|&gt;</span></span>
+<span id="cb136-2"><a></a>  <span class="fu">ggplot</span>(</span>
+<span id="cb136-3"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> std_resid, <span class="at">col =</span> sex, <span class="at">shape =</span> sex)</span>
+<span id="cb136-4"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb136-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb136-6"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb136-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details><div class="cell-output-display">
+<div>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-96-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-49"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-96-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -7045,16 +7125,16 @@ Figure&nbsp;6.22: <code>birthweight</code> model with interactions (<a href="#/e
 <code>sqrt(abs(rstandard()))</code> vs fitted</h5>
 <p>Compare with <code>autoplot(bw_lm2, 3)</code></p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb135"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb135-1"><a></a>bw <span class="sc">|&gt;</span></span>
-<span id="cb135-2"><a></a>  <span class="fu">ggplot</span>(</span>
-<span id="cb135-3"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> predlm2, <span class="at">y =</span> sqrt_abs_std_resid, <span class="at">col =</span> sex, <span class="at">shape =</span> sex)</span>
-<span id="cb135-4"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb135-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb135-6"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
-<span id="cb135-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb137"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a></a>bw <span class="sc">|&gt;</span></span>
+<span id="cb137-2"><a></a>  <span class="fu">ggplot</span>(</span>
+<span id="cb137-3"><a></a>    <span class="fu">aes</span>(<span class="at">x =</span> predlm2, <span class="at">y =</span> sqrt_abs_std_resid, <span class="at">col =</span> sex, <span class="at">shape =</span> sex)</span>
+<span id="cb137-4"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb137-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb137-6"><a></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb137-7"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-96-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-49"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-96-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-97-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-50"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-97-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
@@ -7079,78 +7159,78 @@ Figure&nbsp;6.22: <code>birthweight</code> model with interactions (<a href="#/e
 <p>Unfortunately, <span class="math display">\[\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2\]</span> gives a biased estimate of <span class="math inline">\(\text E[(y-\hat y)^2]\)</span> for new data. If we want an unbiased estimate, we will have to be clever.</p>
 </section><section class="slide level2"><h4 id="cross-validation">Cross-validation</h4>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb136"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb136-1"><a></a><span class="fu">data</span>(<span class="st">"carbohydrate"</span>, <span class="at">package =</span> <span class="st">"dobson"</span>)</span>
-<span id="cb136-2"><a></a><span class="fu">library</span>(cvTools)</span>
-<span id="cb136-3"><a></a>full_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(carbohydrate <span class="sc">~</span> ., <span class="at">data =</span> carbohydrate)</span>
-<span id="cb136-4"><a></a>cv_full <span class="ot">&lt;-</span></span>
-<span id="cb136-5"><a></a>  full_model <span class="sc">|&gt;</span> <span class="fu">cvFit</span>(</span>
-<span id="cb136-6"><a></a>    <span class="at">data =</span> carbohydrate, <span class="at">K =</span> <span class="dv">5</span>, <span class="at">R =</span> <span class="dv">10</span>,</span>
-<span id="cb136-7"><a></a>    <span class="at">y =</span> carbohydrate<span class="sc">$</span>carbohydrate</span>
-<span id="cb136-8"><a></a>  )</span>
-<span id="cb136-9"><a></a></span>
-<span id="cb136-10"><a></a>reduced_model <span class="ot">&lt;-</span> full_model <span class="sc">|&gt;</span> <span class="fu">update</span>(<span class="at">formula =</span> <span class="sc">~</span> . <span class="sc">-</span> age)</span>
-<span id="cb136-11"><a></a></span>
-<span id="cb136-12"><a></a>cv_reduced <span class="ot">&lt;-</span></span>
-<span id="cb136-13"><a></a>  reduced_model <span class="sc">|&gt;</span> <span class="fu">cvFit</span>(</span>
-<span id="cb136-14"><a></a>    <span class="at">data =</span> carbohydrate, <span class="at">K =</span> <span class="dv">5</span>, <span class="at">R =</span> <span class="dv">10</span>,</span>
-<span id="cb136-15"><a></a>    <span class="at">y =</span> carbohydrate<span class="sc">$</span>carbohydrate</span>
-<span id="cb136-16"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb138"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb138-1"><a></a><span class="fu">data</span>(<span class="st">"carbohydrate"</span>, <span class="at">package =</span> <span class="st">"dobson"</span>)</span>
+<span id="cb138-2"><a></a><span class="fu">library</span>(cvTools)</span>
+<span id="cb138-3"><a></a>full_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(carbohydrate <span class="sc">~</span> ., <span class="at">data =</span> carbohydrate)</span>
+<span id="cb138-4"><a></a>cv_full <span class="ot">&lt;-</span></span>
+<span id="cb138-5"><a></a>  full_model <span class="sc">|&gt;</span> <span class="fu">cvFit</span>(</span>
+<span id="cb138-6"><a></a>    <span class="at">data =</span> carbohydrate, <span class="at">K =</span> <span class="dv">5</span>, <span class="at">R =</span> <span class="dv">10</span>,</span>
+<span id="cb138-7"><a></a>    <span class="at">y =</span> carbohydrate<span class="sc">$</span>carbohydrate</span>
+<span id="cb138-8"><a></a>  )</span>
+<span id="cb138-9"><a></a></span>
+<span id="cb138-10"><a></a>reduced_model <span class="ot">&lt;-</span> full_model <span class="sc">|&gt;</span> <span class="fu">update</span>(<span class="at">formula =</span> <span class="sc">~</span> . <span class="sc">-</span> age)</span>
+<span id="cb138-11"><a></a></span>
+<span id="cb138-12"><a></a>cv_reduced <span class="ot">&lt;-</span></span>
+<span id="cb138-13"><a></a>  reduced_model <span class="sc">|&gt;</span> <span class="fu">cvFit</span>(</span>
+<span id="cb138-14"><a></a>    <span class="at">data =</span> carbohydrate, <span class="at">K =</span> <span class="dv">5</span>, <span class="at">R =</span> <span class="dv">10</span>,</span>
+<span id="cb138-15"><a></a>    <span class="at">y =</span> carbohydrate<span class="sc">$</span>carbohydrate</span>
+<span id="cb138-16"><a></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb137"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a></a>results_reduced <span class="ot">&lt;-</span></span>
-<span id="cb137-2"><a></a>  <span class="fu">tibble</span>(</span>
-<span id="cb137-3"><a></a>    <span class="at">model =</span> <span class="st">"wgt+protein"</span>,</span>
-<span id="cb137-4"><a></a>    <span class="at">errs =</span> cv_reduced<span class="sc">$</span>reps[]</span>
-<span id="cb137-5"><a></a>  )</span>
-<span id="cb137-6"><a></a>results_full <span class="ot">&lt;-</span></span>
-<span id="cb137-7"><a></a>  <span class="fu">tibble</span>(</span>
-<span id="cb137-8"><a></a>    <span class="at">model =</span> <span class="st">"wgt+age+protein"</span>,</span>
-<span id="cb137-9"><a></a>    <span class="at">errs =</span> cv_full<span class="sc">$</span>reps[]</span>
-<span id="cb137-10"><a></a>  )</span>
-<span id="cb137-11"><a></a></span>
-<span id="cb137-12"><a></a>cv_results <span class="ot">&lt;-</span></span>
-<span id="cb137-13"><a></a>  <span class="fu">bind_rows</span>(results_reduced, results_full)</span>
-<span id="cb137-14"><a></a></span>
-<span id="cb137-15"><a></a>cv_results <span class="sc">|&gt;</span></span>
-<span id="cb137-16"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> model, <span class="at">x =</span> errs)) <span class="sc">+</span></span>
-<span id="cb137-17"><a></a>  <span class="fu">geom_boxplot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb139"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb139-1"><a></a>results_reduced <span class="ot">&lt;-</span></span>
+<span id="cb139-2"><a></a>  <span class="fu">tibble</span>(</span>
+<span id="cb139-3"><a></a>    <span class="at">model =</span> <span class="st">"wgt+protein"</span>,</span>
+<span id="cb139-4"><a></a>    <span class="at">errs =</span> cv_reduced<span class="sc">$</span>reps[]</span>
+<span id="cb139-5"><a></a>  )</span>
+<span id="cb139-6"><a></a>results_full <span class="ot">&lt;-</span></span>
+<span id="cb139-7"><a></a>  <span class="fu">tibble</span>(</span>
+<span id="cb139-8"><a></a>    <span class="at">model =</span> <span class="st">"wgt+age+protein"</span>,</span>
+<span id="cb139-9"><a></a>    <span class="at">errs =</span> cv_full<span class="sc">$</span>reps[]</span>
+<span id="cb139-10"><a></a>  )</span>
+<span id="cb139-11"><a></a></span>
+<span id="cb139-12"><a></a>cv_results <span class="ot">&lt;-</span></span>
+<span id="cb139-13"><a></a>  <span class="fu">bind_rows</span>(results_reduced, results_full)</span>
+<span id="cb139-14"><a></a></span>
+<span id="cb139-15"><a></a>cv_results <span class="sc">|&gt;</span></span>
+<span id="cb139-16"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> model, <span class="at">x =</span> errs)) <span class="sc">+</span></span>
+<span id="cb139-17"><a></a>  <span class="fu">geom_boxplot</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-98-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-50"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-98-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-99-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-51"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-99-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
 </section><section class="slide level2"><h5 id="comparing-metrics">comparing metrics</h5>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb138"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb138-1"><a></a>compare_results <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
-<span id="cb138-2"><a></a>  <span class="sc">~</span>model, <span class="sc">~</span>cvRMSE, <span class="sc">~</span>r.squared, <span class="sc">~</span>adj.r.squared, <span class="sc">~</span>trainRMSE, <span class="sc">~</span>loglik,</span>
-<span id="cb138-3"><a></a>  <span class="st">"full"</span>,</span>
-<span id="cb138-4"><a></a>  cv_full<span class="sc">$</span>cv,</span>
-<span id="cb138-5"><a></a>  <span class="fu">summary</span>(full_model)<span class="sc">$</span>r.squared,</span>
-<span id="cb138-6"><a></a>  <span class="fu">summary</span>(full_model)<span class="sc">$</span>adj.r.squared,</span>
-<span id="cb138-7"><a></a>  <span class="fu">sigma</span>(full_model),</span>
-<span id="cb138-8"><a></a>  <span class="fu">logLik</span>(full_model) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>(),</span>
-<span id="cb138-9"><a></a>  <span class="st">"reduced"</span>,</span>
-<span id="cb138-10"><a></a>  cv_reduced<span class="sc">$</span>cv,</span>
-<span id="cb138-11"><a></a>  <span class="fu">summary</span>(reduced_model)<span class="sc">$</span>r.squared,</span>
-<span id="cb138-12"><a></a>  <span class="fu">summary</span>(reduced_model)<span class="sc">$</span>adj.r.squared,</span>
-<span id="cb138-13"><a></a>  <span class="fu">sigma</span>(reduced_model),</span>
-<span id="cb138-14"><a></a>  <span class="fu">logLik</span>(reduced_model) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>()</span>
-<span id="cb138-15"><a></a>)</span>
-<span id="cb138-16"><a></a></span>
-<span id="cb138-17"><a></a>compare_results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb140"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb140-1"><a></a>compare_results <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
+<span id="cb140-2"><a></a>  <span class="sc">~</span>model, <span class="sc">~</span>cvRMSE, <span class="sc">~</span>r.squared, <span class="sc">~</span>adj.r.squared, <span class="sc">~</span>trainRMSE, <span class="sc">~</span>loglik,</span>
+<span id="cb140-3"><a></a>  <span class="st">"full"</span>,</span>
+<span id="cb140-4"><a></a>  cv_full<span class="sc">$</span>cv,</span>
+<span id="cb140-5"><a></a>  <span class="fu">summary</span>(full_model)<span class="sc">$</span>r.squared,</span>
+<span id="cb140-6"><a></a>  <span class="fu">summary</span>(full_model)<span class="sc">$</span>adj.r.squared,</span>
+<span id="cb140-7"><a></a>  <span class="fu">sigma</span>(full_model),</span>
+<span id="cb140-8"><a></a>  <span class="fu">logLik</span>(full_model) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>(),</span>
+<span id="cb140-9"><a></a>  <span class="st">"reduced"</span>,</span>
+<span id="cb140-10"><a></a>  cv_reduced<span class="sc">$</span>cv,</span>
+<span id="cb140-11"><a></a>  <span class="fu">summary</span>(reduced_model)<span class="sc">$</span>r.squared,</span>
+<span id="cb140-12"><a></a>  <span class="fu">summary</span>(reduced_model)<span class="sc">$</span>adj.r.squared,</span>
+<span id="cb140-13"><a></a>  <span class="fu">sigma</span>(reduced_model),</span>
+<span id="cb140-14"><a></a>  <span class="fu">logLik</span>(reduced_model) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>()</span>
+<span id="cb140-15"><a></a>)</span>
+<span id="cb140-16"><a></a></span>
+<span id="cb140-17"><a></a>compare_results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
-{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.69408","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.62291","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":["cvRMSE"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["r.squared"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["trainRMSE"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["loglik"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"full","2":"6.55215","3":"0.480543","4":"0.383145","5":"5.95642","6":"-61.8367"},{"1":"reduced","2":"6.39686","3":"0.445441","4":"0.380199","5":"5.97062","6":"-62.4906"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
 </div>
 </section><section class="slide level2"><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb139"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb139-1"><a></a><span class="fu">anova</span>(full_model, reduced_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb141"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb141-1"><a></a><span class="fu">anova</span>(full_model, reduced_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -7181,98 +7261,98 @@ Figure&nbsp;6.22: <code>birthweight</code> model with interactions (<a href="#/e
 </div>
 </div>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb140"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb140-1"><a></a><span class="fu">library</span>(olsrr)</span>
-<span id="cb140-2"><a></a>olsrr<span class="sc">:::</span><span class="fu">ols_step_both_aic</span>(full_model)</span>
-<span id="cb140-3"><a></a><span class="co">#&gt; </span></span>
-<span id="cb140-4"><a></a><span class="co">#&gt; </span></span>
-<span id="cb140-5"><a></a><span class="co">#&gt;                              Stepwise Summary                              </span></span>
-<span id="cb140-6"><a></a><span class="co">#&gt; -------------------------------------------------------------------------</span></span>
-<span id="cb140-7"><a></a><span class="co">#&gt; Step    Variable         AIC        SBC       SBIC       R2       Adj. R2 </span></span>
-<span id="cb140-8"><a></a><span class="co">#&gt; -------------------------------------------------------------------------</span></span>
-<span id="cb140-9"><a></a><span class="co">#&gt;  0      Base Model     140.773    142.764    83.068    0.00000    0.00000 </span></span>
-<span id="cb140-10"><a></a><span class="co">#&gt;  1      protein (+)    137.950    140.937    80.438    0.21427    0.17061 </span></span>
-<span id="cb140-11"><a></a><span class="co">#&gt;  2      weight (+)     132.981    136.964    77.191    0.44544    0.38020 </span></span>
-<span id="cb140-12"><a></a><span class="co">#&gt; -------------------------------------------------------------------------</span></span>
-<span id="cb140-13"><a></a><span class="co">#&gt; </span></span>
-<span id="cb140-14"><a></a><span class="co">#&gt; Final Model Output </span></span>
-<span id="cb140-15"><a></a><span class="co">#&gt; ------------------</span></span>
-<span id="cb140-16"><a></a><span class="co">#&gt; </span></span>
-<span id="cb140-17"><a></a><span class="co">#&gt;                          Model Summary                          </span></span>
-<span id="cb140-18"><a></a><span class="co">#&gt; ---------------------------------------------------------------</span></span>
-<span id="cb140-19"><a></a><span class="co">#&gt; R                       0.667       RMSE                 5.505 </span></span>
-<span id="cb140-20"><a></a><span class="co">#&gt; R-Squared               0.445       MSE                 30.301 </span></span>
-<span id="cb140-21"><a></a><span class="co">#&gt; Adj. R-Squared          0.380       Coef. Var           15.879 </span></span>
-<span id="cb140-22"><a></a><span class="co">#&gt; Pred R-Squared          0.236       AIC                132.981 </span></span>
-<span id="cb140-23"><a></a><span class="co">#&gt; MAE                     4.593       SBC                136.964 </span></span>
-<span id="cb140-24"><a></a><span class="co">#&gt; ---------------------------------------------------------------</span></span>
-<span id="cb140-25"><a></a><span class="co">#&gt;  RMSE: Root Mean Square Error </span></span>
-<span id="cb140-26"><a></a><span class="co">#&gt;  MSE: Mean Square Error </span></span>
-<span id="cb140-27"><a></a><span class="co">#&gt;  MAE: Mean Absolute Error </span></span>
-<span id="cb140-28"><a></a><span class="co">#&gt;  AIC: Akaike Information Criteria </span></span>
-<span id="cb140-29"><a></a><span class="co">#&gt;  SBC: Schwarz Bayesian Criteria </span></span>
-<span id="cb140-30"><a></a><span class="co">#&gt; </span></span>
-<span id="cb140-31"><a></a><span class="co">#&gt;                                ANOVA                                </span></span>
-<span id="cb140-32"><a></a><span class="co">#&gt; -------------------------------------------------------------------</span></span>
-<span id="cb140-33"><a></a><span class="co">#&gt;                 Sum of                                             </span></span>
-<span id="cb140-34"><a></a><span class="co">#&gt;                Squares        DF    Mean Square      F        Sig. </span></span>
-<span id="cb140-35"><a></a><span class="co">#&gt; -------------------------------------------------------------------</span></span>
-<span id="cb140-36"><a></a><span class="co">#&gt; Regression     486.778         2        243.389    6.827    0.0067 </span></span>
-<span id="cb140-37"><a></a><span class="co">#&gt; Residual       606.022        17         35.648                    </span></span>
-<span id="cb140-38"><a></a><span class="co">#&gt; Total         1092.800        19                                   </span></span>
-<span id="cb140-39"><a></a><span class="co">#&gt; -------------------------------------------------------------------</span></span>
-<span id="cb140-40"><a></a><span class="co">#&gt; </span></span>
-<span id="cb140-41"><a></a><span class="co">#&gt;                                   Parameter Estimates                                    </span></span>
-<span id="cb140-42"><a></a><span class="co">#&gt; ----------------------------------------------------------------------------------------</span></span>
-<span id="cb140-43"><a></a><span class="co">#&gt;       model      Beta    Std. Error    Std. Beta      t        Sig      lower     upper </span></span>
-<span id="cb140-44"><a></a><span class="co">#&gt; ----------------------------------------------------------------------------------------</span></span>
-<span id="cb140-45"><a></a><span class="co">#&gt; (Intercept)    33.130        12.572                  2.635    0.017     6.607    59.654 </span></span>
-<span id="cb140-46"><a></a><span class="co">#&gt;     protein     1.824         0.623        0.534     2.927    0.009     0.509     3.139 </span></span>
-<span id="cb140-47"><a></a><span class="co">#&gt;      weight    -0.222         0.083       -0.486    -2.662    0.016    -0.397    -0.046 </span></span>
-<span id="cb140-48"><a></a><span class="co">#&gt; ----------------------------------------------------------------------------------------</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb142"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a></a><span class="fu">library</span>(olsrr)</span>
+<span id="cb142-2"><a></a>olsrr<span class="sc">:::</span><span class="fu">ols_step_both_aic</span>(full_model)</span>
+<span id="cb142-3"><a></a><span class="co">#&gt; </span></span>
+<span id="cb142-4"><a></a><span class="co">#&gt; </span></span>
+<span id="cb142-5"><a></a><span class="co">#&gt;                              Stepwise Summary                              </span></span>
+<span id="cb142-6"><a></a><span class="co">#&gt; -------------------------------------------------------------------------</span></span>
+<span id="cb142-7"><a></a><span class="co">#&gt; Step    Variable         AIC        SBC       SBIC       R2       Adj. R2 </span></span>
+<span id="cb142-8"><a></a><span class="co">#&gt; -------------------------------------------------------------------------</span></span>
+<span id="cb142-9"><a></a><span class="co">#&gt;  0      Base Model     140.773    142.764    83.068    0.00000    0.00000 </span></span>
+<span id="cb142-10"><a></a><span class="co">#&gt;  1      protein (+)    137.950    140.937    80.438    0.21427    0.17061 </span></span>
+<span id="cb142-11"><a></a><span class="co">#&gt;  2      weight (+)     132.981    136.964    77.191    0.44544    0.38020 </span></span>
+<span id="cb142-12"><a></a><span class="co">#&gt; -------------------------------------------------------------------------</span></span>
+<span id="cb142-13"><a></a><span class="co">#&gt; </span></span>
+<span id="cb142-14"><a></a><span class="co">#&gt; Final Model Output </span></span>
+<span id="cb142-15"><a></a><span class="co">#&gt; ------------------</span></span>
+<span id="cb142-16"><a></a><span class="co">#&gt; </span></span>
+<span id="cb142-17"><a></a><span class="co">#&gt;                          Model Summary                          </span></span>
+<span id="cb142-18"><a></a><span class="co">#&gt; ---------------------------------------------------------------</span></span>
+<span id="cb142-19"><a></a><span class="co">#&gt; R                       0.667       RMSE                 5.505 </span></span>
+<span id="cb142-20"><a></a><span class="co">#&gt; R-Squared               0.445       MSE                 30.301 </span></span>
+<span id="cb142-21"><a></a><span class="co">#&gt; Adj. R-Squared          0.380       Coef. Var           15.879 </span></span>
+<span id="cb142-22"><a></a><span class="co">#&gt; Pred R-Squared          0.236       AIC                132.981 </span></span>
+<span id="cb142-23"><a></a><span class="co">#&gt; MAE                     4.593       SBC                136.964 </span></span>
+<span id="cb142-24"><a></a><span class="co">#&gt; ---------------------------------------------------------------</span></span>
+<span id="cb142-25"><a></a><span class="co">#&gt;  RMSE: Root Mean Square Error </span></span>
+<span id="cb142-26"><a></a><span class="co">#&gt;  MSE: Mean Square Error </span></span>
+<span id="cb142-27"><a></a><span class="co">#&gt;  MAE: Mean Absolute Error </span></span>
+<span id="cb142-28"><a></a><span class="co">#&gt;  AIC: Akaike Information Criteria </span></span>
+<span id="cb142-29"><a></a><span class="co">#&gt;  SBC: Schwarz Bayesian Criteria </span></span>
+<span id="cb142-30"><a></a><span class="co">#&gt; </span></span>
+<span id="cb142-31"><a></a><span class="co">#&gt;                                ANOVA                                </span></span>
+<span id="cb142-32"><a></a><span class="co">#&gt; -------------------------------------------------------------------</span></span>
+<span id="cb142-33"><a></a><span class="co">#&gt;                 Sum of                                             </span></span>
+<span id="cb142-34"><a></a><span class="co">#&gt;                Squares        DF    Mean Square      F        Sig. </span></span>
+<span id="cb142-35"><a></a><span class="co">#&gt; -------------------------------------------------------------------</span></span>
+<span id="cb142-36"><a></a><span class="co">#&gt; Regression     486.778         2        243.389    6.827    0.0067 </span></span>
+<span id="cb142-37"><a></a><span class="co">#&gt; Residual       606.022        17         35.648                    </span></span>
+<span id="cb142-38"><a></a><span class="co">#&gt; Total         1092.800        19                                   </span></span>
+<span id="cb142-39"><a></a><span class="co">#&gt; -------------------------------------------------------------------</span></span>
+<span id="cb142-40"><a></a><span class="co">#&gt; </span></span>
+<span id="cb142-41"><a></a><span class="co">#&gt;                                   Parameter Estimates                                    </span></span>
+<span id="cb142-42"><a></a><span class="co">#&gt; ----------------------------------------------------------------------------------------</span></span>
+<span id="cb142-43"><a></a><span class="co">#&gt;       model      Beta    Std. Error    Std. Beta      t        Sig      lower     upper </span></span>
+<span id="cb142-44"><a></a><span class="co">#&gt; ----------------------------------------------------------------------------------------</span></span>
+<span id="cb142-45"><a></a><span class="co">#&gt; (Intercept)    33.130        12.572                  2.635    0.017     6.607    59.654 </span></span>
+<span id="cb142-46"><a></a><span class="co">#&gt;     protein     1.824         0.623        0.534     2.927    0.009     0.509     3.139 </span></span>
+<span id="cb142-47"><a></a><span class="co">#&gt;      weight    -0.222         0.083       -0.486    -2.662    0.016    -0.397    -0.046 </span></span>
+<span id="cb142-48"><a></a><span class="co">#&gt; ----------------------------------------------------------------------------------------</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><h4 id="lasso">Lasso</h4>
 <p><span class="math display">\[\arg \max_{\theta} {\left\{\ell(\theta) - \lambda \sum_{j=1}^p|\beta_j|\right\}}\]</span></p>
 <div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb141"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb141-1"><a></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb141-2"><a></a>y <span class="ot">&lt;-</span> carbohydrate<span class="sc">$</span>carbohydrate</span>
-<span id="cb141-3"><a></a>x <span class="ot">&lt;-</span> carbohydrate <span class="sc">|&gt;</span></span>
-<span id="cb141-4"><a></a>  <span class="fu">select</span>(age, weight, protein) <span class="sc">|&gt;</span></span>
-<span id="cb141-5"><a></a>  <span class="fu">as.matrix</span>()</span>
-<span id="cb141-6"><a></a>fit <span class="ot">&lt;-</span> <span class="fu">glmnet</span>(x, y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb143"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb143-1"><a></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb143-2"><a></a>y <span class="ot">&lt;-</span> carbohydrate<span class="sc">$</span>carbohydrate</span>
+<span id="cb143-3"><a></a>x <span class="ot">&lt;-</span> carbohydrate <span class="sc">|&gt;</span></span>
+<span id="cb143-4"><a></a>  <span class="fu">select</span>(age, weight, protein) <span class="sc">|&gt;</span></span>
+<span id="cb143-5"><a></a>  <span class="fu">as.matrix</span>()</span>
+<span id="cb143-6"><a></a>fit <span class="ot">&lt;-</span> <span class="fu">glmnet</span>(x, y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section><section class="slide level2"><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb142"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a></a><span class="fu">autoplot</span>(fit, <span class="at">xvar =</span> <span class="st">"lambda"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb144"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb144-1"><a></a><span class="fu">autoplot</span>(fit, <span class="at">xvar =</span> <span class="st">"lambda"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-carbs-lasso" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-fig"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-fig" id="fig-carbs-lasso-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.23: Lasso selection
+Figure&nbsp;6.24: Lasso selection
 </figcaption><div aria-describedby="fig-carbs-lasso-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="Linear-models-overview_files/figure-html/fig-carbs-lasso-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-51" title="Figure&nbsp;6.23: Lasso selection"><img data-src="Linear-models-overview_files/figure-html/fig-carbs-lasso-1.png" width="672"></a>
+<a href="Linear-models-overview_files/figure-html/fig-carbs-lasso-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-52" title="Figure&nbsp;6.24: Lasso selection"><img data-src="Linear-models-overview_files/figure-html/fig-carbs-lasso-1.png" width="672"></a>
 </div>
 </figure>
 </div>
 </div>
 </div>
 </section><section class="slide level2"><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb143"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb143-1"><a></a>cvfit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y)</span>
-<span id="cb143-2"><a></a><span class="fu">plot</span>(cvfit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb145"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb145-1"><a></a>cvfit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y)</span>
+<span id="cb145-2"><a></a><span class="fu">plot</span>(cvfit)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div>
-<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-103-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-52"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-103-1.png" width="672"></a></p>
+<figure><p><a href="Linear-models-overview_files/figure-html/unnamed-chunk-104-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-53"><img data-src="Linear-models-overview_files/figure-html/unnamed-chunk-104-1.png" width="672"></a></p>
 </figure>
 </div>
 </div>
 </div>
 </section><section class="slide level2 smaller scrollable" id="references"><div class="cell">
-<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb144"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb144-1"><a></a><span class="fu">coef</span>(cvfit, <span class="at">s =</span> <span class="st">"lambda.1se"</span>)</span>
-<span id="cb144-2"><a></a><span class="co">#&gt; 4 x 1 sparse Matrix of class "dgCMatrix"</span></span>
-<span id="cb144-3"><a></a><span class="co">#&gt;             lambda.1se</span></span>
-<span id="cb144-4"><a></a><span class="co">#&gt; (Intercept) 34.3091615</span></span>
-<span id="cb144-5"><a></a><span class="co">#&gt; age          .        </span></span>
-<span id="cb144-6"><a></a><span class="co">#&gt; weight      -0.0800142</span></span>
-<span id="cb144-7"><a></a><span class="co">#&gt; protein      0.7640510</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb146"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb146-1"><a></a><span class="fu">coef</span>(cvfit, <span class="at">s =</span> <span class="st">"lambda.1se"</span>)</span>
+<span id="cb146-2"><a></a><span class="co">#&gt; 4 x 1 sparse Matrix of class "dgCMatrix"</span></span>
+<span id="cb146-3"><a></a><span class="co">#&gt;             lambda.1se</span></span>
+<span id="cb146-4"><a></a><span class="co">#&gt; (Intercept) 34.2044364</span></span>
+<span id="cb146-5"><a></a><span class="co">#&gt; age          .        </span></span>
+<span id="cb146-6"><a></a><span class="co">#&gt; weight      -0.0925966</span></span>
+<span id="cb146-7"><a></a><span class="co">#&gt; protein      0.8582398</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 
