@@ -148,4 +148,90 @@ plot(cvfit)
 coef(cvfit, s = "lambda.1se")
 ```
 
+---
 
+### Likelihood ratio test for nested models {#sec-linreg-LRT}
+
+For a general MLE-focused discussion of likelihood-ratio tests,
+see [Likelihood ratio tests for MLEs](intro-MLEs.qmd#sec-lrt-mles).
+
+A **likelihood ratio test (LRT)** compares two nested models
+by computing twice the difference in their log-likelihoods:
+
+$$2(\llik_1 - \llik_0) \dot \sim \chi^2_q \quad \text{(asymptotically under } H_0 \text{)}$$
+
+where $q = p_2 - p_1$ is the number of extra parameters in the full model.
+
+---
+
+```{r}
+logLik(bw_lm2)
+logLik(bw_lm1)
+
+log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
+delta_df <- (bw_lm1$df.residual - df.residual(bw_lm2))
+
+
+x_max <- 1
+```
+
+---
+
+```{r}
+#| label: fig-chisq-plot
+#| fig-cap: "Chi-square distribution"
+
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)
+
+chisq_plot <-
+  ggplot() +
+  geom_function(fun = d_log_LR) +
+  stat_function(
+    fun = d_log_LR,
+    xlim = c(2 * log_LR, x_max),
+    geom = "area",
+    fill = "gray"
+  ) +
+  geom_segment(
+    aes(
+      x = 2 * log_LR,
+      xend = 2 * log_LR,
+      y = 0,
+      yend = d_log_LR(2 * log_LR)
+    ),
+    col = "red"
+  ) +
+  xlim(0.0001, x_max) +
+  ylim(0, 4) +
+  ylab("p(X=x)") +
+  xlab("Likelihood-ratio test statistic [x] = 2 * log(likelihood ratio)") +
+  theme_classic()
+chisq_plot |> print()
+```
+
+---
+
+Now we can get the p-value:
+
+```{r}
+#| label: LRT-pval
+pchisq(
+  q = 2 * log_LR,
+  df = delta_df,
+  lower = FALSE
+) |>
+  print()
+```
+
+---
+
+In practice you don't have to do this by hand; there are functions to do it for you:
+
+```{r}
+# built in
+lmtest::lrtest(bw_lm2, bw_lm1)
+```
+
+---
+
+{{< include _subfiles/Linear-models-overview/_sec_linreg_Ftest.qmd >}}
