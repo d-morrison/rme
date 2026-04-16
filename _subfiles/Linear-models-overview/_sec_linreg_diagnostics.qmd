@@ -921,11 +921,9 @@ three common tests are:
 
 - `fligner.test()` for equal variances across groups
   (the Fligner--Killeen test).
-- `car::leveneTest()` (or equivalent ANOVA on absolute deviations)
-  for Levene / Brown--Forsythe testing.
-- [Levene's test](https://en.wikipedia.org/wiki/Levene%27s_test)
-  (often implemented with a median-centered variant,
-  called the Brown--Forsythe test).
+- Brown--Forsythe testing
+  (a robust median-centered Levene variant;
+  e.g., via `car::leveneTest(..., center = median)` or equivalent code).
 - `shapiro.test()` /
   [Shapiro--Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test)
   for normality.
@@ -972,6 +970,24 @@ F = \frac{\text{MS}_{\text{between}}}{\text{MS}_{\text{within}}}
 $$
 
 Small p-values suggest unequal residual variance.
+
+For simple linear regression,
+@kutner2005applied [pp. 116--117] describes
+the Brown--Forsythe test
+by splitting observations into two $X$-level groups
+(low versus high),
+computing absolute deviations from each group median,
+and applying a two-sample pooled-variance t test:
+$$
+t_{\text{BF}} =
+\frac{\bar z_{1} - \bar z_{2}}
+{s_p \sqrt{1/n_1 + 1/n_2}},
+\quad
+t_{\text{BF}} \approx t_{n_1+n_2-2}
+\text{ under }H_0.
+$$
+Large $|t_{\text{BF}}|$
+indicates nonconstant residual variance.
 
 ---
 
@@ -1029,7 +1045,7 @@ shapiro_bw <- shapiro.test(diag_bw$std_resid_lm2)
 tibble(
   test = c(
     "Fligner--Killeen: equal variance by sex",
-    "Levene/Brown-Forsythe: equal variance by sex",
+    "Levene/Brown--Forsythe: equal variance by sex",
     "Shapiro-Wilk: normality of standardized residuals"
   ),
   statistic = c(
