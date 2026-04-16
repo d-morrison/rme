@@ -1,0 +1,169 @@
+{{< include latex-macros/macros.qmd >}}
+
+## Bias–variance trade-off and overfitting {#sec-pred-sel-bias-var}
+
+When building a prediction model,
+adding more predictors generally **reduces bias**:
+the model better captures the true relationships in the population.
+But it also **increases variance**:
+more parameters to estimate means more sampling variability,
+and the model can start to fit noise in the training data.
+
+:::{#def-overfitting}
+### Overfitting
+
+**Overfitting** occurs when a model fits the training data well
+but predicts poorly for new observations.
+It results from including too many predictors
+relative to the effective sample size.
+
+:::
+
+A good prediction model minimizes the sum of bias and variance —
+the **bias–variance trade-off**.
+Adding a predictor helps only if
+the reduction in bias outweighs the increase in variance.
+
+## Measures of prediction error {#sec-pred-sel-pe}
+
+To select a model that minimizes prediction error,
+we need a measure of PE that does not simply increase
+with the number of predictors.
+
+For **continuous outcomes**:
+
+- **Adjusted $R^2$** penalizes the number of predictors:
+$$\bar R^2 = 1 - \frac{n-1}{n-p-1}(1 - R^2)$$
+Adding a variable increases $\bar R^2$ only if it reduces
+the residual variance more than the penalty.
+
+- **AIC** and **BIC** impose steeper penalties:
+$$\text{AIC} = -2\hat\ell + 2p, \quad
+  \text{BIC} = -2\hat\ell + p\log n$$
+(see @sec-pred-sel-aic-bic).
+
+For **binary outcomes**,
+the **C-statistic** (area under the ROC curve)
+measures discrimination — the model's ability to rank
+events above non-events.
+The C-statistic is analogous to $R^2$ for continuous outcomes,
+but is rank-based and can be insensitive to improvements
+in the quality of predicted probabilities.
+
+For **survival outcomes**, the analogous measure is the **C-index**,
+which measures the model's ability to correctly order
+the timing of events for two randomly chosen subjects.
+
+## Optimism and cross-validation {#sec-pred-sel-cv}
+
+Naive estimates of PE evaluated on the same data used
+to fit the model are **optimistic**:
+they overstate the model's ability to predict new data.
+For example, $R^2$ always increases when a predictor is added,
+even if the predictor is pure noise.
+
+**Cross-validation** provides a less optimistic estimate of PE
+by evaluating predictions on observations
+not used to estimate the model.
+
+:::{#def-kfold}
+### $k$-fold cross-validation
+
+In **$k$-fold cross-validation**:
+
+1. The data are randomly divided into $k$ equal-sized subsets ("folds").
+2. For each fold $i = 1, \ldots, k$:
+   - Fit the model using all data *except* fold $i$.
+   - Compute predicted values for the observations in fold $i$.
+3. Compute a summary PE measure across all folds.
+
+Values of $k = 5$ or $k = 10$ are typical.
+
+:::
+
+Using cross-validation to select predictors avoids overfitting
+because the predictive performance is evaluated on held-out data
+that did not influence the model fit.
+
+## Cross-validation for LASSO in the HERS data {#sec-pred-sel-cv-hers}
+
+The LASSO (see @sec-pred-sel-lasso) uses cross-validation
+to select the penalty parameter $\lambda$
+that minimizes prediction error.
+The `cv.glmnet` function implements 10-fold cross-validation,
+fitting the LASSO for a grid of $\lambda$ values and evaluating
+mean squared error on held-out folds.
+The fitted object provides two key $\lambda$ values:
+`lambda.min` (minimizes CV mean squared error) and
+`lambda.1se` (largest $\lambda$ within one standard error of the minimum).
+See @sec-pred-sel-lasso for the HERS example
+with coefficient paths and CV results.
+
+::: notes
+
+The two recommended values of $\lambda$ represent different
+points on the bias–variance trade-off:
+
+- `lambda.min` minimizes cross-validated MSE,
+  yielding a model with good predictive accuracy.
+- `lambda.1se` uses a larger penalty
+  (farther from zero, more shrinkage),
+  resulting in a sparser, more conservative model
+  that is often preferred for interpretability.
+
+:::
+
+## Development and validation sets {#sec-pred-sel-split}
+
+The most transparent approach to measuring prediction error
+is to split the data into a **development set**
+(used to fit the model)
+and a **validation set**
+(used only to evaluate predictions).
+
+::: notes
+
+When a single data set must be split,
+a common allocation is two-thirds to development
+and one-third to validation.
+External validation using a completely independent sample
+(from a different time period or study site)
+provides the most rigorous assessment of generalizability.
+
+:::
+
+```{r}
+#| label: split-sample-ldl
+
+set.seed(42)
+n_hers <- nrow(hers_ldl)
+train_idx <- sample(seq_len(n_hers), size = floor(0.67 * n_hers))
+
+hers_train <- hers_ldl[train_idx, ]
+hers_valid <- hers_ldl[-train_idx, ]
+
+# Fit model on training data
+model_train <- lm(
+  LDL ~ HT + age + BMI + diabetes + statins,
+  data = hers_train
+)
+
+# Evaluate on validation data
+pred_valid <- predict(model_train, newdata = hers_valid)
+rmse_valid <- sqrt(mean((hers_valid$LDL - pred_valid)^2, na.rm = TRUE))
+rmse_train <- sqrt(mean(residuals(model_train)^2))
+
+cat(
+  "Training RMSE:", round(rmse_train, 2), "\n",
+  "Validation RMSE:", round(rmse_valid, 2), "\n"
+)
+```
+
+::: notes
+
+If the validation RMSE is much larger than the training RMSE,
+this is a sign of overfitting.
+In well-specified models with adequate sample sizes,
+the two values are typically close.
+
+:::
