@@ -352,6 +352,132 @@ $$
 
 ---
 
+## Exponential MLE
+
+::: {#exr-prac-exp-mle}
+#### Exponential MLE (adapted from @dobson4e, Chapter 3)
+
+Let $X_1, \ldots, X_n \siid \text{Exponential}(\pmean)$,
+so that
+$$
+\p(X = x \mid \pmean) = \frac{1}{\pmean} e^{-x/\pmean},
+\quad x > 0, \quad \pmean > 0.
+$$
+
+**(a)** Write the log-likelihood $\ell(\pmean; \vx)$
+for the observed data $\vx = (x_1, \ldots, x_n)$.
+
+**(b)** Derive the score function $\ell'(\pmean; \vx) = \deriv{\pmean}\ell(\pmean; \vx)$.
+
+**(c)** Set the score equal to zero and show that $\hat\pmean_{ML} = \bar{x}$.
+Compute the second derivative and verify this is a maximum.
+
+**(d)** Derive the observed information $I(\pmean; \vx) = -\ell''(\pmean; \vx)$,
+evaluate it at $\hat\pmean_{ML}$,
+and give an approximate 95% confidence interval for $\pmean$.
+:::
+
+::: {.solution}
+
+**(a)**
+
+$$
+\ba
+\ell(\pmean; \vx)
+&= \logf{\prod_{i=1}^n \frac{1}{\pmean} e^{-x_i/\pmean}}
+\\
+&= \sum_{i=1}^n \logf{\frac{1}{\pmean} e^{-x_i/\pmean}}
+\\
+&= \sum_{i=1}^n \paren{-\logf{\pmean} - \frac{x_i}{\pmean}}
+\\
+&= -n\logf{\pmean} - \frac{1}{\pmean}\sum_{i=1}^n x_i
+\\
+&= -n\logf{\pmean} - \frac{n\bar{x}}{\pmean}
+\ea
+$$
+
+**(b)**
+
+$$
+\ba
+\ell'(\pmean; \vx)
+&= \deriv{\pmean}\paren{-n\logf{\pmean} - \frac{n\bar{x}}{\pmean}}
+\\
+&= -\frac{n}{\pmean} + \frac{n\bar{x}}{\pmean^2}
+\\
+&= \frac{n}{\pmean^2}\paren{\bar{x} - \pmean}
+\ea
+$$
+
+**(c)**
+
+Setting $\ell'(\pmean; \vx) = 0$:
+
+$$
+\ba
+0 &= \frac{n}{\pmean^2}\paren{\bar{x} - \pmean}
+\\
+\hat\pmean_{ML} &= \bar{x}
+\ea
+$$
+
+The second derivative is:
+
+$$
+\ba
+\ell''(\pmean; \vx)
+&= \deriv{\pmean}\paren{-\frac{n}{\pmean} + \frac{n\bar{x}}{\pmean^2}}
+\\
+&= \frac{n}{\pmean^2} - \frac{2n\bar{x}}{\pmean^3}
+\ea
+$$
+
+Evaluated at $\hat\pmean_{ML} = \bar{x}$:
+
+$$
+\ell''(\bar{x}; \vx)
+= \frac{n}{\bar{x}^2} - \frac{2n\bar{x}}{\bar{x}^3}
+= \frac{n}{\bar{x}^2} - \frac{2n}{\bar{x}^2}
+= -\frac{n}{\bar{x}^2} < 0
+$$
+
+Since the second derivative is negative, $\hat\pmean_{ML} = \bar{x}$ is a maximum.
+
+**(d)**
+
+The observed information is:
+
+$$
+I(\pmean; \vx) = -\ell''(\pmean; \vx)
+= \frac{2n\bar{x}}{\pmean^3} - \frac{n}{\pmean^2}
+$$
+
+Evaluated at $\hat\pmean_{ML} = \bar{x}$:
+
+$$
+I(\hat\pmean_{ML}; \vx) = \frac{2n\bar{x}}{\bar{x}^3} - \frac{n}{\bar{x}^2}
+= \frac{2n}{\bar{x}^2} - \frac{n}{\bar{x}^2}
+= \frac{n}{\bar{x}^2}
+$$
+
+So $\SE{\hat\pmean_{ML}} \approx \sqrt{I(\hat\pmean_{ML}; \vx)^{-1}} = \frac{\bar{x}}{\sqrt{n}}$.
+
+An approximate 95% CI for $\pmean$ is:
+
+$$
+\hat\pmean_{ML} \pm 1.96 \times \frac{\bar{x}}{\sqrt{n}}
+= \bar{x} \pm \frac{1.96\bar{x}}{\sqrt{n}}
+$$
+
+Note: the exponential distribution has $\Varf{X} = \pmean^2$,
+so $\SE{\hat\pmean_{ML}} = \pmean/\sqrt{n}$,
+which is estimated by $\bar{x}/\sqrt{n}$—
+the same formula as for the sample mean from any distribution.
+
+:::
+
+---
+
 # Part 2: Gaussian Linear Regression {#sec-prac-linreg}
 
 ## Model specification and likelihood
@@ -945,80 +1071,6 @@ More generally,
 these score equations say that the **residuals $(y_i - \hat\mu_i)$
 are orthogonal to each predictor column**.
 This is the GLM analogue of the OLS normal equations.
-
-:::
-
----
-
-::: {#exr-prac-glm-link-choice}
-#### Choosing a link function
-(adapted from @dunn2018generalized, Chapter 3)
-
-Two researchers are modeling the probability $\pi(x)$
-that a patient experiences a side effect,
-as a function of dose $x > 0$:
-
-- Researcher A uses the **logit** link:
-  $\logit(\pi) = \beta_0 + \beta_1 x$
-- Researcher B uses the **log** link:
-  $\logf{\pi} = \beta_0 + \beta_1 x$
-
-**(a)** For each model,
-write $\pi(x)$ as an explicit function of $x$.
-
-**(b)** For the log-link model (Researcher B),
-what constraint on the parameters ensures $\pi(x) \leq 1$ for all $x > 0$?
-
-**(c)** Which link is more commonly used for binary outcomes?
-Give one practical advantage of that link.
-:::
-
-::: {.solution}
-
-**(a)**
-
-**Logit link (Researcher A):**
-
-$$
-\pi(x) = \frac{e^{\beta_0 + \beta_1 x}}{1 + e^{\beta_0 + \beta_1 x}}
-= \text{expit}(\beta_0 + \beta_1 x)
-$$
-
-This is always in $(0, 1)$,
-regardless of the values of $\beta_0$, $\beta_1$, or $x$.
-
-**Log link (Researcher B):**
-
-$$
-\pi(x) = e^{\beta_0 + \beta_1 x}
-$$
-
-This is always positive, but may exceed 1.
-
-**(b)**
-
-For the log-link model,
-$\pi(x) \leq 1$ requires
-$e^{\beta_0 + \beta_1 x} \leq 1$,
-i.e., $\beta_0 + \beta_1 x \leq 0$ for all $x > 0$.
-
-If $\beta_1 > 0$ (increasing dose increases risk),
-this requires $\beta_0 + \beta_1 x \leq 0$ for the entire range of $x$,
-which becomes increasingly restrictive as $x$ grows.
-The constraint is difficult to enforce in practice.
-
-**(c)**
-
-The **logit link** is more commonly used for binary outcomes.
-
-One practical advantage:
-the logit link **automatically constrains** $\pi(x) \in (0,1)$
-for any real values of $\beta_0$, $\beta_1$, and $x$,
-eliminating the risk of predicted probabilities outside $[0,1]$.
-Additionally, the logit link yields odds ratios as
-the natural measure of association,
-which are widely used in epidemiology
-(see @vittinghoff2e [Chapter 5]).
 
 :::
 
