@@ -183,23 +183,23 @@ to make it easier to inspect.
 #### Residuals in Gaussian models
 
 If $Y$ has a Gaussian distribution, 
-then $\err(Y)$ also has a Gaussian distribution, and vice versa.
+then $\devn(Y)$ also has a Gaussian distribution, and vice versa.
 :::
 
 :::{.proof}
 \ 
 
-By @def-resid-noise, $\err(Y) = Y - \Expf{Y}$.
-Since $\err(Y)$ is an affine function of $Y$ (a linear function plus a constant),
+By @def-resid-noise, $\devn(Y) = Y - \Expf{Y}$.
+Since $\devn(Y)$ is an affine function of $Y$ (a linear function plus a constant),
 and Gaussian distributions are closed under affine transformations,
 if $Y \sim \Normal(\mu, \ss)$, then:
 
 $$
-\err(Y) = Y - \mu \sim \Normal(\mu - \mu, \ss) = \Normal(0, \ss)
+\devn(Y) = Y - \mu \sim \Normal(\mu - \mu, \ss) = \Normal(0, \ss)
 $$
 
-Conversely, since $Y = \Expf{Y} + \err(Y) = \mu + \err(Y)$,
-if $\err(Y) \sim \Normal(0, \ss)$, then $Y = \mu + \err(Y) \sim \Normal(\mu, \ss)$.
+Conversely, since $Y = \Expf{Y} + \devn(Y) = \mu + \devn(Y)$,
+if $\devn(Y) \sim \Normal(0, \ss)$, then $Y = \mu + \devn(Y) \sim \Normal(\mu, \ss)$.
 
 :::
 
@@ -210,10 +210,7 @@ if $\err(Y) \sim \Normal(0, \ss)$, then $Y = \mu + \err(Y) \sim \Normal(\mu, \ss
 
 The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error) relative to the observed data:
 $$
-\ba
-e(\hat y) &\eqdef \erf{\hat y}
-\\&= y - \hat y
-\ea
+\resid(\hat y) \eqdef y - \hat y
 $$
 :::
 
@@ -251,11 +248,11 @@ Fitted values and residuals for interaction model for `birthweight` data
 
 #### Residuals of fitted values vs residual noise
 
-$e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
+$\resid(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
 
 $$
 \ba
-e(\hy) &= y - \hat y
+\resid(\hy) &= y - \hat y
 \\ &= \hat\eps_{ML}
 \ea
 $$
@@ -265,15 +262,16 @@ $$
 #### General characteristics of residuals
 
 :::{#thm-resid-unbiased}
-If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
-estimator of the mean $\Expf{Y}$, then:
+Let $\resid_i \eqdef y_i - \hat y_i$ where $\hat y_i \eqdef \hExpf{Y_i}$.
+If $\hat y_i$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
+estimator of the mean $\Expf{Y_i}$, then:
 
-$$\E{e_i} = 0$$ {#eq-mean-resid-unbiased}
+$$\Ef{\resid_i} = 0$$ {#eq-mean-resid-unbiased}
 
 In a Gaussian linear regression model,
 the exact variance of the $i$-th residual is:
 
-$$\Var{e_i} = \ss(1 - h_{ii})$$ {#eq-var-resid-unbiased}
+$$\Var{\resid_i} = \ss(1 - h_{ii})$$ {#eq-var-resid-unbiased}
 
 where $h_{ii}$ is the $i$-th diagonal element of the **hat matrix**
 (also called the **projection matrix**,
@@ -288,7 +286,7 @@ $$h_{ii} = \tp{\vxi}\inv{\tp{\mX}\mX}\vxi$$
 where $\vxi$ is the vector of covariates for observation $i$
 (the $i$-th row of $\mX$, written as a column vector).
 Under standard regularity conditions (fixed $p$, asymptotically balanced design),
-$h_{ii} \to 0$ as $n \to \infty$, so $\Var{e_i} \approx \ss$ for large $n$.
+$h_{ii} \to 0$ as $n \to \infty$, so $\Var{\resid_i} \approx \ss$ for large $n$.
 
 :::
 
@@ -301,7 +299,7 @@ $h_{ii} \to 0$ as $n \to \infty$, so $\Var{e_i} \approx \ss$ for large $n$.
 
 $$
 \ba
-\Ef{e_i} &= \Ef{y_i - \hat y_i}
+\Ef{\resid_i} &= \Ef{y_i - \hat y_i}
 \\ &= \Ef{y_i} - \Ef{\hat y_i}
 \\ &= \Ef{y_i} - \Ef{y_i}
 \\ &= 0
@@ -347,7 +345,7 @@ Therefore:
 
 $$
 \ba
-\Var{e_i}
+\Var{\resid_i}
 &= \Var{y_i - \hat y_i}
 \\ &= \Var{y_i} + \Var{\hat y_i} - 2 \Cov{y_i, \hat y_i}
 \\ &= \ss + \ss \, h_{ii} - 2 \ss \, h_{ii}
@@ -358,33 +356,31 @@ $$
 For large $n$,
 the leverage $h_{ii} = \tp{\vxi}\inv{\tp{\mX}\mX}\vxi \to 0$,
 meaning each observation has diminishing influence on its own fitted value,
-so $\Var{e_i} = \ss(1 - h_{ii}) \to \ss$.
+so $\Var{\resid_i} = \ss(1 - h_{ii}) \to \ss$.
 This limit holds under standard regularity conditions:
 fixed number of predictors $p$,
-and $\frac{1}{n}\tp{\mX}\mX \to \Sigma$ for some positive definite matrix $\Sigma$
-(i.e., the design is asymptotically balanced),
-which implies $h_{ii} = O(p/n) \to 0$.
+asymptotically balanced design ($\frac{1}{n}\tp{\mX}\mX \to \Sigma$ for some positive definite $\Sigma$),
+and uniformly bounded leverage ($\max_i h_{ii} \to 0$, which is implied by, e.g.,
+uniformly bounded covariates: $\max_i \|\vxi\|^2 = O(p)$).
 
 :::
 
 ---
 
-#### Characteristics of residuals in Gaussian models
-
 :::{#thm-resid-gaussian}
 #### Marginal distribution of residuals in Gaussian models
 
 In a Gaussian linear regression model,
-the residuals $e_i$ are marginally normally distributed:
+the residuals $\resid_i$ are marginally normally distributed:
 
-$$e_i \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
+$$\resid_i \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
 
 where $h_{ii}$ is the $i$-th diagonal element of the hat matrix.
 Under the regularity conditions described in @thm-resid-unbiased,
 $h_{ii} \to 0$ as $n \to \infty$, so $\ss(1-h_{ii}) \approx \ss$ for large $n$;
 replacing the unknown $\ss$ with its estimate $\hat\ss$ gives:
 
-$$e_i \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
+$$\resid_i \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
 
 :::
 
@@ -396,7 +392,7 @@ $$e_i \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
 Since $\hat y_i = \sum_{j=1}^n h_{ij} y_j$,
 the residual is a linear combination of the observations:
 
-$$e_i = y_i - \hat y_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, y_j$$
+$$\resid_i = y_i - \hat y_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, y_j$$
 
 where $\delta_{ij}$ is the Kronecker delta
 ($\delta_{ij} = 1$ if $i = j$, else $\delta_{ij} = 0$).
@@ -404,18 +400,18 @@ where $\delta_{ij}$ is the Kronecker delta
 Since $y_1, \ldots, y_n$ are independent Gaussian random variables
 (by the Gaussian model assumption),
 and linear combinations of independent Gaussians are Gaussian,
-$e_i$ is normally distributed.
+$\resid_i$ is normally distributed.
 
 The mean and variance follow from @thm-resid-unbiased:
 
 $$
 \ba
-\Ef{e_i} &= 0
-\\ \Var{e_i} &= \ss(1 - h_{ii})
+\Ef{\resid_i} &= 0
+\\ \Var{\resid_i} &= \ss(1 - h_{ii})
 \ea
 $$
 
-Therefore $e_i \sim \Normal(0, \ss(1 - h_{ii}))$.
+Therefore $\resid_i \sim \Normal(0, \ss(1 - h_{ii}))$.
 
 :::
 
