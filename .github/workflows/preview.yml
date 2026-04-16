@@ -15,6 +15,7 @@ on:
       - '.github/workflows/preview.yml'
       - '.github/workflows/publish.yml'
       - '*.qmd'
+      - '_subfiles/**'
       - '*.scss'
 
 concurrency: preview-${{ github.ref }}
@@ -52,10 +53,14 @@ jobs:
       - name: Install local package
         run: |
           R CMD INSTALL .
-        shell: bash
+
+      - name: Install TinyTeX packages required for PDF rendering
+        run: |
+          Rscript -e "tinytex::tlmgr_repo('https://mirror.ctan.org/systems/texlive/tlnet')"
+          Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
 
       - name: Cache Quarto freeze
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _freeze
           key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}
@@ -67,6 +72,7 @@ jobs:
         uses: quarto-dev/quarto-actions/render@v2
 
       - name: list files
+        if: github.event.action != 'closed'
         shell: bash
         run: |
           echo "contents of _site:\n"
@@ -112,4 +118,3 @@ jobs:
             Preview removed because the pull request was closed.
             
             <sub>${{ steps.preview.outputs.action-start-time }}</sub>
-

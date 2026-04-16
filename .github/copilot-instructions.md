@@ -58,6 +58,18 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Citation Grammar Conventions
+
+When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
+treat the citation as a **singular** subject and use third-person singular verb forms:
+
+- **Correct**: `@dobson4e omits … but describes …`
+- **Incorrect**: `@dobson4e omit … but describe …`
+
+This applies whether the citation refers to one author or multiple authors (e.g., "Dobson and Barnett").
+Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
+but grammatically the citation key itself is treated as a singular pronoun/name.
+
 ## Code Formatting Guidelines
 
 When adding or editing text in source code (such as comments, documentation strings, or error messages) or in Quarto document text chunks:
@@ -65,6 +77,13 @@ When adding or editing text in source code (such as comments, documentation stri
 - Each phrase should be on its own line in the source code
 - A phrase is typically a complete thought, clause, or sentence
 - This improves readability and makes diffs clearer
+
+## Parentheticals and Asides in Quarto
+
+When parenthetical references or short asides are supplementary
+(for example, `c.f. @dunn2018generalized §2.10.3`),
+place them in a `::: notes` div
+instead of leaving them inline in the main narrative.
 
 Example:
 ```r
@@ -92,6 +111,26 @@ sum(residuals(my_model)^2)
 Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
+
+## Landscape Tables in PDF
+
+When a table is too wide for portrait orientation in PDF,
+wrap the table div in a `.landscape` fenced div.
+
+Use this pattern:
+
+```qmd
+::: {.landscape}
+
+:::{#tbl-your-wide-table}
+... table content ...
+:::
+
+:::
+```
+
+Apply this only where needed,
+so HTML and RevealJS output stay unchanged.
 
 ## Figures and Tables: Use Div Format
 
@@ -137,6 +176,7 @@ plot(x, y)
 This applies to all new figures and tables in `.qmd` files.
 
 
+## Math Notation
 
 This repository uses custom LaTeX macros defined in `latex-macros/macros.qmd` (a git submodule).
 Always use the custom macros instead of raw LaTeX equivalents.

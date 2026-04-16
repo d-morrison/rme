@@ -1,0 +1,237 @@
+
+(adapted from @dobson4e §6.3.3; for more information on prediction, see @james2013introduction and @rms2e).
+
+::: notes
+If we have a lot of covariates in our dataset, we might want to choose a small subset to use in our model.
+
+There are a few possible metrics to consider for choosing a "best" model.
+:::
+
+### Mean squared error
+
+We might want to minimize the **mean squared error**, $\text E[(y-\hat y)^2]$, for new observations that weren't in our data set when we fit the model.
+
+Unfortunately, $$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$ gives a biased estimate of $\text E[(y-\hat y)^2]$ for new data. If we want an unbiased estimate, we will have to be clever.
+
+---
+
+#### Cross-validation
+
+```{r}
+data("carbohydrate", package = "dobson")
+library(cvTools)
+full_model <- lm(carbohydrate ~ ., data = carbohydrate)
+cv_full <-
+  full_model |> cvFit(
+    data = carbohydrate, K = 5, R = 10,
+    y = carbohydrate$carbohydrate
+  )
+
+reduced_model <- full_model |> update(formula = ~ . - age)
+
+cv_reduced <-
+  reduced_model |> cvFit(
+    data = carbohydrate, K = 5, R = 10,
+    y = carbohydrate$carbohydrate
+  )
+```
+
+---
+
+```{r}
+results_reduced <-
+  tibble(
+    model = "wgt+protein",
+    errs = cv_reduced$reps[]
+  )
+results_full <-
+  tibble(
+    model = "wgt+age+protein",
+    errs = cv_full$reps[]
+  )
+
+cv_results <-
+  bind_rows(results_reduced, results_full)
+
+cv_results |>
+  ggplot(aes(y = model, x = errs)) +
+  geom_boxplot()
+```
+
+---
+
+##### comparing metrics
+
+```{r}
+compare_results <- tribble(
+  ~model, ~cvRMSE, ~r.squared, ~adj.r.squared, ~trainRMSE, ~loglik,
+  "full",
+  cv_full$cv,
+  summary(full_model)$r.squared,
+  summary(full_model)$adj.r.squared,
+  sigma(full_model),
+  logLik(full_model) |> as.numeric(),
+  "reduced",
+  cv_reduced$cv,
+  summary(reduced_model)$r.squared,
+  summary(reduced_model)$adj.r.squared,
+  sigma(reduced_model),
+  logLik(reduced_model) |> as.numeric()
+)
+
+compare_results
+```
+
+---
+
+```{r}
+anova(full_model, reduced_model)
+```
+
+---
+
+#### stepwise regression
+
+::: {.callout-warning}
+## Caution about stepwise selection
+
+Stepwise regression has several known problems:
+
+- It tends to select too many variables (overfitting)
+- P-values and confidence intervals are biased after selection
+- It ignores model uncertainty
+- Results can be unstable across different samples
+
+Consider using cross-validation, penalized methods (like Lasso), 
+or subject-matter knowledge instead.
+See @rms2e and @heinze2018variable for more discussion.
+:::
+
+```{r}
+library(olsrr)
+olsrr:::ols_step_both_aic(full_model)
+```
+
+---
+
+#### Lasso
+
+$$\am_{\theta} \cb{\llik(\th) - \lambda \sum_{j=1}^p|\beta_j|}$$
+
+```{r}
+library(glmnet)
+y <- carbohydrate$carbohydrate
+x <- carbohydrate |>
+  select(age, weight, protein) |>
+  as.matrix()
+fit <- glmnet(x, y)
+```
+
+---
+
+```{r}
+#| fig-cap: "Lasso selection"
+#| label: fig-carbs-lasso
+autoplot(fit, xvar = "lambda")
+```
+
+---
+
+```{r}
+cvfit <- cv.glmnet(x, y)
+plot(cvfit)
+```
+
+---
+
+```{r}
+coef(cvfit, s = "lambda.1se")
+```
+
+---
+
+### Likelihood ratio test for nested models {#sec-linreg-LRT}
+
+For a general MLE-focused discussion of likelihood-ratio tests,
+see [Likelihood ratio tests for MLEs](intro-MLEs.qmd#sec-lrt-mles).
+
+A **likelihood ratio test (LRT)** compares two nested models
+by computing twice the difference in their log-likelihoods:
+
+$$2(\llik_1 - \llik_0) \dot \sim \chi^2_q \quad \text{(asymptotically under } H_0 \text{)}$$
+
+where $q = p_2 - p_1$ is the number of extra parameters in the full model.
+
+---
+
+```{r}
+logLik(bw_lm2)
+logLik(bw_lm1)
+
+log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
+delta_df <- (bw_lm1$df.residual - df.residual(bw_lm2))
+
+
+x_max <- 1
+```
+
+---
+
+```{r}
+#| label: fig-chisq-plot
+#| fig-cap: "Chi-square distribution"
+
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)
+
+chisq_plot <-
+  ggplot() +
+  geom_function(fun = d_log_LR) +
+  stat_function(
+    fun = d_log_LR,
+    xlim = c(2 * log_LR, x_max),
+    geom = "area",
+    fill = "gray"
+  ) +
+  geom_segment(
+    aes(
+      x = 2 * log_LR,
+      xend = 2 * log_LR,
+      y = 0,
+      yend = d_log_LR(2 * log_LR)
+    ),
+    col = "red"
+  ) +
+  xlim(0.0001, x_max) +
+  ylim(0, 4) +
+  ylab("p(X=x)") +
+  xlab("Likelihood-ratio test statistic [x] = 2 * log(likelihood ratio)") +
+  theme_classic()
+chisq_plot |> print()
+```
+
+---
+
+Now we can get the p-value:
+
+```{r}
+#| label: LRT-pval
+pchisq(
+  q = 2 * log_LR,
+  df = delta_df,
+  lower = FALSE
+) |>
+  print()
+```
+
+---
+
+In practice you don't have to do this by hand; there are functions to do it for you:
+
+```{r}
+# built in
+lmtest::lrtest(bw_lm2, bw_lm1)
+```
+
+---
+
+{{< include _subfiles/Linear-models-overview/_sec_linreg_Ftest.qmd >}}
