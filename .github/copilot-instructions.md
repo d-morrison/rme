@@ -108,25 +108,17 @@ Use `code-fold: false` whenever:
 ## Landscape Tables in PDF
 
 When a table is too wide for portrait orientation in PDF,
-wrap the table div in PDF-only landscape blocks.
+wrap the table div in a `.landscape` fenced div.
 
 Use this pattern:
 
 ```qmd
-::: {.content-visible when-format="pdf"}
-```{=latex}
-\begin{landscape}
-```
-:::
+::: {.landscape}
 
 :::{#tbl-your-wide-table}
 ... table content ...
 :::
 
-::: {.content-visible when-format="pdf"}
-```{=latex}
-\end{landscape}
-```
 :::
 ```
 
