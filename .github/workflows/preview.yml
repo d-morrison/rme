@@ -55,6 +55,12 @@ jobs:
           R CMD INSTALL .
         shell: bash
 
+      - name: Install TinyTeX packages required for PDF rendering
+        run: |
+          Rscript -e "tinytex::tlmgr_repo('https://ctan.math.illinois.edu/systems/texlive/tlnet')"
+          Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
+        shell: bash
+
       - name: Cache Quarto freeze
         uses: actions/cache@v5
         with:
@@ -114,4 +120,3 @@ jobs:
             Preview removed because the pull request was closed.
             
             <sub>${{ steps.preview.outputs.action-start-time }}</sub>
-
