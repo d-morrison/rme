@@ -911,6 +911,144 @@ All three plots show the same data and reference line.
 
 ---
 
+### Formal diagnostic tests for linear regression assumptions
+
+Graphical diagnostics are usually the first step,
+but formal tests can provide numerical summaries.
+
+For linear regression residuals,
+three common tests are:
+
+- `fligner.test()` for equal variances across groups
+  (the Fligner--Killeen test).
+- [Levene's test](https://en.wikipedia.org/wiki/Levene%27s_test)
+  (often implemented with a median-centered variant,
+  called the Brown--Forsythe test).
+- [Shapiro--Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test)
+  for normality.
+
+---
+
+#### Fligner--Killeen test (homoskedasticity across groups)
+
+Suppose residuals are split into groups
+($g = 1, \ldots, G$),
+for example by a categorical predictor.
+
+The test starts from absolute deviations from each group median:
+$$
+d_{gi} = |e_{gi} - \text{median}(e_{g1}, \ldots, e_{gn_g})|.
+$$
+
+After ranking the pooled $d_{gi}$ values,
+the Fligner--Killeen statistic is built from normal scores of those ranks.
+
+Under the null hypothesis of equal variances,
+the test statistic is approximately $\chi^2_{G-1}$.
+Small p-values suggest heteroskedasticity.
+
+---
+
+#### Levene / Brown--Forsythe test (homoskedasticity across groups)
+
+Levene's test transforms residuals to within-group absolute deviations:
+$$
+z_{gi} = |e_{gi} - c_g|,
+$$
+where $c_g$ is the group center.
+
+Classical Levene uses the group mean for $c_g$.
+Brown--Forsythe uses the group median,
+which is more robust.
+
+Then run a one-way ANOVA on $z_{gi}$ by group:
+$$
+F = \frac{\text{MS}_{\text{between}}}{\text{MS}_{\text{within}}}
+\sim F_{G-1, N-G}
+\quad\text{under }H_0.
+$$
+
+Small p-values suggest unequal residual variance.
+
+---
+
+#### Shapiro--Wilk test (normality of standardized residuals)
+
+For ordered standardized residuals
+$r_{(1)} \le \cdots \le r_{(n)}$,
+the Shapiro--Wilk statistic is:
+$$
+W =
+\frac{\left(\sum_{i=1}^n a_i r_{(i)}\right)^2}
+{\sum_{i=1}^n (r_i - \bar r)^2},
+$$
+where $a_i$ are constants from normal-order-statistic moments.
+
+If residuals are Gaussian,
+$W$ tends to be close to 1.
+Small $W$ (and small p-value)
+indicates departure from normality.
+
+---
+
+#### Numerical example (`birthweight` interaction model)
+
+```{r}
+diag_bw <-
+  bw |>
+  mutate(
+    resid_lm2 = resid(bw_lm2),
+    std_resid_lm2 = rstandard(bw_lm2)
+  ) |>
+  select(sex, resid_lm2, std_resid_lm2)
+
+fligner_bw <- fligner.test(resid_lm2 ~ sex, data = diag_bw)
+
+levene_bw <-
+  diag_bw |>
+  group_by(sex) |>
+  mutate(
+    med_resid = median(resid_lm2),
+    abs_dev = abs(resid_lm2 - med_resid)
+  ) |>
+  ungroup()
+
+levene_fit <- aov(abs_dev ~ sex, data = levene_bw)
+levene_tab <- summary(levene_fit)[[1]]
+levene_F <- unname(levene_tab[1, "F value"])
+levene_p <- unname(levene_tab[1, "Pr(>F)"])
+
+shapiro_bw <- shapiro.test(diag_bw$std_resid_lm2)
+
+tibble(
+  test = c(
+    "Fligner-Killeen: equal variance by sex",
+    "Levene/Brown-Forsythe: equal variance by sex",
+    "Shapiro-Wilk: normality of standardized residuals"
+  ),
+  statistic = c(
+    unname(fligner_bw$statistic),
+    levene_F,
+    unname(shapiro_bw$statistic)
+  ),
+  p_value = c(
+    fligner_bw$p.value,
+    levene_p,
+    shapiro_bw$p.value
+  )
+) |>
+  mutate(
+    statistic = signif(statistic, 4),
+    p_value = signif(p_value, 4)
+  )
+```
+
+Interpretation rule:
+for all three tests,
+a small p-value is evidence against the corresponding model assumption.
+
+---
+
 ### Conditional distributions of residuals
 
 If our Gaussian linear regression model is correct, the residuals $e_i$ and standardized residuals $r_i$ should have:
