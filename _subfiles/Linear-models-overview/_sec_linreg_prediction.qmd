@@ -1,58 +1,16 @@
 
 ## Prediction for linear models
 
-The @def-predicted-value is defined in @sec-diagnose-LMs.
+The @def-predicted-value and @def-fitted-value are defined in @sec-diagnose-LMs,
+along with examples for the `birthweight` data.
 
-For linear models, 
-the predicted value can be straightforwardly calculated 
-by multiplying each predictor value $x_j$ by its corresponding coefficient $\beta_j$ 
-and adding up the results:
-
-$$
-\begin{aligned}
-\hat y &= \hExpf{Y|\vX=\vx} \\
-&= \tp{\vx}\hat\beta \\
-&= \hat\beta_0\cdot 1 + \hat\beta_1 x_1 + ... + \hat\beta_p x_p
-\end{aligned}
-$$
-
----
-
-## Example: prediction for the `birthweight` data
-
-```{r}
-x <- c(1, 1, 40)
-sum(x * coef(bw_lm1))
-```
-
-R has built-in functions for prediction:
-
-```{r}
-x <- tibble(age = 40, sex = "male")
-bw_lm1 |> predict(newdata = x)
-```
-
-If you don't provide `newdata`, 
-R will use the covariate values from the original dataset:
-
-```{r}
-predict(bw_lm1)
-```
-
-These special predictions are called the **fitted values** of the dataset
-(see @def-fitted-value in @sec-diagnose-LMs).
-
-R has an extra function to get these values:
-
-```{r}
-fitted(bw_lm1)
-```
 
 ## Confidence intervals {#sec-se-fitted}
 
 Use `predict(se.fit = TRUE)` to compute SEs for predicted values:
 
 ```{r}
+x <- tibble(age = 40, sex = "male")
 bw_lm1 |>
   predict(
     newdata = x,
