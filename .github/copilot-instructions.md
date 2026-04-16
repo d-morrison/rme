@@ -58,6 +58,37 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Attribution for Adapted Content
+
+When content is adapted from published sources (textbooks, papers, websites),
+**always provide explicit attribution** in the document.
+Use `@citekey` Pandoc citation syntax and include a prose note explaining what was adapted.
+
+Examples of acceptable attribution:
+
+- "Adapted from @vittinghoff2e [Chapter 10]."
+- "The following example is based on @kleinbaum2010logistic [Chapter 8]."
+- "This approach follows @hulley1998hers."
+
+Attribution should appear:
+
+- At the top of the chapter or section (in the Acknowledgements or Introduction),
+  *or*
+- Adjacent to the specific content being adapted (as a prose sentence or in a `::: notes` div).
+
+**Always include chapter and/or page numbers** in inline citations where applicable,
+so that readers can locate the source material.
+Use Pandoc's citation locator syntax: `[@citekey, Chapter 8]` or `[@citekey, p. 194]`.
+Include both chapter and page when both are known.
+
+Examples of attribution with page numbers:
+
+- "Adapted from @vittinghoff2e [Chapter 10, pp. 257–275]."
+- "The following example is based on @kleinbaum2010logistic [Chapter 8, pp. 194–212]."
+
+Do **not** reproduce verbatim text from copyrighted sources without clear quotation marks and attribution.
+Paraphrase and summarize with a citation instead.
+
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
@@ -132,6 +163,50 @@ Use this pattern:
 Apply this only where needed,
 so HTML and RevealJS output stay unchanged.
 
+## Figures and Tables: Use Div Format
+
+Always use the **Quarto div format** for figures and tables rather than chunk-option `fig-cap`/`tbl-cap`.
+The div format makes it easier to write and format multi-sentence captions.
+
+**Correct** (div format):
+````qmd
+::: {#fig-my-figure}
+
+```{r}
+plot(x, y)
+```
+
+Caption text here.
+This can span multiple lines and include *markdown*.
+
+:::
+````
+
+**Correct** (div format for tables):
+````qmd
+::: {#tbl-my-table}
+
+```{r}
+my_table
+```
+
+Caption text here.
+
+:::
+````
+
+**Incorrect** (chunk option format):
+````qmd
+```{r}
+#| label: fig-my-figure
+#| fig-cap: "Caption text here."
+plot(x, y)
+```
+````
+
+This applies to all new figures and tables in `.qmd` files.
+
+
 ## Math Notation
 
 This repository uses custom LaTeX macros defined in `latex-macros/macros.qmd` (a git submodule).
@@ -143,13 +218,29 @@ Key macros to use:
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
 
-Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
+matrix-product helper macros:
+
+- `\iprod{u}{v}` for inner products (`\tp{u} v`)
+- `\oprod{u}{v}` for outer products (`u \tp{v}`)
+- `\siprod{u}` for self-inner products (`\tp{u} u`)
+- `\soprod{u}` for self-outer products (`u \tp{u}`)
+
+Residual and deviation helper macros include:
+
+- `\err` for generic error or residual terms
+- `\erf{\theta}` for estimate/estimand deviations
+- `\devn(...)` for other deviations
+- `\resid` for residual symbols (`r`)
+- `\stdresid` for standardized residual symbols (`r'`)
+- `\modresid` for modified residual symbols (`r^*`)
 
 - **Transpose**: Use `\tp{v}` (renders as $v'$) instead of the raw prime `v'` notation.
   However, `\tp{v}` appends `^{\top}` to the argument, so if the argument already carries a superscript
   (e.g., `\vxs` expands to `{{\vec{x}^*}}` which has `^*`), wrap it in parentheses first:
   use `\tp{(\vxs)}` not `\tp{\vxs}`.
   This avoids LaTeX "Double superscript" errors.
+
+Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
 
 ## Color Coding Strategy for Math Expressions
 

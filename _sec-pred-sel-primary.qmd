@@ -1,0 +1,295 @@
+{{< include latex-macros/macros.qmd >}}
+
+## Evaluating a predictor of primary interest {#sec-pred-sel-eval-primary}
+
+::: notes
+
+When the goal is to estimate the causal effect of
+a specific exposure on an outcome,
+the central challenge in observational data is **confounding**.
+Relatively inclusive models — those including more potential confounders —
+are better at minimizing confounding bias.
+
+:::
+
+The following principles guide predictor selection for this goal.
+
+## Including predictors for face validity {#sec-pred-sel-face-validity}
+
+Some predictors are such well-established causal antecedents of the outcome
+that they should be included regardless of their statistical significance
+in the current data.
+This ensures the **face validity** of the model:
+readers and reviewers can be confident that obvious confounders
+have been accounted for.
+
+For example, age and smoking are established CHD risk factors
+and would be included in any model for CHD outcomes,
+even if they are not statistically significant in a small sample.
+
+## Selecting confounders on statistical grounds {#sec-pred-sel-confounders}
+
+In addition to variables included for face validity,
+we may consider other potential confounders
+identified in previous studies or on substantive grounds.
+
+A practical approach is **backward selection with a liberal criterion**:
+
+1. Start with a full model including all pre-specified candidates.
+2. At each step, remove the predictor with the largest p-value,
+   provided it exceeds a liberal threshold (e.g., $p > 0.2$).
+3. Stop when all remaining predictors meet the retention criterion.
+
+The liberal threshold ($p > 0.2$ rather than $p > 0.05$)
+is important for confounding control:
+in small samples, even important confounders may have large p-values,
+and removing them could introduce bias.
+
+An alternative retention criterion is the
+**10% change-in-estimate rule**
+[@kleinbaum2010logistic, Chapter 8; @vittinghoff2e, Chapter 10]:
+
+Retain a candidate confounder $C$ in the model if
+dropping it changes the estimated coefficient for the primary predictor
+by more than 10–15%.
+
+More precisely,
+let $\hat\beta$ be the estimated coefficient for the exposure
+from the **full model** (including $C$),
+and let $\hat\beta_0$ be the estimate from the **reduced model** (dropping $C$).
+Then $C$ is judged a meaningful confounder if:
+
+$$\left| \frac{\hat\beta - \hat\beta_0}{\hat\beta} \right| > 0.10$$
+
+The threshold is often taken as 10–20%, depending on the context.
+A smaller threshold (e.g., 10%) retains more variables;
+a larger threshold (e.g., 20%) allows more aggressive pruning.
+
+::: {.callout-note}
+
+The 10% change-in-estimate rule focuses on **bias** rather than **statistical significance**.
+A variable can be a meaningful confounder even if it is not statistically significant
+(because of small sample size or measurement error),
+and conversely, a statistically significant variable may cause negligible confounding.
+The p-value criterion and the change-in-estimate rule can disagree,
+and @vittinghoff2e recommends using both as complementary checks.
+
+:::
+
+### Numerical example: 10% rule in WCGS {#sec-pred-sel-10pct-wcgs}
+
+::: notes
+
+The WCGS (Western Collaborative Group Study) is an observational
+prospective cohort of 3,154 men followed for CHD events.
+Unlike HERS (a randomized trial),
+the WCGS exposure — Type A behavior pattern — was not randomly assigned,
+so confounding is a genuine concern.
+
+:::
+
+In the WCGS study,
+the exposure of interest is Type A behavior pattern (`dibpat`),
+and the outcome is CHD incidence (`chd69`).
+We fit logistic regression models
+and apply the 10% change-in-estimate rule
+to assess whether age, cholesterol, SBP, smoking, and BMI
+are meaningful confounders of the Type A → CHD relationship.
+
+::: notes
+
+Adapted from @kleinbaum2010logistic [Chapter 8],
+which describes the change-in-estimate procedure for logistic regression models.
+
+:::
+
+```{r}
+#| label: wcgs-data-setup
+
+wcgs <- readRDS(fs::path_package("rme", "extdata/wcgs.rds"))
+```
+
+```{r}
+#| label: wcgs-10pct-rule
+
+# Full model (all candidate confounders)
+m_full <- glm(
+  chd69 ~ dibpat + age + chol + sbp + smoke + bmi,
+  data = wcgs,
+  family = binomial
+)
+
+# Unadjusted model (Type A only)
+m_unadj <- glm(
+  chd69 ~ dibpat,
+  data = wcgs,
+  family = binomial
+)
+
+# Estimate of Type A effect from full model
+beta_full <- coef(m_full)["dibpatType A"]
+beta_unadj <- coef(m_unadj)["dibpatType A"]
+
+# Models dropping one confounder at a time
+confounders <- c("age", "chol", "sbp", "smoke", "bmi")
+
+results <- lapply(confounders, function(v) {
+  f <- as.formula(
+    paste("chd69 ~ dibpat +",
+          paste(setdiff(confounders, v), collapse = " + "))
+  )
+  m_red <- glm(f, data = wcgs, family = binomial)
+  beta_red <- coef(m_red)["dibpatType A"]
+  pct_change <- abs((beta_full - beta_red) / beta_full) * 100
+  data.frame(
+    Confounder = v,
+    Beta_full = round(beta_full, 4),
+    Beta_reduced = round(beta_red, 4),
+    Pct_change = round(pct_change, 1),
+    Meaningful = ifelse(pct_change > 10, "Yes (>10%)", "No (<=10%)")
+  )
+})
+
+results_df <- do.call(rbind, results)
+rownames(results_df) <- NULL
+```
+
+::: {#tbl-wcgs-10pct}
+
+```{r}
+knitr::kable(
+  results_df,
+  col.names = c(
+    "Dropped variable",
+    "β (full model)",
+    "β (reduced model)",
+    "% change",
+    "Meaningful confounder?"
+  )
+)
+```
+
+10% change-in-estimate rule applied to the WCGS data.
+The Type A coefficient from the full model
+is compared with coefficients from models that drop one confounder at a time.
+A percentage change exceeding 10% indicates meaningful confounding.
+
+:::
+
+In this example,
+none of the individual confounders causes a >10% change when dropped,
+suggesting they are not individually strong confounders of the
+Type A → CHD relationship in WCGS.
+Comparing the unadjusted log-OR for Type A
+($\approx$ `r round(beta_unadj, 2)`)
+with the fully adjusted log-OR
+($\approx$ `r round(beta_full, 2)`)
+shows that the overall set of covariates provides modest adjustment.
+In practice, covariates with established biological relationships to the outcome
+(such as age, smoking, and blood pressure for CHD)
+are typically retained regardless of the change-in-estimate result,
+for reasons of face validity.
+
+::: {.callout-note}
+## Collinearity between confounders is not a problem
+
+Unlike collinearity between a predictor of primary interest
+and other covariates (which inflates its standard error),
+collinearity *among* adjustment variables does not affect
+the precision of the primary predictor's estimate.
+Thus, two collinear confounders can both be retained
+if both are judged necessary on substantive grounds.
+:::
+
+## Example: backward selection for CHD confounders {#sec-pred-sel-backward-hers}
+
+In the HERS data, we can use backward selection
+to identify which baseline covariates confound
+the effect of hormone therapy on LDL.
+Since HT was randomized in HERS,
+adjustment is needed for precision, not confounding;
+but this illustrates the procedure.
+
+```{r}
+#| label: backward-sel-ldl-hers
+
+full_model <- lm(
+  LDL ~ HT + age + BMI + diabetes + smoking + statins + SBP,
+  data = hers_ldl
+)
+
+# Backward selection using AIC
+back_model <- MASS::stepAIC(full_model, direction = "backward", trace = FALSE)
+summary(back_model)
+```
+
+::: notes
+
+The backward selection procedure retains the predictors that
+most improve model fit according to AIC.
+In this setting, since HT was randomized,
+we interpret the selected set as prognostic covariates
+that improve precision of the HT estimate,
+not as confounders.
+
+:::
+
+## Interactions with the primary predictor {#sec-pred-sel-interactions}
+
+A useful check on the validity of the selected model is to test
+for **interactions** between the primary predictor and
+key covariates.
+Particularly for novel findings,
+showing that the association is consistent across subgroups
+strengthens credibility.
+
+::: notes
+
+If a substantial and biologically plausible interaction is found,
+the analysis must account for it.
+However, exploratory interaction tests are susceptible to
+false-positive findings,
+and unexpected interactions should be interpreted cautiously.
+
+:::
+
+## Randomized experiments {#sec-pred-sel-rct}
+
+In randomized trials, participants are allocated to treatment randomly,
+so the treatment indicator is by design uncorrelated
+with pre-treatment covariates in expectation.
+Confounding adjustment is therefore **not required** for causal inference.
+
+However, there are several reasons to include covariates
+in trial analyses:
+
+1. **Improving precision** (continuous outcomes).
+   Adjusting for strong predictors of the outcome
+   reduces residual variance and tightens the treatment effect estimate.
+   Because treatment is uncorrelated with the covariates by randomization,
+   variance inflation is negligible.
+
+2. **De-attenuation** (binary and survival outcomes).
+   In logistic and Cox models,
+   omitting important predictors attenuates the treatment effect estimate.
+   Adjusting for them moves the estimate closer to the true subject-specific effect.
+
+3. **Accounting for stratified designs**.
+   In stratified or cluster-randomized trials,
+   including stratification variables in the model
+   yields correct standard errors and p-values.
+
+4. **Correcting for chance imbalances**.
+   In small trials, randomization may leave residual imbalance
+   in important prognostic covariates.
+   Adjusted analyses demonstrate that the main inference
+   is not materially affected by any such imbalance.
+
+::: {.callout-note}
+## Pre-specification is important in trials
+
+Adjusted analyses in clinical trials should ideally be
+**pre-specified in the study protocol**,
+to prevent post-hoc selection of covariates
+that minimize the treatment effect p-value.
+:::
