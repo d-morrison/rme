@@ -58,6 +58,27 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Attribution for Adapted Content
+
+When content is adapted from published sources (textbooks, papers, websites),
+**always provide explicit attribution** in the document.
+Use `@citekey` Pandoc citation syntax and include a prose note explaining what was adapted.
+
+Examples of acceptable attribution:
+
+- "Adapted from @vittinghoff2e [Chapter 10]."
+- "The following example is based on @kleinbaum2010logistic [Chapter 8]."
+- "This approach follows @hulley1998hers."
+
+Attribution should appear:
+
+- At the top of the chapter or section (in the Acknowledgements or Introduction),
+  *or*
+- Adjacent to the specific content being adapted (as a prose sentence or in a `::: notes` div).
+
+Do **not** reproduce verbatim text from copyrighted sources without clear quotation marks and attribution.
+Paraphrase and summarize with a citation instead.
+
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
@@ -138,7 +159,7 @@ Always use the **Quarto div format** for figures and tables rather than chunk-op
 The div format makes it easier to write and format multi-sentence captions.
 
 **Correct** (div format):
-```qmd
+````qmd
 ::: {#fig-my-figure}
 
 ```{r}
@@ -149,10 +170,10 @@ Caption text here.
 This can span multiple lines and include *markdown*.
 
 :::
-```
+````
 
 **Correct** (div format for tables):
-```qmd
+````qmd
 ::: {#tbl-my-table}
 
 ```{r}
@@ -162,16 +183,16 @@ my_table
 Caption text here.
 
 :::
-```
+````
 
 **Incorrect** (chunk option format):
-```qmd
+````qmd
 ```{r}
 #| label: fig-my-figure
 #| fig-cap: "Caption text here."
 plot(x, y)
 ```
-```
+````
 
 This applies to all new figures and tables in `.qmd` files.
 
