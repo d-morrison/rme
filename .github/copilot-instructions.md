@@ -105,6 +105,34 @@ Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
 
+## Landscape Tables in PDF
+
+When a table is too wide for portrait orientation in PDF,
+wrap the table div in PDF-only landscape blocks.
+
+Use this pattern:
+
+```qmd
+::: {.content-visible when-format="pdf"}
+```{=latex}
+\begin{landscape}
+```
+:::
+
+:::{#tbl-your-wide-table}
+... table content ...
+:::
+
+::: {.content-visible when-format="pdf"}
+```{=latex}
+\end{landscape}
+```
+:::
+```
+
+Apply this only where needed,
+so HTML and RevealJS output stay unchanged.
+
 ## Math Notation
 
 This repository uses custom LaTeX macros defined in `latex-macros/macros.qmd` (a git submodule).
