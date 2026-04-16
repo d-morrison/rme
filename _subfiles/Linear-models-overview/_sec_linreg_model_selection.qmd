@@ -7,14 +7,39 @@ If we have a lot of covariates in our dataset, we might want to choose a small s
 There are a few possible metrics to consider for choosing a "best" model.
 :::
 
+### DAGs for variable selection
+
+For explanatory models,
+variable inclusion should not rely on automated algorithms alone.
+Directed acyclic graphs (DAGs)
+can help us encode substantive assumptions
+about which variables are confounders,
+mediators,
+or colliders.
+
+In a Dobson-style workflow,
+we use the DAG first
+to decide a defensible adjustment set,
+then compare candidate regression models
+within that set using predictive or likelihood-based criteria.
+This keeps model selection aligned with study design,
+rather than only with numerical fit.
+
 ### Mean squared error
 
-We might want to minimize the **mean squared error**, $\text E[(y-\hat y)^2]$, for new observations that weren't in our data set when we fit the model.
+We might want to minimize the **mean squared error**,
+$\E{(y-\hat y)^2}$,
+for new observations
+that weren't in our data set when we fit the model.
 
-Unfortunately, $$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$ gives a biased estimate of $\text E[(y-\hat y)^2]$ for new data. If we want an unbiased estimate, we will have to be clever.
+Unfortunately,
+$$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$
+gives a biased estimate of $\E{(y-\hat y)^2}$ for new data.
+If we want an unbiased estimate,
+we will have to be clever.
 
 This is one reason that $R^2$ is not enough for model selection.
-$R^2$ usually increases as we add explanatory variables,
+$R^2$ does not decrease as we add explanatory variables,
 even when those variables do not improve out-of-sample prediction.
 That can lead to overfitting.
 
@@ -23,7 +48,7 @@ we estimate coefficients in the training data
 and compute prediction error in held-out data:
 
 $$
-\hat\b^{*} = (\tp{X_{train}}X_{train})^{-1}\tp{X_{train}}y_{train}
+\hat\b^{*} = (\tp{X_{\text{train}}}X_{\text{train}})^{-1}\tp{X_{\text{train}}}y_{\text{train}}
 $$
 
 $$
@@ -33,7 +58,7 @@ $$
 
 $$
 \text{RMSE} = \sqrt{
-\frac{1}{n_{test}}
+\frac{1}{n_{\text{test}}}
 \sum_{i \in \text{test set}} (\hat e^{*}_i)^2
 }
 $$
@@ -126,6 +151,34 @@ anova(full_model, reduced_model)
 
 ---
 
+#### Best subset selection
+
+When the number of candidate predictors is modest,
+we can use **best subset selection**.
+For each model size $k = 0, 1, \ldots, p$,
+we fit all $\binom{p}{k}$ models
+and keep the best model of size $k$
+(e.g., by lowest RSS in the training data).
+
+This gives at most $(p+1)$ candidate models to compare across model sizes,
+using criteria such as
+cross-validated prediction error,
+$C_p$,
+AIC/BIC,
+or adjusted $R^2$.
+In that sense,
+best subset selection is more exhaustive
+than one-path methods like forward or backward stepwise selection.
+
+::: notes
+For a full algorithmic treatment,
+including validation and criterion-based comparison across model size,
+see the ISLR treatment of best subset selection
+[@james2013introduction].
+:::
+
+---
+
 #### stepwise regression
 
 Stepwise methods are another common approach.
@@ -157,6 +210,22 @@ olsrr:::ols_step_both_aic(full_model)
 ---
 
 #### Lasso
+
+Lasso is a penalized regression method
+that shrinks coefficient estimates toward zero.
+It adds an $L_1$ penalty term
+to the objective function,
+creating a trade-off between model fit and parsimony.
+The intercept is not penalized.
+
+As the tuning parameter $\lambda$ increases,
+more coefficients are shrunken strongly,
+and some become exactly zero.
+So lasso both regularizes the model
+and performs variable selection.
+In practice,
+$\lambda$ is usually chosen by cross-validation
+to minimize prediction error.
 
 $$\am_{\theta} \cb{\llik(\th) - \lambda \sum_{j=1}^p|\beta_j|}$$
 
