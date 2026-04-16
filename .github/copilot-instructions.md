@@ -115,6 +115,7 @@ Key macros to use:
 - **Aligned equations**: Use `\ba` / `\ea` for `\begin{aligned}` / `\end{aligned}`
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
+- **Deviation/error notation**: Use `\erf{...}` for deviations of estimates/estimators from their estimands; use `\devn(...)` for all other deviations (e.g., observations from population means)
 
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
 
