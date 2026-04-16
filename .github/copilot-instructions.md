@@ -78,6 +78,13 @@ When adding or editing text in source code (such as comments, documentation stri
 - A phrase is typically a complete thought, clause, or sentence
 - This improves readability and makes diffs clearer
 
+## Parentheticals and Asides in Quarto
+
+When parenthetical references or short asides are supplementary
+(for example, `c.f. @dunn2018generalized §2.10.3`),
+place them in a `::: notes` div
+instead of leaving them inline in the main narrative.
+
 Example:
 ```r
 # Good: Each instruction on its own line
