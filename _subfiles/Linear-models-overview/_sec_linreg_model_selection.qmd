@@ -48,18 +48,22 @@ we estimate coefficients in the training data
 and compute prediction error in held-out data:
 
 $$
-\hat\b^{*} = (\tp{X_{\text{train}}}X_{\text{train}})^{-1}\tp{X_{\text{train}}}y_{\text{train}}
+\hat\b_{\text{train}} =
+(\tp{X_{\text{train}}}X_{\text{train}})^{-1}
+\tp{X_{\text{train}}}y_{\text{train}}
 $$
 
 $$
-\hat e^{*}_i = y_i - \sum_{j=0}^p \hat\b_j^{*}x_{ij},
+\hat e_{i,\text{test}} =
+y_{\text{test},i} -
+\sum_{j=0}^p \hat\b_{j,\text{train}}x_{\text{test},ij},
 \quad i \in \text{test set}
 $$
 
 $$
 \text{RMSE} = \sqrt{
 \frac{1}{n_{\text{test}}}
-\sum_{i \in \text{test set}} (\hat e^{*}_i)^2
+\sum_{i \in \text{test set}} (\hat e_{i,\text{test}})^2
 }
 $$
 
@@ -177,9 +181,26 @@ see the ISLR treatment of best subset selection
 [@james2013introduction].
 :::
 
+```{r}
+hers_subset <- haven::read_dta("inst/extdata/hersdata.dta") |>
+  dplyr::select(LDL, age, weight, BMI, HDL, TG, SBP) |>
+  tidyr::drop_na()
+
+hers_lm_subset <- lm(
+  LDL ~ age + weight + BMI + HDL + TG + SBP,
+  data = hers_subset
+)
+
+hers_best_subset <- olsrr::ols_step_best_subset(hers_lm_subset)
+
+hers_best_subset$metrics |>
+  dplyr::arrange(dplyr::desc(adjr)) |>
+  dplyr::slice_head(n = 5)
+```
+
 ---
 
-#### stepwise regression
+#### Stepwise regression
 
 Stepwise methods are another common approach.
 Forward selection adds variables one at a time.
