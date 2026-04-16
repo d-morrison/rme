@@ -10,6 +10,29 @@ This section is adapted from @dobson4e [§6.2-6.3] and
 
 ### Direct visualization
 
+:::{#def-predicted-value}
+#### Predicted value
+
+In a regression model $\p(y|\vx)$, 
+the **predicted value** of $y$ given $\vx$ is the estimated mean of $Y$ given $\vX=\vx$:
+
+$$\hat y \eqdef \hExpf{Y|\vX=\vx}$$
+:::
+
+---
+
+:::{#def-fitted-value}
+#### Fitted value
+
+For a given dataset $(\vY, \mX)$ and corresponding fitted model $\p_{\hb}(\vy|\mx)$, 
+the **fitted value** of $y_i$ is 
+the @def-predicted-value of $y$ when $\vX=\vx_i$ using the estimated parameters $\hb$:
+
+$$\hat y_i \eqdef \hExpf{Y_i|\vX=\vx_i} = \tp{\vxi}\hb$$
+:::
+
+---
+
 ::: notes
 The most direct way to examine the fit of a model is 
 to compare it to the raw observed data.
@@ -309,10 +332,14 @@ $$
 @eq-var-resid-unbiased:
 
 In a Gaussian linear model,
-the fitted value $\hat y_i$ is a linear combination of the observations
-via the hat matrix $\matr{H} \eqdef \mX\inv{\tp{\mX}\mX}\tp{\mX}$:
+the OLS estimator is $\hb = \inv{\tp{\mX}\mX}\tp{\mX}\vy$,
+so the vector of fitted values is:
 
-$$\hat y_i = \sum_{j=1}^n h_{ij} \, y_j$$
+$$\hat\vy = \mX\hb = \mX\inv{\tp{\mX}\mX}\tp{\mX}\vy = \mH\vy$$
+
+Therefore, the $i$-th fitted value is a linear combination of the observations:
+
+$$\hat y_i = [\mH\vy]_i = \sum_{j=1}^n h_{ij} \, y_j$$ {#eq-fitted-linear-comb}
 
 where $h_{ij} = [\matr{H}]_{ij}$.
 Using the independence of observations ($\Cov{y_i, y_j} = 0$ for $i \neq j$):
@@ -389,7 +416,7 @@ $$\resid_i \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
 :::{.proof}
 \ 
 
-Since $\hat y_i = \sum_{j=1}^n h_{ij} y_j$,
+By @eq-fitted-linear-comb,
 the residual is a linear combination of the observations:
 
 $$\resid_i = y_i - \hat y_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, y_j$$
