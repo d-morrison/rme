@@ -76,6 +76,16 @@ Attribution should appear:
   *or*
 - Adjacent to the specific content being adapted (as a prose sentence or in a `::: notes` div).
 
+**Always include chapter and/or page numbers** in inline citations where applicable,
+so that readers can locate the source material.
+Use Pandoc's citation locator syntax: `[@citekey, Chapter 8]` or `[@citekey, p. 194]`.
+Include both chapter and page when both are known.
+
+Examples of attribution with page numbers:
+
+- "Adapted from @vittinghoff2e [Chapter 10, pp. 257–275]."
+- "The following example is based on @kleinbaum2010logistic [Chapter 8, pp. 194–212]."
+
 Do **not** reproduce verbatim text from copyrighted sources without clear quotation marks and attribution.
 Paraphrase and summarize with a citation instead.
 
