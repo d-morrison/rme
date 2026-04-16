@@ -56,7 +56,10 @@ $$
 $$
 \hat e_{i,\text{test}} =
 y_{\text{test},i} -
-\sum_{j=0}^p \hat\b_{j,\text{train}}x_{\text{test},ij},
+\cb{
+\hat\b_{0,\text{train}} +
+\sum_{j=1}^p \hat\b_{j,\text{train}}x_{\text{test},ij}
+},
 \quad i \in \text{test set}
 $$
 
@@ -182,7 +185,8 @@ see the ISLR treatment of best subset selection
 :::
 
 ```{r}
-hers_subset <- haven::read_dta("inst/extdata/hersdata.dta") |>
+hers_subset <- fs::path_package("rme", "extdata/hersdata.dta") |>
+  haven::read_dta() |>
   dplyr::select(LDL, age, weight, BMI, HDL, TG, SBP) |>
   tidyr::drop_na()
 
