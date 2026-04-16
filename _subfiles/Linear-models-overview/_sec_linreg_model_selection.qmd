@@ -13,9 +13,45 @@ We might want to minimize the **mean squared error**, $\text E[(y-\hat y)^2]$, f
 
 Unfortunately, $$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$ gives a biased estimate of $\text E[(y-\hat y)^2]$ for new data. If we want an unbiased estimate, we will have to be clever.
 
+This is one reason that $R^2$ is not enough for model selection.
+$R^2$ usually increases as we add explanatory variables,
+even when those variables do not improve out-of-sample prediction.
+That can lead to overfitting.
+
+With a training/test split,
+we estimate coefficients in the training data
+and compute prediction error in held-out data:
+
+$$
+\hat\b^{*} = (\tp{X_{train}}X_{train})^{-1}\tp{X_{train}}y_{train}
+$$
+
+$$
+\hat e^{*}_i = y_i - \sum_{j=0}^p \hat\b_j^{*}x_{ij},
+\quad i \in \text{test set}
+$$
+
+$$
+\text{RMSE} = \sqrt{
+\frac{1}{n_{test}}
+\sum_{i \in \text{test set}} (\hat e^{*}_i)^2
+}
+$$
+
 ---
 
 #### Cross-validation
+
+Rather than one arbitrary split,
+$k$-fold cross-validation repeatedly partitions the data into training and test folds.
+For each split we compute prediction error,
+then summarize errors across folds and replications.
+The preferred model has lower prediction error,
+with simpler models favored when errors are similar.
+
+When the number of candidate explanatory variables is small,
+we can compare all possible subsets ($2^p$ models)
+using the same cross-validation metric.
 
 ```{r}
 data("carbohydrate", package = "dobson")
@@ -91,6 +127,12 @@ anova(full_model, reduced_model)
 ---
 
 #### stepwise regression
+
+Stepwise methods are another common approach.
+Forward selection adds variables one at a time.
+Backward selection starts with the full model
+and removes variables sequentially.
+Both approaches can select different models from the same data.
 
 ::: {.callout-warning}
 ## Caution about stepwise selection
