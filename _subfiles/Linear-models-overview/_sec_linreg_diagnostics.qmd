@@ -676,6 +676,36 @@ Still hard to tell if the distribution is Gaussian.
 
 ### QQ plot of standardized residuals
 
+:::{#def-empirical-cdf}
+
+#### Empirical CDF
+
+For observed values $x_1,\ldots,x_n$,
+the empirical CDF is
+$$\hat F(t)=\frac{1}{n}\sum_{j=1}^n I(x_j\le t), \quad t\in\mathbb{R}.$$
+
+:::
+
+:::{#def-order-statistics}
+
+#### Order statistics
+
+For observed values $x_1,\ldots,x_n$,
+the order statistics are the sorted values
+$$x_{(1)}\le x_{(2)}\le\cdots\le x_{(n)}.$$
+
+:::
+
+:::{#def-sample-quantile}
+
+#### Sample quantile
+
+Given empirical CDF $\hat F$,
+the sample quantile function is
+$$\hat Q(p)=\inf\{t:\hat F(t)\ge p\}, \quad 0<p<1.$$
+
+:::
+
 ::: notes
 Another way to assess whether the standardized residuals follow a standard normal distribution
 is a **quantile-quantile (QQ) plot**.
@@ -689,16 +719,17 @@ Each point corresponds to one observation:
 - The **y-axis** (Standardized Residuals) shows the observed standardized residual $r_i$.
   In QQ-plot terminology,
   these values are sample quantiles.
-  Let $r_{(1)} \le \cdots \le r_{(n)}$ be the ordered standardized residuals
-  (the order statistics).
-  The empirical sample-quantile function is
-  $$\hat Q(p) = \inf\{t : \hat F_r(t) \ge p\}, \quad 0 < p < 1,$$
-  where $\hat F_r$ is the empirical CDF of the standardized residuals.
+  Let $r_{(1)} \le \cdots \le r_{(n)}$ be the order statistics
+  of the standardized residuals.
+  Let $\hat F_r$ be their empirical CDF
+  and $\hat Q_r$ the corresponding sample quantile function.
   For plotting positions $p_i = (i - 0.5) / n$,
   the QQ plot uses points
-  $$\left(\Phi^{-1}(p_i),\, r_{(i)}\right), \quad i = 1, \ldots, n.$$
-  Since $r_{(i)} = \hat Q(p_i)$,
-  each plotted standardized residual is exactly the sample quantile at $p_i$.
+  $$\left(\Phi^{-1}(p_i),\, \hat Q_r(p_i)\right), \quad i = 1, \ldots, n.$$
+  and $\hat Q_r(p_i)=r_{(i)}$ for $i=1,\ldots,n$.
+  Therefore, each plotted standardized residual
+  is exactly the sample quantile at $p_i$,
+  and the plotted y-values are the ordered residuals.
   So both labels are correct:
   `qqnorm()` emphasizes the quantile role ("Sample Quantiles"),
   while `autoplot.lm()` emphasizes the underlying values
