@@ -921,10 +921,13 @@ three common tests are:
 
 - `fligner.test()` for equal variances across groups
   (the Fligner--Killeen test).
+- `car::leveneTest()` (or equivalent ANOVA on absolute deviations)
+  for Levene / Brown--Forsythe testing.
 - [Levene's test](https://en.wikipedia.org/wiki/Levene%27s_test)
   (often implemented with a median-centered variant,
   called the Brown--Forsythe test).
-- [Shapiro--Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test)
+- `shapiro.test()` /
+  [Shapiro--Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test)
   for normality.
 
 ---
@@ -983,6 +986,8 @@ W =
 {\sum_{i=1}^n (r_i - \bar r)^2},
 $$
 where $a_i$ are constants from normal-order-statistic moments.
+The numerator uses ordered residuals $r_{(i)}$,
+while the denominator uses the original (unordered) residuals.
 
 If residuals are Gaussian,
 $W$ tends to be close to 1.
@@ -994,6 +999,7 @@ indicates departure from normality.
 #### Numerical example (`birthweight` interaction model)
 
 ```{r}
+#| code-fold: false
 diag_bw <-
   bw |>
   mutate(
@@ -1022,7 +1028,7 @@ shapiro_bw <- shapiro.test(diag_bw$std_resid_lm2)
 
 tibble(
   test = c(
-    "Fligner-Killeen: equal variance by sex",
+    "Fligner--Killeen: equal variance by sex",
     "Levene/Brown-Forsythe: equal variance by sex",
     "Shapiro-Wilk: normality of standardized residuals"
   ),
