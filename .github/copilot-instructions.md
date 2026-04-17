@@ -101,6 +101,16 @@ This applies whether the citation refers to one author or multiple authors (e.g.
 Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
 but grammatically the citation key itself is treated as a singular pronoun/name.
 
+## DAG Naming for Categorical Variables
+
+In DAGs,
+use node names that represent the full categorical variable,
+not a specific level of that variable.
+
+Example:
+use `personality_type`,
+not `TypeA`.
+
 ## Evidence and Source Citation Requirements
 
 For factual claims that are not directly proved in the text,

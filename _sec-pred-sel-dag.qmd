@@ -87,6 +87,25 @@ The main goal of the HERS study was to estimate
 the causal effect of hormone therapy (HT)
 on recurrent CHD event risk.
 
+::: {#tbl-hers-data-dictionary}
+
+| Variable | Meaning | Type |
+|---|---|---|
+| `HT` | Hormone-therapy assignment (placebo vs estrogen+progestin) | Binary categorical |
+| `CHD` | Recurrent coronary heart disease event outcome | Binary categorical |
+| `age` | Baseline age (years) | Continuous |
+| `smoking` | Baseline smoking status | Binary categorical |
+| `diabetes` | Baseline diabetes status | Binary categorical |
+| `BMI` | Body mass index | Continuous |
+| `LDL` | Low-density lipoprotein cholesterol | Continuous |
+| `HDL` | High-density lipoprotein cholesterol | Continuous |
+| `statins` | Baseline statin use | Binary categorical |
+| `SBP` | Systolic blood pressure | Continuous |
+
+Data dictionary for key HERS variables used in the DAG and examples.
+
+:::
+
 ::: {#fig-hers-dag}
 
 ```{r}
@@ -306,6 +325,22 @@ time urgency, and hostility),
 hypothesized to increase CHD risk
 independently of classic cardiovascular risk factors.
 
+::: {#tbl-wcgs-data-dictionary}
+
+| Variable | Meaning | Type |
+|---|---|---|
+| `personality_type` | Personality type (Type A vs Type B behavior pattern) | Binary categorical |
+| `CHD` | Coronary heart disease event outcome | Binary categorical |
+| `age` | Baseline age (years) | Continuous |
+| `smoking` | Baseline smoking status | Binary categorical |
+| `chol` | Serum cholesterol | Continuous |
+| `sbp` | Systolic blood pressure | Continuous |
+| `bmi` | Body mass index | Continuous |
+
+Data dictionary for key WCGS variables used in the DAG and examples.
+
+:::
+
 ::: {#fig-wcgs-dag}
 
 ```{r}
@@ -314,21 +349,21 @@ independently of classic cardiovascular risk factors.
 
 wcgs_dag <- dagitty(
   'dag {
-    TypeA [exposure, pos="0,0"]
+    personality_type [exposure, pos="0,0"]
     CHD [outcome, pos="4,0"]
-    age [pos="2,2"]
-    smoking [pos="-1,-2"]
-    chol [pos="2,-1"]
-    sbp [pos="3,-2"]
-    bmi [pos="-1,1"]
+    age [pos="1.4,2"]
+    bmi [pos="-0.3,1.1"]
+    smoking [pos="1.1,-1.8"]
+    chol [pos="2.7,1"]
+    sbp [pos="2.8,-1.2"]
 
-    TypeA -> CHD
+    personality_type -> CHD
     age -> CHD
     age -> chol
     age -> sbp
     age -> bmi
-    age -> TypeA
-    TypeA -> smoking
+    age -> personality_type
+    personality_type -> smoking
     smoking -> CHD
     chol -> CHD
     sbp -> CHD
@@ -342,7 +377,7 @@ plot(wcgs_dag)
 ```
 
 Directed Acyclic Graph (DAG) for the WCGS study.
-`TypeA` = Type A behavior pattern (exposure);
+`personality_type` = personality type (exposure; Type A vs Type B);
 `CHD` = coronary heart disease events (outcome);
 `chol` = serum cholesterol;
 `sbp` = systolic blood pressure.
@@ -351,10 +386,10 @@ Directed Acyclic Graph (DAG) for the WCGS study.
 
 In @fig-wcgs-dag,
 `age` is a **confounder**:
-it has direct causal arrows to both the exposure (`TypeA`)
+it has direct causal arrows to both the exposure (`personality_type`)
 and the outcome (`CHD`).
-We assume `TypeA -> smoking`
-rather than `smoking -> TypeA`
+We assume `personality_type -> smoking`
+rather than `smoking -> personality_type`
 as an explicit modeling assumption
 for this teaching example:
 we treat Type A behavior pattern
@@ -362,7 +397,7 @@ as a relatively stable trait
 that can influence smoking behavior.
 Under that assumption,
 `smoking` is a mediator on the path
-`TypeA -> smoking -> CHD`,
+`personality_type -> smoking -> CHD`,
 not a confounder.
 BMI is causally affected by age.
 Cholesterol and SBP are causally affected
@@ -378,7 +413,7 @@ we cannot assume the exposure is unconfounded here.
 
 wcgs_adj <- adjustmentSets(
   wcgs_dag,
-  exposure = "TypeA",
+  exposure = "personality_type",
   outcome = "CHD",
   type = "minimal"
 )
@@ -388,7 +423,7 @@ wcgs_adj
 ::: notes
 
 The `adjustmentSets()` function returns the minimal set(s) of variables
-that block all backdoor paths from `TypeA` to `CHD`.
+that block all backdoor paths from `personality_type` to `CHD`.
 Adjusting for any of these minimal sets is sufficient to
 estimate the total causal effect of Type A behavior on CHD
 (under the assumptions encoded in the DAG).
