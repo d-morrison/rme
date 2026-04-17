@@ -101,6 +101,18 @@ This applies whether the citation refers to one author or multiple authors (e.g.
 Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
 but grammatically the citation key itself is treated as a singular pronoun/name.
 
+## Evidence and Source Citation Requirements
+
+For factual claims that are not directly proved in the text,
+always include a specific source citation.
+Do not leave factual statements uncited.
+
+Always cite papers and books using
+BibTeX entries in `references.bib`
+and Quarto/Pandoc citation syntax
+(for example `[@MickeyGreenland1989]`),
+rather than plaintext author-date references.
+
 ## Code Formatting Guidelines
 
 When adding or editing text in source code (such as comments, documentation strings, or error messages) or in Quarto document text chunks:
@@ -142,26 +154,6 @@ sum(residuals(my_model)^2)
 Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
-
-## Landscape Tables in PDF
-
-When a table is too wide for portrait orientation in PDF,
-wrap the table div in a `.landscape` fenced div.
-
-Use this pattern:
-
-```qmd
-::: {.landscape}
-
-:::{#tbl-your-wide-table}
-... table content ...
-:::
-
-:::
-```
-
-Apply this only where needed,
-so HTML and RevealJS output stay unchanged.
 
 ## Figures and Tables: Use Div Format
 
