@@ -4,37 +4,47 @@ These paper-and-pencil exercises
 use actual datasets.
 No numerical computation is required.
 
-## Exercise 1: Main-effects model interpretation {#exr-lm-eoc-main-effects}
+::: {#exr-lm-eoc-main-effects}
+Main-effects model interpretation.
 
 Adapted from
 @vittinghoff2e [Chapter 4].
 
-Use the
+Dataset summary:
 `ToothGrowth`
-dataset.
-Consider the additive model
-
-$$
-\E{\texttt{len}|\texttt{dose}=x,\texttt{supp}=z}
-= \b_0 + \b_{\texttt{dose}}x + \b_{\texttt{supp}}z,
-$$
-
-where
-$z=1$
+contains one row per guinea pig.
+Let
+$Y$
+be tooth length (`len`),
+$X$
+be dose (`dose`),
+and
+$Z$
+be supplement indicator,
+with
+$Z=1$
 for
 `VC`
 and
-$z=0$
+$Z=0$
 for
 `OJ`.
 
+Consider the additive model
+
+$$
+\E{Y|X=x,Z=z}
+= \b_0 + \b_X x + \b_Z z.
+$$
+
 State the interpretation of
 $\b_0$,
-$\b_{\texttt{dose}}$,
+$\b_X$,
 and
-$\b_{\texttt{supp}}$.
+$\b_Z$.
 Which interpretations depend on the reference level
 `OJ`?
+:::
 
 ```{r}
 #| label: fig-eoc-lm-main-effects
@@ -67,25 +77,30 @@ ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
 ### Solution
 
 $\b_0$
-is the mean tooth length
+is mean tooth length
 when
-`dose = 0`
+$X=0$
 and
-`supp = OJ`.
+$Z=0$
+(`OJ`).
 So it depends on the reference level
 `OJ`.
 
-$\b_{\texttt{dose}}$
+$\b_X$
 is the change in mean tooth length
-for a one-unit increase in dose,
-holding supplement type fixed.
+for a one-unit increase in
+$X$,
+holding
+$Z$
+fixed.
 Because the model is additive,
 this slope is the same for both supplement groups.
 
-$\b_{\texttt{supp}}$
+$\b_Z$
 is the mean difference
 (`VC` minus `OJ`)
-at a fixed dose.
+at a fixed value of
+$X$.
 Its interpretation depends on
 `OJ`
 being the reference level.
@@ -93,31 +108,40 @@ being the reference level.
 
 ---
 
-## Exercise 2: Interaction interpretation {#exr-lm-eoc-interaction}
+::: {#exr-lm-eoc-interaction}
+Interaction interpretation.
 
 Adapted from
 @dobson4e [Section 6.7.1].
 
-Use the same
+Use
 `ToothGrowth`
-dataset,
-but now consider the interaction model
+as introduced in
+[Exercise @exr-lm-eoc-main-effects].
+Let
+$Y=\texttt{len}$,
+$X=\texttt{dose}$,
+and
+$Z$
+be the same supplement indicator.
+
+Consider the interaction model
 
 $$
-\E{\texttt{len}|\texttt{dose}=x,\texttt{supp}=z}
-= \b_0 + \b_{\texttt{dose}}x + \b_{\texttt{supp}}z
-+ \b_{\texttt{dose:supp}}(x\cdot z).
+\E{Y|X=x,Z=z}
+= \b_0 + \b_X x + \b_Z z + \b_{XZ}(x\cdot z).
 $$
 
 Using the plot,
 write the slope with respect to
-`dose`
+$X$
 for
 `OJ`
 and for
 `VC`.
 Then interpret
-$\b_{\texttt{dose:supp}}$.
+$\b_{XZ}$.
+:::
 
 ```{r}
 #| label: fig-eoc-lm-interaction
@@ -147,19 +171,20 @@ ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
 
 For
 `OJ`
-(`z=0`),
+($z=0$),
 the slope is
-$\b_{\texttt{dose}}$.
+$\b_X$.
 
 For
 `VC`
-(`z=1`),
+($z=1$),
 the slope is
-$\b_{\texttt{dose}} + \b_{\texttt{dose:supp}}$.
+$\b_X + \b_{XZ}$.
 
 Therefore,
-$\b_{\texttt{dose:supp}}$
-is the difference in dose slopes
+$\b_{XZ}$
+is the difference in
+$X$-slopes
 between
 `VC`
 and
@@ -168,23 +193,28 @@ and
 
 ---
 
-## Exercise 3: Centering and coefficient changes {#exr-lm-eoc-centering}
+::: {#exr-lm-eoc-centering}
+Centering and coefficient changes.
 
 Adapted from end-of-chapter exercises in
 @kleinbaum2014applied [Chapter 14].
 
-Use the
+Dataset summary:
 `PLOS`
-dataset from
-`dobson`.
-Define
-$X = \texttt{authors}$
+contains one row per paper.
+Let
+$Y$
+be title length (`nchar`)
 and
+$X$
+be number of authors (`authors`).
+Define
 $X^* = X - 10$.
+
 Start from
 
 $$
-\E{\texttt{nchar}|X=x}
+\E{Y|X=x}
 = \b_0 + \b_Xx.
 $$
 
@@ -198,6 +228,7 @@ in terms of
 $\b_0$
 and
 $\b_X$.
+:::
 
 ```{r}
 #| label: fig-eoc-lm-centering
@@ -251,7 +282,7 @@ $x = x^* + 10$:
 
 $$
 \ba
-\E{\texttt{nchar}|X^*=x^*}
+\E{Y|X^*=x^*}
 &= \b_0 + \b_X(x^* + 10)\\
 &= (\b_0 + 10\b_X) + \b_Xx^*.
 \ea
@@ -271,24 +302,36 @@ but does not change the slope.
 
 ---
 
-## Exercise 4: Diagnostics from observed residual patterns {#exr-lm-eoc-diagnostics}
+::: {#exr-lm-eoc-diagnostics}
+Diagnostics from observed residual patterns.
 
 Adapted from
 @dunn2018generalized [Chapter 3].
 
-Use the
+Dataset summary:
 `mtcars`
-dataset and the model
+contains one row per car model.
+Let
+$Y$
+be fuel economy (`mpg`),
+$X$
+be weight (`wt`),
+and
+$H$
+be horsepower (`hp`).
+
+Consider the model
 
 $$
-\E{\texttt{mpg}|\texttt{wt}=x,\texttt{hp}=h}
-= \b_0 + \b_{\texttt{wt}}x + \b_{\texttt{hp}}h.
+\E{Y|X=x,H=h}
+= \b_0 + \b_Xx + \b_Hh.
 $$
 
 Based on the residual-vs-fitted
 and Q-Q plots,
 which assumptions look most questionable?
 State one practical follow-up step.
+:::
 
 ```{r}
 #| label: fig-eoc-lm-diagnostics
