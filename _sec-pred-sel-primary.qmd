@@ -191,9 +191,12 @@ are typically retained regardless of the change-in-estimate result,
 for reasons of face validity.
 
 When multiple covariates are candidates for removal,
-checking all possible subsets is often impractical.
-A practical alternative is a backward-elimination procedure
-guided jointly by the 10% rule and precision.
+checking all possible subsets
+is often impractical.
+A practical alternative
+is a backward-elimination procedure
+guided jointly by the 10% rule
+and precision.
 
 At each step:
 
@@ -202,13 +205,16 @@ At each step:
 3. Keep only candidates with
    absolute percent change from the full-model exposure coefficient
    no larger than 10%,
-   where the full-model coefficient is always from the original
+   where the full-model coefficient
+   is always from the original
    gold-standard model.
 4. Among those candidates,
-   drop the covariate that gives the largest reduction
+   drop the covariate
+   that gives the largest reduction
    in the exposure coefficient's standard error.
 5. Repeat until no remaining covariate can be dropped
-   without either exceeding the 10% threshold
+   without either
+   exceeding the 10% threshold
    or increasing the exposure standard error.
 
 ```{r}
@@ -217,20 +223,21 @@ At each step:
 
 beta_full <- coef(m_full)["dibpatType A"]
 se_full <- sqrt(vcov(m_full)["dibpatType A", "dibpatType A"])
+outcome_var <- "chd69"
+exposure_var <- "dibpat"
 
-remaining_covars <- confounders
 current_covars <- confounders
 current_se <- se_full
 step_num <- 1
 bwe_steps <- list()
 
 repeat {
-  candidate_rows <- lapply(remaining_covars, function(v) {
+  candidate_results <- lapply(current_covars, function(v) {
     keep_covars <- setdiff(current_covars, v)
     reduced_formula <- if (length(keep_covars) == 0) {
-      chd69 ~ dibpat
+      reformulate(exposure_var, response = outcome_var)
     } else {
-      reformulate(c("dibpat", keep_covars), response = "chd69")
+      reformulate(c(exposure_var, keep_covars), response = outcome_var)
     }
 
     m_red <- glm(reduced_formula, data = wcgs, family = binomial)
@@ -250,7 +257,7 @@ repeat {
     )
   })
 
-  candidates_df <- do.call(rbind, candidate_rows)
+  candidates_df <- do.call(rbind, candidate_results)
   eligible_df <- candidates_df[candidates_df$Eligible, , drop = FALSE]
 
   if (nrow(eligible_df) == 0) {
@@ -271,7 +278,6 @@ repeat {
   )
 
   current_covars <- setdiff(current_covars, dropped_var)
-  remaining_covars <- current_covars
   current_se <- best_drop$SE_reduced
   step_num <- step_num + 1
 }
@@ -309,7 +315,8 @@ knitr::kable(
 ```
 
 Backward elimination under the 10% change-in-estimate rule,
-with standard-error reduction used to choose among eligible drops.
+with standard-error reduction
+used to choose among eligible drops.
 The reference for the percent-change criterion
 is always the Type A coefficient in the original full model.
 
