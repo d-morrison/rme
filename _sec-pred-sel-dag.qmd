@@ -26,11 +26,8 @@ when estimating the total causal effect.
 ### Confounder
 
 A **confounder** of the relationship between an exposure $X$ and
-outcome $Y$ is a variable $C$ that:
-
-1. Is a cause of the exposure $X$.
-2. Is a cause of the outcome $Y$.
-3. Is not on the causal pathway from $X$ to $Y$.
+outcome $Y$ is a variable $C$
+that is a cause of both $X$ and $Y$.
 
 Adjusting for confounders removes confounding bias.
 :::
@@ -333,8 +330,8 @@ wcgs_dag <- dagitty(
     age -> sbp
     age -> bmi
     age -> TypeA
+    TypeA -> smoking
     smoking -> CHD
-    smoking -> TypeA
     chol -> CHD
     sbp -> CHD
     bmi -> CHD
@@ -355,8 +352,18 @@ Directed Acyclic Graph (DAG) for the WCGS study.
 :::
 
 In @fig-wcgs-dag,
-age and smoking are **confounders**:
-they have causal paths to both the exposure (TypeA) and the outcome (CHD).
+`age` is a **confounder**:
+it has causal paths to both the exposure (`TypeA`)
+and the outcome (`CHD`).
+We model `TypeA -> smoking`
+rather than `smoking -> TypeA`
+because the Type A behavior pattern is conceptualized
+as a relatively stable behavioral trait
+that can influence smoking behavior.
+Under that assumption,
+`smoking` is a mediator on the path
+`TypeA -> smoking -> CHD`,
+not a confounder.
 Cholesterol, SBP, and BMI are downstream of age and BMI
 but also have independent effects on CHD.
 Unlike in HERS, where HT was randomized,
