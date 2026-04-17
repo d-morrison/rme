@@ -187,8 +187,11 @@ so HTML and RevealJS output stay unchanged.
 
 ## Figures and Tables: Use Div Format
 
-Always use the **Quarto div format** for figures and tables rather than chunk-option `fig-cap`/`tbl-cap`.
+Prefer the **Quarto div format** for new figures and tables
+rather than chunk-option `fig-cap`/`tbl-cap`.
 The div format makes it easier to write and format multi-sentence captions.
+Existing chunk-option captions in older files are acceptable
+unless you are already refactoring that content.
 
 **Correct** (div format):
 ````qmd
@@ -226,7 +229,7 @@ plot(x, y)
 ```
 ````
 
-This applies to all new figures and tables in `.qmd` files.
+Use this for newly added or substantially revised figures and tables in `.qmd` files.
 
 
 ## Math Notation

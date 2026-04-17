@@ -96,8 +96,9 @@ the exposure of interest is Type A behavior pattern (`dibpat`),
 and the outcome is CHD incidence (`chd69`).
 We fit logistic regression models
 and apply the 10% change-in-estimate rule
-to assess whether age, cholesterol, SBP, smoking, and BMI
-are meaningful confounders of the Type A → CHD relationship.
+to assess whether age, cholesterol, SBP, and BMI
+are meaningful confounders of the Type A → CHD relationship,
+while also examining smoking as an additional covariate.
 
 ::: notes
 
@@ -117,14 +118,14 @@ wcgs <- readRDS(fs::path_package("rme", "extdata/wcgs.rds"))
 
 # Full model (all candidate confounders)
 m_full <- glm(
-  chd69 ~ dibpat + age + chol + sbp + smoke + bmi,
+  I(chd69 == "Yes") ~ dibpat + age + chol + sbp + smoke + bmi,
   data = wcgs,
   family = binomial
 )
 
 # Unadjusted model (Type A only)
 m_unadj <- glm(
-  chd69 ~ dibpat,
+  I(chd69 == "Yes") ~ dibpat,
   data = wcgs,
   family = binomial
 )
@@ -138,7 +139,7 @@ confounders <- c("age", "chol", "sbp", "smoke", "bmi")
 
 results <- lapply(confounders, function(v) {
   f <- as.formula(
-    paste("chd69 ~ dibpat +",
+    paste("I(chd69 == \"Yes\") ~ dibpat +",
           paste(setdiff(confounders, v), collapse = " + "))
   )
   m_red <- glm(f, data = wcgs, family = binomial)
@@ -226,7 +227,6 @@ At each step:
 
 beta_full <- coef(m_full)["dibpatType A"]
 se_full <- sqrt(vcov(m_full)["dibpatType A", "dibpatType A"])
-outcome_var <- "chd69"
 exposure_var <- "dibpat"
 
 current_covars <- confounders
@@ -237,11 +237,13 @@ bwe_steps <- list()
 repeat {
   candidate_results <- lapply(current_covars, function(v) {
     keep_covars <- setdiff(current_covars, v)
-    reduced_formula <- if (length(keep_covars) == 0) {
-      reformulate(exposure_var, response = outcome_var)
-    } else {
-      reformulate(c(exposure_var, keep_covars), response = outcome_var)
-    }
+    rhs_terms <- c(exposure_var, keep_covars)
+    reduced_formula <- as.formula(
+      paste(
+        "I(chd69 == \"Yes\") ~",
+        paste(rhs_terms, collapse = " + ")
+      )
+    )
 
     m_red <- glm(reduced_formula, data = wcgs, family = binomial)
     beta_red <- coef(m_red)["dibpatType A"]
