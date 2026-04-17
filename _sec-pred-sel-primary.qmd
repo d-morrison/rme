@@ -237,13 +237,16 @@ bwe_steps <- list()
 repeat {
   candidate_results <- lapply(current_covars, function(v) {
     keep_covars <- setdiff(current_covars, v)
-    rhs_terms <- c(exposure_var, keep_covars)
-    reduced_formula <- as.formula(
-      paste(
-        "I(chd69 == \"Yes\") ~",
-        paste(rhs_terms, collapse = " + ")
+    reduced_formula <- if (length(keep_covars) == 0) {
+      as.formula("I(chd69 == \"Yes\") ~ dibpat")
+    } else {
+      as.formula(
+        paste(
+          "I(chd69 == \"Yes\") ~",
+          paste(c(exposure_var, keep_covars), collapse = " + ")
+        )
       )
-    )
+    }
 
     m_red <- glm(reduced_formula, data = wcgs, family = binomial)
     beta_red <- coef(m_red)["dibpatType A"]
