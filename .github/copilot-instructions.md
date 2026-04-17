@@ -155,6 +155,26 @@ Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
 
+## Landscape Tables in PDF
+
+When a table is too wide for portrait orientation in PDF,
+wrap the table div in a `.landscape` fenced div.
+
+Use this pattern:
+
+```qmd
+::: {.landscape}
+
+:::{#tbl-your-wide-table}
+... table content ...
+:::
+
+:::
+```
+
+Apply this only where needed,
+so HTML and RevealJS output stay unchanged.
+
 ## Figures and Tables: Use Div Format
 
 Always use the **Quarto div format** for figures and tables rather than chunk-option `fig-cap`/`tbl-cap`.
