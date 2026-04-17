@@ -24,6 +24,76 @@ the **bias–variance trade-off**.
 Adding a predictor helps only if
 the reduction in bias outweighs the increase in variance.
 
+## Numerical example of overfitting {#sec-pred-sel-overfit-example}
+
+The table below gives a simple numerical example.
+A parsimonious model and an intentionally overfit model
+are both trained on the same development set.
+The overfit model adds many noise predictors
+that have no true relationship with LDL.
+
+::: {#tbl-overfit-example}
+
+```{r}
+#| label: overfit-example
+
+set.seed(204)
+
+hers_overfit <-
+  hers_ldl |>
+  dplyr::select(LDL, HT, age, statins) |>
+  tidyr::drop_na()
+
+n_overfit <- nrow(hers_overfit)
+idx_overfit <- sample(seq_len(n_overfit), size = floor(0.7 * n_overfit))
+
+train_overfit <- hers_overfit[idx_overfit, ]
+valid_overfit <- hers_overfit[-idx_overfit, ]
+
+for (j in 1:20) {
+  zname <- paste0("z", j)
+  train_overfit[[zname]] <- rnorm(nrow(train_overfit))
+  valid_overfit[[zname]] <- rnorm(nrow(valid_overfit))
+}
+
+model_pars <- lm(LDL ~ HT + age + statins, data = train_overfit)
+model_overfit <- lm(
+  LDL ~ HT + age + statins +
+    z1 + z2 + z3 + z4 + z5 + z6 + z7 + z8 + z9 + z10 +
+    z11 + z12 + z13 + z14 + z15 + z16 + z17 + z18 + z19 + z20,
+  data = train_overfit
+)
+
+rmse <- function(y, yhat) {
+  sqrt(mean((y - yhat)^2))
+}
+
+tibble::tibble(
+  Model = c("Parsimonious model", "Overfit model (+20 noise predictors)"),
+  Training_RMSE = c(
+    rmse(train_overfit$LDL, predict(model_pars, newdata = train_overfit)),
+    rmse(train_overfit$LDL, predict(model_overfit, newdata = train_overfit))
+  ),
+  Validation_RMSE = c(
+    rmse(valid_overfit$LDL, predict(model_pars, newdata = valid_overfit)),
+    rmse(valid_overfit$LDL, predict(model_overfit, newdata = valid_overfit))
+  )
+) |>
+  dplyr::mutate(
+    dplyr::across(c(Training_RMSE, Validation_RMSE), ~ round(.x, 2))
+  )
+```
+
+Numerical example showing overfitting:
+lower training error but worse validation error.
+
+:::
+
+In this example,
+the overfit model usually has lower training RMSE
+but higher validation RMSE,
+which is the defining pattern of overfitting.
+
 ## Measures of prediction error {#sec-pred-sel-pe}
 
 To select a model that minimizes prediction error,
@@ -43,16 +113,39 @@ $$\text{AIC} = -2\hat\ell + 2p, \quad
 (see @sec-pred-sel-aic-bic).
 
 For **binary outcomes**,
-the **C-statistic** (area under the ROC curve)
-measures discrimination — the model's ability to rank
-events above non-events.
-The C-statistic is analogous to $R^2$ for continuous outcomes,
-but is rank-based and can be insensitive to improvements
-in the quality of predicted probabilities.
+common measures include:
+
+- **Balanced accuracy**:
+$$\text{BA} = \frac{\text{Sensitivity} + \text{Specificity}}{2}$$
+where
+$$\text{Sensitivity} = \Pr(\hat Y = 1 \mid Y = 1), \quad
+\text{Specificity} = \Pr(\hat Y = 0 \mid Y = 0).$$
+If $J$ is **Youden's $J$ statistic**,
+$$J = \text{Sensitivity} + \text{Specificity} - 1,$$
+then
+$$\text{BA} = \frac{J + 1}{2}.$$
+So BA is a linear transformation of $J$,
+and BA and $J$ are equivalent for comparing models.
+
+- **C-statistic** (area under the ROC curve, AUC):
+$C = \Pr(\hat{\pi}_i > \hat{\pi}_j \mid Y_i = 1, Y_j = 0) + \frac{1}{2}\Pr(\hat{\pi}_i = \hat{\pi}_j \mid Y_i = 1, Y_j = 0)$,
+where $\hat{\pi}$ is the predicted event probability.
+An empirical estimator is
+$\hat{C} = \frac{1}{n_1 n_0}\sum_{i:Y_i=1}\sum_{j:Y_j=0}\left[I(\hat{\pi}_i > \hat{\pi}_j) + \frac{1}{2}I(\hat{\pi}_i = \hat{\pi}_j)\right]$.
+It measures discrimination:
+the model's ability to rank events above non-events.
 
 For **survival outcomes**, the analogous measure is the **C-index**,
-which measures the model's ability to correctly order
-the timing of events for two randomly chosen subjects.
+defined as
+$$
+\hat C_{\text{index}}
+= \frac{N_{\text{concordant}} + 0.5\,N_{\text{tied}}}
+{N_{\text{comparable}}},
+$$
+where pairs are comparable when one subject is observed to fail
+before the other is known to fail or be censored,
+and concordance means the subject with earlier failure
+has the higher predicted risk score.
 
 ## Optimism and cross-validation {#sec-pred-sel-cv}
 
