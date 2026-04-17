@@ -190,6 +190,135 @@ In practice, covariates with established biological relationships to the outcome
 are typically retained regardless of the change-in-estimate result,
 for reasons of face validity.
 
+When multiple covariates are candidates for removal,
+checking all possible subsets is often impractical.
+A practical alternative is a backward-elimination procedure
+guided jointly by the 10% rule and precision.
+
+At each step:
+
+1. Start from the current model.
+2. Fit models that drop one remaining candidate covariate at a time.
+3. Keep only candidates with
+   absolute percent change from the full-model exposure coefficient
+   no larger than 10%,
+   where the full-model coefficient is always from the original
+   gold-standard model.
+4. Among those candidates,
+   drop the covariate that gives the largest reduction
+   in the exposure coefficient's standard error.
+5. Repeat until no remaining covariate can be dropped
+   without either exceeding the 10% threshold
+   or increasing the exposure standard error.
+
+```{r}
+#| label: wcgs-10pct-bwe
+
+beta_full <- coef(m_full)["dibpatType A"]
+se_full <- sqrt(vcov(m_full)["dibpatType A", "dibpatType A"])
+
+remaining_covars <- confounders
+current_covars <- confounders
+current_se <- se_full
+step_num <- 1
+bwe_steps <- list()
+
+repeat {
+  candidate_rows <- lapply(remaining_covars, function(v) {
+    keep_covars <- setdiff(current_covars, v)
+    reduced_formula <- if (length(keep_covars) == 0) {
+      chd69 ~ dibpat
+    } else {
+      reformulate(c("dibpat", keep_covars), response = "chd69")
+    }
+
+    m_red <- glm(reduced_formula, data = wcgs, family = binomial)
+    beta_red <- coef(m_red)["dibpatType A"]
+    se_red <- sqrt(vcov(m_red)["dibpatType A", "dibpatType A"])
+    pct_change <- abs((beta_full - beta_red) / beta_full) * 100
+    se_reduction <- current_se - se_red
+
+    data.frame(
+      Step = step_num,
+      Candidate_drop = v,
+      Beta_reduced = beta_red,
+      Pct_change_from_full = pct_change,
+      SE_reduced = se_red,
+      SE_reduction = se_reduction,
+      Eligible = pct_change <= 10 & se_reduction > 0
+    )
+  })
+
+  candidates_df <- do.call(rbind, candidate_rows)
+  eligible_df <- candidates_df[candidates_df$Eligible, , drop = FALSE]
+
+  if (nrow(eligible_df) == 0) {
+    break
+  }
+
+  best_idx <- which.max(eligible_df$SE_reduction)
+  best_drop <- eligible_df[best_idx, , drop = FALSE]
+  dropped_var <- as.character(best_drop$Candidate_drop)
+
+  bwe_steps[[step_num]] <- data.frame(
+    Step = step_num,
+    Dropped = dropped_var,
+    Pct_change_from_full = round(best_drop$Pct_change_from_full, 1),
+    SE_before = round(current_se, 4),
+    SE_after = round(best_drop$SE_reduced, 4),
+    SE_reduction = round(best_drop$SE_reduction, 4)
+  )
+
+  current_covars <- setdiff(current_covars, dropped_var)
+  remaining_covars <- current_covars
+  current_se <- best_drop$SE_reduced
+  step_num <- step_num + 1
+}
+
+bwe_steps_df <- if (length(bwe_steps) == 0) {
+  data.frame(
+    Step = NA_integer_,
+    Dropped = "None",
+    Pct_change_from_full = NA_real_,
+    SE_before = round(se_full, 4),
+    SE_after = round(se_full, 4),
+    SE_reduction = 0
+  )
+} else {
+  do.call(rbind, bwe_steps)
+}
+
+retained_covars <- current_covars
+```
+
+::: {#tbl-wcgs-10pct-bwe}
+
+```{r}
+knitr::kable(
+  bwe_steps_df,
+  col.names = c(
+    "Step",
+    "Dropped covariate",
+    "% change from full model",
+    "SE before drop",
+    "SE after drop",
+    "SE reduction"
+  )
+)
+```
+
+Backward elimination under the 10% change-in-estimate rule,
+with standard-error reduction used to choose among eligible drops.
+The reference for the percent-change criterion
+is always the Type A coefficient in the original full model.
+
+:::
+
+For further reading on model selection strategies in epidemiologic analyses,
+see @vittinghoff2e [Chapter 10],
+@kleinbaum2010logistic [Chapters 6--8],
+and @me4 [Chapter 21, section "Model Selection"].
+
 ::: {.callout-note}
 ## Collinearity between confounders is not a problem
 
