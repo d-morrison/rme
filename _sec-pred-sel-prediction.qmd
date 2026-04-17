@@ -38,29 +38,30 @@ that have no true relationship with LDL.
 #| label: overfit-example
 
 set.seed(204)
+n_noise_predictors <- 20
 
-hers_overfit <-
+hers_base <-
   hers_ldl |>
   dplyr::select(LDL, HT, age, statins) |>
   tidyr::drop_na()
 
-n_overfit <- nrow(hers_overfit)
+n_overfit <- nrow(hers_base)
 idx_overfit <- sample(seq_len(n_overfit), size = floor(0.7 * n_overfit))
 
-train_overfit <- hers_overfit[idx_overfit, ]
-valid_overfit <- hers_overfit[-idx_overfit, ]
+train_overfit <- hers_base[idx_overfit, ]
+valid_overfit <- hers_base[-idx_overfit, ]
 
-for (j in 1:20) {
+for (j in seq_len(n_noise_predictors)) {
   zname <- paste0("z", j)
   train_overfit[[zname]] <- rnorm(nrow(train_overfit))
   valid_overfit[[zname]] <- rnorm(nrow(valid_overfit))
 }
 
-model_pars <- lm(LDL ~ HT + age + statins, data = train_overfit)
+model_parsimonious <- lm(LDL ~ HT + age + statins, data = train_overfit)
+noise_terms <- paste0("z", seq_len(n_noise_predictors))
+overfit_formula <- reformulate(c("HT", "age", "statins", noise_terms), "LDL")
 model_overfit <- lm(
-  LDL ~ HT + age + statins +
-    z1 + z2 + z3 + z4 + z5 + z6 + z7 + z8 + z9 + z10 +
-    z11 + z12 + z13 + z14 + z15 + z16 + z17 + z18 + z19 + z20,
+  overfit_formula,
   data = train_overfit
 )
 
@@ -69,13 +70,22 @@ rmse <- function(y, yhat) {
 }
 
 tibble::tibble(
-  Model = c("Parsimonious model", "Overfit model (+20 noise predictors)"),
+  Model = c(
+    "Parsimonious model",
+    paste0("Overfit model (+", n_noise_predictors, " noise predictors)")
+  ),
   Training_RMSE = c(
-    rmse(train_overfit$LDL, predict(model_pars, newdata = train_overfit)),
+    rmse(
+      train_overfit$LDL,
+      predict(model_parsimonious, newdata = train_overfit)
+    ),
     rmse(train_overfit$LDL, predict(model_overfit, newdata = train_overfit))
   ),
   Validation_RMSE = c(
-    rmse(valid_overfit$LDL, predict(model_pars, newdata = valid_overfit)),
+    rmse(
+      valid_overfit$LDL,
+      predict(model_parsimonious, newdata = valid_overfit)
+    ),
     rmse(valid_overfit$LDL, predict(model_overfit, newdata = valid_overfit))
   )
 ) |>
