@@ -1,225 +1,323 @@
 {{< include latex-macros/macros.qmd >}}
 
 These paper-and-pencil exercises
-are adapted from
-@kleinbaum2014applied [Chapter 14],
-@dobson4e [Chapter 6],
-@vittinghoff2e [Chapter 4],
-and
-@dunn2018generalized [Chapter 3].
-No numerical computation is needed.
+use actual datasets.
+No numerical computation is required.
 
-::: {#exr-lm-eoc-main-effects}
-#### Exercise 1: Main-effects model interpretation
+## Exercise 1: Main-effects model interpretation {#exr-lm-eoc-main-effects}
 
-Consider the linear model
+Adapted from
+@vittinghoff2e [Chapter 4].
+
+Use the
+`ToothGrowth`
+dataset.
+Consider the additive model
 
 $$
-\E{Y|X=x, Z=z}
-= \b_0 + \b_X x + \b_Z z,
+\E{\texttt{len}|\texttt{dose}=x,\texttt{supp}=z}
+= \b_0 + \b_{\texttt{dose}}x + \b_{\texttt{supp}}z,
 $$
 
 where
-$Z \in \set{0,1}$.
+$z=1$
+for
+`VC`
+and
+$z=0$
+for
+`OJ`.
 
 State the interpretation of
 $\b_0$,
-$\b_X$,
+$\b_{\texttt{dose}}$,
 and
-$\b_Z$.
-Explain which interpretations depend on the reference level
-$Z=0$.
-:::
+$\b_{\texttt{supp}}$.
+Which interpretations depend on the reference level
+`OJ`?
 
-::: {.solution}
+```{r}
+#| label: fig-eoc-lm-main-effects
+#| fig-cap: "ToothGrowth data with additive (parallel-lines) fit"
+eoc_tg <-
+  ToothGrowth |>
+  mutate(supp = relevel(supp, ref = "OJ"))
+
+eoc_tg_add <-
+  lm(len ~ dose + supp, data = eoc_tg)
+
+eoc_tg_grid <-
+  expand_grid(
+    dose = seq(min(eoc_tg$dose), max(eoc_tg$dose), length.out = 100),
+    supp = levels(eoc_tg$supp)
+  ) |>
+  mutate(len_hat = predict(eoc_tg_add, newdata = cur_data()))
+
+ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
+  geom_point(alpha = 0.7) +
+  geom_line(
+    data = eoc_tg_grid,
+    aes(y = len_hat)
+  ) +
+  labs(color = "supplement")
+```
+
+::: {.callout-note collapse="true"}
+### Solution
 
 $\b_0$
-is the mean of
-$Y$
+is the mean tooth length
 when
-$X=0$
+`dose = 0`
 and
-$Z=0$.
+`supp = OJ`.
 So it depends on the reference level
-$Z=0$.
+`OJ`.
 
-$\b_X$
-is the slope of mean
-$Y$
-with respect to
-$X$,
-holding
-$Z$
-fixed.
-In this additive model,
-that slope is the same for
-$Z=0$
-and
-$Z=1$.
+$\b_{\texttt{dose}}$
+is the change in mean tooth length
+for a one-unit increase in dose,
+holding supplement type fixed.
+Because the model is additive,
+this slope is the same for both supplement groups.
 
-$\b_Z$
+$\b_{\texttt{supp}}$
 is the mean difference
-between
-$Z=1$
-and
-$Z=0$,
-holding
-$X$
-fixed.
-Its interpretation is explicitly anchored to the reference level
-$Z=0$.
-
+(`VC` minus `OJ`)
+at a fixed dose.
+Its interpretation depends on
+`OJ`
+being the reference level.
 :::
 
 ---
 
-::: {#exr-lm-eoc-interaction}
-#### Exercise 2: Interaction interpretation
+## Exercise 2: Interaction interpretation {#exr-lm-eoc-interaction}
 
-Consider the model
+Adapted from
+@dobson4e [Section 6.7.1].
+
+Use the same
+`ToothGrowth`
+dataset,
+but now consider the interaction model
 
 $$
-\E{Y|X=x, Z=z}
-= \b_0 + \b_X x + \b_Z z + \b_{XZ}(x\cdot z),
+\E{\texttt{len}|\texttt{dose}=x,\texttt{supp}=z}
+= \b_0 + \b_{\texttt{dose}}x + \b_{\texttt{supp}}z
++ \b_{\texttt{dose:supp}}(x\cdot z).
 $$
 
-with
-$Z \in \set{0,1}$.
-
-Write the slope of mean
-$Y$
-with respect to
-$X$
+Using the plot,
+write the slope with respect to
+`dose`
 for
-$Z=0$
+`OJ`
 and for
-$Z=1$.
+`VC`.
 Then interpret
-$\b_{XZ}$.
-:::
+$\b_{\texttt{dose:supp}}$.
 
-::: {.solution}
+```{r}
+#| label: fig-eoc-lm-interaction
+#| fig-cap: "ToothGrowth data with interaction (non-parallel-lines) fit"
+eoc_tg_int <-
+  lm(len ~ dose * supp, data = eoc_tg)
+
+eoc_tg_grid2 <-
+  expand_grid(
+    dose = seq(min(eoc_tg$dose), max(eoc_tg$dose), length.out = 100),
+    supp = levels(eoc_tg$supp)
+  ) |>
+  mutate(len_hat = predict(eoc_tg_int, newdata = cur_data()))
+
+ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
+  geom_point(alpha = 0.7) +
+  geom_line(
+    data = eoc_tg_grid2,
+    aes(y = len_hat)
+  ) +
+  labs(color = "supplement")
+```
+
+::: {.callout-note collapse="true"}
+### Solution
 
 For
-$Z=0$:
-
-$$
-\E{Y|X=x,Z=0}
-= \b_0 + \b_X x,
-$$
-
-so the slope is
-$\b_X$.
+`OJ`
+(`z=0`),
+the slope is
+$\b_{\texttt{dose}}$.
 
 For
-$Z=1$:
-
-$$
-\E{Y|X=x,Z=1}
-= (\b_0+\b_Z) + (\b_X+\b_{XZ})x,
-$$
-
-so the slope is
-$\b_X+\b_{XZ}$.
+`VC`
+(`z=1`),
+the slope is
+$\b_{\texttt{dose}} + \b_{\texttt{dose:supp}}$.
 
 Therefore,
-$\b_{XZ}$
-is the difference in
-$X$-slopes
+$\b_{\texttt{dose:supp}}$
+is the difference in dose slopes
 between
-$Z=1$
+`VC`
 and
-$Z=0$.
-
+`OJ`.
 :::
 
 ---
 
-::: {#exr-lm-eoc-centering}
-#### Exercise 3: Centering and coefficient changes
+## Exercise 3: Centering and coefficient changes {#exr-lm-eoc-centering}
 
-Let
-$X^* = X-c$,
-where
-$c$
-is a constant.
-Start from the model
+Adapted from end-of-chapter exercises in
+@kleinbaum2014applied [Chapter 14].
+
+Use the
+`PLOS`
+dataset from
+`dobson`.
+Define
+$X = \texttt{authors}$
+and
+$X^* = X - 10$.
+Start from
 
 $$
-\E{Y|X=x}
-= \b_0 + \b_X x.
+\E{\texttt{nchar}|X=x}
+= \b_0 + \b_Xx.
 $$
 
 Rewrite the model in terms of
 $X^*$.
-Express the new intercept
+Express
 $\g_0$
-and slope
+and
 $\g_X$
 in terms of
-$\b_0$,
-$\b_X$,
+$\b_0$
 and
-$c$.
-:::
+$\b_X$.
 
-::: {.solution}
+```{r}
+#| label: fig-eoc-lm-centering
+#| fig-cap: "PLOS data with original and centered parameterizations"
+data(PLOS, package = "dobson")
 
-Because
-$x = x^* + c$:
+eoc_plos <-
+  PLOS |>
+  mutate(authors_centered = authors - 10)
+
+eoc_plos_orig <-
+  lm(nchar ~ authors, data = eoc_plos)
+
+eoc_plos_cent <-
+  lm(nchar ~ authors_centered, data = eoc_plos)
+
+eoc_plos_grid <-
+  tibble(
+    authors = seq(
+      min(eoc_plos$authors),
+      max(eoc_plos$authors),
+      length.out = 100
+    )
+  ) |>
+  mutate(
+    authors_centered = authors - 10,
+    fit_original = predict(eoc_plos_orig, newdata = cur_data()),
+    fit_centered = predict(eoc_plos_cent, newdata = cur_data())
+  )
+
+ggplot(eoc_plos, aes(x = authors, y = nchar)) +
+  geom_point(alpha = 0.7) +
+  geom_line(
+    data = eoc_plos_grid,
+    aes(y = fit_original, color = "original parameterization")
+  ) +
+  geom_line(
+    data = eoc_plos_grid,
+    aes(y = fit_centered, color = "centered parameterization"),
+    linetype = 2
+  ) +
+  labs(color = "")
+```
+
+::: {.callout-note collapse="true"}
+### Solution
+
+Since
+$x = x^* + 10$:
 
 $$
 \ba
-\E{Y|X^*=x^*}
-&= \b_0 + \b_X(x^*+c)\\
-&= (\b_0 + c\b_X) + \b_X x^*.
+\E{\texttt{nchar}|X^*=x^*}
+&= \b_0 + \b_X(x^* + 10)\\
+&= (\b_0 + 10\b_X) + \b_Xx^*.
 \ea
 $$
 
 So
 
 $$
-\g_0 = \b_0 + c\b_X,
+\g_0 = \b_0 + 10\b_X,
 \quad
 \g_X = \b_X.
 $$
 
-Centering changes the intercept,
-because it changes the point where the line is anchored.
-Centering does not change the slope.
-
+Centering shifts the intercept,
+but does not change the slope.
 :::
 
 ---
 
-::: {#exr-lm-eoc-diagnostics}
-#### Exercise 4: Diagnosing assumption problems from plots
+## Exercise 4: Diagnostics from observed residual patterns {#exr-lm-eoc-diagnostics}
 
-Suppose a fitted linear model shows:
+Adapted from
+@dunn2018generalized [Chapter 3].
 
-1. a residual-versus-fitted plot
-with clear fan-shaped spread,
-and
-2. a normal Q-Q plot
-with strong tail departures.
+Use the
+`mtcars`
+dataset and the model
 
-Which model assumptions are most likely violated?
-Name one practical next step for each problem.
-:::
+$$
+\E{\texttt{mpg}|\texttt{wt}=x,\texttt{hp}=h}
+= \b_0 + \b_{\texttt{wt}}x + \b_{\texttt{hp}}h.
+$$
 
-::: {.solution}
+Based on the residual-vs-fitted
+and Q-Q plots,
+which assumptions look most questionable?
+State one practical follow-up step.
 
-The fan shape suggests non-constant variance,
-so homoskedasticity is likely violated.
-One practical next step is to transform the outcome
+```{r}
+#| label: fig-eoc-lm-diagnostics
+#| fig-cap: "Diagnostic plots for linear model fit to mtcars data"
+#| layout-ncol: 2
+#| fig-subcap:
+#| - "Residuals versus fitted"
+#| - "Normal Q-Q"
+eoc_mtcars <-
+  mtcars |>
+  as_tibble()
+
+eoc_mtcars_fit <-
+  lm(mpg ~ wt + hp, data = eoc_mtcars)
+
+library(ggfortify)
+autoplot(eoc_mtcars_fit, which = 1, ncol = 1)
+autoplot(eoc_mtcars_fit, which = 2, ncol = 1)
+```
+
+::: {.callout-note collapse="true"}
+### Solution
+
+The residual-vs-fitted plot should be checked
+for curvature and changing spread.
+The Q-Q plot should be checked
+for tail departures.
+
+If either pattern is substantial,
+a reasonable next step is to compare
+an alternative specification
 (for example,
-log-scale if appropriate)
-or use a variance model/robust standard errors.
-
-The strong Q-Q tail departures suggest non-normal errors,
-especially in the tails.
-One practical next step is to check for outliers/influential points,
-and then consider a more suitable mean-variance structure
-or a model family that better matches the data-generating process.
-
+nonlinear terms or transformation)
+and then re-check diagnostics.
 :::
