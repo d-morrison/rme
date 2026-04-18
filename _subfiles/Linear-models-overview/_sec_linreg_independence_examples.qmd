@@ -1,0 +1,76 @@
+#### Example diagnostics with code and output
+
+The example below simulates ordered data with positively autocorrelated errors.
+That creates a setting where independence should fail.
+
+```{r}
+#| label: exm-independence-sim-data
+#| code-fold: false
+set.seed(204)
+
+n_obs <- 120
+time_index <- seq_len(n_obs)
+x <- seq(-1, 1, length.out = n_obs)
+err <- as.numeric(arima.sim(model = list(ar = 0.7), n = n_obs, sd = 1))
+y <- 2 + 1.5 * x + err
+
+indep_exm <- tibble::tibble(
+  time_index = time_index,
+  x = x,
+  y = y
+)
+
+indep_exm_lm <- lm(y ~ x, data = indep_exm)
+
+summary(indep_exm_lm)
+```
+
+Residuals versus order:
+
+```{r}
+#| label: fig-independence-resid-order
+#| fig-cap: "Residuals versus observation order for simulated data"
+indep_exm |>
+  dplyr::mutate(resid = resid(indep_exm_lm)) |>
+  ggplot(aes(x = time_index, y = resid)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  geom_line(color = "steelblue") +
+  theme_classic() +
+  labs(
+    x = "Observation order",
+    y = "Residual"
+  )
+```
+
+Correlogram diagnostics:
+
+```{r}
+#| label: fig-independence-correlogram
+#| fig-cap: "Residual ACF and PACF for simulated data"
+op <- par(mfrow = c(1, 2))
+acf(
+  resid(indep_exm_lm),
+  main = "Residual ACF"
+)
+pacf(
+  resid(indep_exm_lm),
+  main = "Residual PACF"
+)
+par(op)
+```
+
+Durbin-Watson and Breusch-Godfrey tests:
+
+```{r}
+#| label: exm-independence-formal-tests
+#| code-fold: false
+library(lmtest)
+
+dwtest(indep_exm_lm, alternative = "two.sided")
+bgtest(indep_exm_lm, order = 4)
+```
+
+In this example,
+the residual-order plot and correlogram suggest serial dependence,
+and both formal tests typically reject independence.
+
