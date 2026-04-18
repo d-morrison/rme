@@ -11,13 +11,12 @@ matching the notation in the mathematical details section.
 set.seed(204)
 
 n_obs <- 120
-time_index <- seq_len(n_obs)
 x <- seq(-1, 1, length.out = n_obs)
 ar_errors <- as.numeric(arima.sim(model = list(ar = 0.7), n = n_obs, sd = 1))
 y <- 2 + 1.5 * x + ar_errors
 
 serial_dep_exm <- tibble::tibble(
-  time_index = time_index,
+  time_index = seq_len(n_obs),
   x = x,
   y = y
 )
@@ -50,8 +49,8 @@ Correlogram diagnostics:
 #| label: fig-independence-correlogram
 #| fig-cap: "Residual ACF and PACF for simulated data"
 op <- par(no.readonly = TRUE)
-par(mfrow = c(1, 2))
 on.exit(par(op), add = TRUE)
+par(mfrow = c(1, 2))
 acf(
   resid(serial_dep_exm_lm),
   main = "Residual ACF"
