@@ -391,21 +391,29 @@ Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact
 
 ---
 
+### Centering gestational age does not change predictions
+
 Centering gestational age changes the coefficient parameterization,
 but it does not change the fitted values,
 confidence bands,
 or prediction bands.
 
+The next output reports maximum absolute differences
+between the uncentered and centered models.
+All values should be near zero
+(up to floating-point rounding),
+which confirms that centering changes parameterization only.
+
 ```{r}
 bw_centered <-
   bw |>
   dplyr::mutate(
-    age_centered = age - mean(age)
+    gestage_mean_centered = age - mean(age)
   )
 
 bw_lm2_centered <-
   lm(
-    weight ~ sex + age_centered + sex:age_centered,
+    weight ~ sex + gestage_mean_centered + sex:gestage_mean_centered,
     data = bw_centered
   )
 
@@ -547,9 +555,9 @@ comparison_plot_data |>
   )
 ```
 
-Two-panel comparison of the fitted `birthweight` model
-with and without centering gestational age.
-Fitted values,
+Two-panel comparison of the fitted `birthweight` model `bw_lm2`
+with and without centering gestational age,
+showing identical fitted values,
 confidence bands,
-and prediction bands are unchanged.
+and prediction bands in both panels.
 :::
