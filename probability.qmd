@@ -578,24 +578,6 @@ and the **smoothing theorem**.
 
 ---
 
-:::{#thm-conditional-lie}
-### Conditional law of iterated expectations
-
-For random variables $X$, $Y$, and $Z$:
-
-$$\E{X \mid Y} = \E{\E{X \mid Y,Z} \mid Y}$$
-
-::: notes
-
-This is the tower rule
-applied conditionally on $Y$.
-
-:::
-
-:::
-
----
-
 ::: proof
 
 **Discrete case.**
@@ -635,6 +617,63 @@ where the third equality exchanges the order of integration by Fubini's theorem,
 and the fourth equality uses
 $\int_{x} \p(Y=y \mid X=x) \cd \p(X=x)\, dx = \int_{x} \p(X=x, Y=y)\, dx = \p(Y=y)$
 (marginalization of the joint density).
+
+:::
+
+---
+
+:::{#thm-conditional-lie}
+### Conditional law of iterated expectations
+
+For random variables $X$, $Y$, and $Z$:
+
+$$\E{X \mid Y} = \E{\E{X \mid Y,Z} \mid Y}$$
+
+::: notes
+
+This is the tower rule
+applied conditionally on $Y$.
+
+:::
+
+:::
+
+---
+
+::: proof
+
+For each fixed value $y$ with positive probability or density:
+
+**Discrete case.**
+Conditioning on $Y=y$,
+and applying the law of total probability
+to the partition $\{Z=z : z \in \rangef{Z}\}$
+under the conditional distribution given $Y=y$:
+
+$$
+\ba
+\E{\E{X \mid Y,Z} \mid Y=y}
+&= \sum_{z \in \rangef{Z}} \E{X \mid Y=y,Z=z} \cd \P(Z=z \mid Y=y)
+\\&= \E{X \mid Y=y}
+\ea
+$$
+
+**Continuous case.**
+Conditioning on $Y=y$,
+and integrating over $Z$
+under the conditional density $\p(Z=z \mid Y=y)$:
+
+$$
+\ba
+\E{\E{X \mid Y,Z} \mid Y=y}
+&= \int_{z \in \rangef{Z}} \E{X \mid Y=y,Z=z} \cd \p(Z=z \mid Y=y)\, dz
+\\&= \E{X \mid Y=y}
+\ea
+$$
+
+Therefore,
+as random variables of $Y$,
+$\E{X \mid Y} = \E{\E{X \mid Y,Z} \mid Y}$.
 
 :::
 
@@ -735,6 +774,91 @@ and the **variance decomposition formula**.
 
 ---
 
+::: proof
+
+Write
+$Y-\E{Y} = \paren{Y-\E{Y \mid X}} + \paren{\E{Y \mid X}-\E{Y}}$.
+Then:
+
+$$
+\ba
+\sqf{Y-\E{Y}}
+&= \sqf{Y-\E{Y \mid X}}
+  + \sqf{\E{Y \mid X}-\E{Y}}
+  + 2\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}
+\ea
+$$
+
+Taking expectation:
+
+$$
+\ba
+\Var{Y}
+&= \E{\sqf{Y-\E{Y \mid X}}}
+  + \E{\sqf{\E{Y \mid X}-\E{Y}}}
+\\&\quad
+  + 2\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+\ea
+$$
+
+For the cross-term:
+
+**Discrete case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+&= \sum_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Y \mid X}-\E{Y}}
+     \mid X=x
+   }
+   \cd \P(X=x)
+\\&= \sum_{x \in \rangef{X}}
+   \paren{\E{Y \mid X=x}-\E{Y}}
+   \cd \E{Y-\E{Y \mid X=x}\mid X=x}
+   \cd \P(X=x)
+\\&= 0
+\ea
+$$
+
+**Continuous case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+&= \int_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Y \mid X}-\E{Y}}
+     \mid X=x
+   }
+   \cd \p(X=x)\, dx
+\\&= \int_{x \in \rangef{X}}
+   \paren{\E{Y \mid X=x}-\E{Y}}
+   \cd \E{Y-\E{Y \mid X=x}\mid X=x}
+   \cd \p(X=x)\, dx
+\\&= 0
+\ea
+$$
+
+Therefore:
+
+$$
+\ba
+\Var{Y}
+&= \E{\sqf{Y-\E{Y \mid X}}}
+  + \E{\sqf{\E{Y \mid X}-\E{Y}}}
+\\&= \E{\Var{Y \mid X}}
+  + \Var{\E{Y \mid X}}
+\ea
+$$
+
+:::
+
+---
+
 ::: {#def-precision}
 ### Precision
 
@@ -796,7 +920,99 @@ and the **conditional covariance formula**.
 ---
 
 :::{.proof}
-Left to the reader.
+Write:
+
+$$
+\ba
+Y-\E{Y}
+&= \paren{Y-\E{Y \mid X}} + \paren{\E{Y \mid X}-\E{Y}}
+\\
+Z-\E{Z}
+&= \paren{Z-\E{Z \mid X}} + \paren{\E{Z \mid X}-\E{Z}}
+\ea
+$$
+
+Then:
+
+$$
+\ba
+\Cov{Y,Z}
+&= \E{\paren{Y-\E{Y}}\paren{Z-\E{Z}}}
+\\&= \E{\paren{Y-\E{Y \mid X}}\paren{Z-\E{Z \mid X}}}
+\\&\quad
+  + \E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+\\&\quad
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}
+\\&\quad
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{\E{Z \mid X}-\E{Z}}}
+\ea
+$$
+
+For the two mixed terms:
+
+**Discrete case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+&= \sum_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Z \mid X}-\E{Z}}
+     \mid X=x
+   }
+   \cd \P(X=x)
+\\&= \sum_{x \in \rangef{X}}
+   \paren{\E{Z \mid X=x}-\E{Z}}
+   \cd \E{Y-\E{Y \mid X=x} \mid X=x}
+   \cd \P(X=x)
+\\&= 0
+\ea
+$$
+
+and similarly:
+
+$$
+\E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}=0.
+$$
+
+**Continuous case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+&= \int_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Z \mid X}-\E{Z}}
+     \mid X=x
+   }
+   \cd \p(X=x)\, dx
+\\&= \int_{x \in \rangef{X}}
+   \paren{\E{Z \mid X=x}-\E{Z}}
+   \cd \E{Y-\E{Y \mid X=x} \mid X=x}
+   \cd \p(X=x)\, dx
+\\&= 0
+\ea
+$$
+
+and similarly:
+
+$$
+\E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}=0.
+$$
+
+Hence:
+
+$$
+\ba
+\Cov{Y,Z}
+&= \E{\paren{Y-\E{Y \mid X}}\paren{Z-\E{Z \mid X}}}
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{\E{Z \mid X}-\E{Z}}}
+\\&= \E{\Cov{Y,Z \mid X}}
+  + \Cov{\E{Y \mid X}, \E{Z \mid X}}
+\ea
+$$
 :::
 
 ---
@@ -814,8 +1030,9 @@ $$\Cov{X,X} = \Var{X}$$
 :::{.proof}
 $$
 \ba
-\Cov{X,X} &= E[XX] - E[X]E[X] 
-\\ &= E[X^2]-(E[X])^2
+\Cov{X,X}
+&= \E{XX} - \E{X}\E{X}
+\\&= \E{X^2} - \sqf{\E{X}}
 \\ &= \Var{X}
 \ea
 $$
