@@ -70,6 +70,17 @@ This applies whether the citation refers to one author or multiple authors (e.g.
 Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
 but grammatically the citation key itself is treated as a singular pronoun/name.
 
+## Attribution for Adapted Content
+
+When adapting any content from another source,
+always include specific attribution in the chapter text.
+Use a BibTeX-backed citation key
+with a chapter or page locator
+(for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
+Do not use generic acknowledgements without locators
+or plaintext author-title references
+when a BibTeX citation is available.
+
 ## Code Formatting Guidelines
 
 When adding or editing text in source code (such as comments, documentation strings, or error messages) or in Quarto document text chunks:
@@ -154,13 +165,29 @@ Key macros to use:
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
 
-Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
+matrix-product helper macros:
+
+- `\iprod{u}{v}` for inner products (`\tp{u} v`)
+- `\oprod{u}{v}` for outer products (`u \tp{v}`)
+- `\siprod{u}` for self-inner products (`\tp{u} u`)
+- `\soprod{u}` for self-outer products (`u \tp{u}`)
+
+Residual and deviation helper macros include:
+
+- `\err` for generic error or residual terms
+- `\erf{\theta}` for estimate/estimand deviations
+- `\devn(...)` for other deviations
+- `\resid` for residual symbols (`r`)
+- `\stdresid` for standardized residual symbols (`r'`)
+- `\modresid` for modified residual symbols (`r^*`)
 
 - **Transpose**: Use `\tp{v}` (renders as $v'$) instead of the raw prime `v'` notation.
   However, `\tp{v}` appends `^{\top}` to the argument, so if the argument already carries a superscript
   (e.g., `\vxs` expands to `{{\vec{x}^*}}` which has `^*`), wrap it in parentheses first:
   use `\tp{(\vxs)}` not `\tp{\vxs}`.
   This avoids LaTeX "Double superscript" errors.
+
+Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
 
 ## Color Coding Strategy for Math Expressions
 
