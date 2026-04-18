@@ -70,6 +70,17 @@ This applies whether the citation refers to one author or multiple authors (e.g.
 Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
 but grammatically the citation key itself is treated as a singular pronoun/name.
 
+## Attribution for Adapted Content
+
+When adapting any content from another source,
+always include specific attribution in the chapter text.
+Use a BibTeX-backed citation key
+with a chapter or page locator
+(for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
+Do not use generic acknowledgements without locators
+or plaintext author-title references
+when a BibTeX citation is available.
+
 ## Code Formatting Guidelines
 
 When adding or editing text in source code (such as comments, documentation strings, or error messages) or in Quarto document text chunks:
