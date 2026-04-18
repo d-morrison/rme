@@ -80,6 +80,8 @@ and test sets.
 This extends the basic train/test split
 by separating model tuning
 from final model assessment.
+This framework follows
+[@james2021introduction, pp. 198-201].
 
 - Use the **training set** to estimate model parameters.
 - Use the **validation set** to compare candidate models,
@@ -96,11 +98,63 @@ $k$-fold cross-validation
 can replace a single validation split
 for more stable tuning.
 
-::: notes
-This workflow is adapted from
-*An Introduction to Statistical Learning* (2nd ed.):
-<https://demorrison.ucdavis.edu/files/ISLRv2.pdf>.
-:::
+##### Numerical example
+
+The example below
+uses one random split
+to compare candidate models
+on a validation set,
+then reports the chosen model's test RMSE
+on untouched test data
+[@james2021introduction, p. 213].
+
+```{r}
+#| code-fold: false
+set.seed(108)
+n <- nrow(mtcars)
+
+idx_train <- sample.int(n, size = floor(0.6 * n))
+idx_remaining <- setdiff(seq_len(n), idx_train)
+idx_valid <- sample(idx_remaining, size = floor(0.2 * n))
+idx_test <- setdiff(idx_remaining, idx_valid)
+
+train_dat <- mtcars[idx_train, ]
+valid_dat <- mtcars[idx_valid, ]
+test_dat <- mtcars[idx_test, ]
+
+model_additive <- lm(mpg ~ wt + hp, data = train_dat)
+model_interaction <- lm(mpg ~ wt * hp, data = train_dat)
+
+rmse <- function(model, data) {
+  sqrt(mean((data$mpg - predict(model, newdata = data))^2))
+}
+
+validation_results <- tibble::tibble(
+  model = c("additive", "interaction"),
+  validation_RMSE = c(
+    rmse(model_additive, valid_dat),
+    rmse(model_interaction, valid_dat)
+  )
+)
+
+chosen_model_name <-
+  validation_results |>
+  dplyr::arrange(validation_RMSE) |>
+  dplyr::slice(1) |>
+  dplyr::pull(model)
+
+chosen_model <-
+  if (chosen_model_name == "additive") model_additive else model_interaction
+
+tibble::tibble(
+  split = c("validation", "test"),
+  model = chosen_model_name,
+  RMSE = c(
+    min(validation_results$validation_RMSE),
+    rmse(chosen_model, test_dat)
+  )
+)
+```
 
 ---
 
