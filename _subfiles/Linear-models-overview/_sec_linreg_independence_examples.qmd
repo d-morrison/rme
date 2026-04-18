@@ -14,15 +14,15 @@ x <- seq(-1, 1, length.out = n_obs)
 err <- as.numeric(arima.sim(model = list(ar = 0.7), n = n_obs, sd = 1))
 y <- 2 + 1.5 * x + err
 
-indep_exm <- tibble::tibble(
+serial_dep_exm <- tibble::tibble(
   time_index = time_index,
   x = x,
   y = y
 )
 
-indep_exm_lm <- lm(y ~ x, data = indep_exm)
+serial_dep_exm_lm <- lm(y ~ x, data = serial_dep_exm)
 
-summary(indep_exm_lm)
+summary(serial_dep_exm_lm)
 ```
 
 Residuals versus order:
@@ -30,8 +30,8 @@ Residuals versus order:
 ```{r}
 #| label: fig-independence-resid-order
 #| fig-cap: "Residuals versus observation order for simulated data"
-indep_exm |>
-  dplyr::mutate(resid = resid(indep_exm_lm)) |>
+serial_dep_exm |>
+  dplyr::mutate(resid = resid(serial_dep_exm_lm)) |>
   ggplot(aes(x = time_index, y = resid)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
   geom_line(color = "steelblue") +
@@ -49,11 +49,11 @@ Correlogram diagnostics:
 #| fig-cap: "Residual ACF and PACF for simulated data"
 op <- par(mfrow = c(1, 2))
 acf(
-  resid(indep_exm_lm),
+  resid(serial_dep_exm_lm),
   main = "Residual ACF"
 )
 pacf(
-  resid(indep_exm_lm),
+  resid(serial_dep_exm_lm),
   main = "Residual PACF"
 )
 par(op)
@@ -64,8 +64,8 @@ Durbin-Watson and Breusch-Godfrey tests:
 ```{r}
 #| label: exm-independence-formal-tests
 #| code-fold: false
-lmtest::dwtest(indep_exm_lm, alternative = "two.sided")
-lmtest::bgtest(indep_exm_lm, order = 4)
+lmtest::dwtest(serial_dep_exm_lm, alternative = "two.sided")
+lmtest::bgtest(serial_dep_exm_lm, order = 4)
 ```
 
 In this example,
