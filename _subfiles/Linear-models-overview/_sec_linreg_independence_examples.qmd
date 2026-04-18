@@ -73,3 +73,60 @@ lmtest::bgtest(serial_dep_exm_lm, order = 4)
 In this example,
 the residual-order plot and correlogram suggest serial dependence,
 and both formal tests reject independence.
+
+#### Real-data examples
+
+We can also run the same diagnostics on real ordered data sets.
+
+##### Nile annual river flow
+
+```{r}
+#| label: exm-independence-real-nile
+#| code-fold: false
+nile_df <- tibble::tibble(
+  year = as.numeric(time(datasets::Nile)),
+  flow = as.numeric(datasets::Nile)
+)
+
+nile_lm <- lm(flow ~ year, data = nile_df)
+
+summary(nile_lm)
+lmtest::dwtest(nile_lm, alternative = "two.sided")
+lmtest::bgtest(nile_lm, order = 4)
+```
+
+```{r}
+#| label: fig-independence-real-nile-resid-order
+#| fig-cap: "Residuals versus year for Nile flow model"
+nile_df |>
+  dplyr::mutate(resid = resid(nile_lm)) |>
+  ggplot(aes(x = year, y = resid)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  geom_line(color = "steelblue") +
+  theme_classic() +
+  labs(
+    x = "Year",
+    y = "Residual"
+  )
+```
+
+##### Mauna Loa atmospheric carbon dioxide (`co2`)
+
+```{r}
+#| label: exm-independence-real-co2
+#| code-fold: false
+co2_df <- tibble::tibble(
+  decimal_year = as.numeric(time(datasets::co2)),
+  co2_ppm = as.numeric(datasets::co2)
+)
+
+co2_lm <- lm(co2_ppm ~ decimal_year, data = co2_df)
+
+summary(co2_lm)
+lmtest::dwtest(co2_lm, alternative = "two.sided")
+lmtest::bgtest(co2_lm, order = 12)
+```
+
+For both real-data examples,
+the diagnostics indicate residual dependence,
+consistent with their time-ordered structure.
