@@ -35,9 +35,15 @@ the sample quantile function
 (the generalized inverse of $\hat F$)
 is
 $$\hat Q(p)=\inf\{t:\hat F(t)\ge p\}, \quad 0<p\le 1.$$
+:::
+
+::: {#thm-sample-quantile-order-statistics}
+#### Order-statistic form of the sample quantile
+
 If $x_{(1)}\le\cdots\le x_{(n)}$ are the order statistics,
 then $\hat Q(p)=x_{(i)}$ for $p\in((i-1)/n,i/n]$.
-In particular, $\hat Q(i/n)=x_{(i)}$.
+In particular,
+$\hat Q(i/n)=x_{(i)}$.
 :::
 
 :::{#exm-sample-quantile}
@@ -51,3 +57,47 @@ $\hat Q(p)=4$ for $1/2<p\le 3/4$,
 and $\hat Q(p)=7$ for $3/4<p\le 1$.
 So $\hat Q(0.5)=3$ and $\hat Q(0.9)=7$.
 :::
+
+```{r}
+#| label: fig-ecdf-sample-quantile-example
+#| fig-cap: >
+#|   Relationship between the empirical CDF and sample quantiles
+#|   for data 1, 3, 4, 7.
+#|   Left:
+#|   ECDF with points $(x_{(i)}, i/n)$.
+#|   Right:
+#|   sample quantile function with points $(i/n, x_{(i)})$.
+#| fig-width: 10
+#| fig-height: 4
+x <- c(1, 3, 4, 7)
+n <- length(x)
+x_ord <- sort(x)
+p_ord <- seq_len(n) / n
+
+old_par <- par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+plot(
+  ecdf(x),
+  verticals = TRUE,
+  do.points = FALSE,
+  xlab = "t",
+  ylab = "F̂(t)",
+  main = "Empirical CDF"
+)
+points(x_ord, p_ord, pch = 19, col = "blue")
+abline(h = p_ord, lty = 3, col = "gray70")
+
+p_grid <- seq(0.001, 1, length.out = 1000)
+q_vals <- quantile(x, probs = p_grid, type = 1, names = FALSE)
+plot(
+  p_grid,
+  q_vals,
+  type = "s",
+  xlab = "p",
+  ylab = expression(hat(Q)(p)),
+  main = "Sample quantile function",
+  ylim = range(x_ord)
+)
+points(p_ord, x_ord, pch = 19, col = "blue")
+abline(v = p_ord, lty = 3, col = "gray70")
+par(old_par)
+```
