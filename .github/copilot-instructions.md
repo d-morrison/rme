@@ -58,37 +58,6 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
-## Attribution for Adapted Content
-
-When content is adapted from published sources (textbooks, papers, websites),
-**always provide explicit attribution** in the document.
-Use `@citekey` Pandoc citation syntax and include a prose note explaining what was adapted.
-
-Examples of acceptable attribution:
-
-- "Adapted from @vittinghoff2e [Chapter 10]."
-- "The following example is based on @kleinbaum2010logistic [Chapter 8]."
-- "This approach follows @hulley1998hers."
-
-Attribution should appear:
-
-- At the top of the chapter or section (in the Acknowledgements or Introduction),
-  *or*
-- Adjacent to the specific content being adapted (as a prose sentence or in a `::: notes` div).
-
-**Always include chapter and/or page numbers** in inline citations where applicable,
-so that readers can locate the source material.
-Use Pandoc's citation locator syntax: `[@citekey, Chapter 8]` or `[@citekey, p. 194]`.
-Include both chapter and page when both are known.
-
-Examples of attribution with page numbers:
-
-- "Adapted from @vittinghoff2e [Chapter 10, pp. 257–275]."
-- "The following example is based on @kleinbaum2010logistic [Chapter 8, pp. 194–212]."
-
-Do **not** reproduce verbatim text from copyrighted sources without clear quotation marks and attribution.
-Paraphrase and summarize with a citation instead.
-
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
@@ -100,6 +69,17 @@ treat the citation as a **singular** subject and use third-person singular verb 
 This applies whether the citation refers to one author or multiple authors (e.g., "Dobson and Barnett").
 Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
 but grammatically the citation key itself is treated as a singular pronoun/name.
+
+## Attribution for Adapted Content
+
+When adapting any content from another source,
+always include specific attribution in the chapter text.
+Use a BibTeX-backed citation key
+with a chapter or page locator
+(for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
+Do not use generic acknowledgements without locators
+or plaintext author-title references
+when a BibTeX citation is available.
 
 ## Code Formatting Guidelines
 
@@ -162,50 +142,6 @@ Use this pattern:
 
 Apply this only where needed,
 so HTML and RevealJS output stay unchanged.
-
-## Figures and Tables: Use Div Format
-
-Always use the **Quarto div format** for figures and tables rather than chunk-option `fig-cap`/`tbl-cap`.
-The div format makes it easier to write and format multi-sentence captions.
-
-**Correct** (div format):
-````qmd
-::: {#fig-my-figure}
-
-```{r}
-plot(x, y)
-```
-
-Caption text here.
-This can span multiple lines and include *markdown*.
-
-:::
-````
-
-**Correct** (div format for tables):
-````qmd
-::: {#tbl-my-table}
-
-```{r}
-my_table
-```
-
-Caption text here.
-
-:::
-````
-
-**Incorrect** (chunk option format):
-````qmd
-```{r}
-#| label: fig-my-figure
-#| fig-cap: "Caption text here."
-plot(x, y)
-```
-````
-
-This applies to all new figures and tables in `.qmd` files.
-
 
 ## Math Notation
 
