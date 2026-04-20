@@ -64,3 +64,182 @@ to reflect means at age = 36 weeks rather than age = 0 weeks.
 :::
 
 :::
+
+---
+
+### Centering gestational age does not change predictions
+
+Centering gestational age changes the coefficient parameterization,
+but it does not change fitted values,
+confidence bands,
+or prediction bands.
+
+The next output reports maximum absolute differences
+between the uncentered and centered models.
+All values should be near zero
+(up to floating-point rounding),
+which confirms that centering changes parameterization only.
+
+```{r}
+bw_centered <-
+  bw |>
+  dplyr::mutate(
+    age_mean_centered = age - mean(age)
+  )
+
+bw_lm2_centered <-
+  lm(
+    weight ~ sex + age_mean_centered + sex:age_mean_centered,
+    data = bw_centered
+  )
+
+pred_uncentered_ci <-
+  predict(
+    bw_lm2,
+    newdata = bw_centered,
+    interval = "confidence"
+  ) |>
+  tibble::as_tibble()
+
+pred_centered_ci <-
+  predict(
+    bw_lm2_centered,
+    newdata = bw_centered,
+    interval = "confidence"
+  ) |>
+  tibble::as_tibble()
+
+pred_uncentered_pi <-
+  predict(
+    bw_lm2,
+    newdata = bw_centered,
+    interval = "predict"
+  ) |>
+  tibble::as_tibble()
+
+pred_centered_pi <-
+  predict(
+    bw_lm2_centered,
+    newdata = bw_centered,
+    interval = "predict"
+  ) |>
+  tibble::as_tibble()
+
+tibble::tibble(
+  fitted_max_abs_diff = max(abs(pred_uncentered_ci$fit - pred_centered_ci$fit)),
+  ci_lwr_max_abs_diff = max(abs(pred_uncentered_ci$lwr - pred_centered_ci$lwr)),
+  ci_upr_max_abs_diff = max(abs(pred_uncentered_ci$upr - pred_centered_ci$upr)),
+  pi_lwr_max_abs_diff = max(abs(pred_uncentered_pi$lwr - pred_centered_pi$lwr)),
+  pi_upr_max_abs_diff = max(abs(pred_uncentered_pi$upr - pred_centered_pi$upr))
+)
+```
+
+:::{#fig-pred-int-centered-comparison}
+```{r}
+comparison_plot_data <-
+  dplyr::bind_rows(
+    bw_centered |>
+      dplyr::bind_cols(
+        pred_uncentered_ci |>
+          dplyr::transmute(
+            fit,
+            ci_lwr = lwr,
+            ci_upr = upr
+          ),
+        pred_uncentered_pi |>
+          dplyr::transmute(
+            pred_lwr = lwr,
+            pred_upr = upr
+          )
+      ) |>
+      dplyr::transmute(
+        age,
+        weight,
+        sex,
+        model = "Without centering age",
+        fit,
+        ci_lwr,
+        ci_upr,
+        pred_lwr,
+        pred_upr
+      ),
+    bw_centered |>
+      dplyr::bind_cols(
+        pred_centered_ci |>
+          dplyr::transmute(
+            fit,
+            ci_lwr = lwr,
+            ci_upr = upr
+          ),
+        pred_centered_pi |>
+          dplyr::transmute(
+            pred_lwr = lwr,
+            pred_upr = upr
+          )
+      ) |>
+      dplyr::transmute(
+        age,
+        weight,
+        sex,
+        model = "With centered age",
+        fit,
+        ci_lwr,
+        ci_upr,
+        pred_lwr,
+        pred_upr
+      )
+  ) |>
+  dplyr::mutate(
+    model = factor(
+      model,
+      levels = c("Without centering age", "With centered age")
+    )
+  )
+
+comparison_plot_data |>
+  ggplot2::ggplot(
+    ggplot2::aes(
+      x = age,
+      y = weight,
+      col = sex,
+      fill = sex,
+      group = sex
+    )
+  ) +
+  ggplot2::geom_point(alpha = 0.5) +
+  ggplot2::geom_ribbon(
+    ggplot2::aes(
+      ymin = pred_lwr,
+      ymax = pred_upr
+    ),
+    alpha = 0.15,
+    col = NA
+  ) +
+  ggplot2::geom_ribbon(
+    ggplot2::aes(
+      ymin = ci_lwr,
+      ymax = ci_upr
+    ),
+    alpha = 0.3,
+    col = NA
+  ) +
+  ggplot2::geom_line(
+    ggplot2::aes(y = fit)
+  ) +
+  ggplot2::facet_wrap(~model) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(legend.position = "bottom") +
+  ggplot2::labs(
+    x = "Gestational age (weeks)",
+    y = "Birthweight (grams)",
+    col = "Sex",
+    fill = "Sex"
+  )
+```
+
+Two-panel comparison of the fitted `birthweight` model `bw_lm2`
+with and without centering gestational age,
+showing identical fitted values,
+confidence bands,
+and prediction bands in both panels.
+:::
