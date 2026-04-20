@@ -58,6 +58,14 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Decomposing content into subfiles
+
+When splitting a chapter or formula sheet into include subfiles,
+keep the top-level section headers in the main `.qmd` file.
+Move only the section body content into the subfile.
+This keeps document structure visible in the parent file
+and makes partial includes easier to compose consistently.
+
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
