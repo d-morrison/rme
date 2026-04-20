@@ -115,7 +115,7 @@ When introducing or editing formal statistical definitions in `.qmd` files:
 - Put the definition title in a `####` heading inside the div
 - If a definition uses other statistical terms
   (for example, empirical CDF),
-  ensure those terms also have formal `#def` div definitions
+  ensure those terms also have formal `#def-` div definitions
   in the relevant scope before relying on them
 
 ## Quarto Code Chunk Options
