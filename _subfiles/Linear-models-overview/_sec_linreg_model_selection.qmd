@@ -7,15 +7,83 @@ If we have a lot of covariates in our dataset, we might want to choose a small s
 There are a few possible metrics to consider for choosing a "best" model.
 :::
 
+### DAGs for variable selection
+
+For explanatory models,
+variable inclusion should not rely on automated algorithms alone.
+Directed acyclic graphs (DAGs)
+can help us encode substantive assumptions
+about which variables are confounders,
+mediators,
+or colliders.
+
+In a Dobson-style workflow,
+we use the DAG first
+to decide a defensible adjustment set,
+then compare candidate regression models
+within that set using predictive or likelihood-based criteria.
+This keeps model selection aligned with study design,
+rather than only with numerical fit.
+
 ### Mean squared error
 
-We might want to minimize the **mean squared error**, $\text E[(y-\hat y)^2]$, for new observations that weren't in our data set when we fit the model.
+We might want to minimize the **mean squared error**,
+$\E{(y-\hat y)^2}$,
+for new observations
+that weren't in our data set when we fit the model.
 
-Unfortunately, $$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$ gives a biased estimate of $\text E[(y-\hat y)^2]$ for new data. If we want an unbiased estimate, we will have to be clever.
+Unfortunately,
+$$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$
+gives a biased estimate of $\E{(y-\hat y)^2}$ for new data.
+If we want an unbiased estimate,
+we will have to be clever.
+
+This is one reason that $R^2$ is not enough for model selection.
+$R^2$ does not decrease as we add explanatory variables,
+even when those variables do not improve out-of-sample prediction.
+That can lead to overfitting.
+
+With a training/test split,
+we estimate coefficients in the training data
+and compute prediction error in held-out data:
+
+$$
+\hat\b_{\text{train}} =
+(\tp{X_{\text{train}}}X_{\text{train}})^{-1}
+\tp{X_{\text{train}}}y_{\text{train}}
+$$
+
+$$
+\hat e_{i,\text{test}} =
+y_{\text{test},i} -
+\cb{
+\hat\b_{0,\text{train}} +
+\sum_{j=1}^p \hat\b_{j,\text{train}}x_{\text{test},ij}
+},
+\quad i \in \text{test set}
+$$
+
+$$
+\text{RMSE} = \sqrt{
+\frac{1}{n_{\text{test}}}
+\sum_{i \in \text{test set}} (\hat e_{i,\text{test}})^2
+}
+$$
 
 ---
 
 #### Cross-validation
+
+Rather than one arbitrary split,
+$k$-fold cross-validation repeatedly partitions the data into training and test folds.
+For each split we compute prediction error,
+then summarize errors across folds and replications.
+The preferred model has lower prediction error,
+with simpler models favored when errors are similar.
+
+When the number of candidate explanatory variables is small,
+we can compare all possible subsets ($2^p$ models)
+using the same cross-validation metric.
 
 ```{r}
 data("carbohydrate", package = "dobson")
@@ -90,7 +158,59 @@ anova(full_model, reduced_model)
 
 ---
 
-#### stepwise regression
+#### Best subset selection
+
+When the number of candidate predictors is modest,
+we can use **best subset selection**.
+For each model size $k = 0, 1, \ldots, p$,
+we fit all $\binom{p}{k}$ models
+and keep the best model of size $k$
+(e.g., by lowest RSS in the training data).
+
+This gives at most $p+1$ candidate models to compare across model sizes,
+using criteria such as
+cross-validated prediction error,
+$C_p$,
+AIC/BIC,
+or adjusted $R^2$.
+In that sense,
+best subset selection is more exhaustive
+than one-path methods like forward or backward stepwise selection.
+
+::: notes
+For a full algorithmic treatment,
+including validation and criterion-based comparison across model size,
+see the ISLR treatment of best subset selection
+[@james2013introduction].
+:::
+
+```{r}
+hers_subset <- fs::path_package("rme", "extdata/hersdata.dta") |>
+  haven::read_dta() |>
+  dplyr::select(LDL, age, weight, BMI, HDL, TG, SBP) |>
+  tidyr::drop_na()
+
+hers_lm_subset <- lm(
+  LDL ~ age + weight + BMI + HDL + TG + SBP,
+  data = hers_subset
+)
+
+hers_best_subset <- olsrr::ols_step_best_subset(hers_lm_subset)
+
+hers_best_subset$metrics |>
+  dplyr::arrange(dplyr::desc(adjr)) |>
+  dplyr::slice_head(n = 5)
+```
+
+---
+
+#### Stepwise regression
+
+Stepwise methods are another common approach.
+Forward selection adds variables one at a time.
+Backward selection starts with the full model
+and removes variables sequentially.
+Both approaches can select different models from the same data.
 
 ::: {.callout-warning}
 ## Caution about stepwise selection
@@ -116,7 +236,68 @@ olsrr:::ols_step_both_aic(full_model)
 
 #### Lasso
 
-$$\am_{\theta} \cb{\llik(\th) - \lambda \sum_{j=1}^p|\beta_j|}$$
+Lasso is a penalized regression method
+that shrinks coefficient estimates toward zero.
+It adds an $L_1$ penalty term
+to the objective function,
+creating a trade-off between model fit and parsimony.
+The intercept is not penalized.
+
+As the tuning parameter $\lambda$ increases,
+more coefficients are shrunken strongly,
+and some become exactly zero.
+So lasso both regularizes the model
+and performs variable selection.
+In practice,
+$\lambda$ is usually chosen by cross-validation
+to minimize prediction error.
+
+For Gaussian linear models,
+the penalized least-squares forms are:
+
+$$
+\hat\b^{\text{lasso}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda \sum_{j=1}^p |\b_j|
+}
+$$
+
+$$
+\hat\b^{\text{ridge}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda \sum_{j=1}^p \b_j^2
+}
+$$
+
+$$
+\hat\b^{\text{elastic-net}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda
+\cb{
+\a \sum_{j=1}^p |\b_j|
++
+\frac{1-\a}{2}\sum_{j=1}^p \b_j^2
+}
+}
+$$
 
 ```{r}
 library(glmnet)
