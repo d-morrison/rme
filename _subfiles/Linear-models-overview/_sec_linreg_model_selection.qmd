@@ -55,6 +55,33 @@ forest fires $\rightarrow$ air pollution,
 and both forest fires and air pollution $\rightarrow$ deaths
 [@dobson4e, §6.3.3].
 
+```{r}
+#| label: fig-dag-heat-deaths
+#| fig-cap: DAG for the high temperatures and mortality example.
+#| fig-alt: DAG linking high temperatures, blackouts,
+#|   forest fires, air pollution, and deaths.
+#| echo: false
+dag_heat_deaths <- ggdag::dagify(
+  D ~ T + F + P,
+  B ~ T,
+  F ~ T,
+  P ~ F,
+  exposure = "T",
+  outcome = "D",
+  labels = c(
+    T = "High temperatures",
+    D = "Deaths",
+    B = "Blackouts",
+    F = "Forest fires",
+    P = "Air pollution"
+  )
+)
+
+dag_heat_deaths |>
+  ggdag::ggdag() +
+  ggdag::theme_dag()
+```
+
 If our estimand is the total effect
 of high temperatures on deaths,
 then blackouts,
@@ -91,6 +118,32 @@ Including humidity in the regression
 can therefore induce misleading associations
 and bias weather-effect estimates
 [@dobson4e, §6.3.3].
+
+```{r}
+#| label: fig-dag-salmonellosis-weather
+#| fig-cap: DAG for the salmonellosis and weather example.
+#| fig-alt: DAG linking season, temperature, rainfall,
+#|   humidity, test change, and salmonellosis.
+#| echo: false
+dag_salmonellosis_weather <- ggdag::dagify(
+  S ~ T + R + C,
+  H ~ T + R,
+  T ~ Se,
+  R ~ Se,
+  labels = c(
+    S = "Salmonellosis",
+    T = "Temperature",
+    R = "Rainfall",
+    H = "Humidity",
+    C = "Test change",
+    Se = "Season"
+  )
+)
+
+dag_salmonellosis_weather |>
+  ggdag::ggdag() +
+  ggdag::theme_dag()
+```
 
 The same DAG can include
 a "change in test" indicator
