@@ -55,6 +55,7 @@ jobs:
           R CMD INSTALL .
 
       - name: Install TinyTeX packages required for PDF rendering
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
         run: |
           Rscript -e "tinytex::tlmgr_repo('https://mirror.ctan.org/systems/texlive/tlnet')"
           Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
@@ -67,9 +68,17 @@ jobs:
           restore-keys: |
             quarto-freeze-${{ runner.os }}-
 
-      - name: Render
+      - name: Render html
         if: github.event.action != 'closed' # skip the build if the PR has been closed
-        uses: quarto-dev/quarto-actions/render@v2
+        run: quarto render --to html
+
+      - name: Render revealjs
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
+        run: quarto render --to revealjs
+
+      - name: Render pdf
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
+        run: quarto render --to pdf
 
       - name: list files
         if: github.event.action != 'closed'
