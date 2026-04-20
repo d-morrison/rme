@@ -297,20 +297,6 @@ because the disease prevalence is relatively low (7%).
 
 :::
 
-# Random variables
-
-## Binary variables {#sec-binary-vars}
-
-{{< include binary-vars.qmd >}}
-
----
-
-## Count variables {#sec-count-vars}
-
-{{< include count-vars.qmd >}}
-
----
-
 # Key probability distributions
 
 ---
@@ -564,6 +550,16 @@ For any two random variables $X$ and $Y$:
 
 $$\E{Y} = \E{\E{Y \mid X}}$$
 
+::: notes
+
+Alternate names for this identity include:
+the **tower rule**,
+the **tower property**,
+the **law of total expectation**,
+and the **smoothing theorem**.
+
+:::
+
 :::
 
 ---
@@ -607,6 +603,63 @@ where the third equality exchanges the order of integration by Fubini's theorem,
 and the fourth equality uses
 $\int_{x} \p(Y=y \mid X=x) \cd \p(X=x)\, dx = \int_{x} \p(X=x, Y=y)\, dx = \p(Y=y)$
 (marginalization of the joint density).
+
+:::
+
+---
+
+:::{#thm-conditional-lie}
+### Conditional law of iterated expectations
+
+For random variables $X$, $Y$, and $Z$:
+
+$$\E{Y \mid Z} = \E{\E{Y \mid X,Z} \mid Z}$$
+
+::: notes
+
+This is the tower rule
+applied conditionally on $Z$.
+
+:::
+
+:::
+
+---
+
+::: proof
+
+For each fixed value $z$ with positive probability or density:
+
+**Discrete case.**
+Conditioning on $Z=z$,
+and applying the law of total probability
+to the partition $\{X=x : x \in \rangef{X}\}$
+under the conditional distribution given $Z=z$:
+
+$$
+\ba
+\E{\E{Y \mid X,Z} \mid Z=z}
+&= \sum_{x \in \rangef{X}} \E{Y \mid X=x,Z=z} \cd \P(X=x \mid Z=z)
+\\&= \E{Y \mid Z=z}
+\ea
+$$
+
+**Continuous case.**
+Conditioning on $Z=z$,
+and integrating over $X$
+under the conditional density $\p(X=x \mid Z=z)$:
+
+$$
+\ba
+\E{\E{Y \mid X,Z} \mid Z=z}
+&= \int_{x \in \rangef{X}} \E{Y \mid X=x,Z=z} \cd \p(X=x \mid Z=z)\, dx
+\\&= \E{Y \mid Z=z}
+\ea
+$$
+
+Therefore,
+as random variables of $Z$,
+$\E{Y \mid Z} = \E{\E{Y \mid X,Z} \mid Z}$.
 
 :::
 
@@ -740,6 +793,114 @@ $$
 
 ---
 
+:::{#thm-total-variance}
+### Law of total variance
+
+For random variables $X$ and $Y$:
+
+$$\Var{Y} = \E{\Var{Y \mid X}} + \Var{\E{Y \mid X}}$$
+
+where
+$\Var{Y \mid X} \eqdef \E{(Y-\E{Y \mid X})^2 \mid X}$.
+
+::: notes
+
+Alternate names include:
+the **conditional variance formula**,
+**Eve's law**,
+and the **variance decomposition formula**.
+
+:::
+
+:::
+
+---
+
+::: proof
+
+Write
+$Y-\E{Y} = \paren{Y-\E{Y \mid X}} + \paren{\E{Y \mid X}-\E{Y}}$.
+Then:
+
+$$
+\ba
+\sqf{Y-\E{Y}}
+&= \sqf{Y-\E{Y \mid X}}
+  + \sqf{\E{Y \mid X}-\E{Y}}
+  + 2\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}
+\ea
+$$
+
+Taking expectation:
+
+$$
+\ba
+\Var{Y}
+&= \E{\sqf{Y-\E{Y \mid X}}}
+  + \E{\sqf{\E{Y \mid X}-\E{Y}}}
+\\&\quad
+  + 2\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+\ea
+$$
+
+For the cross-term:
+
+**Discrete case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+&= \sum_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Y \mid X}-\E{Y}}
+     \mid X=x
+   }
+   \cd \P(X=x)
+\\&= \sum_{x \in \rangef{X}}
+   \paren{\E{Y \mid X=x}-\E{Y}}
+   \cd \E{Y-\E{Y \mid X=x}\mid X=x}
+   \cd \P(X=x)
+\\&= 0
+\ea
+$$
+
+**Continuous case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+&= \int_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Y \mid X}-\E{Y}}
+     \mid X=x
+   }
+   \cd \p(X=x)\, dx
+\\&= \int_{x \in \rangef{X}}
+   \paren{\E{Y \mid X=x}-\E{Y}}
+   \cd \E{Y-\E{Y \mid X=x}\mid X=x}
+   \cd \p(X=x)\, dx
+\\&= 0
+\ea
+$$
+
+Therefore:
+
+$$
+\ba
+\Var{Y}
+&= \E{\sqf{Y-\E{Y \mid X}}}
+  + \E{\sqf{\E{Y \mid X}-\E{Y}}}
+\\&= \E{\Var{Y \mid X}}
+  + \Var{\E{Y \mid X}}
+\ea
+$$
+
+:::
+
+---
+
 ::: {#def-precision}
 ### Precision
 
@@ -778,8 +939,122 @@ $$\Cov{X,Y}= \E{XY} - \E{X} \E{Y}$$
 
 ---
 
+:::{#thm-total-cov}
+### Law of total covariance
+
+For random variables $X$, $Y$, and $Z$:
+
+$$\Cov{Y,Z} = \E{\Cov{Y,Z \mid X}} + \Cov{\E{Y \mid X}, \E{Z \mid X}}$$
+
+where
+$\Cov{Y,Z \mid X} \eqdef \E{(Y-\E{Y \mid X})(Z-\E{Z \mid X}) \mid X}$.
+
+::: notes
+
+Alternate names include:
+the **covariance decomposition formula**
+and the **conditional covariance formula**.
+
+:::
+
+:::
+
+---
+
 :::{.proof}
-Left to the reader.
+Write:
+
+$$
+\ba
+Y-\E{Y}
+&= \paren{Y-\E{Y \mid X}} + \paren{\E{Y \mid X}-\E{Y}}
+\\
+Z-\E{Z}
+&= \paren{Z-\E{Z \mid X}} + \paren{\E{Z \mid X}-\E{Z}}
+\ea
+$$
+
+Then:
+
+$$
+\ba
+\Cov{Y,Z}
+&= \E{\paren{Y-\E{Y}}\paren{Z-\E{Z}}}
+\\&= \E{\paren{Y-\E{Y \mid X}}\paren{Z-\E{Z \mid X}}}
+\\&\quad
+  + \E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+\\&\quad
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}
+\\&\quad
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{\E{Z \mid X}-\E{Z}}}
+\ea
+$$
+
+For the two mixed terms:
+
+**Discrete case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+&= \sum_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Z \mid X}-\E{Z}}
+     \mid X=x
+   }
+   \cd \P(X=x)
+\\&= \sum_{x \in \rangef{X}}
+   \paren{\E{Z \mid X=x}-\E{Z}}
+   \cd \E{Y-\E{Y \mid X=x} \mid X=x}
+   \cd \P(X=x)
+\\&= 0
+\ea
+$$
+
+and similarly:
+
+$$
+\E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}=0.
+$$
+
+**Continuous case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+&= \int_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Z \mid X}-\E{Z}}
+     \mid X=x
+   }
+   \cd \p(X=x)\, dx
+\\&= \int_{x \in \rangef{X}}
+   \paren{\E{Z \mid X=x}-\E{Z}}
+   \cd \E{Y-\E{Y \mid X=x} \mid X=x}
+   \cd \p(X=x)\, dx
+\\&= 0
+\ea
+$$
+
+and similarly:
+
+$$
+\E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}=0.
+$$
+
+Hence:
+
+$$
+\ba
+\Cov{Y,Z}
+&= \E{\paren{Y-\E{Y \mid X}}\paren{Z-\E{Z \mid X}}}
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{\E{Z \mid X}-\E{Z}}}
+\\&= \E{\Cov{Y,Z \mid X}}
+  + \Cov{\E{Y \mid X}, \E{Z \mid X}}
+\ea
+$$
 :::
 
 ---
@@ -797,8 +1072,9 @@ $$\Cov{X,X} = \Var{X}$$
 :::{.proof}
 $$
 \ba
-\Cov{X,X} &= E[XX] - E[X]E[X] 
-\\ &= E[X^2]-(E[X])^2
+\Cov{X,X}
+&= \E{XX} - \E{X}\E{X}
+\\&= \E{X^2} - \sqf{\E{X}}
 \\ &= \Var{X}
 \ea
 $$
