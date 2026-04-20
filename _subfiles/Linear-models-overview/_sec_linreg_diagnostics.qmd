@@ -282,7 +282,7 @@ $$
 Let $\resid_i \eqdef y_i - \hat y_i$ where $\hat y_i \eqdef \hExpf{Y_i|\vX=\vxi}$
 (the @def-fitted-value of $y_i$).
 If $\hat y_i$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
-estimator of the mean $\Expf{Y_i}$, then:
+estimator of the conditional mean $\Expf{Y_i|\vX=\vxi}$, then:
 
 $$\Ef{\resid_i} = 0$$ {#eq-mean-resid-unbiased}
 
@@ -391,19 +391,21 @@ Under these conditions, $\max_i h_{ii} \to 0$ as $n \to \infty$.
 ---
 
 :::{#thm-resid-gaussian}
-#### Marginal distribution of residuals in Gaussian models
+#### Conditional distribution of residuals in Gaussian models
 
 In a Gaussian linear regression model,
-the residuals $\resid_i$ are marginally normally distributed:
+the residuals $\resid_i$,
+conditional on the design matrix $\mX$,
+are normally distributed:
 
-$$\resid_i \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
+$$\resid_i \mid \mX \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
 
 where $h_{ii}$ is the $i$-th diagonal element of the hat matrix.
 Under the regularity conditions described in @thm-resid-unbiased,
 $h_{ii} \to 0$ as $n \to \infty$, so $\ss(1-h_{ii}) \approx \ss$ for large $n$;
-replacing the unknown $\ss$ with its estimate $\hat\ss$ gives:
+replacing the unknown $\ss$ with its estimate $\hs^2$ gives:
 
-$$\resid_i \approx \Normal(0, \hat\ss)$$ {#eq-resid-dist-approx}
+$$\resid_i \approx \Normal(0, \hs^2)$$ {#eq-resid-dist-approx}
 
 :::
 
@@ -420,10 +422,13 @@ $$\resid_i = y_i - \hat y_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, y_j$$
 where $\delta_{ij}$ is the Kronecker delta
 ($\delta_{ij} = 1$ if $i = j$, else $\delta_{ij} = 0$).
 
-Since $y_1, \ldots, y_n$ are independent Gaussian random variables
-(by the Gaussian model assumption),
-and linear combinations of independent Gaussians are Gaussian,
-$\resid_i$ is normally distributed.
+Given $\mX$,
+the observations $y_1, \ldots, y_n$ are independent Gaussian random variables
+by the Gaussian model assumption.
+Therefore,
+conditional on $\mX$,
+the residual $\resid_i$ is a linear combination of independent Gaussians,
+so $\resid_i$ is Gaussian.
 
 The mean and variance follow from @thm-resid-unbiased:
 
@@ -434,7 +439,7 @@ $$
 \ea
 $$
 
-Therefore $\resid_i \sim \Normal(0, \ss(1 - h_{ii}))$.
+Therefore $\resid_i \mid \mX \sim \Normal(0, \ss(1 - h_{ii}))$.
 
 :::
 
