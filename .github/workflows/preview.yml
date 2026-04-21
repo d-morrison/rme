@@ -92,6 +92,15 @@ jobs:
         if: github.event.action != 'closed' # skip the build if the PR has been closed
         run: quarto render --to html
 
+      - name: Copy docx artifacts into preview site
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:docx')
+        shell: bash
+        run: |
+          shopt -s nullglob
+          for docx_file in *.docx; do
+            cp "$docx_file" _site/
+          done
+
       - name: list files
         if: github.event.action != 'closed'
         shell: bash
