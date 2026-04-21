@@ -45,13 +45,14 @@ jobs:
         shell: bash
 
       - name: Render
-        uses: quarto-dev/quarto-actions/render@HEAD
+        uses: quarto-dev/quarto-actions/render@v2
 
       - name: Save Quarto freeze
+        if: github.ref_name == 'main'
         uses: actions/cache/save@v4
         with:
           path: _freeze
-          key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.ref_name }}-${{ github.sha }}
+          key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-main-${{ github.sha }}
 
       - name: Deploy to gh-pages (preserving PR previews)
         uses: JamesIves/github-pages-deploy-action@v4.8.0
