@@ -46,13 +46,17 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev
+          sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev libglpk-dev
 
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Install local package
         run: |
           R CMD INSTALL .
+
+      - name: Install ggdag for DAG preview chunks
+        run: |
+          Rscript -e "install.packages('ggdag')"
 
       - name: Install TinyTeX packages required for PDF rendering
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
