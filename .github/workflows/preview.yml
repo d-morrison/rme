@@ -6,6 +6,7 @@ on:
       - opened
       - reopened
       - synchronize
+      - labeled
       - closed
     paths:
       - 'man/**'
@@ -72,21 +73,26 @@ jobs:
         uses: actions/cache@v5
         with:
           path: _freeze
-          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.sha }}
           restore-keys: |
+            quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
             quarto-freeze-${{ runner.os }}-
 
-      - name: Render html
-        if: github.event.action != 'closed' # skip the build if the PR has been closed
-        run: quarto render --to html
-
-      - name: Render revealjs
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
-        run: quarto render --to revealjs
-
-      - name: Render pdf
+      - name: Render pdf (website profile)
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
-        run: quarto render --to pdf
+        run: quarto render --profile website --to pdf
+
+      - name: Render docx (website profile)
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:docx')
+        run: quarto render --profile website --to docx
+
+      - name: Render revealjs (website profile)
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
+        run: quarto render --profile website --to revealjs
+
+      - name: Render html (website profile)
+        if: github.event.action != 'closed' # skip the build if the PR has been closed
+        run: quarto render --profile website --to html --no-clean
 
       - name: list files
         if: github.event.action != 'closed'
