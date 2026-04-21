@@ -58,6 +58,14 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Decomposing content into subfiles
+
+When splitting a chapter or formula sheet into include subfiles,
+keep the top-level section headers in the main `.qmd` file.
+Move only the section body content into the subfile.
+This keeps document structure visible in the parent file
+and makes partial includes easier to compose consistently.
+
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
@@ -95,6 +103,19 @@ When parenthetical references or short asides are supplementary
 (for example, `c.f. @dunn2018generalized §2.10.3`),
 place them in a `::: notes` div
 instead of leaving them inline in the main narrative.
+
+## Fenced Divs and List Indentation in Quarto
+
+Do not indent `:::` fenced div markers
+as if they were list-continuation content.
+In this project,
+indented fenced div markers can render as literal `:::`
+instead of being parsed as div blocks.
+
+When you need a notes/callout div related to a list item,
+end the list first,
+then start the div at the left margin
+with blank lines around the fenced block.
 
 Example:
 ```r

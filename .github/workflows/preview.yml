@@ -37,7 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tinytex: true
+          tinytex: false
 
       - uses: r-lib/actions/setup-r@HEAD
         with:
@@ -54,7 +54,16 @@ jobs:
         run: |
           R CMD INSTALL .
 
+      - name: Set up TinyTeX
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
+        uses: quarto-dev/quarto-actions/setup@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tinytex: true
+
       - name: Install TinyTeX packages required for PDF rendering
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
         run: |
           Rscript -e "tinytex::tlmgr_repo('https://mirror.ctan.org/systems/texlive/tlnet')"
           Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
@@ -67,9 +76,17 @@ jobs:
           restore-keys: |
             quarto-freeze-${{ runner.os }}-
 
-      - name: Render
+      - name: Render html
         if: github.event.action != 'closed' # skip the build if the PR has been closed
-        uses: quarto-dev/quarto-actions/render@v2
+        run: quarto render --to html
+
+      - name: Render revealjs
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
+        run: quarto render --to revealjs
+
+      - name: Render pdf
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
+        run: quarto render --to pdf
 
       - name: list files
         if: github.event.action != 'closed'
