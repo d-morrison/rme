@@ -121,6 +121,19 @@ When parenthetical references or short asides are supplementary
 place them in a `::: notes` div
 instead of leaving them inline in the main narrative.
 
+## Fenced Divs and List Indentation in Quarto
+
+Do not indent `:::` fenced div markers
+as if they were list-continuation content.
+In this project,
+indented fenced div markers can render as literal `:::`
+instead of being parsed as div blocks.
+
+When you need a notes/callout div related to a list item,
+end the list first,
+then start the div at the left margin
+with blank lines around the fenced block.
+
 Example:
 ```r
 # Good: Each instruction on its own line
