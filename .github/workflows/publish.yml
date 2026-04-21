@@ -44,17 +44,14 @@ jobs:
           R CMD INSTALL .
         shell: bash
 
-      - name: Cache Quarto freeze
-        uses: actions/cache@v5
-        with:
-          path: _freeze
-          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.sha }}
-          restore-keys: |
-            quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
-            quarto-freeze-${{ runner.os }}-
-
       - name: Render
         uses: quarto-dev/quarto-actions/render@HEAD
+
+      - name: Save Quarto freeze
+        uses: actions/cache/save@v4
+        with:
+          path: _freeze
+          key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.ref_name }}-${{ github.sha }}
 
       - name: Deploy to gh-pages (preserving PR previews)
         uses: JamesIves/github-pages-deploy-action@v4.8.0
