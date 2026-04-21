@@ -81,26 +81,21 @@ jobs:
             quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
             quarto-freezer-${{ runner.os }}-
 
-      - name: Render requested formats
+      - name: Render pdf (website profile)
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
+        run: quarto render --profile website --to pdf
+
+      - name: Render docx (website profile)
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:docx')
+        run: quarto render --profile website --to docx
+
+      - name: Render revealjs (website profile)
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
+        run: quarto render --profile website --to revealjs
+
+      - name: Render html (website profile)
         if: github.event.action != 'closed' # skip the build if the PR has been closed
-        shell: bash
-        run: |
-          FORMATS="html"
-
-          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'preview:revealjs') }}" == "true" ]]; then
-            FORMATS="${FORMATS},revealjs"
-          fi
-
-          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'preview:pdf') }}" == "true" ]]; then
-            FORMATS="${FORMATS},pdf"
-          fi
-
-          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'preview:docx') }}" == "true" ]]; then
-            FORMATS="${FORMATS},docx"
-          fi
-
-          echo "Rendering formats: ${FORMATS}"
-          quarto render --profile website --to "${FORMATS}"
+        run: quarto render --profile website --to html --no-clean
 
       - name: list files
         if: github.event.action != 'closed'
