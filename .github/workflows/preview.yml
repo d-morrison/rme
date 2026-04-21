@@ -76,10 +76,6 @@ jobs:
           restore-keys: |
             quarto-freeze-${{ runner.os }}-
 
-      - name: Render revealjs (website profile)
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
-        run: quarto render --profile website --to revealjs
-
       - name: Render pdf (website profile)
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
         run: quarto render --profile website --to pdf
@@ -87,6 +83,10 @@ jobs:
       - name: Render html (website profile)
         if: github.event.action != 'closed' # skip the build if the PR has been closed
         run: quarto render --profile website --to html
+
+      - name: Render revealjs (website profile)
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
+        run: quarto render --profile website --to revealjs
 
       - name: list files
         if: github.event.action != 'closed'
