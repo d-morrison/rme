@@ -76,10 +76,6 @@ jobs:
           restore-keys: |
             quarto-freeze-${{ runner.os }}-
 
-      - name: Render html
-        if: github.event.action != 'closed' # skip the build if the PR has been closed
-        run: quarto render --to html
-
       - name: Render revealjs
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
         run: quarto render --to revealjs
@@ -91,6 +87,10 @@ jobs:
       - name: Render docx
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:docx')
         run: quarto render --to docx
+
+      - name: Render html
+        if: github.event.action != 'closed' # skip the build if the PR has been closed
+        run: quarto render --to html
 
       - name: list files
         if: github.event.action != 'closed'
