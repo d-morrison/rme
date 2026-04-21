@@ -58,6 +58,31 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Subfile Structure Convention
+
+Quarto subfiles (files under `_subfiles/`) should **not** begin with a section heading.
+The heading for a subfile's content should be placed in the **parent** file that includes the subfile,
+immediately before the `{{< include ... >}}` shortcode.
+
+**Correct** — heading in the parent file:
+```markdown
+## My Section Title {#sec-my-section}
+
+{{< include _subfiles/chapter/_sec_my_content.qmd >}}
+```
+
+**Incorrect** — heading inside the subfile:
+```markdown
+<!-- inside _subfiles/chapter/_sec_my_content.qmd -->
+## My Section Title {#sec-my-section}
+
+Content starts here...
+```
+
+This keeps the document hierarchy centralized in the parent file,
+makes heading levels easy to audit,
+and avoids nesting errors when the same subfile might be included at different depths.
+
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
