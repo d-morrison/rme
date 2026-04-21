@@ -86,13 +86,13 @@ jobs:
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:docx')
         run: quarto render --profile website --to docx
 
-      - name: Render html (website profile)
-        if: github.event.action != 'closed' # skip the build if the PR has been closed
-        run: quarto render --profile website --to html
-
       - name: Render revealjs (website profile)
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
         run: quarto render --profile website --to revealjs
+
+      - name: Render html (website profile)
+        if: github.event.action != 'closed' # skip the build if the PR has been closed
+        run: quarto render --profile website --to html --no-clean
 
       - name: list files
         if: github.event.action != 'closed'
