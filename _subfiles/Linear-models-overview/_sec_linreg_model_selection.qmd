@@ -122,6 +122,23 @@ idx_remaining <- setdiff(seq_len(n), idx_train)
 idx_valid <- sample(idx_remaining, size = n_valid)
 idx_test <- setdiff(idx_remaining, idx_valid)
 
+split_sizes <- tibble::tibble(
+  split = c("training", "validation", "test"),
+  n = c(length(idx_train), length(idx_valid), length(idx_test))
+)
+```
+
+:::{#tbl-train-validation-test-split-sizes}
+```{r}
+split_sizes
+```
+
+Sizes of the training,
+validation,
+and test splits
+:::
+
+```{r}
 train_dat <- mtcars[idx_train, ]
 valid_dat <- mtcars[idx_valid, ]
 test_dat <- mtcars[idx_test, ]
@@ -154,11 +171,6 @@ candidate_models <- list(
 
 chosen_model <- candidate_models[[chosen_model_name]]
 
-split_sizes <- tibble::tibble(
-  split = c("training", "validation", "test"),
-  n = c(length(idx_train), length(idx_valid), length(idx_test))
-)
-
 performance_comparison <- tibble::tibble(
   split = c("validation", "test"),
   model = chosen_model_name,
@@ -167,10 +179,16 @@ performance_comparison <- tibble::tibble(
     compute_rmse(chosen_model, test_dat)
   )
 )
+```
 
-split_sizes
+:::{#tbl-train-validation-test-rmse}
+```{r}
 performance_comparison
 ```
+
+Validation and test RMSE
+for the chosen model
+:::
 
 :::
 
