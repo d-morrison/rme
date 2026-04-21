@@ -69,8 +69,11 @@ eoc_tg_grid <-
   expand_grid(
     dose = seq(min(eoc_tg$dose), max(eoc_tg$dose), length.out = 100),
     supp = levels(eoc_tg$supp)
-  ) |>
-  mutate(len_hat = predict(eoc_tg_add, newdata = cur_data()))
+  )
+
+eoc_tg_grid <-
+  eoc_tg_grid |>
+  mutate(len_hat = predict(eoc_tg_add, newdata = eoc_tg_grid))
 
 ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
   geom_point(alpha = 0.7) +
@@ -162,8 +165,11 @@ eoc_tg_grid2 <-
   expand_grid(
     dose = seq(min(eoc_tg$dose), max(eoc_tg$dose), length.out = 100),
     supp = levels(eoc_tg$supp)
-  ) |>
-  mutate(len_hat = predict(eoc_tg_int, newdata = cur_data()))
+  )
+
+eoc_tg_grid2 <-
+  eoc_tg_grid2 |>
+  mutate(len_hat = predict(eoc_tg_int, newdata = eoc_tg_grid2))
 
 ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
   geom_point(alpha = 0.7) +
@@ -270,10 +276,13 @@ eoc_plos_grid <-
       length.out = 100
     )
   ) |>
+  mutate(authors_centered = authors - 10)
+
+eoc_plos_grid <-
+  eoc_plos_grid |>
   mutate(
-    authors_centered = authors - 10,
-    fit_original = predict(eoc_plos_orig, newdata = cur_data()),
-    fit_centered = predict(eoc_plos_cent, newdata = cur_data())
+    fit_original = predict(eoc_plos_orig, newdata = eoc_plos_grid),
+    fit_centered = predict(eoc_plos_cent, newdata = eoc_plos_grid)
   )
 
 ggplot(eoc_plos, aes(x = authors, y = nchar)) +
