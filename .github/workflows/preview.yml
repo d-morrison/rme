@@ -37,7 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tinytex: true
+          tinytex: false
 
       - uses: r-lib/actions/setup-r@HEAD
         with:
@@ -53,6 +53,14 @@ jobs:
       - name: Install local package
         run: |
           R CMD INSTALL .
+
+      - name: Set up TinyTeX
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
+        uses: quarto-dev/quarto-actions/setup@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tinytex: true
 
       - name: Install TinyTeX packages required for PDF rendering
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
