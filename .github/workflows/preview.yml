@@ -6,6 +6,7 @@ on:
       - opened
       - reopened
       - synchronize
+      - labeled
       - closed
     paths:
       - 'man/**'
@@ -72,13 +73,18 @@ jobs:
         uses: actions/cache@v5
         with:
           path: _freeze
-          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.sha }}
           restore-keys: |
+            quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
             quarto-freeze-${{ runner.os }}-
 
       - name: Render pdf (website profile)
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
         run: quarto render --profile website --to pdf
+
+      - name: Render docx (website profile)
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:docx')
+        run: quarto render --profile website --to docx
 
       - name: Render html (website profile)
         if: github.event.action != 'closed' # skip the build if the PR has been closed
