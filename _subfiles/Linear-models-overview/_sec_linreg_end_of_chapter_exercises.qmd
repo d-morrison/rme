@@ -48,12 +48,19 @@ Which interpretations depend on the reference level
 :::
 
 ```{r}
-#| label: fig-eoc-lm-main-effects
-#| fig-cap: "ToothGrowth data with additive (parallel-lines) fit"
-#| code-fold: false
 eoc_tg <-
   ToothGrowth |>
+  as_tibble() |>
   mutate(supp = relevel(supp, ref = "OJ"))
+
+eoc_tg
+glimpse(eoc_tg)
+```
+
+```{r}
+#| label: fig-eoc-lm-main-effects
+#| fig-cap: "ToothGrowth data with additive (parallel-lines) fit"
+#| code-fold: true
 
 eoc_tg_add <-
   lm(len ~ dose + supp, data = eoc_tg)
@@ -147,7 +154,7 @@ $\b_{XZ}$.
 ```{r}
 #| label: fig-eoc-lm-interaction
 #| fig-cap: "ToothGrowth data with interaction (non-parallel-lines) fit"
-#| code-fold: false
+#| code-fold: true
 eoc_tg_int <-
   lm(len ~ dose * supp, data = eoc_tg)
 
@@ -233,14 +240,21 @@ $\b_X$.
 :::
 
 ```{r}
-#| label: fig-eoc-lm-centering
-#| fig-cap: "PLOS data with original and centered parameterizations"
-#| code-fold: false
 data(PLOS, package = "dobson")
 
 eoc_plos <-
   PLOS |>
+  as_tibble() |>
   mutate(authors_centered = authors - 10)
+
+eoc_plos
+glimpse(eoc_plos)
+```
+
+```{r}
+#| label: fig-eoc-lm-centering
+#| fig-cap: "PLOS data with original and centered parameterizations"
+#| code-fold: true
 
 eoc_plos_orig <-
   lm(nchar ~ authors, data = eoc_plos)
@@ -337,17 +351,22 @@ State one practical follow-up step.
 :::
 
 ```{r}
-#| label: fig-eoc-lm-diagnostics
-#| fig-cap: "Diagnostic plots for linear model fit to mtcars data"
-#| code-fold: false
-#| layout-ncol: 2
-#| fig-subcap:
-#| - "Residuals versus fitted"
-#| - "Normal Q-Q"
 eoc_mtcars <-
   mtcars |>
   as_tibble()
 
+eoc_mtcars
+glimpse(eoc_mtcars)
+```
+
+```{r}
+#| label: fig-eoc-lm-diagnostics
+#| fig-cap: "Diagnostic plots for linear model fit to mtcars data"
+#| code-fold: true
+#| layout-ncol: 2
+#| fig-subcap:
+#| - "Residuals versus fitted"
+#| - "Normal Q-Q"
 eoc_mtcars_fit <-
   lm(mpg ~ wt + hp, data = eoc_mtcars)
 

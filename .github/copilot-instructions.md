@@ -109,6 +109,15 @@ Example:
 
 ## Quarto Code Chunk Options
 
+Default to
+`#| code-fold: true`
+for chunks that create figures or tables.
+Only set
+`#| code-fold: false`
+for those chunks
+if reviewers explicitly request it
+or if the surrounding narrative requires visible code to follow the argument.
+
 When the code **and** its console output are both needed for the surrounding narrative to make sense, use `#| code-fold: false` so that neither is hidden:
 
 ```qmd
