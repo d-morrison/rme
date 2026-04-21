@@ -105,13 +105,12 @@ The example below
 uses R's built-in `mtcars` dataset
 ($n=32$ cars)
 to predict fuel efficiency (`mpg`)
-from vehicle weight (`wt`)
-and horsepower (`hp`).
+from vehicle weight (`wt`).
 It uses one random split
-to compare an additive model
-(`mpg ~ wt + hp`)
-and an interaction model
-(`mpg ~ wt * hp`)
+to compare a linear model
+(`mpg ~ wt`)
+and a quadratic model
+(`mpg ~ wt + I(wt^2)`)
 on a validation set,
 then reports the chosen model's test RMSE
 on untouched test data
@@ -151,18 +150,18 @@ train_dat <- mtcars[idx_train, ]
 valid_dat <- mtcars[idx_valid, ]
 test_dat <- mtcars[idx_test, ]
 
-model_additive <- lm(mpg ~ wt + hp, data = train_dat)
-model_interaction <- lm(mpg ~ wt * hp, data = train_dat)
+model_linear <- lm(mpg ~ wt, data = train_dat)
+model_quadratic <- lm(mpg ~ wt + I(wt^2), data = train_dat)
 
 compute_rmse <- function(model, data) {
   sqrt(mean((data$mpg - predict(model, newdata = data))^2))
 }
 
 validation_results <- tibble::tibble(
-  model = c("additive", "interaction"),
+  model = c("linear", "quadratic"),
   validation_RMSE = c(
-    compute_rmse(model_additive, valid_dat),
-    compute_rmse(model_interaction, valid_dat)
+    compute_rmse(model_linear, valid_dat),
+    compute_rmse(model_quadratic, valid_dat)
   )
 )
 
@@ -173,15 +172,15 @@ chosen_model_name <-
   dplyr::pull(model)
 
 model_labels <- c(
-  additive = "additive model",
-  interaction = "interaction model"
+  linear = "linear model",
+  quadratic = "quadratic model"
 )
 
 chosen_model_label <- model_labels[[chosen_model_name]]
 
 candidate_models <- list(
-  additive = model_additive,
-  interaction = model_interaction
+  linear = model_linear,
+  quadratic = model_quadratic
 )
 
 chosen_model <- candidate_models[[chosen_model_name]]
@@ -195,6 +194,49 @@ performance_comparison <- tibble::tibble(
   )
 )
 ```
+
+:::{#fig-linear-model-superimposed}
+```{r}
+#| fig-cap: ""
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  main = "Linear model superimposed on training data",
+  pch = 19,
+  col = "grey40"
+)
+abline(model_linear, col = "blue", lwd = 2)
+```
+
+Linear model fit
+superimposed on the training data
+:::
+
+:::{#fig-quadratic-model-superimposed}
+```{r}
+#| fig-cap: ""
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  main = "Quadratic model superimposed on training data",
+  pch = 19,
+  col = "grey40"
+)
+wt_grid <- seq(min(train_dat$wt), max(train_dat$wt), length.out = 200)
+quadratic_pred <- predict(
+  model_quadratic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, quadratic_pred, col = "blue", lwd = 2)
+```
+
+Quadratic model fit
+superimposed on the training data
+:::
 
 :::{#tbl-train-validation-results}
 ```{r}
