@@ -133,7 +133,9 @@ Example:
 When introducing or editing formal statistical definitions in `.qmd` files:
 
 - Use a definition div with an id beginning `#def-`
-- Put the definition title in a `####` heading inside the div
+- Put the definition title in a heading inside the div
+  and choose the heading level to match the surrounding section depth
+  (for example, `####` or `#####`)
 - If a definition uses other statistical terms
   (for example, empirical CDF),
   ensure those terms also have formal `#def-` div definitions
