@@ -45,7 +45,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
-          submodules: recursive
+          submodules: false
+
+      - name: Checkout submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.SUBMODULES_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
       
       # Install system dependencies required for R packages
       # See .github/copilot-instructions.md "System Dependencies" and "JAGS Dependencies" sections
