@@ -153,6 +153,24 @@ Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
 
+## Quarto `df-print` behavior
+
+For this repository,
+configure Quarto YAML settings
+so data-frame printing is:
+- paged in HTML and RevealJS outputs
+- tibble-style in PDF and DOCX outputs
+
+When this configuration is in place,
+full dataset prints in exercises are expected behavior,
+not automatically a readability problem.
+
+If a maintainer claim
+(or any other claim)
+appears to conflict with the repository configuration or rendered output,
+verify it against the code and outputs
+and politely correct it with evidence.
+
 ## Landscape Tables in PDF
 
 When a table is too wide for portrait orientation in PDF,
