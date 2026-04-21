@@ -6,6 +6,7 @@ on:
       - opened
       - reopened
       - synchronize
+      - labeled
       - closed
     paths:
       - 'man/**'
@@ -72,21 +73,31 @@ jobs:
         uses: actions/cache@v5
         with:
           path: _freeze
-          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.sha }}
           restore-keys: |
+            quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
             quarto-freeze-${{ runner.os }}-
 
-      - name: Render html
+      - name: Render requested formats
         if: github.event.action != 'closed' # skip the build if the PR has been closed
-        run: quarto render --to html
+        shell: bash
+        run: |
+          FORMATS="html"
 
-      - name: Render revealjs
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
-        run: quarto render --to revealjs
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'preview:revealjs') }}" == "true" ]]; then
+            FORMATS="${FORMATS},revealjs"
+          fi
 
-      - name: Render pdf
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
-        run: quarto render --to pdf
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'preview:pdf') }}" == "true" ]]; then
+            FORMATS="${FORMATS},pdf"
+          fi
+
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'preview:docx') }}" == "true" ]]; then
+            FORMATS="${FORMATS},docx"
+          fi
+
+          echo "Rendering formats: ${FORMATS}"
+          quarto render --profile website --to "${FORMATS}"
 
       - name: list files
         if: github.event.action != 'closed'
