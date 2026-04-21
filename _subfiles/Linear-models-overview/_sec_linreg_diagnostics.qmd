@@ -279,17 +279,17 @@ $$
 #### General characteristics of residuals
 
 :::{#thm-resid-unbiased}
-Let $\resid_i \eqdef y_i - \hat y_i$ where $\hat y_i \eqdef \hExpf{Y_i|\vX=\vxi}$
-(the @def-fitted-value of $y_i$).
-If $\hat y_i$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
+Let $\resid_i \eqdef Y_i - \hat Y_i$ where $\hat Y_i \eqdef \hExpf{Y_i|\vX=\vxi}$
+(the @def-fitted-value of $Y_i$).
+If $\hat Y_i$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
 estimator of the conditional mean $\Expf{Y_i|\vX=\vxi}$, then:
 
-$$\Ef{\resid_i} = 0$$ {#eq-mean-resid-unbiased}
+$$\Ef{\resid_i \mid \mX} = 0$$ {#eq-mean-resid-unbiased}
 
 In a Gaussian linear regression model,
 the exact variance of the $i$-th residual is:
 
-$$\Var{\resid_i} = \ss(1 - h_{ii})$$ {#eq-var-resid-unbiased}
+$$\Var{\resid_i \mid \mX} = \ss(1 - h_{ii})$$ {#eq-var-resid-unbiased}
 
 where $h_{ii}$ is the $i$-th diagonal element of the **hat matrix**
 (also called the **projection matrix**,
@@ -305,7 +305,7 @@ where $\vxi$ is the vector of covariates for observation $i$
 (the $i$-th row of $\mX$, written as a column vector).
 Under standard regularity conditions (fixed $p$, asymptotically balanced design,
 and bounded covariate row norms),
-$h_{ii} \to 0$ as $n \to \infty$, so $\Var{\resid_i} \approx \ss$ for large $n$.
+$h_{ii} \to 0$ as $n \to \infty$, so $\Var{\resid_i \mid \mX} \approx \ss$ for large $n$.
 
 :::
 
@@ -318,9 +318,9 @@ $h_{ii} \to 0$ as $n \to \infty$, so $\Var{\resid_i} \approx \ss$ for large $n$.
 
 $$
 \ba
-\Ef{\resid_i} &= \Ef{y_i - \hat y_i}
-\\ &= \Ef{y_i} - \Ef{\hat y_i}
-\\ &= \Ef{y_i} - \Ef{y_i}
+\Ef{\resid_i \mid \mX} &= \Ef{Y_i - \hat Y_i \mid \mX}
+\\ &= \Ef{Y_i \mid \mX} - \Ef{\hat Y_i \mid \mX}
+\\ &= \Expf{Y_i|\vX=\vxi} - \Expf{Y_i|\vX=\vxi}
 \\ &= 0
 \ea
 $$
@@ -335,17 +335,18 @@ $$\hat{\vy} = \mX\hb = \mX\inv{\tp{\mX}\mX}\tp{\mX}\vy = \matr{H}\vy$$
 
 Therefore, the $i$-th fitted value is a linear combination of the observations:
 
-$$\hat y_i = [\matr{H}\vy]_i = \sum_{j=1}^n h_{ij} \, y_j$$ {#eq-fitted-linear-comb}
+$$\hat Y_i = [\matr{H}\vy]_i = \sum_{j=1}^n h_{ij} \, Y_j$$ {#eq-fitted-linear-comb}
 
 where $h_{ij} = [\matr{H}]_{ij}$.
-Using the independence of observations ($\Cov{y_i, y_j} = 0$ for $i \neq j$):
+Using the conditional independence of observations given $\mX$
+($\Cov{Y_i, Y_j \mid \mX} = 0$ for $i \neq j$):
 
 $$
 \ba
-\Cov{y_i, \hat y_i}
-&= \Cov{y_i, \textstyle\sum_j h_{ij} y_j}
-\\ &= \sum_j h_{ij} \Cov{y_i, y_j}
-\\ &= h_{ii} \Var{y_i}
+\Cov{Y_i, \hat Y_i \mid \mX}
+&= \Cov{Y_i, \textstyle\sum_j h_{ij} Y_j \mid \mX}
+\\ &= \sum_j h_{ij} \Cov{Y_i, Y_j \mid \mX}
+\\ &= h_{ii} \Var{Y_i \mid \mX}
 \\ &= h_{ii} \ss
 \ea
 $$
@@ -356,9 +357,9 @@ so $\sum_j h_{ij}^2 = [\matr{H}^2]_{ii} = [\matr{H}]_{ii} = h_{ii}$, giving:
 
 $$
 \ba
-\Var{\hat y_i}
-&= \Var{\textstyle\sum_j h_{ij} y_j}
-\\ &= \sum_j h_{ij}^2 \Var{y_j}
+\Var{\hat Y_i \mid \mX}
+&= \Var{\textstyle\sum_j h_{ij} Y_j \mid \mX}
+\\ &= \sum_j h_{ij}^2 \Var{Y_j \mid \mX}
 \\ &= \ss \sum_j h_{ij}^2
 \\ &= \ss \, h_{ii}
 \ea
@@ -368,9 +369,9 @@ Therefore:
 
 $$
 \ba
-\Var{\resid_i}
-&= \Var{y_i - \hat y_i}
-\\ &= \Var{y_i} + \Var{\hat y_i} - 2 \Cov{y_i, \hat y_i}
+\Var{\resid_i \mid \mX}
+&= \Var{Y_i - \hat Y_i \mid \mX}
+\\ &= \Var{Y_i \mid \mX} + \Var{\hat Y_i \mid \mX} - 2 \Cov{Y_i, \hat Y_i \mid \mX}
 \\ &= \ss + \ss \, h_{ii} - 2 \ss \, h_{ii}
 \\ &= \ss (1 - h_{ii})
 \ea
@@ -379,7 +380,7 @@ $$
 For large $n$,
 the leverage $h_{ii} = \tp{\vxi}\inv{\tp{\mX}\mX}\vxi \to 0$,
 meaning each observation has diminishing influence on its own fitted value,
-so $\Var{\resid_i} = \ss(1 - h_{ii}) \to \ss$.
+so $\Var{\resid_i \mid \mX} = \ss(1 - h_{ii}) \to \ss$.
 This limit holds under standard regularity conditions:
 fixed number of predictors $p$,
 asymptotically balanced design ($\frac{1}{n}\tp{\mX}\mX \to \Sigma$ for some positive definite $\Sigma$),
@@ -417,13 +418,13 @@ $$\resid_i \approx \Normal(0, \hs^2)$$ {#eq-resid-dist-approx}
 By @eq-fitted-linear-comb,
 the residual is a linear combination of the observations:
 
-$$\resid_i = y_i - \hat y_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, y_j$$
+$$\resid_i = Y_i - \hat Y_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, Y_j$$
 
 where $\delta_{ij}$ is the Kronecker delta
 ($\delta_{ij} = 1$ if $i = j$, else $\delta_{ij} = 0$).
 
 Given $\mX$,
-the observations $y_1, \ldots, y_n$ are independent Gaussian random variables
+the random variables $Y_1, \ldots, Y_n$ are conditionally independent Gaussians
 by the Gaussian model assumption.
 Therefore,
 conditional on $\mX$,
@@ -434,8 +435,8 @@ The mean and variance follow from @thm-resid-unbiased:
 
 $$
 \ba
-\Ef{\resid_i} &= 0
-\\ \Var{\resid_i} &= \ss(1 - h_{ii})
+\Ef{\resid_i \mid \mX} &= 0
+\\ \Var{\resid_i \mid \mX} &= \ss(1 - h_{ii})
 \ea
 $$
 
