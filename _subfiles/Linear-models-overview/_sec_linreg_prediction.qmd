@@ -1,0 +1,392 @@
+
+## Prediction for linear models
+
+:::{#def-predicted-value}
+### Predicted value
+
+In a regression model $\p(y|\vx)$, 
+the **predicted value** of $y$ given $\vx$ is the estimated mean of $Y$ given $\vX=\vx$:
+
+$$\hat y \eqdef \hE{Y|\vX=\vx}$$
+:::
+
+---
+
+For linear models, 
+the predicted value can be straightforwardly calculated 
+by multiplying each predictor value $x_j$ by its corresponding coefficient $\beta_j$ 
+and adding up the results:
+
+$$
+\begin{aligned}
+\hat y &= \hE{Y|\vX=\vx} \\
+&= \vx'\hat\beta \\
+&= \hat\beta_0\cdot 1 + \hat\beta_1 x_1 + ... + \hat\beta_p x_p
+\end{aligned}
+$$
+
+---
+
+## Example: prediction for the `birthweight` data
+
+```{r}
+x <- c(1, 1, 40)
+sum(x * coef(bw_lm1))
+```
+
+R has built-in functions for prediction:
+
+```{r}
+x <- tibble(age = 40, sex = "male")
+bw_lm1 |> predict(newdata = x)
+```
+
+If you don't provide `newdata`, 
+R will use the covariate values from the original dataset:
+
+```{r}
+predict(bw_lm1)
+```
+
+These special predictions are called the *fitted values* of the dataset:
+
+:::{#def-fitted-value}
+
+For a given dataset $(\vY, \mX)$ and corresponding fitted model $\p_{\hb}(\vy|\mx)$, 
+the **fitted value** of $y_i$ is 
+the predicted value of $y$ when $\vX=\vx_i$ using the estimate parameters $\hb$.
+
+:::
+
+R has an extra function to get these values:
+
+```{r}
+fitted(bw_lm1)
+```
+
+## Confidence intervals {#sec-se-fitted}
+
+Use `predict(se.fit = TRUE)` to compute SEs for predicted values:
+
+```{r}
+bw_lm1 |>
+  predict(
+    newdata = x,
+    se.fit = TRUE
+  )
+```
+
+The output of `predict.lm(se.fit = TRUE)` is a `list()`; 
+you can extract the elements with `$` or `magrittr::use_series()`:
+
+```{r}
+library(magrittr)
+bw_lm1 |>
+  predict(
+    newdata = x,
+    se.fit = TRUE
+  ) |>
+  use_series(se.fit)
+```
+
+---
+
+We can construct **confidence intervals** for $\E{Y|X=x}$ 
+using the usual formula:
+
+
+$$\mu(\vx) \in 
+\paren{\red{\hat{\mu}(\vx)} \pm \blue{\zeta_\alpha}}$$
+
+$$
+\blue{\zeta_\alpha} = 
+t_{n-p}\paren{1-\frac{\alpha}{2}} * \hse{\hat{\mu}(\vx)}
+$$
+
+$$\red{\hat{\mu}(\vx)} = \vx \cdot \hb$$
+
+$$\se{\hat{\mu}(\vx)} = \sqrt{\Var{\hat{\mu}(\vx)}}$$
+$$
+\ba
+\Var{\hat{\mu}(\vx)} &= \Var{x'\hat{\beta}}
+\\&= x' \Var{\hat{\beta}} x
+\\&= x' \sigma^2(\mX'\mX)^{-1} x
+\\&= \sigma^2 x' (\mX'\mX)^{-1} x
+\\&= \sumin \sumjn x_i x_j \Covs{\hb_i}{\hb_j}
+\ea
+$$
+$$\hVar{\hat{\mu}(\vx)} = \hs^2 x' (\mX'\mX)^{-1} x$$
+
+```{R}
+bw_lm2 |> predict(
+  newdata = x,
+  interval = "confidence"
+)
+```
+
+---
+
+:::{#fig-pred-int}
+
+```{r}
+library(sjPlot)
+bw_lm2 |>
+  plot_model(type = "pred", terms = c("age", "sex"), show.data = TRUE) +
+  theme_sjplot() +
+  theme(legend.position = "bottom")
+```
+
+Predicted values and confidence bands for the `birthweight` model with interaction term
+:::
+
+### Why are confidence bands narrower near the center of the data? {#sec-why-ci-narrower}
+
+The confidence bands in @fig-pred-int are visibly narrower
+near the center of the gestational age range.
+To understand why,
+consider a simple linear regression with one predictor $a$ (gestational age)
+and an intercept.
+The covariate vector for a new observation at age $a$ is $\vx = \tp{(1, a)}$,
+and the general variance formula for the predicted mean specializes to:
+
+$$
+\ba
+\Var{\hat\mu(a)}
+&= \sigma^2\, \tp{\vx}(\tp{\mX}\mX)^{-1}\vx \\
+&= \red{\sigma^2 \left(\frac{1}{n} + \frac{(a - \bar{a})^2}{S_{AA}}\right)}
+\ea
+$${#eq-var-fitted-slr}
+
+where $\bar{a} = \frac{1}{n}\sumin a_i$ is the mean gestational age
+and $S_{AA} = \sumin (a_i - \bar{a})^2$ is the total variation in gestational age.
+
+To derive @eq-var-fitted-slr,
+first note that for $n$ observations with design matrix rows $(1, a_i)$:
+
+$$
+\tp{\mX}\mX
+= \begin{pmatrix} n & n\bar{a} \\ n\bar{a} & \sumin a_i^2 \end{pmatrix}
+$$
+
+The determinant of $\tp{\mX}\mX$ is:
+
+$$
+\ba
+\det(\tp{\mX}\mX)
+&= n \cdot \sumin a_i^2 - (n\bar{a})^2 \\
+&= n\left(\sumin a_i^2 - n\bar{a}^2\right) \\
+&= n\, S_{AA}
+\ea
+$$
+
+so its inverse is:
+
+$$
+(\tp{\mX}\mX)^{-1}
+= \frac{1}{n\, S_{AA}}
+  \begin{pmatrix} \sumin a_i^2 & -n\bar{a} \\ -n\bar{a} & n \end{pmatrix}
+$$
+
+Substituting $\vx = \tp{(1, a)}$ into the quadratic form:
+
+$$
+\ba
+\tp{\vx}(\tp{\mX}\mX)^{-1}\vx
+&= \frac{1}{n\, S_{AA}}
+  (1,\; a)
+  \begin{pmatrix} \sumin a_i^2 & -n\bar{a} \\ -n\bar{a} & n \end{pmatrix}
+  \begin{pmatrix} 1 \\ a \end{pmatrix} \\
+&= \frac{\sumin a_i^2 - 2n\bar{a}\,a + n\,a^2}{n\, S_{AA}} \\
+&= \frac{\left(\sumin a_i^2 - n\bar{a}^2\right) + n(a - \bar{a})^2}{n\, S_{AA}} \\
+&= \frac{S_{AA} + n(a - \bar{a})^2}{n\, S_{AA}} \\
+&= \frac{1}{n} + \frac{(a - \bar{a})^2}{S_{AA}}
+\ea
+$$
+
+Therefore the estimated standard error of the predicted mean at age $a$ is:
+
+$$
+\HSE{\hat\mu(a)}
+= \hs \sqrt{\frac{1}{n} + \frac{(a - \bar{a})^2}{S_{AA}}}
+$${#eq-se-fitted-slr}
+
+Since $(a - \bar{a})^2 \geq 0$ and equals zero when $a = \bar{a}$,
+the standard error is minimized at the mean gestational age $\bar{a}$
+and increases as $a$ moves away from $\bar{a}$ in either direction.
+Consequently, confidence intervals are narrowest at $\bar{a}$
+and widen toward the extremes of the gestational age range.
+
+Intuitively, the fitted line is "anchored" at the center of the data:
+in simple linear regression with an intercept,
+the OLS fitted line passes exactly through the sample mean point $(\bar{a}, \bar{y})$,
+so the estimated mean at $\bar{a}$ is relatively stable across different samples.
+Moving away from $\bar{a}$,
+small changes in the estimated slope
+cause the fitted line to "pivot" around that anchor,
+producing larger changes in the predicted mean
+the further $a$ is from $\bar{a}$.
+
+Additionally, there is typically more nearby data near the center of the covariate range,
+so we have more information about the true mean response there.
+Near the edges of the covariate range,
+there is less nearby data,
+leaving us less confident in our estimate of the mean response at those values.
+
+## Prediction intervals {#sec-se-pred}
+
+We can also construct **prediction intervals** for 
+the value of a new observation $Y^*$,
+given a covariate pattern $\vxs$.
+
+A new observation $Y^*$ at $\vxs$ follows the same linear model as the training data:
+
+$$Y^* = \tp{(\vxs)}\vb + \eps^*$$
+
+where $\eps^* \sim \ndist{0, \sigma^2}$ is independent of the training data
+(and therefore independent of $\hb$).
+
+The predicted value of $Y^*$ is:
+
+$$\hat{Y}^* \eqdef \hat\mu(\vxs) = \tp{(\vxs)}\hb$$
+
+We base the prediction interval on the **prediction error** $Y^* - \hat{Y}^*$:
+
+$$
+\ba
+Y^* - \hat{Y}^*
+&= \tp{(\vxs)}\vb + \eps^* - \tp{(\vxs)}\hb
+\\
+&= \eps^* - \tp{(\vxs)}(\hb - \vb)
+\ea
+$$
+
+The prediction error is unbiased:
+
+$$
+\ba
+\E{Y^* - \hat{Y}^*}
+&= \E{\eps^*} - \tp{(\vxs)}\E{\hb - \vb}
+\\
+&= 0 - \tp{(\vxs)} \cdot 0
+\\
+&= 0
+\ea
+$$
+
+The variance of the prediction error is:
+
+$$
+\ba
+\Var{Y^* - \hat{Y}^*}
+&= \Var{\eps^* - \tp{(\vxs)}(\hb - \vb)}
+\\
+&= \Var{\eps^*} + \Var{\tp{(\vxs)}\hb}
+\quad \text{(since } \eps^* \ind \hb\text{)}
+\\
+&= \sigma^2 + \tp{(\vxs)}\Var{\hb}\vxs
+\\
+&= \sigma^2 + \tp{(\vxs)}\paren{\sigma^2(\mX'\mX)^{-1}}\vxs
+\\
+&= \sigma^2 + \sigma^2\tp{(\vxs)}(\mX'\mX)^{-1}\vxs
+\\
+&= \sigma^2\paren{1 + \tp{(\vxs)}(\mX'\mX)^{-1}\vxs}
+\ea
+$${#eq-prediction-var}
+
+::: notes
+See @hoggtanis2015 §7.6 (p. 340).
+:::
+
+The variance (@eq-prediction-var) has two components:
+
+- $\Var{\eps^*} = \sigma^2$:
+the variance of the future observation's own noise,
+which is irreducible.
+
+- $\Var{\tp{(\vxs)}\hb} = \tp{(\vxs)}\Var{\hb}\vxs$:
+the variance due to estimating the mean $\tp{(\vxs)}\vb$ from the data.
+
+The first component is not present in the confidence interval for $\hat\mu(\vxs)$,
+which only accounts for estimation uncertainty.
+This is why prediction intervals are always wider than the corresponding confidence intervals:
+a prediction interval must additionally account for
+the irreducible noise $\eps^*$ in a new observation.
+
+The **standard error** of the prediction error is the square root of its variance:
+
+$$
+\SE{Y^* - \hat{Y}^*}
+= \sqrt{\Var{Y^* - \hat{Y}^*}}
+= \sigma\sqrt{1 + \tp{(\vxs)}(\mX'\mX)^{-1}\vxs}
+$$
+
+Replacing $\sigma$ with the residual standard error $\hs$ gives the estimated standard error:
+
+$$
+\HSE{Y^* - \hat{Y}^*}
+= \hs\sqrt{1 + \tp{(\vxs)}(\mX'\mX)^{-1}\vxs}
+$${#eq-prediction-se}
+
+Since $\eps^* \sim \ndist{0, \sigma^2}$ and $\hb \sim \ndist{\vb, \sigma^2(\mX'\mX)^{-1}}$
+are both normally distributed,
+and since $\eps^* \ind \hb$ (as noted above in the variance derivation),
+their difference $Y^* - \hat{Y}^* = \eps^* - \tp{(\vxs)}(\hb - \vb)$
+is also normally distributed,
+with mean 0 (as shown above) and variance given by @eq-prediction-var.
+Standardizing by dividing by $\sigma\sqrt{1 + \tp{(\vxs)}(\mX'\mX)^{-1}\vxs}$
+yields a standard normal random variable.
+Replacing $\sigma$ with $\hs$,
+which is estimated with $n-p$ degrees of freedom and is independent of $Y^* - \hat{Y}^*$,
+the standardized prediction error follows a $t$ distribution:
+
+$$
+\frac{Y^* - \hat{Y}^*}{\HSE{Y^* - \hat{Y}^*}} \sim t_{n-p}
+$$
+
+Therefore, a $(1-\alpha)$ **prediction interval** for $Y^*$ is:
+
+$$
+Y^* \in
+\paren{
+\hat{Y}^*
+\pm
+t_{n-p}\paren{1 - \frac{\alpha}{2}}
+\cdot
+\HSE{Y^* - \hat{Y}^*}
+}
+$${#eq-prediction-interval}
+
+```{r}
+#| code-fold: show
+bw_lm2 |>
+  predict(newdata = x, interval = "predict")
+```
+
+---
+
+If you don't specify `newdata`, you get a warning:
+
+```{r}
+#| code-fold: show
+#| warning: true
+bw_lm2 |>
+  predict(interval = "predict") |>
+  head()
+```
+
+The warning from the last command is: "predictions on current data refer to *future* responses" (since you already know what happened to the current data, and thus don't need to predict it).
+
+See `?predict.lm` for more.
+
+---
+
+:::{#fig-pred-int-bw}
+```{r}
+plot_PIs_and_CIs(bw, bw_lm2)
+```
+
+Confidence and prediction intervals for `birthweight` model [-@eq-BW-lm-interact]
+
+:::
+
+---

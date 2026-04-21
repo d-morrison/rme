@@ -1,0 +1,418 @@
+
+(adapted from @dobson4e §6.3.3; for more information on prediction, see @james2013introduction and @rms2e).
+
+::: notes
+If we have a lot of covariates in our dataset, we might want to choose a small subset to use in our model.
+
+There are a few possible metrics to consider for choosing a "best" model.
+:::
+
+### DAGs for variable selection
+
+For explanatory models,
+variable inclusion should not rely on automated algorithms alone.
+Directed acyclic graphs (DAGs)
+can help us encode substantive assumptions
+about which variables are confounders,
+mediators,
+or colliders.
+
+In a Dobson-style workflow,
+we use the DAG first
+to decide a defensible adjustment set,
+then compare candidate regression models
+within that set using predictive or likelihood-based criteria.
+This keeps model selection aligned with study design,
+rather than only with numerical fit.
+
+### Mean squared error
+
+We might want to minimize the **mean squared error**,
+$\E{(y-\hat y)^2}$,
+for new observations
+that weren't in our data set when we fit the model.
+
+Unfortunately,
+$$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$
+gives a biased estimate of $\E{(y-\hat y)^2}$ for new data.
+If we want an unbiased estimate,
+we will have to be clever.
+
+This is one reason that $R^2$ is not enough for model selection.
+$R^2$ does not decrease as we add explanatory variables,
+even when those variables do not improve out-of-sample prediction.
+That can lead to overfitting.
+
+With a training/test split,
+we estimate coefficients in the training data
+and compute prediction error in held-out data:
+
+$$
+\hat\b_{\text{train}} =
+(\tp{X_{\text{train}}}X_{\text{train}})^{-1}
+\tp{X_{\text{train}}}y_{\text{train}}
+$$
+
+$$
+\hat e_{i,\text{test}} =
+y_{\text{test},i} -
+\cb{
+\hat\b_{0,\text{train}} +
+\sum_{j=1}^p \hat\b_{j,\text{train}}x_{\text{test},ij}
+},
+\quad i \in \text{test set}
+$$
+
+$$
+\text{RMSE} = \sqrt{
+\frac{1}{n_{\text{test}}}
+\sum_{i \in \text{test set}} (\hat e_{i,\text{test}})^2
+}
+$$
+
+---
+
+#### Cross-validation
+
+Rather than one arbitrary split,
+$k$-fold cross-validation repeatedly partitions the data into training and test folds.
+For each split we compute prediction error,
+then summarize errors across folds and replications.
+The preferred model has lower prediction error,
+with simpler models favored when errors are similar.
+
+When the number of candidate explanatory variables is small,
+we can compare all possible subsets ($2^p$ models)
+using the same cross-validation metric.
+
+```{r}
+data("carbohydrate", package = "dobson")
+library(cvTools)
+full_model <- lm(carbohydrate ~ ., data = carbohydrate)
+cv_full <-
+  full_model |> cvFit(
+    data = carbohydrate, K = 5, R = 10,
+    y = carbohydrate$carbohydrate
+  )
+
+reduced_model <- full_model |> update(formula = ~ . - age)
+
+cv_reduced <-
+  reduced_model |> cvFit(
+    data = carbohydrate, K = 5, R = 10,
+    y = carbohydrate$carbohydrate
+  )
+```
+
+---
+
+```{r}
+results_reduced <-
+  tibble(
+    model = "wgt+protein",
+    errs = cv_reduced$reps[]
+  )
+results_full <-
+  tibble(
+    model = "wgt+age+protein",
+    errs = cv_full$reps[]
+  )
+
+cv_results <-
+  bind_rows(results_reduced, results_full)
+
+cv_results |>
+  ggplot(aes(y = model, x = errs)) +
+  geom_boxplot()
+```
+
+---
+
+##### comparing metrics
+
+```{r}
+compare_results <- tribble(
+  ~model, ~cvRMSE, ~r.squared, ~adj.r.squared, ~trainRMSE, ~loglik,
+  "full",
+  cv_full$cv,
+  summary(full_model)$r.squared,
+  summary(full_model)$adj.r.squared,
+  sigma(full_model),
+  logLik(full_model) |> as.numeric(),
+  "reduced",
+  cv_reduced$cv,
+  summary(reduced_model)$r.squared,
+  summary(reduced_model)$adj.r.squared,
+  sigma(reduced_model),
+  logLik(reduced_model) |> as.numeric()
+)
+
+compare_results
+```
+
+---
+
+```{r}
+anova(full_model, reduced_model)
+```
+
+---
+
+#### Best subset selection
+
+When the number of candidate predictors is modest,
+we can use **best subset selection**.
+For each model size $k = 0, 1, \ldots, p$,
+we fit all $\binom{p}{k}$ models
+and keep the best model of size $k$
+(e.g., by lowest RSS in the training data).
+
+This gives at most $p+1$ candidate models to compare across model sizes,
+using criteria such as
+cross-validated prediction error,
+$C_p$,
+AIC/BIC,
+or adjusted $R^2$.
+In that sense,
+best subset selection is more exhaustive
+than one-path methods like forward or backward stepwise selection.
+
+::: notes
+For a full algorithmic treatment,
+including validation and criterion-based comparison across model size,
+see the ISLR treatment of best subset selection
+[@james2013introduction].
+:::
+
+```{r}
+hers_subset <- fs::path_package("rme", "extdata/hersdata.dta") |>
+  haven::read_dta() |>
+  dplyr::select(LDL, age, weight, BMI, HDL, TG, SBP) |>
+  tidyr::drop_na()
+
+hers_lm_subset <- lm(
+  LDL ~ age + weight + BMI + HDL + TG + SBP,
+  data = hers_subset
+)
+
+hers_best_subset <- olsrr::ols_step_best_subset(hers_lm_subset)
+
+hers_best_subset$metrics |>
+  dplyr::arrange(dplyr::desc(adjr)) |>
+  dplyr::slice_head(n = 5)
+```
+
+---
+
+#### Stepwise regression
+
+Stepwise methods are another common approach.
+Forward selection adds variables one at a time.
+Backward selection starts with the full model
+and removes variables sequentially.
+Both approaches can select different models from the same data.
+
+::: {.callout-warning}
+## Caution about stepwise selection
+
+Stepwise regression has several known problems:
+
+- It tends to select too many variables (overfitting)
+- P-values and confidence intervals are biased after selection
+- It ignores model uncertainty
+- Results can be unstable across different samples
+
+Consider using cross-validation, penalized methods (like Lasso), 
+or subject-matter knowledge instead.
+See @rms2e and @heinze2018variable for more discussion.
+:::
+
+```{r}
+library(olsrr)
+olsrr:::ols_step_both_aic(full_model)
+```
+
+---
+
+#### Lasso
+
+Lasso is a penalized regression method
+that shrinks coefficient estimates toward zero.
+It adds an $L_1$ penalty term
+to the objective function,
+creating a trade-off between model fit and parsimony.
+The intercept is not penalized.
+
+As the tuning parameter $\lambda$ increases,
+more coefficients are shrunken strongly,
+and some become exactly zero.
+So lasso both regularizes the model
+and performs variable selection.
+In practice,
+$\lambda$ is usually chosen by cross-validation
+to minimize prediction error.
+
+For Gaussian linear models,
+the penalized least-squares forms are:
+
+$$
+\hat\b^{\text{lasso}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda \sum_{j=1}^p |\b_j|
+}
+$$
+
+$$
+\hat\b^{\text{ridge}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda \sum_{j=1}^p \b_j^2
+}
+$$
+
+$$
+\hat\b^{\text{elastic-net}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda
+\cb{
+\a \sum_{j=1}^p |\b_j|
++
+\frac{1-\a}{2}\sum_{j=1}^p \b_j^2
+}
+}
+$$
+
+```{r}
+library(glmnet)
+y <- carbohydrate$carbohydrate
+x <- carbohydrate |>
+  select(age, weight, protein) |>
+  as.matrix()
+fit <- glmnet(x, y)
+```
+
+---
+
+```{r}
+#| fig-cap: "Lasso selection"
+#| label: fig-carbs-lasso
+autoplot(fit, xvar = "lambda")
+```
+
+---
+
+```{r}
+cvfit <- cv.glmnet(x, y)
+plot(cvfit)
+```
+
+---
+
+```{r}
+coef(cvfit, s = "lambda.1se")
+```
+
+---
+
+### Likelihood ratio test for nested models {#sec-linreg-LRT}
+
+For a general MLE-focused discussion of likelihood-ratio tests,
+see [Likelihood ratio tests for MLEs](intro-MLEs.qmd#sec-lrt-mles).
+
+A **likelihood ratio test (LRT)** compares two nested models
+by computing twice the difference in their log-likelihoods:
+
+$$2(\llik_1 - \llik_0) \dot \sim \chi^2_q \quad \text{(asymptotically under } H_0 \text{)}$$
+
+where $q = p_2 - p_1$ is the number of extra parameters in the full model.
+
+---
+
+```{r}
+logLik(bw_lm2)
+logLik(bw_lm1)
+
+log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
+delta_df <- (bw_lm1$df.residual - df.residual(bw_lm2))
+
+
+x_max <- 1
+```
+
+---
+
+```{r}
+#| label: fig-chisq-plot
+#| fig-cap: "Chi-square distribution"
+
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)
+
+chisq_plot <-
+  ggplot() +
+  geom_function(fun = d_log_LR) +
+  stat_function(
+    fun = d_log_LR,
+    xlim = c(2 * log_LR, x_max),
+    geom = "area",
+    fill = "gray"
+  ) +
+  geom_segment(
+    aes(
+      x = 2 * log_LR,
+      xend = 2 * log_LR,
+      y = 0,
+      yend = d_log_LR(2 * log_LR)
+    ),
+    col = "red"
+  ) +
+  xlim(0.0001, x_max) +
+  ylim(0, 4) +
+  ylab("p(X=x)") +
+  xlab("Likelihood-ratio test statistic [x] = 2 * log(likelihood ratio)") +
+  theme_classic()
+chisq_plot |> print()
+```
+
+---
+
+Now we can get the p-value:
+
+```{r}
+#| label: LRT-pval
+pchisq(
+  q = 2 * log_LR,
+  df = delta_df,
+  lower = FALSE
+) |>
+  print()
+```
+
+---
+
+In practice you don't have to do this by hand; there are functions to do it for you:
+
+```{r}
+# built in
+lmtest::lrtest(bw_lm2, bw_lm1)
+```
+
+---
+
+{{< include _subfiles/Linear-models-overview/_sec_linreg_Ftest.qmd >}}

@@ -15,6 +15,7 @@ on:
       - '.github/workflows/preview.yml'
       - '.github/workflows/publish.yml'
       - '*.qmd'
+      - '_subfiles/**'
       - '*.scss'
 
 concurrency: preview-${{ github.ref }}
@@ -27,14 +28,16 @@ jobs:
       pull-requests: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tinytex: true
+          tinytex: false
 
       - uses: r-lib/actions/setup-r@HEAD
         with:
@@ -50,13 +53,43 @@ jobs:
       - name: Install local package
         run: |
           R CMD INSTALL .
-        shell: bash
 
-      - name: Render
+      - name: Set up TinyTeX
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
+        uses: quarto-dev/quarto-actions/setup@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tinytex: true
+
+      - name: Install TinyTeX packages required for PDF rendering
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
+        run: |
+          Rscript -e "tinytex::tlmgr_repo('https://mirror.ctan.org/systems/texlive/tlnet')"
+          Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
+
+      - name: Cache Quarto freeze
+        uses: actions/cache@v5
+        with:
+          path: _freeze
+          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          restore-keys: |
+            quarto-freeze-${{ runner.os }}-
+
+      - name: Render html
         if: github.event.action != 'closed' # skip the build if the PR has been closed
-        uses: quarto-dev/quarto-actions/render@v2
+        run: quarto render --to html
+
+      - name: Render revealjs
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
+        run: quarto render --to revealjs
+
+      - name: Render pdf
+        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
+        run: quarto render --to pdf
 
       - name: list files
+        if: github.event.action != 'closed'
         shell: bash
         run: |
           echo "contents of _site:\n"
@@ -72,15 +105,17 @@ jobs:
           comment: false
       
       - name: Delete old preview comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: steps.preview.outputs.deployment-action == 'deploy'
+        continue-on-error: true
         with:
           header: pr-preview
           delete: true
       
       - name: Comment with preview link
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: steps.preview.outputs.deployment-action == 'deploy'
+        continue-on-error: true
         with:
           header: pr-preview
           recreate: true
@@ -92,8 +127,9 @@ jobs:
             <sub>Built to branch [`gh-pages`](${{ github.server_url }}/${{ github.repository }}/tree/gh-pages) at ${{ steps.preview.outputs.action-start-time }}.</sub>
       
       - name: Remove preview comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: steps.preview.outputs.deployment-action == 'remove'
+        continue-on-error: true
         with:
           header: pr-preview
           message: |
@@ -102,4 +138,3 @@ jobs:
             Preview removed because the pull request was closed.
             
             <sub>${{ steps.preview.outputs.action-start-time }}</sub>
-

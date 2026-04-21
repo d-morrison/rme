@@ -17,7 +17,11 @@ project:
     - top-ten-concepts.qmd
     - appendices-are-prereqs.qmd
     - math-prereqs.qmd
+    - data.qmd
+    - exploratory-descriptive.qmd
     - probability.qmd
+    - basic-statistical-methods.qmd
+    - classification.qmd
     - estimation.qmd
     - inference.qmd
     - intro-MLEs.qmd
@@ -26,7 +30,7 @@ project:
     - notation.qmd
     - intro-to-R.qmd
     - CONTRIBUTING.qmd
-    - midterm-formula-sheet.qmd
+    - exam-formula-sheet.qmd
 
 website:
   title: "Regression Models for Epidemiology"
@@ -80,8 +84,16 @@ website:
         menu:
           - text: "Math Prerequisites"
             href: math-prereqs.qmd
+          - text: "Data"
+            href: data.qmd
+          - text: "Exploratory and Descriptive Methods"
+            href: exploratory-descriptive.qmd
           - text: "Probability"
             href: probability.qmd
+          - text: "Basic Statistical Methods"
+            href: basic-statistical-methods.qmd
+          - text: "Classification"
+            href: classification.qmd
           - text: "Estimation"
             href: estimation.qmd
           - text: "Inference"
@@ -96,13 +108,24 @@ website:
             href: notation.qmd
           - text: "Introduction to R"
             href: intro-to-R.qmd
-          - text: "Midterm Formula Sheet"
-            href: midterm-formula-sheet.qmd
+          - text: "Exam Formula Sheet"
+            href: exam-formula-sheet.qmd
 
 bibliography: references.bib
 
+callouty-theorem:
+  solution:
+    override-title: true
+    callout:
+      type: note
+      appearance: default
+      collapse: true
+      icon: true
+
 format:
   html:
+    filters:
+      - callouty-theorem
     theme:
       light: [cosmo, custom.scss]
       dark: [darkly, custom.scss]
@@ -113,7 +136,7 @@ format:
     code-tools: true
     code-link: true
     code-summary: "Show R code"
-    highlight-style: pygments
+    highlight-style: arrow
     lightbox: true
     link-external-icon: true
     embed-resources: false
@@ -126,6 +149,7 @@ format:
     date-format: "[Last modified:] YYYY-MM-DD: H:mm:ss (z)"
     subject: "Epidemiology 204"
   revealjs:
+    search: false
     lightbox: true
     theme: dark
     embed-resources: false
@@ -164,7 +188,18 @@ format:
     colorlinks: true
     number-sections: true
     number-depth: 3
-
+    include-in-header:
+      text: |
+        \newcounter{chapter}
+        \renewcommand{\thechapter}{\arabic{section}}
+        \usepackage{etoolbox}
+        \makeatletter
+        \AtBeginDocument{%
+          \let\quarto@cl@chapter\cl@chapter
+          \appto\cl@section{\quarto@cl@chapter}}
+        \makeatother
+crossref:
+  chapters: false
 comments:
   hypothesis:
     theme: clean

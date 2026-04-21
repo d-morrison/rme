@@ -34,11 +34,35 @@ is 1:
 
 $$\Pr(\Omega) = 1$$
 
-3. The probability of the union of disjoint events, $A_1 \cup A_2: A_1 \cap A_2 = \emptyset$, is equal to 
-the sum of their probabilities:
+3. The probability of the union of countably many mutually disjoint events
+$A_1, A_2, \ldots$ (where $A_i \cap A_j = \emptyset$ for all $i \neq j$)
+is equal to the sum of their probabilities
+(*countable additivity* or *sigma-additivity*):
 
-$$\Pr(A_1 \cup A_2) = \Pr(A_1) + \Pr(A_2)$$
+$$\Pr\!\left(\bigcup_{i=1}^{\infty} A_i\right) = \sum_{i=1}^{\infty} \Pr(A_i)$$
 
+:::
+
+::: notes
+
+Property 3 (*countable additivity*) is stronger than *finite additivity*,
+which only requires
+
+$$\Pr(A_1 \cup \cdots \cup A_n) = \sum_{i=1}^{n} \Pr(A_i)$$
+
+for every finite collection of mutually disjoint events.
+Countable additivity implies finite additivity
+(set $A_{n+1} = A_{n+2} = \cdots = \emptyset$ in property 3,
+using $\Pr(\emptyset) = 0$),
+but not vice versa:
+there exist set functions that satisfy finite additivity
+but fail countable additivity
+(see [Wikipedia: Sigma-additive set function — An additive function which is not σ-additive](https://en.wikipedia.org/wiki/Sigma-additive_set_function#An_additive_function_which_is_not_%CF%83-additive)).
+Requiring countable additivity enables results such as
+the continuity of probability
+(if $A_1 \supseteq A_2 \supseteq \cdots$ with $\bigcap_i A_i = \emptyset$,
+then $\Pr(A_i) \to 0$)
+and underpins the @thm-total-prob for countable partitions.
 
 :::
 
@@ -104,25 +128,180 @@ $$
 
 :::
 
-# Random variables
+---
 
-## Binary variables {#sec-binary-vars}
+## Conditional probability
 
-{{< include binary-vars.qmd >}}
+:::{#def-conditional-prob}
+
+### Conditional probability
+
+For two events $A$ and $B$ with $\Pr(B) > 0$,
+the **conditional probability** of $A$ given $B$,
+denoted $\Pr(A \mid B)$,
+is:
+
+$$\Pr(A \mid B) \eqdef \frac{\Pr(A \cap B)}{\Pr(B)}$$
+
+:::
 
 ---
 
-## Count variables {#sec-count-vars}
+:::{#thm-law-conditional-prob}
 
-{{< include count-vars.qmd >}}
+### Law of conditional probability
+
+For any two events $A$ and $B$ with $\Pr(B) > 0$:
+
+$$\Pr(A \cap B) = \Pr(A \mid B) \cd \Pr(B)$$
+
+:::
 
 ---
+
+::: proof
+
+Rearranging @def-conditional-prob:
+
+$$
+\ba
+\Pr(A \mid B) &= \frac{\Pr(A \cap B)}{\Pr(B)}
+\\ \Pr(A \cap B) &= \Pr(A \mid B) \cd \Pr(B)
+\ea
+$$
+
+:::
+
+---
+
+:::{#exm-law-conditional-prob}
+
+#### Applying the law of conditional probability
+
+Suppose 30% of adults exercise regularly ($\Pr(E) = 0.30$),
+and among adults who exercise regularly,
+60% have low blood pressure ($\Pr(L \mid E) = 0.60$).
+
+Then the probability that a randomly selected adult both exercises
+regularly and has low blood pressure is:
+
+$$
+\ba
+\Pr(L \cap E) &= \Pr(L \mid E) \cd \Pr(E)
+\\&= 0.60 \cd 0.30
+\\&= 0.18
+\ea
+$$
+
+:::
+
+---
+
+:::{#thm-total-prob}
+
+### Law of total probability
+
+If $B_1, B_2, \ldots$ is a countable partition of the sample space
+(i.e., countably many mutually exclusive events whose union is the entire sample space),
+then for any event $A$:
+
+$$\Pr(A) = \sum_{i=1}^{\infty} \Pr(A \mid B_i) \cd \Pr(B_i)$$
+
+:::
+
+---
+
+::: proof
+
+Since $B_1, B_2, \ldots$ partition the sample space,
+the events $A \cap B_1, A \cap B_2, \ldots$ are mutually exclusive and their
+union is $A$.
+By property 3 of @def-probability (countable additivity),
+and then by @thm-law-conditional-prob:
+
+$$
+\ba
+\Pr(A)
+&= \sum_{i=1}^{\infty} \Pr(A \cap B_i)
+\\&= \sum_{i=1}^{\infty} \Pr(A \mid B_i) \cd \Pr(B_i)
+\ea
+$$
+
+:::
+
+---
+
+:::{#thm-bayes}
+
+### Bayes' theorem
+
+For any two events $A$ and $B$ with $\Pr(A) > 0$ and $\Pr(B) > 0$:
+
+$$\Pr(A \mid B) = \frac{\Pr(B \mid A) \cd \Pr(A)}{\Pr(B)}$$
+
+:::
+
+---
+
+::: proof
+
+Apply @def-conditional-prob to both $\Pr(A \mid B)$ and $\Pr(B \mid A)$:
+
+$$
+\ba
+\Pr(A \mid B)
+&= \frac{\Pr(A \cap B)}{\Pr(B)}
+\\&= \frac{\Pr(B \mid A) \cd \Pr(A)}{\Pr(B)}
+\ea
+$$
+
+The second equality follows from @thm-law-conditional-prob applied to $\Pr(B \cap A) = \Pr(B \mid A) \cd \Pr(A)$.
+
+:::
+
+---
+
+:::{#exm-bayes}
+
+#### Positive predictive value of a medical test
+
+Suppose a disease test has 99% sensitivity and 99% specificity,
+and the prevalence of the disease in the population is 7%.
+
+Let $D$ be the event "person has the disease"
+and $+$ be the event "test is positive".
+Then:
+
+- $\Pr(+ \mid D) = 0.99$ (sensitivity)
+- $\Pr(\neg + \mid \neg D) = 0.99$ (specificity),
+  so the false positive rate is $\Pr(+ \mid \neg D) = 1 - 0.99 = 0.01$
+- $\Pr(D) = 0.07$ (prevalence)
+
+By Bayes' theorem (@thm-bayes) and the law of total probability (@thm-total-prob):
+
+$$
+\ba
+\Pr(D \mid +)
+&= \frac{\Pr(+ \mid D) \cd \Pr(D)}{\Pr(+)}
+\\&= \frac{\Pr(+ \mid D) \cd \Pr(D)}{\Pr(+ \mid D) \cd \Pr(D) + \Pr(+ \mid \neg D) \cd \Pr(\neg D)}
+\\&= \frac{0.99 \cd 0.07}{0.99 \cd 0.07 + 0.01 \cd 0.93}
+\\&= \frac{0.0693}{0.0693 + 0.0093}
+\\&= \frac{0.0693}{0.0786}
+\\&\approx 0.88
+\ea
+$$
+
+Even with a highly accurate test (99% sensitive and 99% specific),
+only about 88% of people who test positive actually have the disease,
+because the disease prevalence is relatively low (7%).
+
+:::
 
 # Key probability distributions
 
 ---
 
-{{< include _sec_distn_uses.qmd >}}
+{{< include _subfiles/probability/_sec_distn_uses.qmd >}}
 
 ## The Bernoulli distribution {#sec-bern-dist}
 
@@ -161,7 +340,7 @@ We will see more of this distribution later.
 
 ## Probability density function {#sec-prob-dens}
 
-{{< include _def-pdf.qmd >}}
+{{< include _subfiles/probability/_def-pdf.qmd >}}
 
 ---
 
@@ -188,15 +367,15 @@ $$\int_{x \in \rangef{X}} f(x) dx = 1$$
 
 ## Hazard function {#sec-prob-haz}
 
-{{< include _def-hazard.qmd >}}
+{{< include _subfiles/shared/_def-hazard.qmd >}}
 
 ---
 
-{{< include _sec-survival-dist-fns.qmd >}}
+{{< include _subfiles/probability/_sec-survival-dist-fns.qmd >}}
 
 ---
 
-{{< include _surv_diagram.qmd >}}
+{{< include _subfiles/shared/_surv_diagram.qmd >}}
 
 ---
 
@@ -250,7 +429,270 @@ $$
 
 ---
 
-{{< include _thm-surv-mean.qmd >}}
+{{< include _subfiles/probability/_thm-surv-mean.qmd >}}
+
+---
+
+:::{#thm-lotus}
+
+### Law of the Unconscious Statistician (LOTUS)
+
+For any function $g$ of a *discrete* random variable $X$:
+
+$$\E{g(X)} = \sum_{x \in \rangef{X}} g(x) \cd \P(X=x)$$
+
+:::
+
+---
+
+::: proof
+
+Let $Y = g(X)$.
+By @def-expectation applied to $Y$:
+
+$$
+\ba
+\E{g(X)}
+&= \E{Y}
+\\&= \sum_{y \in \rangef{Y}} y \cd \P(Y=y)
+\\&= \sum_{y \in \rangef{Y}} y \cd \P(g(X)=y)
+\\&= \sum_{y \in \rangef{Y}} y \cd \sum_{\substack{x \in \rangef{X} \\ g(x) = y}} \P(X=x)
+\\&= \sum_{x \in \rangef{X}} g(x) \cd \P(X=x)
+\ea
+$$
+
+where the last equality follows by rearranging the double sum,
+grouping each term $x$ by its image $y = g(x)$.
+
+:::
+
+---
+
+::: notes
+
+LOTUS says that to compute $\E{g(X)}$,
+we do not need to first find the distribution of $g(X)$;
+we can compute the expectation directly using the distribution of $X$.
+
+For a *continuous* random variable $X$ with density $\p(X=x)$,
+the analogous formula is:
+
+$$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
+
+:::
+
+---
+
+:::{#exm-lotus}
+
+#### Expected value of $X^2$ for a Bernoulli variable
+
+Let $X \sim \Ber(\pi)$.
+By LOTUS (@thm-lotus):
+
+$$
+\ba
+\E{X^2}
+&= \sum_{x \in \set{0,1}} x^2 \cd \P(X=x)
+\\&= 0^2 \cd \P(X=0) + 1^2 \cd \P(X=1)
+\\&= 0^2 \cd (1-\pi) + 1^2 \cd \pi
+\\&= 0 + \pi
+\\&= \pi
+\ea
+$$
+
+:::
+
+---
+
+:::{#def-cond-expectation}
+
+### Conditional expectation
+
+**Discrete case.**
+Let $X$ and $Y$ be jointly distributed discrete random variables.
+The **conditional probability mass function** of $Y$ given $X = x$
+(for values of $x$ with $\P(X = x) > 0$) is:
+
+$$\P(Y = y \mid X = x) \eqdef \frac{\P(X = x,\, Y = y)}{\P(X = x)}$$
+
+The **conditional expectation** of $Y$ given $X = x$ is:
+
+$$\E{Y \mid X = x} \eqdef \sum_{y \in \rangef{Y}} y \cd \P(Y = y \mid X = x)$$
+
+**Continuous case.**
+Let $X$ and $Y$ be jointly distributed continuous random variables
+with joint density $\p(X = x,\, Y = y)$ and marginal density $\p(X = x)$.
+The **conditional probability density function** of $Y$ given $X = x$
+(for values of $x$ with $\p(X = x) > 0$) is:
+
+$$\p(Y = y \mid X = x) \eqdef \frac{\p(X = x,\, Y = y)}{\p(X = x)}$$
+
+The **conditional expectation** of $Y$ given $X = x$ is:
+
+$$\E{Y \mid X = x} \eqdef \int_{y \in \rangef{Y}} y \cd \p(Y = y \mid X = x)\, dy$$
+
+**Conditional expectation function.**
+The **conditional expectation function** $\E{Y \mid X}$ is the function
+(and hence random variable) of $X$ obtained by evaluating
+$\E{Y \mid X = x}$ at $X$; that is,
+$\E{Y \mid X} = g(X)$ where $g(x) \eqdef \E{Y \mid X = x}$.
+
+:::
+
+---
+
+:::{#thm-lie}
+
+### Law of iterated expectations
+
+For any two random variables $X$ and $Y$:
+
+$$\E{Y} = \E{\E{Y \mid X}}$$
+
+::: notes
+
+Alternate names for this identity include:
+the **tower rule**,
+the **tower property**,
+the **law of total expectation**,
+and the **smoothing theorem**.
+
+:::
+
+:::
+
+---
+
+::: proof
+
+**Discrete case.**
+When $X$ and $Y$ are discrete,
+applying @def-expectation to $\E{\E{Y \mid X}}$
+and then the law of total probability (@thm-total-prob)
+applied to the countable partition $\{X = x : x \in \rangef{X}\}$:
+
+$$
+\ba
+\E{\E{Y \mid X}}
+&= \sum_{x \in \rangef{X}} \E{Y \mid X=x} \cd \P(X=x)
+\\&= \sum_{x \in \rangef{X}} \paren{\sum_{y \in \rangef{Y}} y \cd \P(Y=y \mid X=x)} \cd \P(X=x)
+\\&= \sum_{y \in \rangef{Y}} y \cd \sum_{x \in \rangef{X}} \P(Y=y \mid X=x) \cd \P(X=x)
+\\&= \sum_{y \in \rangef{Y}} y \cd \P(Y=y)
+\\&= \E{Y}
+\ea
+$$
+
+**Continuous case.**
+When $X$ and $Y$ are continuous,
+applying @def-expectation to $\E{\E{Y \mid X}}$
+and then using @def-cond-expectation for $\E{Y \mid X=x}$:
+
+$$
+\ba
+\E{\E{Y \mid X}}
+&= \int_{x \in \rangef{X}} \E{Y \mid X=x} \cd \p(X=x)\, dx
+\\&= \int_{x \in \rangef{X}} \paren{\int_{y \in \rangef{Y}} y \cd \p(Y=y \mid X=x)\, dy} \cd \p(X=x)\, dx
+\\&= \int_{y \in \rangef{Y}} y \cd \paren{\int_{x \in \rangef{X}} \p(Y=y \mid X=x) \cd \p(X=x)\, dx}\, dy
+\\&= \int_{y \in \rangef{Y}} y \cd \p(Y=y)\, dy
+\\&= \E{Y}
+\ea
+$$
+
+where the third equality exchanges the order of integration by Fubini's theorem,
+and the fourth equality uses
+$\int_{x} \p(Y=y \mid X=x) \cd \p(X=x)\, dx = \int_{x} \p(X=x, Y=y)\, dx = \p(Y=y)$
+(marginalization of the joint density).
+
+:::
+
+---
+
+:::{#thm-conditional-lie}
+### Conditional law of iterated expectations
+
+For random variables $X$, $Y$, and $Z$:
+
+$$\E{Y \mid Z} = \E{\E{Y \mid X,Z} \mid Z}$$
+
+::: notes
+
+This is the tower rule
+applied conditionally on $Z$.
+
+:::
+
+:::
+
+---
+
+::: proof
+
+For each fixed value $z$ with positive probability or density:
+
+**Discrete case.**
+Conditioning on $Z=z$,
+and applying the law of total probability
+to the partition $\{X=x : x \in \rangef{X}\}$
+under the conditional distribution given $Z=z$:
+
+$$
+\ba
+\E{\E{Y \mid X,Z} \mid Z=z}
+&= \sum_{x \in \rangef{X}} \E{Y \mid X=x,Z=z} \cd \P(X=x \mid Z=z)
+\\&= \E{Y \mid Z=z}
+\ea
+$$
+
+**Continuous case.**
+Conditioning on $Z=z$,
+and integrating over $X$
+under the conditional density $\p(X=x \mid Z=z)$:
+
+$$
+\ba
+\E{\E{Y \mid X,Z} \mid Z=z}
+&= \int_{x \in \rangef{X}} \E{Y \mid X=x,Z=z} \cd \p(X=x \mid Z=z)\, dx
+\\&= \E{Y \mid Z=z}
+\ea
+$$
+
+Therefore,
+as random variables of $Z$,
+$\E{Y \mid Z} = \E{\E{Y \mid X,Z} \mid Z}$.
+
+:::
+
+---
+
+:::{#exm-lie}
+
+#### Marginal expectation from conditional expectations
+
+Suppose $X$ is a binary random variable indicating treatment assignment ($X=1$ treated, $X=0$ control),
+with $\P(X=1) = 0.5$,
+and suppose the outcome $Y$ has conditional expectations:
+
+$$\E{Y \mid X=1} = 10, \quad \E{Y \mid X=0} = 6$$
+
+By the law of iterated expectations (@thm-lie):
+
+$$
+\ba
+\E{Y}
+&= \E{\E{Y \mid X}}
+\\&= \E{Y \mid X=1} \cd \P(X=1) + \E{Y \mid X=0} \cd \P(X=0)
+\\&= 10 \cd 0.5 + 6 \cd 0.5
+\\&= 5 + 3
+\\&= 8
+\ea
+$$
+
+:::
+
+---
+
+{{< include _subfiles/probability/_def-expectation-matrix.qmd >}}
 
 ---
 
@@ -295,6 +737,114 @@ $$
 
 ---
 
+:::{#thm-total-variance}
+### Law of total variance
+
+For random variables $X$ and $Y$:
+
+$$\Var{Y} = \E{\Var{Y \mid X}} + \Var{\E{Y \mid X}}$$
+
+where
+$\Var{Y \mid X} \eqdef \E{(Y-\E{Y \mid X})^2 \mid X}$.
+
+::: notes
+
+Alternate names include:
+the **conditional variance formula**,
+**Eve's law**,
+and the **variance decomposition formula**.
+
+:::
+
+:::
+
+---
+
+::: proof
+
+Write
+$Y-\E{Y} = \paren{Y-\E{Y \mid X}} + \paren{\E{Y \mid X}-\E{Y}}$.
+Then:
+
+$$
+\ba
+\sqf{Y-\E{Y}}
+&= \sqf{Y-\E{Y \mid X}}
+  + \sqf{\E{Y \mid X}-\E{Y}}
+  + 2\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}
+\ea
+$$
+
+Taking expectation:
+
+$$
+\ba
+\Var{Y}
+&= \E{\sqf{Y-\E{Y \mid X}}}
+  + \E{\sqf{\E{Y \mid X}-\E{Y}}}
+\\&\quad
+  + 2\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+\ea
+$$
+
+For the cross-term:
+
+**Discrete case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+&= \sum_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Y \mid X}-\E{Y}}
+     \mid X=x
+   }
+   \cd \P(X=x)
+\\&= \sum_{x \in \rangef{X}}
+   \paren{\E{Y \mid X=x}-\E{Y}}
+   \cd \E{Y-\E{Y \mid X=x}\mid X=x}
+   \cd \P(X=x)
+\\&= 0
+\ea
+$$
+
+**Continuous case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Y \mid X}-\E{Y}}}
+&= \int_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Y \mid X}-\E{Y}}
+     \mid X=x
+   }
+   \cd \p(X=x)\, dx
+\\&= \int_{x \in \rangef{X}}
+   \paren{\E{Y \mid X=x}-\E{Y}}
+   \cd \E{Y-\E{Y \mid X=x}\mid X=x}
+   \cd \p(X=x)\, dx
+\\&= 0
+\ea
+$$
+
+Therefore:
+
+$$
+\ba
+\Var{Y}
+&= \E{\sqf{Y-\E{Y \mid X}}}
+  + \E{\sqf{\E{Y \mid X}-\E{Y}}}
+\\&= \E{\Var{Y \mid X}}
+  + \Var{\E{Y \mid X}}
+\ea
+$$
+
+:::
+
+---
+
 ::: {#def-precision}
 ### Precision
 
@@ -333,8 +883,122 @@ $$\Cov{X,Y}= \E{XY} - \E{X} \E{Y}$$
 
 ---
 
+:::{#thm-total-cov}
+### Law of total covariance
+
+For random variables $X$, $Y$, and $Z$:
+
+$$\Cov{Y,Z} = \E{\Cov{Y,Z \mid X}} + \Cov{\E{Y \mid X}, \E{Z \mid X}}$$
+
+where
+$\Cov{Y,Z \mid X} \eqdef \E{(Y-\E{Y \mid X})(Z-\E{Z \mid X}) \mid X}$.
+
+::: notes
+
+Alternate names include:
+the **covariance decomposition formula**
+and the **conditional covariance formula**.
+
+:::
+
+:::
+
+---
+
 :::{.proof}
-Left to the reader.
+Write:
+
+$$
+\ba
+Y-\E{Y}
+&= \paren{Y-\E{Y \mid X}} + \paren{\E{Y \mid X}-\E{Y}}
+\\
+Z-\E{Z}
+&= \paren{Z-\E{Z \mid X}} + \paren{\E{Z \mid X}-\E{Z}}
+\ea
+$$
+
+Then:
+
+$$
+\ba
+\Cov{Y,Z}
+&= \E{\paren{Y-\E{Y}}\paren{Z-\E{Z}}}
+\\&= \E{\paren{Y-\E{Y \mid X}}\paren{Z-\E{Z \mid X}}}
+\\&\quad
+  + \E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+\\&\quad
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}
+\\&\quad
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{\E{Z \mid X}-\E{Z}}}
+\ea
+$$
+
+For the two mixed terms:
+
+**Discrete case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+&= \sum_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Z \mid X}-\E{Z}}
+     \mid X=x
+   }
+   \cd \P(X=x)
+\\&= \sum_{x \in \rangef{X}}
+   \paren{\E{Z \mid X=x}-\E{Z}}
+   \cd \E{Y-\E{Y \mid X=x} \mid X=x}
+   \cd \P(X=x)
+\\&= 0
+\ea
+$$
+
+and similarly:
+
+$$
+\E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}=0.
+$$
+
+**Continuous case.**
+
+$$
+\ba
+\E{\paren{Y-\E{Y \mid X}}\paren{\E{Z \mid X}-\E{Z}}}
+&= \int_{x \in \rangef{X}}
+   \E{
+     \paren{Y-\E{Y \mid X}}
+     \paren{\E{Z \mid X}-\E{Z}}
+     \mid X=x
+   }
+   \cd \p(X=x)\, dx
+\\&= \int_{x \in \rangef{X}}
+   \paren{\E{Z \mid X=x}-\E{Z}}
+   \cd \E{Y-\E{Y \mid X=x} \mid X=x}
+   \cd \p(X=x)\, dx
+\\&= 0
+\ea
+$$
+
+and similarly:
+
+$$
+\E{\paren{\E{Y \mid X}-\E{Y}}\paren{Z-\E{Z \mid X}}}=0.
+$$
+
+Hence:
+
+$$
+\ba
+\Cov{Y,Z}
+&= \E{\paren{Y-\E{Y \mid X}}\paren{Z-\E{Z \mid X}}}
+  + \E{\paren{\E{Y \mid X}-\E{Y}}\paren{\E{Z \mid X}-\E{Z}}}
+\\&= \E{\Cov{Y,Z \mid X}}
+  + \Cov{\E{Y \mid X}, \E{Z \mid X}}
+\ea
+$$
 :::
 
 ---
@@ -352,8 +1016,9 @@ $$\Cov{X,X} = \Var{X}$$
 :::{.proof}
 $$
 \ba
-\Cov{X,X} &= E[XX] - E[X]E[X] 
-\\ &= E[X^2]-(E[X])^2
+\Cov{X,X}
+&= \E{XX} - \E{X}\E{X}
+\\&= \E{X^2} - \sqf{\E{X}}
 \\ &= \Var{X}
 \ea
 $$
@@ -361,7 +1026,11 @@ $$
 
 ---
 
-{{< include _def-cov-vec-x.qmd >}}
+{{< include _subfiles/probability/_def-cov-vec-x.qmd >}}
+
+---
+
+{{< include _subfiles/probability/_thm-vcov-elements.qmd >}}
 
 ---
 
@@ -371,9 +1040,9 @@ $$
 
 $$
 \ba
-\Var{X} 
-&= E[ X^{\top}X ] - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack
-\end{aligned}
+\Varf{\vX}
+&= \Expf{\vX \tp{\vX}} - \paren{\Expp\vX} \tp{\paren{\Expp\vX}}
+\ea
 $$
 :::
 
@@ -382,19 +1051,33 @@ $$
 :::{.proof}
 $$
 \ba
-\Var{X} 
-&= E[ \left( X^{\top} - E\lbrack X\rbrack^{\top} \right)\left( X - E\lbrack X\rbrack \right) ]\\
-&= E[ X^{\top}X - E\lbrack X\rbrack^{\top}X - X^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack ]\\
-&= E[ X^{\top}X ] - E\lbrack X\rbrack^{\top}E\lbrack X\rbrack - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack\\
-&= E[ X^{\top}X ] - 2{E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack + E\lbrack X\rbrack^{\top}E\lbrack X\rbrack\\
-&= E[ X^{\top}X ] - {E\lbrack X\rbrack}^{\top}E\lbrack X\rbrack
-\end{aligned}
+\Varf{\vX}
+&= \Expf{
+    \paren{\vX - \Expp\vX}
+    \tp{\paren{\vX - \Expp\vX}}
+  }
+\\
+&= \Expf{
+    \vX \tp{\vX}
+    - \vX \tp{\paren{\Expp\vX}}
+    - \paren{\Expp\vX} \tp{\vX}
+    + \paren{\Expp\vX} \tp{\paren{\Expp\vX}}
+  }
+\\
+&= \Expf{\vX \tp{\vX}}
+  - \paren{\Expp\vX} \tp{\paren{\Expp\vX}}
+  - \paren{\Expp\vX} \tp{\paren{\Expp\vX}}
+  + \paren{\Expp\vX} \tp{\paren{\Expp\vX}}
+\\
+&= \Expf{\vX \tp{\vX}}
+  - \paren{\Expp\vX} \tp{\paren{\Expp\vX}}
+\ea
 $$
 :::
 
 ---
 
-{{< include _thm-var-lincom.qmd >}}
+{{< include _subfiles/probability/_thm-var-lincom.qmd >}}
 
 ---
 
@@ -532,7 +1215,11 @@ $\dsn{X}$.
 
 {{< include sec-CLT.qmd >}}
 
-
 # Additional resources
 
 - @problifesaver
+
+# References {.unnumbered}
+
+::: {#refs}
+:::

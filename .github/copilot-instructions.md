@@ -41,6 +41,54 @@
   - Test cross-references and anchor links
   - Ensure relative paths are correct
 
+## Linking Within the Quarto Website
+
+When linking to other pages within this Quarto website, always link to the **source `.qmd` file**, not the rendered `.html` file.
+This follows the [Quarto website linking guidelines](https://quarto.org/docs/websites/#linking).
+
+**Correct** (link to source file):
+```markdown
+[chain rule](math-prereqs.qmd#thm-chain-rule)
+```
+
+**Incorrect** (link to rendered HTML):
+```markdown
+[chain rule](math-prereqs.html#thm-chain-rule)
+```
+
+This ensures links work correctly across all output formats and during local development.
+
+## Decomposing content into subfiles
+
+When splitting a chapter or formula sheet into include subfiles,
+keep the top-level section headers in the main `.qmd` file.
+Move only the section body content into the subfile.
+This keeps document structure visible in the parent file
+and makes partial includes easier to compose consistently.
+
+## Citation Grammar Conventions
+
+When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
+treat the citation as a **singular** subject and use third-person singular verb forms:
+
+- **Correct**: `@dobson4e omits … but describes …`
+- **Incorrect**: `@dobson4e omit … but describe …`
+
+This applies whether the citation refers to one author or multiple authors (e.g., "Dobson and Barnett").
+Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
+but grammatically the citation key itself is treated as a singular pronoun/name.
+
+## Attribution for Adapted Content
+
+When adapting any content from another source,
+always include specific attribution in the chapter text.
+Use a BibTeX-backed citation key
+with a chapter or page locator
+(for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
+Do not use generic acknowledgements without locators
+or plaintext author-title references
+when a BibTeX citation is available.
+
 ## Code Formatting Guidelines
 
 When adding or editing text in source code (such as comments, documentation strings, or error messages) or in Quarto document text chunks:
@@ -48,6 +96,26 @@ When adding or editing text in source code (such as comments, documentation stri
 - Each phrase should be on its own line in the source code
 - A phrase is typically a complete thought, clause, or sentence
 - This improves readability and makes diffs clearer
+
+## Parentheticals and Asides in Quarto
+
+When parenthetical references or short asides are supplementary
+(for example, `c.f. @dunn2018generalized §2.10.3`),
+place them in a `::: notes` div
+instead of leaving them inline in the main narrative.
+
+## Fenced Divs and List Indentation in Quarto
+
+Do not indent `:::` fenced div markers
+as if they were list-continuation content.
+In this project,
+indented fenced div markers can render as literal `:::`
+instead of being parsed as div blocks.
+
+When you need a notes/callout div related to a list item,
+end the list first,
+then start the div at the left margin
+with blank lines around the fenced block.
 
 Example:
 ```r
@@ -59,6 +127,112 @@ Example:
 # Avoid: Multiple phrases on one line
 # First, check if the input is valid. Then, process the data. Finally, return the result.
 ```
+
+## Quarto Code Chunk Options
+
+When the code **and** its console output are both needed for the surrounding narrative to make sense, use `#| code-fold: false` so that neither is hidden:
+
+```qmd
+```{r}
+#| code-fold: false
+deviance(my_model)
+sum(residuals(my_model)^2)
+```
+```
+
+Use `code-fold: false` whenever:
+- The output value is referenced or explained in the surrounding text
+- The reader needs to see both the code and the result to follow the argument
+
+## Landscape Tables in PDF
+
+When a table is too wide for portrait orientation in PDF,
+wrap the table div in a `.landscape` fenced div.
+
+Use this pattern:
+
+```qmd
+::: {.landscape}
+
+:::{#tbl-your-wide-table}
+... table content ...
+:::
+
+:::
+```
+
+Apply this only where needed,
+so HTML and RevealJS output stay unchanged.
+
+## Math Notation
+
+This repository uses custom LaTeX macros defined in `latex-macros/macros.qmd` (a git submodule).
+Always use the custom macros instead of raw LaTeX equivalents.
+
+Key macros to use:
+- **Expectation operator**: Use `\E{Y|X=x}` (renders as $\text{E}[Y|X=x]$), **not** raw `E[Y|X=x]`
+- **Aligned equations**: Use `\ba` / `\ea` for `\begin{aligned}` / `\end{aligned}`
+- **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
+- **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
+
+matrix-product helper macros:
+
+- `\iprod{u}{v}` for inner products (`\tp{u} v`)
+- `\oprod{u}{v}` for outer products (`u \tp{v}`)
+- `\siprod{u}` for self-inner products (`\tp{u} u`)
+- `\soprod{u}` for self-outer products (`u \tp{u}`)
+
+Residual and deviation helper macros include:
+
+- `\err` for generic error or residual terms
+- `\erf{\theta}` for estimate/estimand deviations
+- `\devn(...)` for other deviations
+- `\resid` for residual symbols (`r`)
+- `\stdresid` for standardized residual symbols (`r'`)
+- `\modresid` for modified residual symbols (`r^*`)
+
+- **Transpose**: Use `\tp{v}` (renders as $v'$) instead of the raw prime `v'` notation.
+  However, `\tp{v}` appends `^{\top}` to the argument, so if the argument already carries a superscript
+  (e.g., `\vxs` expands to `{{\vec{x}^*}}` which has `^*`), wrap it in parentheses first:
+  use `\tp{(\vxs)}` not `\tp{\vxs}`.
+  This avoids LaTeX "Double superscript" errors.
+
+Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
+
+## Color Coding Strategy for Math Expressions
+
+Use `\red{...}` and `\blue{...}` purposefully and consistently to help readers:
+
+1. **Focal coefficient**: Use `\red{...}` for the coefficient being interpreted or derived in the current context.
+   This draws the reader's eye to the quantity that the surrounding text is about.
+   Example: When deriving that $\b_A$ is the slope, color it `\red{\b_A}` throughout the derivation.
+
+2. **Differences between similar expressions**: When comparing two expressions that differ in certain components,
+   use `\red{...}` for the unique/extra term and `\blue{...}` for the shared term.
+   This makes it visually clear what cancels and what remains.
+   Example: Male slope $= \blue{\b_A} + \red{\b_{AM}}$, female slope $= \blue{\b_A}$,
+   difference $= \blue{\b_A} + \red{\b_{AM}} - \blue{\b_A} = \red{\b_{AM}}$.
+
+3. **Reference level constraints**: In models with interactions, coefficient interpretations are constrained
+   to a specific reference level of other covariates.
+   Use `\red{0}` (or `\red{P = 0}`, `\red{A = 0}`, etc.) to highlight reference levels that constrain an interpretation.
+   Use `\blue{m}` (or the generic variable name) when the interpretation holds for any value.
+   This visually distinguishes interaction models (constrained) from additive models (unconstrained).
+
+4. **Chain rule components**: When applying the chain rule, use `\red{...}` for the first factor
+   and `\blue{...}` for the second factor.
+   This connects the factored form to the simplified form on the next line.
+
+5. **Connected components across equations**: When a term is defined in one equation and expanded
+   or substituted in another, use the same color for the term and its expansion.
+   This creates a visual link between the definition and its use.
+
+## Math Derivations
+
+Include as many intermediate steps as possible in math derivations.
+Every non-trivial algebraic manipulation should be shown explicitly on its own line inside an aligned equation.
+Do not skip steps even if they seem obvious.
+This helps readers follow the logic and makes errors easier to spot.
 
 ## CI/CD Workflow Debugging
 
@@ -139,6 +313,63 @@ Content here.
 
 More content.
 ```
+
+## Computer Algebra Systems (CAS)
+
+The Copilot environment includes two computer algebra systems for symbolic mathematics.
+Use them to verify or derive formulas, derivatives, integrals, and algebraic simplifications
+when working on the mathematical content in this repository.
+
+### SymPy (Python)
+
+SymPy is available as `python3 -c "import sympy; ..."` or in a Python script.
+It supports symbolic differentiation, integration, equation solving, simplification, and LaTeX output.
+
+```python
+from sympy import symbols, diff, integrate, simplify, solve, latex, exp, log
+
+x, mu, sigma = symbols('x mu sigma', real=True)
+
+# Differentiate the normal log-likelihood with respect to mu
+log_lik = -((x - mu)**2) / (2 * sigma**2)
+score = diff(log_lik, mu)
+print(score)          # (x - mu) / sigma**2
+print(latex(score))   # \frac{x - \mu}{\sigma^{2}}
+```
+
+Common SymPy operations:
+- `diff(expr, x)` — symbolic derivative
+- `integrate(expr, x)` — symbolic integral
+- `solve(expr, x)` — solve equation for x
+- `simplify(expr)` — algebraic simplification
+- `latex(expr)` — convert to LaTeX string for use in `.qmd` files
+- `factor(expr)` / `expand(expr)` — factor or expand polynomials
+
+### Maxima
+
+Maxima is available from the shell as the `maxima` command.
+It is a full-featured CAS with strong support for calculus and algebra.
+
+```bash
+# Single expression (non-interactive)
+echo "diff(x^3 + 2*x^2 - x - 2, x);" | maxima --very-quiet
+
+# Multi-step batch computation saved to a file
+cat > /tmp/cas_check.mac << 'EOF'
+expr: x^3 + 2*x^2 - x - 2;
+factor(expr);
+diff(expr, x);
+integrate(expr, x);
+EOF
+maxima --very-quiet --batch=/tmp/cas_check.mac
+```
+
+### When to use CAS tools
+
+- **Verifying derivations**: Check that hand-derived formulas match CAS output before including them in documents.
+- **Generating LaTeX**: Use `sympy.latex()` to produce correct LaTeX for complex expressions.
+- **Solving equations**: Use `sympy.solve()` or Maxima's `solve()` to find closed-form solutions.
+- **Simplifying expressions**: Use `sympy.simplify()` or Maxima's `ratsimp()` to confirm algebraic equivalences.
 
 ## Quarto Rendering
 
