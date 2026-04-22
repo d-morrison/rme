@@ -70,14 +70,17 @@ jobs:
           Rscript -e "tinytex::tlmgr_repo('https://mirror.ctan.org/systems/texlive/tlnet')"
           Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
 
-      - name: Cache Quarto freeze
-        uses: actions/cache@v5
+      - name: Restore Quarto freeze
+        if: github.event.action != 'closed'
+        uses: actions/cache/restore@v4
         with:
           path: _freeze
-          key: quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.sha }}
+          key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.event.pull_request.head.sha }}-${{ github.run_attempt }}
           restore-keys: |
-            quarto-freeze-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
-            quarto-freeze-${{ runner.os }}-
+            quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.event.pull_request.head.sha }}-
+            quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-main-
+            quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
+            quarto-freezer-${{ runner.os }}-
 
       - name: Render pdf (website profile)
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
@@ -103,6 +106,13 @@ jobs:
           ls _site/
           echo "contents of .:\n"
           ls .
+
+      - name: Save Quarto freeze
+        if: github.event.action != 'closed'
+        uses: actions/cache/save@v4
+        with:
+          path: _freeze
+          key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.event.pull_request.head.sha }}-${{ github.run_attempt }}
       
       - name: Deploy PR Preview
         uses: rossjrw/pr-preview-action@v1
