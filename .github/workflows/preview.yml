@@ -24,6 +24,7 @@ concurrency: preview-${{ github.ref }}
 
 jobs:
   build-deploy:
+    if: github.event_name != 'pull_request' || github.event.action != 'labeled' || contains(fromJSON('["clear freezer", "preview:pdf", "preview:docx", "preview:revealjs"]'), github.event.label.name)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -73,7 +74,7 @@ jobs:
           Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
 
       - name: Restore Quarto freeze
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && !contains(github.event.pull_request.labels.*.name, 'clear freezer')
         uses: actions/cache/restore@v4
         with:
           path: _freeze
