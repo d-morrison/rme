@@ -159,9 +159,17 @@ compute_rmse <- function(model, data) {
 
 validation_results <- tibble::tibble(
   model = c("linear", "quadratic"),
+  training_RMSE = c(
+    compute_rmse(model_linear, train_dat),
+    compute_rmse(model_quadratic, train_dat)
+  ),
   validation_RMSE = c(
     compute_rmse(model_linear, valid_dat),
     compute_rmse(model_quadratic, valid_dat)
+  ),
+  test_RMSE = c(
+    compute_rmse(model_linear, test_dat),
+    compute_rmse(model_quadratic, test_dat)
   )
 )
 
@@ -197,28 +205,65 @@ performance_comparison <- tibble::tibble(
 
 ```{r}
 #| label: fig-linear-model-superimposed
-#| fig-cap: Linear model fit superimposed on the training data
+#| fig-cap: Linear model fit superimposed on data partitions
+partition_colors <- c(
+  training = "#1b9e77",
+  validation = "#d95f02",
+  test = "#7570b3"
+)
+
 plot(
   train_dat$wt,
   train_dat$mpg,
   xlab = "wt",
   ylab = "mpg",
   pch = 19,
-  col = "grey40"
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = 19,
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = 19,
+  col = partition_colors[["test"]]
 )
 abline(model_linear, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test"),
+  col = unname(partition_colors),
+  pch = 19,
+  bty = "n"
+)
 ```
 
 ```{r}
 #| label: fig-quadratic-model-superimposed
-#| fig-cap: Quadratic model fit superimposed on the training data
+#| fig-cap: Quadratic model fit superimposed on data partitions
 plot(
   train_dat$wt,
   train_dat$mpg,
   xlab = "wt",
   ylab = "mpg",
   pch = 19,
-  col = "grey40"
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = 19,
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = 19,
+  col = partition_colors[["test"]]
 )
 wt_grid <- seq(min(train_dat$wt), max(train_dat$wt), length.out = 200)
 quadratic_pred <- predict(
@@ -226,6 +271,13 @@ quadratic_pred <- predict(
   newdata = data.frame(wt = wt_grid)
 )
 lines(wt_grid, quadratic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test"),
+  col = unname(partition_colors),
+  pch = 19,
+  bty = "n"
+)
 ```
 
 :::{#tbl-train-validation-results}
@@ -233,8 +285,9 @@ lines(wt_grid, quadratic_pred, col = "blue", lwd = 2)
 validation_results
 ```
 
-Validation RMSE for candidate models
-used to choose the final model
+Training,
+validation,
+and test RMSE for candidate models
 :::
 
 The chosen model is
