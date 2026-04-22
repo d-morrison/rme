@@ -185,7 +185,7 @@ matrix-product helper macros:
 
 Residual and deviation helper macros include:
 
-- `\err` for generic error or residual terms
+- Retire `\err`; use `\devn(...)` for non-estimation deviations
 - `\erf{\theta}` for estimate/estimand deviations
 - `\devn(...)` for other deviations
 - `\resid` for residual symbols (`r`)
