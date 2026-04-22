@@ -19,6 +19,12 @@ on:
       - '*.qmd'
       - '_subfiles/**'
       - '*.scss'
+  workflow_dispatch:
+    inputs:
+      reset_freeze:
+        description: "Reset the Quarto freeze cache before rendering"
+        type: boolean
+        default: false
 
 concurrency: preview-${{ github.ref }}
 
@@ -83,6 +89,14 @@ jobs:
             quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-main-
             quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
             quarto-freezer-${{ runner.os }}-
+
+      - name: Reset Quarto freeze cache
+        if: |
+          (github.event_name == 'workflow_dispatch' && inputs.reset_freeze) ||
+          (github.event_name == 'pull_request' &&
+            github.event.action != 'closed' &&
+            contains(github.event.pull_request.labels.*.name, 'clear freezer'))
+        run: rm -rf _freeze
 
       - name: Render pdf (website profile)
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
