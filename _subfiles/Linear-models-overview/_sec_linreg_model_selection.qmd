@@ -25,6 +25,172 @@ within that set using predictive or likelihood-based criteria.
 This keeps model selection aligned with study design,
 rather than only with numerical fit.
 
+In this workflow,
+the DAG encodes hypothesized time ordering
+and causal pathways.
+That helps us decide
+which variables belong in the candidate model set
+before we run stepwise,
+subset,
+or penalized selection methods.
+The key point
+is that a variable can improve apparent fit
+while still distorting the effect we care about
+if it sits on a causal pathway
+or induces collider bias
+[@dobson4e, §6.3.3].
+
+:::{#exm-dag-heat-deaths}
+
+#### high temperatures and mortality
+
+Suppose the research question is:
+"What is the effect of high temperatures on deaths?"
+
+A plausible DAG includes:
+high temperatures $\rightarrow$ deaths,
+high temperatures $\rightarrow$ blackouts,
+high temperatures $\rightarrow$ forest fires,
+blackouts $\rightarrow$ deaths,
+forest fires $\rightarrow$ air pollution,
+and both forest fires and air pollution $\rightarrow$ deaths
+[@dobson4e, §6.3.3].
+
+```{r}
+#| label: fig-dag-heat-deaths
+#| fig-cap: DAG for the high temperatures and mortality example.
+#| fig-alt: DAG showing high temperatures pointing to deaths,
+#|   blackouts, and forest fires; blackouts pointing to deaths;
+#|   forest fires pointing to air pollution and deaths; and air
+#|   pollution pointing to deaths.
+#| code-fold: true
+dag_heat_deaths <- ggdag::dagify(
+  D ~ T + B + F + P,
+  B ~ T,
+  F ~ T,
+  P ~ F,
+  exposure = "T",
+  outcome = "D",
+  labels = c(
+    T = "High temperatures",
+    D = "Deaths",
+    B = "Blackouts",
+    F = "Forest fires",
+    P = "Air pollution"
+  )
+)
+
+dag_heat_deaths |>
+  ggdag::ggdag(use_labels = "label") +
+  ggdag::theme_dag()
+```
+
+If our estimand is the total effect
+of high temperatures on deaths,
+then blackouts,
+forest fires,
+and air pollution are mediators on downstream pathways.
+Adjusting for them
+would remove part of the effect
+we are trying to estimate.
+
+But if the estimand changes
+to the effect of blackouts on deaths,
+then high temperatures become a confounder
+because they are a common cause
+of both blackouts and deaths.
+So the same variable
+can be "adjust for" or "do not adjust for"
+depending on the causal question.
+
+:::
+
+:::{#exm-dag-salmonellosis-weather}
+
+#### salmonellosis and weather
+
+For daily salmonellosis counts,
+a plausible DAG has temperature and rainfall
+as direct causes of risk,
+with both variables also affecting humidity.
+If humidity has no direct arrow to salmonellosis,
+then humidity is not a causal driver;
+it mainly reflects shared variation
+from temperature and rainfall.
+Including humidity in the regression
+is therefore usually unnecessary
+for estimating the weather effects,
+and it may reduce interpretability
+because humidity is a collider of temperature and rainfall.
+Conditioning on humidity can induce misleading associations
+and bias weather-effect estimates
+when that conditioning opens a path
+between temperature and rainfall
+that is not otherwise blocked
+[@dobson4e, §6.3.3].
+
+```{r}
+#| label: fig-dag-salmonellosis-weather
+#| fig-cap: DAG for the salmonellosis and weather example.
+#| fig-alt: DAG with arrows from season to temperature and rainfall;
+#|   from temperature and rainfall to humidity;
+#|   and from temperature, rainfall, and test change to salmonellosis.
+#| code-fold: true
+dag_salmonellosis_weather <- ggdag::dagify(
+  S ~ T + R + C,
+  H ~ T + R,
+  T ~ Se,
+  R ~ Se,
+  labels = c(
+    S = "Salmonellosis",
+    T = "Temperature",
+    R = "Rainfall",
+    H = "Humidity",
+    C = "Test change",
+    Se = "Season"
+  )
+)
+
+dag_salmonellosis_weather |>
+  ggdag::ggdag(use_labels = "label") +
+  ggdag::theme_dag()
+```
+
+The same DAG can include
+a "change in test" indicator
+when surveillance switched
+to a more sensitive diagnostic test.
+That variable can improve predictive accuracy
+and face validity,
+but omitting it does not invalidate
+causal interpretation
+for temperature and rainfall effects
+if it is not on their causal paths
+[@dobson4e, §6.3.3].
+
+Likewise,
+season may cause both temperature and rainfall,
+but if season has no direct path to salmonellosis
+beyond those weather variables,
+including season can obscure interpretation
+of the proximal weather effects
+[@dobson4e, §6.3.3].
+
+Finally,
+DAG-informed variable definitions matter.
+In one intensive-care example,
+a "nutrition score" looked highly predictive of mortality
+until investigators clarified
+that people near death were often coded as zero
+because no assessment was completed.
+So the recorded variable
+combined nutrition with prognosis,
+and naive selection would overstate
+its scientific meaning
+[@dobson4e, §6.3.3].
+
+:::
+
 ### Mean squared error
 
 We might want to minimize the **mean squared error**,
