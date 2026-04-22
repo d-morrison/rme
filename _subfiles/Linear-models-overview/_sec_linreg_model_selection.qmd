@@ -379,25 +379,34 @@ partition_colors <- c(
   validation = "#d95f02",
   test = "#7570b3"
 )
+partition_shapes <- c(
+  training = 16,
+  validation = 17,
+  test = 15
+)
+wt_range <- range(c(train_dat$wt, valid_dat$wt, test_dat$wt))
+mpg_range <- range(c(train_dat$mpg, valid_dat$mpg, test_dat$mpg))
 
 plot(
   train_dat$wt,
   train_dat$mpg,
   xlab = "wt",
   ylab = "mpg",
-  pch = 19,
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
   col = partition_colors[["training"]]
 )
 points(
   valid_dat$wt,
   valid_dat$mpg,
-  pch = 19,
+  pch = partition_shapes[["validation"]],
   col = partition_colors[["validation"]]
 )
 points(
   test_dat$wt,
   test_dat$mpg,
-  pch = 19,
+  pch = partition_shapes[["test"]],
   col = partition_colors[["test"]]
 )
 abline(model_linear, col = "blue", lwd = 2)
@@ -405,7 +414,7 @@ legend(
   "topright",
   legend = c("training", "validation", "test", "linear fit"),
   col = c(unname(partition_colors), "blue"),
-  pch = c(19, 19, 19, NA),
+  pch = c(unname(partition_shapes), NA),
   lty = c(NA, NA, NA, 1),
   lwd = c(NA, NA, NA, 2),
   bty = "n"
@@ -426,22 +435,23 @@ plot(
   train_dat$mpg,
   xlab = "wt",
   ylab = "mpg",
-  pch = 19,
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
   col = partition_colors[["training"]]
 )
 points(
   valid_dat$wt,
   valid_dat$mpg,
-  pch = 19,
+  pch = partition_shapes[["validation"]],
   col = partition_colors[["validation"]]
 )
 points(
   test_dat$wt,
   test_dat$mpg,
-  pch = 19,
+  pch = partition_shapes[["test"]],
   col = partition_colors[["test"]]
 )
-wt_range <- range(c(train_dat$wt, valid_dat$wt, test_dat$wt))
 wt_grid <- seq(wt_range[1], wt_range[2], length.out = 200)
 quadratic_pred <- predict(
   model_quadratic,
@@ -452,7 +462,7 @@ legend(
   "topright",
   legend = c("training", "validation", "test", "quadratic fit"),
   col = c(unname(partition_colors), "blue"),
-  pch = c(19, 19, 19, NA),
+  pch = c(unname(partition_shapes), NA),
   lty = c(NA, NA, NA, 1),
   lwd = c(NA, NA, NA, 2),
   bty = "n"
