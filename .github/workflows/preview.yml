@@ -19,18 +19,12 @@ on:
       - '*.qmd'
       - '_subfiles/**'
       - '*.scss'
-  workflow_dispatch:
-    inputs:
-      reset_freeze:
-        description: "Reset the Quarto freeze cache before rendering"
-        type: boolean
-        default: false
 
 concurrency: preview-${{ github.ref }}
 
 jobs:
   build-deploy:
-    if: github.event_name != 'pull_request' || github.event.action != 'labeled' || github.event.label.name == 'clear freezer'
+    if: github.event_name != 'pull_request' || github.event.action != 'labeled' || contains(fromJSON('["clear freezer", "preview:pdf", "preview:docx", "preview:revealjs"]'), github.event.label.name)
     runs-on: ubuntu-latest
     permissions:
       contents: write
