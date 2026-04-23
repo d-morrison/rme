@@ -25,6 +25,172 @@ within that set using predictive or likelihood-based criteria.
 This keeps model selection aligned with study design,
 rather than only with numerical fit.
 
+In this workflow,
+the DAG encodes hypothesized time ordering
+and causal pathways.
+That helps us decide
+which variables belong in the candidate model set
+before we run stepwise,
+subset,
+or penalized selection methods.
+The key point
+is that a variable can improve apparent fit
+while still distorting the effect we care about
+if it sits on a causal pathway
+or induces collider bias
+[@dobson4e, §6.3.3].
+
+:::{#exm-dag-heat-deaths}
+
+#### high temperatures and mortality
+
+Suppose the research question is:
+"What is the effect of high temperatures on deaths?"
+
+A plausible DAG includes:
+high temperatures $\rightarrow$ deaths,
+high temperatures $\rightarrow$ blackouts,
+high temperatures $\rightarrow$ forest fires,
+blackouts $\rightarrow$ deaths,
+forest fires $\rightarrow$ air pollution,
+and both forest fires and air pollution $\rightarrow$ deaths
+[@dobson4e, §6.3.3].
+
+```{r}
+#| label: fig-dag-heat-deaths
+#| fig-cap: DAG for the high temperatures and mortality example.
+#| fig-alt: DAG showing high temperatures pointing to deaths,
+#|   blackouts, and forest fires; blackouts pointing to deaths;
+#|   forest fires pointing to air pollution and deaths; and air
+#|   pollution pointing to deaths.
+#| code-fold: true
+dag_heat_deaths <- ggdag::dagify(
+  D ~ T + B + F + P,
+  B ~ T,
+  F ~ T,
+  P ~ F,
+  exposure = "T",
+  outcome = "D",
+  labels = c(
+    T = "High temperatures",
+    D = "Deaths",
+    B = "Blackouts",
+    F = "Forest fires",
+    P = "Air pollution"
+  )
+)
+
+dag_heat_deaths |>
+  ggdag::ggdag(use_labels = "label") +
+  ggdag::theme_dag()
+```
+
+If our estimand is the total effect
+of high temperatures on deaths,
+then blackouts,
+forest fires,
+and air pollution are mediators on downstream pathways.
+Adjusting for them
+would remove part of the effect
+we are trying to estimate.
+
+But if the estimand changes
+to the effect of blackouts on deaths,
+then high temperatures become a confounder
+because they are a common cause
+of both blackouts and deaths.
+So the same variable
+can be "adjust for" or "do not adjust for"
+depending on the causal question.
+
+:::
+
+:::{#exm-dag-salmonellosis-weather}
+
+#### salmonellosis and weather
+
+For daily salmonellosis counts,
+a plausible DAG has temperature and rainfall
+as direct causes of risk,
+with both variables also affecting humidity.
+If humidity has no direct arrow to salmonellosis,
+then humidity is not a causal driver;
+it mainly reflects shared variation
+from temperature and rainfall.
+Including humidity in the regression
+is therefore usually unnecessary
+for estimating the weather effects,
+and it may reduce interpretability
+because humidity is a collider of temperature and rainfall.
+Conditioning on humidity can induce misleading associations
+and bias weather-effect estimates
+when that conditioning opens a path
+between temperature and rainfall
+that is not otherwise blocked
+[@dobson4e, §6.3.3].
+
+```{r}
+#| label: fig-dag-salmonellosis-weather
+#| fig-cap: DAG for the salmonellosis and weather example.
+#| fig-alt: DAG with arrows from season to temperature and rainfall;
+#|   from temperature and rainfall to humidity;
+#|   and from temperature, rainfall, and test change to salmonellosis.
+#| code-fold: true
+dag_salmonellosis_weather <- ggdag::dagify(
+  S ~ T + R + C,
+  H ~ T + R,
+  T ~ Se,
+  R ~ Se,
+  labels = c(
+    S = "Salmonellosis",
+    T = "Temperature",
+    R = "Rainfall",
+    H = "Humidity",
+    C = "Test change",
+    Se = "Season"
+  )
+)
+
+dag_salmonellosis_weather |>
+  ggdag::ggdag(use_labels = "label") +
+  ggdag::theme_dag()
+```
+
+The same DAG can include
+a "change in test" indicator
+when surveillance switched
+to a more sensitive diagnostic test.
+That variable can improve predictive accuracy
+and face validity,
+but omitting it does not invalidate
+causal interpretation
+for temperature and rainfall effects
+if it is not on their causal paths
+[@dobson4e, §6.3.3].
+
+Likewise,
+season may cause both temperature and rainfall,
+but if season has no direct path to salmonellosis
+beyond those weather variables,
+including season can obscure interpretation
+of the proximal weather effects
+[@dobson4e, §6.3.3].
+
+Finally,
+DAG-informed variable definitions matter.
+In one intensive-care example,
+a "nutrition score" looked highly predictive of mortality
+until investigators clarified
+that people near death were often coded as zero
+because no assessment was completed.
+So the recorded variable
+combined nutrition with prognosis,
+and naive selection would overstate
+its scientific meaning
+[@dobson4e, §6.3.3].
+
+:::
+
 ### Mean squared error
 
 We might want to minimize the **mean squared error**,
@@ -69,6 +235,375 @@ $$
 \sum_{i \in \text{test set}} (\hat e_{i,\text{test}})^2
 }
 $$
+
+#### Train/validation/test splits
+
+In many applications,
+we split the data into
+training,
+validation,
+and test sets.
+This extends the basic train/test split
+by separating model tuning
+from final model assessment.
+This framework follows
+[@james2021islr2e, pp. 198-201].
+
+- Use the **training set** to estimate model parameters.
+- Use the **validation set** to compare candidate models,
+  choose transformations,
+  or tune hyperparameters.
+- Use the **test set** once at the end
+  to estimate final out-of-sample performance.
+
+Keeping the test set untouched during model building
+helps avoid optimistic bias
+from repeatedly trying many models.
+If data are limited,
+$k$-fold cross-validation
+can replace a single validation split
+for more stable tuning.
+
+:::{#exm-train-validation-test-split}
+#### Numerical example
+
+The example below
+uses R's built-in `mtcars` dataset
+($n=32$ cars)
+to predict fuel efficiency (`mpg`)
+from vehicle weight (`wt`).
+It uses one random split
+to compare linear,
+quadratic,
+cubic,
+and quartic models
+(`mpg ~ wt`,
+`mpg ~ wt + I(wt^2)`,
+`mpg ~ wt + I(wt^2) + I(wt^3)`,
+and `mpg ~ wt + I(wt^2) + I(wt^3) + I(wt^4)`)
+on a validation set,
+then reports the chosen model's test RMSE
+on untouched test data
+[@james2021islr2e, p. 213].
+
+```{r}
+#| code-fold: false
+set.seed(108)
+n <- nrow(mtcars)
+
+n_train <- floor(0.6 * n)
+n_valid <- floor(0.2 * n)
+
+idx_train <- sample.int(n, size = n_train)
+idx_remaining <- setdiff(seq_len(n), idx_train)
+idx_valid <- sample(idx_remaining, size = n_valid)
+idx_test <- setdiff(idx_remaining, idx_valid)
+
+split_sizes <- tibble::tibble(
+  split = c("training", "validation", "test"),
+  n = c(length(idx_train), length(idx_valid), length(idx_test))
+)
+```
+
+:::{#tbl-train-validation-test-split-sizes}
+```{r}
+split_sizes
+```
+
+Sizes of the training,
+validation,
+and test splits
+:::
+
+```{r}
+train_dat <- mtcars[idx_train, ]
+valid_dat <- mtcars[idx_valid, ]
+test_dat <- mtcars[idx_test, ]
+
+model_linear <- lm(mpg ~ wt, data = train_dat)
+model_quadratic <- lm(mpg ~ wt + I(wt^2), data = train_dat)
+model_cubic <- lm(mpg ~ wt + I(wt^2) + I(wt^3), data = train_dat)
+model_quartic <- lm(
+  mpg ~ wt + I(wt^2) + I(wt^3) + I(wt^4),
+  data = train_dat
+)
+
+compute_rmse <- function(model, data) {
+  sqrt(mean((data$mpg - predict(model, newdata = data))^2))
+}
+
+candidate_models <- list(
+  linear = model_linear,
+  quadratic = model_quadratic,
+  cubic = model_cubic,
+  quartic = model_quartic
+)
+
+validation_results <- tibble::tibble(
+  model = names(candidate_models)
+) |>
+  dplyr::mutate(
+    training_RMSE = purrr::map_dbl(
+      model,
+      \(model_name) compute_rmse(candidate_models[[model_name]], train_dat)
+    ),
+    validation_RMSE = purrr::map_dbl(
+      model,
+      \(model_name) compute_rmse(candidate_models[[model_name]], valid_dat)
+    )
+  )
+
+model_labels <- c(
+  linear = "linear model",
+  quadratic = "quadratic model",
+  cubic = "cubic model",
+  quartic = "quartic model"
+)
+
+chosen_model_name <-
+  validation_results |>
+  dplyr::arrange(validation_RMSE) |>
+  dplyr::slice(1) |>
+  dplyr::pull(model)
+
+chosen_model_label <- model_labels[[chosen_model_name]]
+
+chosen_model <- candidate_models[[chosen_model_name]]
+chosen_model_validation_rmse <- compute_rmse(chosen_model, valid_dat)
+
+performance_comparison <- tibble::tibble(
+  split = c("validation", "test"),
+  model = chosen_model_name,
+  RMSE = c(
+    chosen_model_validation_rmse,
+    compute_rmse(chosen_model, test_dat)
+  )
+)
+```
+
+```{r}
+#| label: setup-model-fit-figure-partitions
+partition_colors <- c(
+  training = "#1b9e77",
+  validation = "#d95f02",
+  test = "#7570b3"
+)
+partition_shapes <- c(
+  training = 16,
+  validation = 17,
+  test = 15
+)
+wt_range <- range(c(train_dat$wt, valid_dat$wt, test_dat$wt))
+mpg_range <- range(c(train_dat$mpg, valid_dat$mpg, test_dat$mpg))
+wt_grid <- seq(wt_range[1], wt_range[2], length.out = 200)
+```
+
+```{r}
+#| label: fig-linear-model-superimposed
+#| fig-cap: Linear model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted linear regression line is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+abline(model_linear, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "linear fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+```{r}
+#| label: fig-quadratic-model-superimposed
+#| fig-cap: Quadratic model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted quadratic curve is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+quadratic_pred <- predict(
+  model_quadratic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, quadratic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "quadratic fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+```{r}
+#| label: fig-cubic-model-superimposed
+#| fig-cap: Cubic model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted cubic curve is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+cubic_pred <- predict(
+  model_cubic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, cubic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "cubic fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+```{r}
+#| label: fig-quartic-model-superimposed
+#| fig-cap: Quartic model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted quartic curve is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+quartic_pred <- predict(
+  model_quartic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, quartic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "quartic fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+:::{#tbl-train-validation-results}
+```{r}
+validation_results
+```
+
+Training and validation RMSE for candidate models
+:::
+
+The chosen model is
+the `r chosen_model_label`,
+because it has the lower validation RMSE.
+
+:::{#tbl-train-validation-test-rmse}
+```{r}
+performance_comparison
+```
+
+Validation and test RMSE
+for the chosen model
+:::
+
+:::
 
 ---
 
