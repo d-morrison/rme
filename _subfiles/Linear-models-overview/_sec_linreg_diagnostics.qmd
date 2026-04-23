@@ -265,7 +265,12 @@ If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators)
 estimator of the mean $\Expf{Y}$, then:
 
 $$\E{\resid} = 0$$ {#eq-mean-resid-unbiased}
-$$\Var{\resid_i} = \ss(1-h_{ii}) \approx \ss \text{ when } h_{ii} \text{ is small}$$ {#eq-var-resid-unbiased}
+$$\Var{\resid_i} = \ss(1-h_{ii})$$ {#eq-var-resid-leverage}
+
+When leverage is roughly uniform,
+$h_{ii} \approx 1/n$,
+so $\Var{\resid_i} \approx \ss$
+as $n$ grows.
 
 :::
 
@@ -285,15 +290,19 @@ $$
 \ea
 $$
 
-@eq-var-resid-unbiased:
+@eq-var-resid-leverage:
 
 $$
 \ba
 \resid &= (I-H)Y
 \\ \Var{\resid} &= \Var{(I-H)Y}
-\\ &= \ss(I-H)
+\\ &= (I-H)\Var{Y}(I-H)^\top
+\\ &= (I-H)\ss I(I-H)^\top
+\\ &= \ss(I-H)(I-H)^\top
+\\ &= \ss(I-H)^2
+\\ &= \ss(I - 2H + H^2)
+\\ &= \ss(I-H) \qquad (\text{since } H^2 = H)
 \\ \Var{\resid_i} &= \ss(1-h_{ii})
-\\ &\approx \ss \text{ when } h_{ii} \text{ is small}
 \ea
 $$
 :::
@@ -617,13 +626,14 @@ according to the model.
 
 ```{r}
 h_ii <- hatvalues(bw_lm2)
-resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - h_ii))
+manual_std_resid <- resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - h_ii))
+manual_std_resid
 rstandard(bw_lm2)
 ```
 
 ::: notes
 These are nearly the same.
-Any differences are from numerical rounding:
+Any differences are from numerical rounding.
 
 :::
 
@@ -632,7 +642,7 @@ Any differences are from numerical rounding:
 ```{r}
 rstandard_compare_plot <-
   tibble(
-    x = resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - hatvalues(bw_lm2))),
+    x = resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - h_ii)),
     y = rstandard(bw_lm2)
   ) |>
   ggplot(aes(x = x, y = y)) +
