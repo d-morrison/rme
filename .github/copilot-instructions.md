@@ -86,10 +86,11 @@ and confirming the exact page.
 If you have not verified a page directly from the source PDF,
 cite chapter-level location only.
 
-Examples of attribution with page numbers:
+Examples of attribution with page numbers
+(formatting examples):
 
-- "Adapted from @vittinghoff2e [Chapter 10]."
-- "The following example is based on @kleinbaum2010logistic [Chapter 8]."
+- "Adapted from [@vittinghoff2e, Chapter 10, p. 194]."
+- "The following example is based on [@kleinbaum2010logistic, Chapter 8, p. 230]."
 
 Do **not** reproduce verbatim text from copyrighted sources without clear quotation marks and attribution.
 Paraphrase and summarize with a citation instead.
