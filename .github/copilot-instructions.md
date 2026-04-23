@@ -307,6 +307,27 @@ This repository uses JAGS (Just Another Gibbs Sampler) for Bayesian analysis:
 - R packages `rjags` and `runjags` depend on JAGS being installed
 - The lint workflow also needs these packages installed to avoid false positives
 
+## Quarto Slide Breaks
+
+Use `{{< slidebreak >}}` instead of raw `---` to insert slide breaks in `.qmd` files.
+The `{{< slidebreak >}}` shortcode produces a slide break only in `revealjs` output,
+and produces no output in other formats (HTML, PDF, etc.).
+This allows the same source file to render correctly across multiple output formats.
+
+Example:
+
+```markdown
+## Slide 1
+
+Content here.
+
+{{< slidebreak >}}
+
+## Slide 2
+
+More content.
+```
+
 ## Computer Algebra Systems (CAS)
 
 The Copilot environment includes two computer algebra systems for symbolic mathematics.
