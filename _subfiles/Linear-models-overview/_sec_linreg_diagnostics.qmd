@@ -265,7 +265,7 @@ If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators)
 estimator of the mean $\Expf{Y}$, then:
 
 $$\E{\resid} = 0$$ {#eq-mean-resid-unbiased}
-$$\Var{\resid} \approx \ss$$ {#eq-var-resid-unbiased}
+$$\Var{\resid_i} = \ss(1-h_{ii}) \approx \ss \text{ when } h_{ii} \text{ is small}$$ {#eq-var-resid-unbiased}
 
 :::
 
@@ -289,11 +289,11 @@ $$
 
 $$
 \ba
-\Var{\resid} &= \Var{y - \hat y}
-\\ &= \Var{y} + \Var{\hat y} - 2 \Cov{y, \hat y}
-\\ &{\dot{\approx}} \Var{y} + 0 - 2 \cdot 0
-\\ &= \Var{y}
-\\ &= \ss
+\resid &= (I-H)Y
+\\ \Var{\resid} &= \Var{(I-H)Y}
+\\ &= \ss(I-H)
+\\ \Var{\resid_i} &= \ss(1-h_{ii})
+\\ &\approx \ss \text{ when } h_{ii} \text{ is small}
 \ea
 $$
 :::
@@ -580,6 +580,8 @@ $$
 
 but they are not independent.
 If $H$ is the hat matrix with entries $h_{ij}$,
+and $\delta_{ij}$ is the Kronecker delta
+($\delta_{ij}=1$ if $i=j$ and $\delta_{ij}=0$ otherwise),
 then
 
 $$
@@ -602,19 +604,26 @@ these covariances are generally nonzero.
 
 ### Marginal distributions of residuals
 
-To look for problems with our model, we can check whether the residuals $\resid_i$ and standardized residuals $\stdresid_i$ look like they have the distributions that they are supposed to have, according to the model.
+To look for problems with our model,
+we can check whether the residuals $\resid_i$
+and standardized residuals $\stdresid_i$
+look like they have the distributions
+that they are supposed to have,
+according to the model.
 
 ---
 
 #### Standardized residuals in R
 
 ```{r}
+h_ii <- hatvalues(bw_lm2)
+resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - h_ii))
 rstandard(bw_lm2)
-resid(bw_lm2) / sigma(bw_lm2)
 ```
 
 ::: notes
-These are not quite the same, because R is doing something more complicated and precise to get the standard errors. Let's not worry about those details for now; the difference is pretty small in this case:
+These are nearly the same.
+Any differences are from numerical rounding:
 
 :::
 
@@ -623,14 +632,14 @@ These are not quite the same, because R is doing something more complicated and 
 ```{r}
 rstandard_compare_plot <-
   tibble(
-    x = resid(bw_lm2) / sigma(bw_lm2),
+    x = resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - hatvalues(bw_lm2))),
     y = rstandard(bw_lm2)
   ) |>
   ggplot(aes(x = x, y = y)) +
   geom_point() +
   theme_bw() +
   coord_equal() +
-  xlab("resid(bw_lm2)/sigma(bw_lm2)") +
+  xlab("resid(bw_lm2)/(sigma(bw_lm2)*sqrt(1-h_ii))") +
   ylab("rstandard(bw_lm2)") +
   geom_abline(
     aes(
@@ -961,7 +970,7 @@ This should be true **for every** value of $x$.
 
 If we didn't correctly guess the functional form of the linear component of the mean,
 for covariate vector $x = (x_1,\ldots,x_p)$,
-$$\E{Y \mid X=x} = \beta_0 + \beta_1 x_1 + ... + \beta_p x_p$$
+$$\E{Y \mid X=x} = \b_0 + \b_1 x_1 + ... + \b_p x_p$$
 
 Then the residuals might have nonzero mean.
 
@@ -990,7 +999,7 @@ If the model is correct, the blue line should stay flat and close to 0, and the 
 If not,
 we probably need to change the functional form
 of linear component of the mean,
-$$\E{Y \mid X=x} = \beta_0 + \beta_1 x_1 + ... + \beta_p x_p$$
+$$\E{Y \mid X=x} = \b_0 + \b_1 x_1 + ... + \b_p x_p$$
 
 :::
 
