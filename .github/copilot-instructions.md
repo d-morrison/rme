@@ -80,11 +80,16 @@ Attribution should appear:
 so that readers can locate the source material.
 Use Pandoc's citation locator syntax: `[@citekey, Chapter 8]` or `[@citekey, p. 194]`.
 Include both chapter and page when both are known.
+Do **not** invent page numbers.
+Only cite a page after opening the source PDF
+and confirming the exact page.
+If you have not verified a page directly from the source PDF,
+cite chapter-level location only.
 
 Examples of attribution with page numbers:
 
-- "Adapted from @vittinghoff2e [Chapter 10, pp. 257–275]."
-- "The following example is based on @kleinbaum2010logistic [Chapter 8, pp. 194–212]."
+- "Adapted from @vittinghoff2e [Chapter 10]."
+- "The following example is based on @kleinbaum2010logistic [Chapter 8]."
 
 Do **not** reproduce verbatim text from copyrighted sources without clear quotation marks and attribution.
 Paraphrase and summarize with a citation instead.
