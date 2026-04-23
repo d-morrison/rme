@@ -273,10 +273,14 @@ uses R's built-in `mtcars` dataset
 to predict fuel efficiency (`mpg`)
 from vehicle weight (`wt`).
 It uses one random split
-to compare a linear model
-(`mpg ~ wt`)
-and a quadratic model
-(`mpg ~ wt + I(wt^2)`)
+to compare linear,
+quadratic,
+cubic,
+and quartic models
+(`mpg ~ wt`,
+`mpg ~ wt + I(wt^2)`,
+`mpg ~ wt + I(wt^2) + I(wt^3)`,
+and `mpg ~ wt + I(wt^2) + I(wt^3) + I(wt^4)`)
 on a validation set,
 then reports the chosen model's test RMSE
 on untouched test data
@@ -318,21 +322,42 @@ test_dat <- mtcars[idx_test, ]
 
 model_linear <- lm(mpg ~ wt, data = train_dat)
 model_quadratic <- lm(mpg ~ wt + I(wt^2), data = train_dat)
+model_cubic <- lm(mpg ~ wt + I(wt^2) + I(wt^3), data = train_dat)
+model_quartic <- lm(
+  mpg ~ wt + I(wt^2) + I(wt^3) + I(wt^4),
+  data = train_dat
+)
 
 compute_rmse <- function(model, data) {
   sqrt(mean((data$mpg - predict(model, newdata = data))^2))
 }
 
+candidate_models <- list(
+  linear = model_linear,
+  quadratic = model_quadratic,
+  cubic = model_cubic,
+  quartic = model_quartic
+)
+
 validation_results <- tibble::tibble(
-  model = c("linear", "quadratic"),
-  training_RMSE = c(
-    compute_rmse(model_linear, train_dat),
-    compute_rmse(model_quadratic, train_dat)
-  ),
-  validation_RMSE = c(
-    compute_rmse(model_linear, valid_dat),
-    compute_rmse(model_quadratic, valid_dat)
+  model = names(candidate_models)
+) |>
+  dplyr::mutate(
+    training_RMSE = purrr::map_dbl(
+      model,
+      \(model_name) compute_rmse(candidate_models[[model_name]], train_dat)
+    ),
+    validation_RMSE = purrr::map_dbl(
+      model,
+      \(model_name) compute_rmse(candidate_models[[model_name]], valid_dat)
+    )
   )
+
+model_labels <- c(
+  linear = "linear model",
+  quadratic = "quadratic model",
+  cubic = "cubic model",
+  quartic = "quartic model"
 )
 
 chosen_model_name <-
@@ -341,17 +366,7 @@ chosen_model_name <-
   dplyr::slice(1) |>
   dplyr::pull(model)
 
-model_labels <- c(
-  linear = "linear model",
-  quadratic = "quadratic model"
-)
-
 chosen_model_label <- model_labels[[chosen_model_name]]
-
-candidate_models <- list(
-  linear = model_linear,
-  quadratic = model_quadratic
-)
 
 chosen_model <- candidate_models[[chosen_model_name]]
 
@@ -369,7 +384,7 @@ performance_comparison <- tibble::tibble(
 #| label: fig-linear-model-superimposed
 #| fig-cap: Linear model fit superimposed on data partitions
 #| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
-#|   Points are colored by training,
+#|   Points are colored and shaped by training,
 #|   validation,
 #|   and test partitions.
 #|   The fitted linear regression line is superimposed.
@@ -425,7 +440,7 @@ legend(
 #| label: fig-quadratic-model-superimposed
 #| fig-cap: Quadratic model fit superimposed on data partitions
 #| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
-#|   Points are colored by training,
+#|   Points are colored and shaped by training,
 #|   validation,
 #|   and test partitions.
 #|   The fitted quadratic curve is superimposed.
