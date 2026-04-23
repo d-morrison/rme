@@ -383,7 +383,6 @@ performance_comparison <- tibble::tibble(
 
 ```{r}
 #| label: setup-model-fit-figure-partitions
-#| include: false
 partition_colors <- c(
   training = "#1b9e77",
   validation = "#d95f02",
@@ -481,6 +480,102 @@ lines(wt_grid, quadratic_pred, col = "blue", lwd = 2)
 legend(
   "topright",
   legend = c("training", "validation", "test", "quadratic fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+```{r}
+#| label: fig-cubic-model-superimposed
+#| fig-cap: Cubic model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted cubic curve is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+wt_grid <- seq(wt_range[1], wt_range[2], length.out = 200)
+cubic_pred <- predict(
+  model_cubic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, cubic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "cubic fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+```{r}
+#| label: fig-quartic-model-superimposed
+#| fig-cap: Quartic model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted quartic curve is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+wt_grid <- seq(wt_range[1], wt_range[2], length.out = 200)
+quartic_pred <- predict(
+  model_quartic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, quartic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "quartic fit"),
   col = c(unname(partition_colors), "blue"),
   pch = c(unname(partition_shapes), NA),
   lty = c(NA, NA, NA, 1),
