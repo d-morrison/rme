@@ -369,26 +369,21 @@ chosen_model_name <-
 chosen_model_label <- model_labels[[chosen_model_name]]
 
 chosen_model <- candidate_models[[chosen_model_name]]
+chosen_model_validation_rmse <- compute_rmse(chosen_model, valid_dat)
 
 performance_comparison <- tibble::tibble(
   split = c("validation", "test"),
   model = chosen_model_name,
   RMSE = c(
-    min(validation_results$validation_RMSE),
+    chosen_model_validation_rmse,
     compute_rmse(chosen_model, test_dat)
   )
 )
 ```
 
 ```{r}
-#| label: fig-linear-model-superimposed
-#| fig-cap: Linear model fit superimposed on data partitions
-#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
-#|   Points are colored and shaped by training,
-#|   validation,
-#|   and test partitions.
-#|   The fitted linear regression line is superimposed.
-#| code-fold: true
+#| label: setup-model-fit-figure-partitions
+#| include: false
 partition_colors <- c(
   training = "#1b9e77",
   validation = "#d95f02",
@@ -401,7 +396,17 @@ partition_shapes <- c(
 )
 wt_range <- range(c(train_dat$wt, valid_dat$wt, test_dat$wt))
 mpg_range <- range(c(train_dat$mpg, valid_dat$mpg, test_dat$mpg))
+```
 
+```{r}
+#| label: fig-linear-model-superimposed
+#| fig-cap: Linear model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted linear regression line is superimposed.
+#| code-fold: true
 plot(
   train_dat$wt,
   train_dat$mpg,
