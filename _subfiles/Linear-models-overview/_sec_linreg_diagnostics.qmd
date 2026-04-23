@@ -692,9 +692,32 @@ A QQ plot compares the empirical distribution of a dataset to a theoretical refe
 Each point corresponds to one observation:
 
 - The **x-axis** (Theoretical Quantiles) shows the $N(0,1)$ quantile
-  corresponding to the plotting position $p_i = (\text{rank}_i - 0.5) / n$
-  assigned to each observation based on its rank.
-- The **y-axis** (Standardized Residuals) shows the observed standardized residual $r_i$.
+  corresponding to the plotting position $p_i$
+  used for the $i$th ordered residual.
+  In R, `qqnorm()` obtains these plotting positions
+  from `ppoints(n)`.
+- The **y-axis** (Standardized Residuals) shows the observed standardized residuals,
+  plotted in increasing order as $r_{(1)}\le\cdots\le r_{(n)}$.
+  In QQ-plot terminology,
+  these ordered values are [sample quantiles](nonparametric-models.qmd#def-sample-quantile).
+  Let $r_{(1)} \le \cdots \le r_{(n)}$
+  be the [order statistics](nonparametric-models.qmd#def-order-statistics)
+  of the standardized residuals.
+  Let $\hat F_r$ be their [empirical CDF](nonparametric-models.qmd#def-empirical-cdf)
+  and $\hat Q_r$ the corresponding sample quantile function.
+  The QQ plot uses points
+  $$\left(\Phi^{-1}(p_i),\, r_{(i)}\right), \quad i = 1, \ldots, n,$$
+  where $p_i$ denotes the plotting positions returned by `ppoints(n)`.
+  For the common midpoint choice $p_i=(i-0.5)/n$,
+  we have $\hat Q_r(p_i)=r_{(i)}$.
+  More generally,
+  `qqnorm()` pairs the $i$th ordered residual
+  with the corresponding theoretical quantile
+  computed from its plotting position.
+  So both labels are correct:
+  `qqnorm()` emphasizes the quantile role ("Sample Quantiles"),
+  while `autoplot.lm()` emphasizes the underlying ordered values
+  ("Standardized residuals").
 
 If the standardized residuals approximately follow $N(0,1)$,
 the points should fall approximately on a straight line.
