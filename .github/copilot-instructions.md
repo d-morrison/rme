@@ -82,12 +82,32 @@ but grammatically the citation key itself is treated as a singular pronoun/name.
 
 When adapting any content from another source,
 always include specific attribution in the chapter text.
+Always state the exact adapted exercise(s) or example(s),
+not just a broad chapter citation.
 Use a BibTeX-backed citation key
 with a chapter or page locator
 (for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
 Do not use generic acknowledgements without locators
 or plaintext author-title references
 when a BibTeX citation is available.
+
+## Variable Definitions in Exercises
+
+When introducing model variables in exercises,
+list variable definitions as bullet points
+and/or a table.
+Do not define multiple variables inline in prose.
+Include symbol,
+plain-language meaning,
+and dataset column mapping.
+
+## Solution Wording
+
+In solution blocks,
+state the correct conclusions directly.
+Do not phrase final answers conditionally
+when the provided figure or context
+supports a specific conclusion.
 
 ## Code Formatting Guidelines
 
@@ -164,6 +184,9 @@ so data-frame printing is:
 When this configuration is in place,
 full dataset prints in exercises are expected behavior,
 not automatically a readability problem.
+Feedback that asks to trim dataset prints
+without checking these format settings
+can be incorrect.
 
 If a maintainer claim
 (or any other claim)

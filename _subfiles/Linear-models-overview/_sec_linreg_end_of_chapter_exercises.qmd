@@ -8,28 +8,28 @@ No numerical computation is required.
 Main-effects model interpretation.
 
 Adapted from
+the main-effects interpretation exercise in
 @vittinghoff2e [Chapter 4].
 
 Dataset summary:
 The
 `ToothGrowth`
 dataset contains one row per guinea pig.
-Let
-$Y$
-be tooth length (`len`),
-$X$
-be dose (`dose`),
-and
-$Z$
-be supplement indicator,
-with
-$Z=1$
-for
-`VC`
-and
-$Z=0$
-for
-`OJ`.
+Variable definitions:
+- $Y$:
+  tooth length (`len`)
+- $X$:
+  dose (`dose`)
+- $Z$:
+  supplement indicator (`supp`)
+  with
+  $Z=1$
+  for
+  `VC`
+  and
+  $Z=0$
+  for
+  `OJ`
 
 Consider the additive model
 
@@ -88,33 +88,35 @@ ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
 \ 
 
 $\b_0$
-is mean tooth length
-when
-$X=0$
-and
-$Z=0$
-(`OJ`).
-So it depends on the reference level
-`OJ`.
+is the mean tooth length
+for guinea pigs given
+`OJ`
+at dose
+0.
 
 $\b_X$
 is the change in mean tooth length
-for a one-unit increase in
-$X$,
-holding
-$Z$
-fixed.
-Because the model is additive,
-this slope is the same for both supplement groups.
+for each one-unit increase in dose.
+In this additive model,
+that dose effect is the same
+for
+`OJ`
+and
+`VC`.
 
 $\b_Z$
-is the mean difference
-(`VC` minus `OJ`)
-at a fixed value of
-$X$.
-Its interpretation depends on
+is the mean tooth-length difference
+between
+`VC`
+and
 `OJ`
-being the reference level.
+at the same dose.
+The interpretations that depend on
+`OJ`
+as the reference level are
+$\b_0$
+and
+$\b_Z$.
 :::
 
 ---
@@ -123,18 +125,28 @@ being the reference level.
 Interaction interpretation.
 
 Adapted from
+the interaction-slope interpretation example in
 @dobson4e [Section 6.7.1].
 
 Use
 `ToothGrowth`
 as introduced in
 [Exercise @exr-lm-eoc-main-effects].
-Let
-$Y=\texttt{len}$,
-$X=\texttt{dose}$,
-and
-$Z$
-be the same supplement indicator.
+Variable definitions:
+- $Y$:
+  tooth length (`len`)
+- $X$:
+  dose (`dose`)
+- $Z$:
+  supplement indicator (`supp`)
+  with
+  $Z=1$
+  for
+  `VC`
+  and
+  $Z=0$
+  for
+  `OJ`
 
 Consider the interaction model
 
@@ -184,21 +196,18 @@ ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
 \ 
 
 For
-`OJ`
-($Z=0$),
-the slope is
+`OJ`,
+the dose slope is
 $\b_X$.
 
 For
-`VC`
-($Z=1$),
-the slope is
+`VC`,
+the dose slope is
 $\b_X + \b_{XZ}$.
 
 Therefore,
 $\b_{XZ}$
-is the difference in
-$X$-slopes
+is the difference in dose slopes
 between
 `VC`
 and
@@ -210,21 +219,23 @@ and
 ::: {#exr-lm-eoc-centering}
 Centering and coefficient changes.
 
-Adapted from end-of-chapter exercises in
+Adapted from
+the centering/reparameterization exercise in
 @kleinbaum2014applied [Chapter 14].
 
 Dataset summary:
 The
 `PLOS`
 dataset contains one row per paper.
-Let
-$Y$
-be title length (`nchar`)
-and
-$X$
-be number of authors (`authors`).
-Define
-$X^* = X - 10$.
+Variable definitions:
+- $Y$:
+  title length (`nchar`)
+- $X$:
+  number of authors (`authors`)
+- $X^*$:
+  centered author count,
+  defined as
+  $X^* = X - 10$
 
 Start from
 
@@ -331,20 +342,20 @@ but does not change the slope.
 Diagnostics from observed residual patterns.
 
 Adapted from
+the residual-diagnostics example in
 @dunn2018generalized [Chapter 3].
 
 Dataset summary:
 The
 `mtcars`
 dataset contains one row per car model.
-Let
-$Y$
-be fuel economy (`mpg`),
-$X$
-be weight (`wt`),
-and
-$H$
-be horsepower (`hp`).
+Variable definitions:
+- $Y$:
+  fuel economy (`mpg`)
+- $X$:
+  vehicle weight (`wt`)
+- $H$:
+  horsepower (`hp`)
 
 Consider the model
 
@@ -386,15 +397,18 @@ autoplot(eoc_mtcars_fit, which = 2, ncol = 1)
 ::: {.solution}
 \ 
 
-The residual-vs-fitted plot should be checked
-for curvature and changing spread.
-The Q-Q plot should be checked
-for tail departures.
+The residual-vs-fitted plot shows
+nonlinearity and non-constant spread.
+The Q-Q plot shows
+mild tail departures from normality.
 
-If either pattern is substantial,
-a reasonable next step is to compare
-an alternative specification
+The correct conclusion is that
+linearity and constant-variance assumptions
+are the most questionable here.
+A practical next step is to fit
+a model with a nonlinear weight term
 (for example,
-nonlinear terms or transformation)
+a spline or polynomial in
+`wt`)
 and then re-check diagnostics.
 :::
