@@ -148,6 +148,19 @@ Example:
 # First, check if the input is valid. Then, process the data. Finally, return the result.
 ```
 
+## Definition Formatting
+
+When introducing or editing formal statistical definitions in `.qmd` files:
+
+- Use a definition div with an id beginning `#def-`
+- Put the definition title in a heading inside the div
+  and choose the heading level to match the surrounding section depth
+  (for example, `####` or `#####`)
+- If a definition uses other statistical terms
+  (for example, empirical CDF),
+  ensure those terms also have formal `#def-` div definitions
+  in the relevant scope before relying on them
+
 ## Quarto Code Chunk Options
 
 Default to
@@ -342,6 +355,27 @@ This repository uses JAGS (Just Another Gibbs Sampler) for Bayesian analysis:
 - JAGS must be installed in workflows that render Quarto documents (using `sudo apt-get install -y jags`)
 - R packages `rjags` and `runjags` depend on JAGS being installed
 - The lint workflow also needs these packages installed to avoid false positives
+
+## Quarto Slide Breaks
+
+Use `{{< slidebreak >}}` instead of raw `---` to insert slide breaks in `.qmd` files.
+The `{{< slidebreak >}}` shortcode produces a slide break only in `revealjs` output,
+and produces no output in other formats (HTML, PDF, etc.).
+This allows the same source file to render correctly across multiple output formats.
+
+Example:
+
+```markdown
+## Slide 1
+
+Content here.
+
+{{< slidebreak >}}
+
+## Slide 2
+
+More content.
+```
 
 ## Computer Algebra Systems (CAS)
 
