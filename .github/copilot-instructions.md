@@ -87,6 +87,8 @@ not just a broad chapter citation.
 When the source provides numbered exercises/examples,
 cite the exact number
 and the exact page number.
+When specific numbers are not available in the source,
+use chapter/section locators instead of inventing numbers.
 Use a BibTeX-backed citation key
 with a chapter or page locator
 (for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
