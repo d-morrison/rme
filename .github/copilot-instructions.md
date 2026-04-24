@@ -84,6 +84,9 @@ When adapting any content from another source,
 always include specific attribution in the chapter text.
 Always state the exact adapted exercise(s) or example(s),
 not just a broad chapter citation.
+When the source provides numbered exercises/examples,
+cite the exact number
+and the exact page number.
 Use a BibTeX-backed citation key
 with a chapter or page locator
 (for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
