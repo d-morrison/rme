@@ -273,12 +273,23 @@ we use:
 
 #### General characteristics of residuals
 
+:::{#def-hat-matrix}
+#### Hat matrix
+
+For an ordinary least squares linear model
+with design matrix $\mX$,
+the **hat matrix** is
+
+$$H = \mX(\tp{\mX}\mX)^{-1}\tp{\mX}$$
+
+so the fitted values satisfy
+
+$$\hat{\vY} = H\vY$$
+:::
+
 :::{#thm-resid-unbiased}
 For an ordinary least squares linear model
 with fitted values $\hat y = \dprodf{\vx, \vb}$,
-let $H = \mX(\tp{\mX}\mX)^{-1}\tp{\mX}$
-be the hat matrix
-so that $\hat{\vY} = H\vY$,
 if $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators)
 estimator of the mean $\Expf{Y}$, so that:
 
@@ -716,7 +727,7 @@ bw <-
     resid_lm2_alt = weight - fitted_lm2,
     std_resid_lm2 = rstandard(bw_lm2),
     std_resid_lm2_alt =
-    resid_lm2 / (sigma(bw_lm2) * sqrt(1 - hatvalues(bw_lm2)))
+    resid_lm2 / (sigma(bw_lm2) * sqrt(1 - h_ii))
   )
 
 bw |>
