@@ -626,14 +626,14 @@ and $\delta_{ij}$ is the Kronecker delta
 then
 
 $$
-\Cov{\resid_i,\resid_j}
+\Cov{\resid_i,\resid_j \mid \mX}
 = \ss(\delta_{ij} - h_{ij}),
 $$
 
 and therefore
 
 $$
-\Cov{\stdresid_i,\stdresid_j}
+\Cov{\stdresid_i,\stdresid_j \mid \mX}
 \approx
 \frac{\delta_{ij} - h_{ij}}
 {\sqrt{(1-h_{ii})(1-h_{jj})}}.
@@ -708,7 +708,8 @@ bw <-
     resid_lm2 = resid(bw_lm2),
     resid_lm2_alt = weight - fitted_lm2,
     std_resid_lm2 = rstandard(bw_lm2),
-    std_resid_lm2_alt = resid_lm2 / sigma(bw_lm2)
+    std_resid_lm2_alt =
+    resid_lm2 / (sigma(bw_lm2) * sqrt(1 - hatvalues(bw_lm2)))
   )
 
 bw |>
