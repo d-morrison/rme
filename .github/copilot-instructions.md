@@ -5,7 +5,7 @@
 > 
 > Before committing ANY changes to `.qmd`, `.R`, or config files:
 > 
-> 1. **Run `quarto render` on the FULL repository** (not individual files)
+> 1. **Run `quarto render <chapter.qmd> --to html` on each chapter whose subfiles were edited** (not individual subfiles; not the full book; HTML format only unless you are specifically fixing a non-HTML format issue)
 > 2. **Verify it completes successfully** (exit code 0, no errors)
 > 3. **Run linter on changed files**:
 >    - For R files: `lintr::lint("path/to/file.R")`  
@@ -19,7 +19,8 @@
 > **CRITICAL RULES:**
 > - **CI is NOT the test** - you must test locally BEFORE pushing
 > - **NEVER rely on CI to discover rendering, lint, or spelling errors** - that's your job
-> - **ALWAYS run full `quarto render`** - testing individual files is insufficient
+> - **Only render HTML format** (`--to html`) unless specifically fixing a non-HTML format issue
+> - **Only render edited chapters** — run `quarto render <chapter.qmd> --to html` on the parent `.qmd` that includes each edited subfile; do not render the full book
 > - **Only fix lint/spell issues in code YOU changed** - don't fix unrelated pre-existing issues
 > - **This is a hard requirement - no exceptions, no excuses**
 
@@ -28,7 +29,7 @@
 **CRITICAL**: Do not make assumptions about what code will do - always test it yourself.
 
 - **Test your changes**: Run the actual commands to verify functionality
-- **Run `quarto render` on FULL repository**: Testing individual files misses cross-file issues
+- **Run `quarto render <chapter.qmd> --to html` on each edited chapter**: Only render chapters whose subfiles were edited, in HTML format (not the full book, not all formats)
 - **Verify output**: Check that expected files are created with correct content
 - **Never claim success without evidence**: Only report that something works after you've confirmed it yourself
 
@@ -175,6 +176,19 @@ Example:
 # Avoid: Multiple phrases on one line
 # First, check if the input is valid. Then, process the data. Finally, return the result.
 ```
+
+## Definition Formatting
+
+When introducing or editing formal statistical definitions in `.qmd` files:
+
+- Use a definition div with an id beginning `#def-`
+- Put the definition title in a heading inside the div
+  and choose the heading level to match the surrounding section depth
+  (for example, `####` or `#####`)
+- If a definition uses other statistical terms
+  (for example, empirical CDF),
+  ensure those terms also have formal `#def-` div definitions
+  in the relevant scope before relying on them
 
 ## Quarto Code Chunk Options
 
@@ -372,6 +386,27 @@ This repository uses JAGS (Just Another Gibbs Sampler) for Bayesian analysis:
 - R packages `rjags` and `runjags` depend on JAGS being installed
 - The lint workflow also needs these packages installed to avoid false positives
 
+## Quarto Slide Breaks
+
+Use `{{< slidebreak >}}` instead of raw `---` to insert slide breaks in `.qmd` files.
+The `{{< slidebreak >}}` shortcode produces a slide break only in `revealjs` output,
+and produces no output in other formats (HTML, PDF, etc.).
+This allows the same source file to render correctly across multiple output formats.
+
+Example:
+
+```markdown
+## Slide 1
+
+Content here.
+
+{{< slidebreak >}}
+
+## Slide 2
+
+More content.
+```
+
 ## Computer Algebra Systems (CAS)
 
 The Copilot environment includes two computer algebra systems for symbolic mathematics.
@@ -433,7 +468,7 @@ maxima --very-quiet --batch=/tmp/cas_check.mac
 
 **CRITICAL REQUIREMENTS** before requesting code review:
 
-1. **Run `quarto render` yourself locally** on the full repository and ensure it passes
+1. **Run `quarto render <chapter.qmd> --to html`** on each chapter whose subfiles you edited — do NOT render the full book, and do NOT render all formats unless you are specifically fixing a non-HTML format issue
 2. **Verify it completes successfully** (exit code 0, no errors)
 3. **Do NOT rely solely on CI workflows** to catch rendering issues
 4. **Test the actual command and wait for completion** - do not assume success
@@ -447,7 +482,8 @@ maxima --very-quiet --batch=/tmp/cas_check.mac
 - All documents render correctly (check for missing images, broken math, etc.)
 
 **Common mistakes to avoid**:
-- Testing individual files only (use `quarto render` for full repository)
+- Rendering all chapters when only a few subfiles changed (only render chapters with edited subfiles)
+- Rendering all output formats when only HTML is needed (use `--to html` unless fixing a specific format issue)
 - Not waiting for the command to complete
 - Assuming success without checking the exit code
 - Claiming "it works" without actually running the command
