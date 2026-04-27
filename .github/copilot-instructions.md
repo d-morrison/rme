@@ -214,6 +214,11 @@ Residual and deviation helper macros include:
 
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
 
+When a repeatedly used expression needs a new macro,
+add it to `latex-macros/macros.qmd`
+in the `latex-macros` submodule
+and push that submodule update.
+
 ## Color Coding Strategy for Math Expressions
 
 Use `\red{...}` and `\blue{...}` purposefully and consistently to help readers:
