@@ -33,6 +33,15 @@
 - **Verify output**: Check that expected files are created with correct content
 - **Never claim success without evidence**: Only report that something works after you've confirmed it yourself
 
+## Code Review Scope
+
+The `_extensions/` directory contains Quarto extensions installed from external repositories
+(e.g., via `quarto add`).
+These files are third-party code managed upstream.
+**Do not review or suggest changes to files under `_extensions/`.**
+Treat them as vendored dependencies — read them for context if needed,
+but do not flag issues or request modifications in those files.
+
 ## Pull Request Guidelines
 
 - Always ensure that PR branch is up to date with main branch before requesting PR review
@@ -41,6 +50,9 @@
   - Verify external URLs are accessible and correct
   - Test cross-references and anchor links
   - Ensure relative paths are correct
+- **If ANY subfiles (`_subfiles/`) were edited in the PR, add the "clear freezer" label to the PR.**
+  Quarto's freeze cache does not detect changes in subfiles (see [quarto-dev/quarto-cli#6793](https://github.com/quarto-dev/quarto-cli/issues/6793)),
+  so the frozen output must be cleared manually to pick up those changes.
 
 ## Linking Within the Quarto Website
 
