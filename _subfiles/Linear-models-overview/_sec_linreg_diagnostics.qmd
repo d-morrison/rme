@@ -1214,12 +1214,12 @@ indicates departure from normality.
 ---
 
 #### Numerical example (`birthweight` interaction model)
-
-```{r}
-#| code-fold: false
-diag_bw <-
-  bw |>
-  select(sex, resid_lm2, std_resid_lm2)
+  broom::augment(bw_lm2, data = bw) |>
+  transmute(
+    sex,
+    resid_lm2 = .resid,
+    std_resid_lm2 = .std.resid
+  )
 
 fligner_bw <- fligner.test(resid_lm2 ~ sex, data = diag_bw)
 
