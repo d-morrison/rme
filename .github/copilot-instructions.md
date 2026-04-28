@@ -41,6 +41,9 @@
   - Verify external URLs are accessible and correct
   - Test cross-references and anchor links
   - Ensure relative paths are correct
+- **If ANY subfiles (`_subfiles/`) were edited in the PR, add the "clear freezer" label to the PR.**
+  Quarto's freeze cache does not detect changes in subfiles (see [quarto-dev/quarto-cli#6793](https://github.com/quarto-dev/quarto-cli/issues/6793)),
+  so the frozen output must be cleared manually to pick up those changes.
 
 ## Linking Within the Quarto Website
 
