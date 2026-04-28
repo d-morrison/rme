@@ -199,18 +199,116 @@ For the variance, see <https://statproofbook.github.io/P/poiss-var>.
 
 #### Accounting for exposure
 
-If the exposures/observation durations, denoted $T=t$ or $N=n$, vary between observations, we model:
+:::{#def-exposure}
 
-$$\mu = \lambda\cdot t$$
+##### Exposure magnitude
 
-$\lambda$ is interpreted as the "expected event rate per unit of exposure"; that is,
+For many count outcomes,
+there is some sense of
+an **exposure magnitude**,
+such as
+**population size**,  or
+**duration of observation**,
+which multiplicatively rescales
+the expected (mean) count.
 
-$$\lambda = \frac{\Expp[Y|T=t]}{t}$$
+:::
+
+---
+
+:::{#exr-exposure-magnitude}
+What are some examples of exposure magnitudes?
+:::
+
+---
+
+::: {.solution .smaller}
+
+outcome                      | exposure units
+-----------------------------| -------------
+disease incidence            | number of individuals exposed; time at risk
+car accidents                | miles driven
+worksite accidents           | person-hours worked
+population size              | size of habitat
+
+: Examples of exposure units {#tbl-exposure-units}
+
+:::
+
+:::: notes
+Exposure units are similar to
+the number of trials in a binomial distribution,
+but **in non-binomial count outcomes, there can be more than one event per unit of exposure**.
+
+We can use $t$ to represent continuous-valued exposures/observation durations,
+and $n$ to represent discrete-valued exposures.
+
+::::
+
+---
+
+::: {#def-event-rate}
+#### Event rate
+
+:::: notes
+For a count outcome $Y$ with exposure magnitude $t$,
+the **event rate** (denoted $\lambda$)
+is defined as the mean of $Y$ divided by the exposure magnitude.
+That is:
+::::
+
+$$\mu \eqdef \Expp[Y|T=t]$$
+
+$$\lambda \defeq \frac{\mu}{t}$$ {#eq-def-event-rate}
+:::
+
+::: notes
+Event rate is somewhat analogous to odds in binary outcome models;
+it typically serves as an intermediate transformation between the mean of the outcome and the linear component of the model.
+However, in contrast with the odds function, the transformation $\lambda = \mu/t$ is *not* considered part of the Poisson model's link function, and it treats the exposure magnitude covariate differently from the other covariates.
+:::
+
+---
+
+:::{#thm-mean-vs-event-rate}
+#### Transformation function from event rate to mean
+
+For a count variable with mean $\mu$, event rate $\lambda$, and exposure magnitude $t$:
+
+$$\mu = \lambda \cdot t$${#eq-lambda-to-mu}
+
+:::
+
+---
+
+::: solution
+Start from definition of event rate and use algebra to solve for $\mu$.
+:::
+
+---
+
+@eq-lambda-to-mu is analogous to the inverse-odds function for binary variables.
+
+---
+
+::: {#thm-non-exposed}
+When the exposure magnitude is 0, there is no opportunity for events to occur:
+
+$$\Expp[Y|T=0] = 0$$
+:::
+
+---
+
+::: proof
+$$\Expp[Y|T=0] = \lambda \cdot 0 = 0$$
+:::
+
+---
 
 :::{.callout-important}
 
-The exposure magnitude, $T$, is *similar* to a covariate in linear or logistic regression. 
-However, there is an important difference: in count regression, **there is no intercept corresponding to $\Expp[Y|T=0]$**. 
+The exposure magnitude, $T$, is *similar* to a covariate in linear or logistic regression.
+However, there is an important difference: in count regression, **there is no intercept corresponding to $\Expp[Y|T=0]$**.
 In other words, this model assumes that if there is no exposure, there can't be any events.
 
 :::
