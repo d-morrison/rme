@@ -1,0 +1,96 @@
+
+If our Gaussian linear regression model is correct, the residuals $\resid_i$ and standardized residuals $\stdresid_i$ should have:
+
+-   an approximately Gaussian distribution, with:
+-   a mean of 0
+-   a constant variance
+
+This should be true **for every** value of $x$.
+
+---
+
+If we didn't correctly guess the functional form of the linear component of the mean,
+for covariate vector $x = (x_1,\ldots,x_p)$,
+$$\E{Y \mid X=x} = \b_0 + \b_1 x_1 + ... + \b_p x_p$$
+
+Then the residuals might have nonzero mean.
+
+Regardless of whether we guessed the mean function correctly, the variance of the residuals might differ between values of $x$.
+
+---
+
+#### Residuals versus fitted values
+
+::: notes
+To look for these issues, we can plot the residuals $\resid_i$ against the fitted values $\hat y_i$ (@fig-bw_lm2-resid-vs-fitted).
+:::
+
+:::{#fig-bw_lm2-resid-vs-fitted}
+
+```{r}
+autoplot(bw_lm2, which = 1, ncol = 1) |> print()
+```
+
+`birthweight` model  (@eq-BW-lm-interact): residuals versus fitted values
+:::
+
+::: notes
+If the model is correct, the blue line should stay flat and close to 0, and the cloud of dots should have the same vertical spread regardless of the fitted value.
+
+If not,
+we probably need to change the functional form
+of the linear component of the mean,
+$$\E{Y \mid X=x} = \b_0 + \b_1 x_1 + ... + \b_p x_p$$
+
+:::
+
+---
+
+{{< include exm-plot-fits.qmd >}}
+---
+
+#### Scale-location plot
+
+::: notes
+We can also plot the square roots of the absolute values of the standardized residuals against the fitted values (@fig-bw-scale-loc).
+:::
+
+```{r}
+#| label: fig-bw-scale-loc
+#| fig-cap: "Scale-location plot of `birthweight` data"
+autoplot(bw_lm2, which = 3, ncol = 1) |> print()
+```
+
+::: notes
+Here, the blue line doesn't need to be near 0, 
+but it should be flat. 
+If not, the residual variance $\sigma^2$ might not be constant, 
+and we might need to transform our outcome $Y$ 
+(or use a model that allows non-constant variance).
+:::
+
+---
+
+#### Residuals versus leverage
+
+::: notes
+
+We can also plot our standardized residuals against "leverage", which roughly speaking is a measure of how unusual each $x_i$ value is. Very unusual $x_i$ values can have extreme effects on the model fit, so we might want to remove those observations as outliers, particularly if they have large residuals.
+
+:::
+
+::: {#fig-bw_lm2_resid-vs-leverage}
+
+```{r}
+autoplot(bw_lm2, which = 5, ncol = 1) |> print()
+```
+
+`birthweight` model with interactions (@eq-BW-lm-interact): residuals versus leverage
+:::
+
+::: notes
+The blue line should be relatively flat and close to 0 here.
+:::
+
+---
+

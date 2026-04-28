@@ -1,0 +1,545 @@
+
+::: notes
+Maybe we can transform the data and model in some way 
+to make it easier to inspect.
+:::
+
+{{< include _subfiles/Linear-models-overview/_def-residual-deviation.qmd >}}
+
+{{< include _subfiles/Linear-models-overview/_def-signal.qmd >}}
+
+---
+
+:::{#thm-gaussian-resid-deviation}
+#### Deviations in Gaussian models
+
+If $Y$ has a Gaussian distribution, 
+then $\devn(Y)$ also has a Gaussian distribution, and vice versa.
+:::
+
+:::{.proof}
+
+By @def-resid-noise, $\devn(Y) = Y - \Expf{Y}$.
+Since $\devn(Y)$ is an affine function of $Y$ (a linear function plus a constant),
+and Gaussian distributions are closed under affine transformations,
+if $Y \sim \Normal(\mu, \ss)$, then:
+
+$$
+\devn(Y) = Y - \mu \sim \Normal(\mu - \mu, \ss) = \Normal(0, \ss)
+$$
+
+Conversely, since $Y = \Expf{Y} + \devn(Y) = \mu + \devn(Y)$,
+if $\devn(Y) \sim \Normal(0, \ss)$, then $Y = \mu + \devn(Y) \sim \Normal(\mu, \ss)$.
+
+:::
+
+---
+
+:::{#def-resid-fitted}
+#### Residuals
+
+{{< include _subfiles/shared/_def-residual-observed-minus-fitted.qmd >}}
+:::
+
+---
+
+:::{#exm-resid-bw}
+
+#### residuals in `birthweight` data
+
+:::{#fig-bw-resids1}
+
+```{r}
+plot1_interact +
+  facet_wrap(~sex) +
+  geom_segment(
+    aes(
+      x = age,
+      y = predlm2,
+      xend = age,
+      yend = weight,
+      col = sex,
+      group = id
+    ),
+    linetype = "dotted"
+  )
+```
+
+Fitted values and residuals for interaction model for `birthweight` data
+
+:::
+
+:::
+
+---
+
+#### Residuals of fitted values vs subpopulation-mean deviations
+
+The residual is a plug-in estimate
+of the deviation of an observation
+from its subpopulation mean:
+
+$$
+\ba
+\devn(y_i) &= y_i - \E{Y_i \mid X_i}
+\\
+\widehat{\devn(y_i)} &= y_i - \hat y_i
+\\
+&= \resid_i
+\ea
+$$
+
+Different sources are not fully consistent
+about these terms.
+For terminology in this course,
+we use:
+
+- **deviation**
+  for deviation of an observation from its population mean (typically conditional on covariates).
+  This quantity is often called **error** in other sources,
+  even though it doesn't directly involve an estimate;
+  cf., <https://en.wikipedia.org/wiki/Errors_and_residuals>;
+- **estimation error** for deviation of an estimate from its estimand;
+- **residual** for deviation of an observed value from a fitted value.
+
+---
+
+#### General characteristics of residuals
+
+:::{#def-hat-matrix}
+##### Hat matrix
+
+For an ordinary least squares linear model
+with design matrix $\mX$,
+the **hat matrix** is
+
+$$H = \mX(\tp{\mX}\mX)^{-1}\tp{\mX}$$
+
+so the fitted values satisfy
+
+$$\hat{\vY} = H\vY$$
+:::
+
+:::{#thm-resid-unbiased}
+For an ordinary least squares linear model
+with fitted values $\hat y_i = \dprodf{\vx_i}{\vb}$
+(and fitted-value vector $\hat{\vY}$),
+if the conditional mean is correctly specified so that:
+
+$$ \E{\vY \mid \mX} = \mX\b$$
+
+equivalently:
+
+$$ \E{\hat{\vY} \mid \mX} = \E{\vY \mid \mX}$$
+
+and if the errors are homoskedastic so that
+$\Var{\vY \mid \mX} = \ss \idmat_n$ where $\idmat_n$ is the $n \times n$ identity matrix,
+then,
+treating $\mX$ as fixed in this derivation,
+the residual moments are:
+
+$$\E{\vec{\resid} \mid \mX} = 0$$ {#eq-mean-resid-unbiased}
+$$\Var{\resid_i \mid \mX} = \ss(1-h_{ii})$$ {#eq-var-resid-leverage}
+
+The conditional mean result (@eq-mean-resid-unbiased)
+uses unbiasedness of fitted values.
+The conditional variance result (@eq-var-resid-leverage)
+uses the homoskedasticity condition
+with the OLS hat-matrix representation.
+
+When leverage is roughly uniform,
+$h_{ii} \approx k/n$,
+where $k = \mathrm{rank}(\mX)$
+(so $k = p + 1$ for a full-rank model
+with an intercept and $p$ predictors),
+so $\Var{\resid_i} \approx \ss$
+as $n$ grows.
+
+:::
+
+---
+
+:::{.proof}
+
+@eq-mean-resid-unbiased:
+
+$$
+\ba
+\E{{\vec{\resid}} \mid \mX} &= \E{\vY - \hat{\vY} \mid \mX}
+\\ &= \E{\vY \mid \mX} - \E{\hat{\vY} \mid \mX}
+\\ &= \E{\vY \mid \mX} - \E{H\vY \mid \mX}
+\\ &= \E{\vY \mid \mX} - H\E{\vY \mid \mX}
+\\ &= \E{\vY \mid \mX} - H\mX\b
+\\ &= \mX\b - H\mX\b
+\\ &= \mX\b - \mX\b
+\\ &= \vec{0}
+\ea
+$$
+
+@eq-var-resid-leverage:
+
+$$
+\ba
+{\vec{\resid}} &= (\idmat_n-H)\vY
+\\ \Var{{\vec{\resid}} \mid \mX} &= \Var{(\idmat_n-H)\vY \mid \mX}
+\\ &= (\idmat_n-H)\Var{\vY \mid \mX}\tp{(\idmat_n-H)}
+\\ &= (\idmat_n-H)\ss \idmat_n\tp{(\idmat_n-H)}
+\\ &= \ss(\idmat_n-H)\tp{(\idmat_n-H)}
+\\ &= \ss(\idmat_n-H)^2
+\\ &= \ss(\idmat_n - 2H + H^2)
+\\ &= \ss(\idmat_n-H) \qquad (\text{since } H^2 = H)
+\\ \Var{\resid_i \mid \mX} &= \left[\Var{{\vec{\resid}} \mid \mX}\right]_{ii}
+\\ &= \left[\ss(\idmat_n-H)\right]_{ii}
+\\ &= \ss(1-h_{ii})
+\ea
+$$
+
+:::
+
+---
+
+:::{#thm-resid-gaussian}
+#### Conditional distribution of residuals in Gaussian models
+
+In a Gaussian linear regression model,
+the residuals $\resid_i$,
+conditional on the design matrix $\mX$,
+are normally distributed:
+
+$$\resid_i \mid \mX \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
+
+where $h_{ii}$ is the $i$-th diagonal element of the hat matrix (@def-hat-matrix).
+When leverage is roughly uniform,
+$\ss(1-h_{ii}) \approx \ss$ for large $n$;
+replacing the unknown $\ss$ with its estimate $\hs^2$ gives:
+
+$$\resid_i \approx \Normal(0, \hs^2)$$ {#eq-resid-dist-approx}
+
+:::
+
+---
+
+:::{.proof}
+
+Using the hat matrix (@def-hat-matrix),
+the residual vector is $\vec{\resid} = (I-H)\vY$,
+so the $i$-th residual is a linear combination of the observations:
+
+$$\resid_i = [(I-H)\vY]_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, Y_j$$
+
+where $\delta_{ij}$ is the Kronecker delta
+($\delta_{ij} = 1$ if $i = j$, else $\delta_{ij} = 0$).
+
+Given $\mX$,
+the random variables $Y_1, \ldots, Y_n$ are conditionally independent Gaussians
+by the Gaussian model assumption.
+Therefore,
+conditional on $\mX$,
+the residual $\resid_i$ is a linear combination of independent Gaussians,
+so $\resid_i$ is Gaussian.
+
+The mean and variance follow from @thm-resid-unbiased:
+
+$$
+\ba
+\Ef{\resid_i \mid \mX} &= 0
+\\ \Var{\resid_i \mid \mX} &= \ss(1 - h_{ii})
+\ea
+$$
+
+Therefore $\resid_i \mid \mX \sim \Normal(0, \ss(1 - h_{ii}))$.
+
+:::
+
+---
+
+#### Computing residuals in R
+
+R provides a function for residuals:
+
+```{r}
+resid(bw_lm2)
+```
+
+
+---
+
+:::{#exr-calc-resids}
+Check R's output by computing the residuals directly.
+:::
+
+:::{.solution}
+```{r}
+bw$weight - fitted(bw_lm2)
+```
+
+This matches R's output!
+:::
+
+---
+
+#### Graphing the residuals
+
+:::{#fig-resid-bw layout-ncol=2}
+
+:::{#fig-bw-resids1-c2}
+
+```{r}
+plot1_interact +
+  facet_wrap(~sex) +
+  geom_segment(
+    aes(
+      x = age,
+      y = predlm2,
+      xend = age,
+      yend = weight,
+      col = sex,
+      group = id
+    ),
+    linetype = "dotted"
+  )
+```
+
+fitted values
+
+:::
+
+:::{#fig-resids-intxn-bw}
+```{r}
+
+bw <- bw |>
+  mutate(
+    resids_intxn =
+      weight - fitted(bw_lm2)
+  )
+
+plot_bw_resid <-
+  bw |>
+  ggplot(aes(
+    x = age,
+    y = resids_intxn,
+    linetype = sex,
+    shape = sex,
+    col = sex
+  )) +
+  theme_bw() +
+  xlab("Gestational age (weeks)") +
+  ylab("residuals (grams)") +
+  theme(legend.position = "bottom") +
+  geom_hline(aes(
+    yintercept = 0,
+    col = sex
+  )) +
+  geom_segment(
+    aes(yend = 0),
+    linetype = "dotted"
+  ) +
+  geom_point()
+# expand_limits(y = 0, x = 0) +
+geom_point(alpha = .7)
+print(plot_bw_resid + facet_wrap(~sex))
+```
+
+Residuals
+
+:::
+
+Fitted values and residuals for interaction model for `birthweight` data
+
+:::
+
+---
+
+#### Residuals versus predictors
+
+```{r}
+hers <- hers |>
+  mutate(
+    resids_no_intcpt =
+      LDL - fitted(hers_lm_no_int),
+    resids_with_intcpt =
+      LDL - fitted(hers_lm_with_int)
+  )
+```
+
+:::{#fig-resids-hers-1 layout-ncol=2}
+
+:::{#fig-resid-hers-pred-no-intcpt} 
+
+```{r}
+hers |>
+  arrange(age) |>
+  ggplot() +
+  aes(x = age, y = resids_no_intcpt, col = factor(smoking)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0, col = factor(smoking))) +
+  facet_wrap(~smoking, labeller = "label_both") +
+  theme(legend.position = "bottom") +
+  geom_smooth(col = "blue")
+```
+
+no intercept
+:::
+
+:::{#fig-resid-hers-pred-no-intcpt}
+
+```{r}
+hers |>
+  arrange(age) |>
+  ggplot() +
+  aes(x = age, y = resids_with_intcpt, col = factor(smoking)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 0, col = factor(smoking))) +
+  facet_wrap(~smoking, labeller = "label_both") +
+  theme(legend.position = "bottom") +
+  geom_smooth(col = "blue")
+```
+
+
+with intercept
+:::
+
+Residuals of `hers` data vs predictors
+
+:::
+
+---
+
+#### Residuals versus fitted values
+
+::: notes
+If the model contains multiple continuous covariates,
+how do we check for errors in the mean structure assumption?
+:::
+
+
+```{r}
+#| label: fig-resids-intxn-hers
+#| fig-cap: "Residuals of interaction model for `hers` data"
+
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1,
+    smooth.colour = NA
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+---
+
+We can add a LOESS smooth to visualize where the residual mean is nonzero:
+
+```{r}
+#| label: fig-resids-intxn-hers-smooth-no-int
+#| fig-cap: "Residuals of interaction model for `hers` data, no intercept term"
+
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+---
+
+:::{#fig-resid-hers-compare layout-ncol=2}
+
+:::{#fig-resids-intxn-hers-smooth-no-int-2}
+
+```{r}
+library(ggfortify)
+hers_lm_no_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+no intercept term
+
+:::
+
+:::{#fig-resids-intxn-hers-smooth-with-int}
+
+```{r}
+hers_lm_with_int |>
+  update(na.action = na.omit) |>
+  autoplot(
+    which = 1,
+    ncol = 1
+  ) +
+  geom_hline(yintercept = 0, col = "red")
+```
+
+with intercept term
+
+:::
+
+Residuals of interaction model for `hers` data, with and without intercept term
+
+:::
+
+---
+
+:::{#def-stred}
+
+#### Standardized residuals
+
+For an ordinary linear model,
+the estimated standard deviation of the $i$th residual is
+
+$$
+\hSD{\resid_i} = \hat{\sigma}\sqrt{1-h_{ii}}
+$$
+
+so the standardized residual is
+
+$$
+\stdresid_i = \frac{\resid_i}{\hSD{\resid_i}}
+= \frac{\resid_i}{\hat{\sigma}\sqrt{1-h_{ii}}}
+$$
+:::
+
+Hence, with enough data and a correct model,
+each standardized residual has an approximately standard Gaussian **marginal** distribution; that is,
+
+$$
+\stdresid_i \ddist N(0,1)
+$$
+
+but they are not independent.
+If $H$ is the hat matrix with entries $h_{ij}$,
+then
+
+$$
+\Cov{\resid_i,\resid_j \mid \mX}
+=
+\begin{cases}
+\ss(1-h_{ii}), & i=j,\\
+-\ss h_{ij}, & i\neq j,
+\end{cases}
+$$
+
+and therefore
+
+$$
+\Cov{\stdresid_i,\stdresid_j \mid \mX}
+\approx
+\begin{cases}
+1, & i=j,\\
+\dfrac{-h_{ij}}{\sqrt{(1-h_{ii})(1-h_{jj})}}, & i\neq j,
+\end{cases}
+$$
+
+In particular,
+for $i \neq j$,
+these covariances are generally nonzero.
+
