@@ -176,7 +176,7 @@ With intercept
 
 :::
 
-### Residuals
+### Residuals {#sec-lm-residuals}
 
 ::: notes
 Maybe we can transform the data and model in some way 
@@ -185,13 +185,15 @@ to make it easier to inspect.
 
 {{< include _subfiles/Linear-models-overview/_def-residual-deviation.qmd >}}
 
+{{< include _subfiles/Linear-models-overview/_def-signal.qmd >}}
+
 ---
 
-:::{#thm-gaussian-resid-noise}
-#### Residuals in Gaussian models
+:::{#thm-gaussian-resid-deviation}
+#### Deviations in Gaussian models
 
 If $Y$ has a Gaussian distribution, 
-then $\err(Y)$ also has a Gaussian distribution, and vice versa.
+then $\devn(Y)$ also has a Gaussian distribution, and vice versa.
 :::
 
 :::{.proof}
@@ -201,15 +203,9 @@ Left to the reader.
 ---
 
 :::{#def-resid-fitted}
-#### Residuals of a fitted model value
+#### Residuals
 
-The **residual of a fitted value $\hat y$** (shorthand: "residual") is its [error](estimation.qmd#def-error) relative to the observed data:
-$$
-\ba
-e(\hat y) &\eqdef \erf{\hat y}
-\\&= y - \hat y
-\ea
-$$
+{{< include _subfiles/shared/_def-residual-observed-minus-fitted.qmd >}}
 :::
 
 ---
@@ -244,27 +240,87 @@ Fitted values and residuals for interaction model for `birthweight` data
 
 ---
 
-#### Residuals of fitted values vs residual noise
+#### Residuals of fitted values vs subpopulation-mean deviations
 
-$e(\hat y)$ can be seen as the maximum likelihood estimate of the residual noise:
+The residual is a plug-in estimate
+of the deviation of an observation
+from its subpopulation mean:
 
 $$
 \ba
-e(\hy) &= y - \hat y
-\\ &= \hat\eps_{ML}
+\devn(y_i) &= y_i - \E{Y_i \mid X_i}
+\\
+\widehat{\devn(y_i)} &= y_i - \hat y_i
+\\
+&= \resid_i
 \ea
 $$
+
+Different sources are not fully consistent
+about these terms.
+For terminology in this course,
+we use:
+
+- **deviation**
+  for deviation of an observation from its population mean (typically conditional on covariates).
+  This quantity is often called **error** in other sources,
+  even though it doesn't directly involve an estimate;
+  cf., <https://en.wikipedia.org/wiki/Errors_and_residuals>;
+- **estimation error** for deviation of an estimate from its estimand;
+- **residual** for deviation of an observed value from a fitted value.
 
 ---
 
 #### General characteristics of residuals
 
-:::{#thm-resid-unbiased}
-If $\hExpf{Y}$ is an [unbiased](estimation.qmd#sec-unbiased-estimators) 
-estimator of the mean $\Expf{Y}$, then:
+:::{#def-hat-matrix}
+##### Hat matrix
 
-$$\E{e(y)} = 0$$ {#eq-mean-resid-unbiased}
-$$\Var{e(y)} \approx \ss$$ {#eq-var-resid-unbiased}
+For an ordinary least squares linear model
+with design matrix $\mX$,
+the **hat matrix** is
+
+$$H = \mX(\tp{\mX}\mX)^{-1}\tp{\mX}$$
+
+so the fitted values satisfy
+
+$$\hat{\vY} = H\vY$$
+:::
+
+:::{#thm-resid-unbiased}
+For an ordinary least squares linear model
+with fitted values $\hat y_i = \dprodf{\vx_i}{\vb}$
+(and fitted-value vector $\hat{\vY}$),
+if the conditional mean is correctly specified so that:
+
+$$ \E{\vY \mid \mX} = \mX\b$$
+
+equivalently:
+
+$$ \E{\hat{\vY} \mid \mX} = \E{\vY \mid \mX}$$
+
+and if the errors are homoskedastic so that
+$\Var{\vY \mid \mX} = \ss \idmat_n$ where $\idmat_n$ is the $n \times n$ identity matrix,
+then,
+treating $\mX$ as fixed in this derivation,
+the residual moments are:
+
+$$\E{\vec{\resid} \mid \mX} = 0$$ {#eq-mean-resid-unbiased}
+$$\Var{\resid_i \mid \mX} = \ss(1-h_{ii})$$ {#eq-var-resid-leverage}
+
+The conditional mean result (@eq-mean-resid-unbiased)
+uses unbiasedness of fitted values.
+The conditional variance result (@eq-var-resid-leverage)
+uses the homoskedasticity condition
+with the OLS hat-matrix representation.
+
+When leverage is roughly uniform,
+$h_{ii} \approx k/n$,
+where $k = \mathrm{rank}(\mX)$
+(so $k = p + 1$ for a full-rank model
+with an intercept and $p$ predictors),
+so $\Var{\resid_i} \approx \ss$
+as $n$ grows.
 
 :::
 
@@ -277,22 +333,32 @@ $$\Var{e(y)} \approx \ss$$ {#eq-var-resid-unbiased}
 
 $$
 \ba
-\Ef{e(y)} &= \Ef{y - \hat y}
-\\ &= \Ef{y} - \Ef{\hat y}
-\\ &= \Ef{y} - \Ef{y}
-\\ &= 0
+\E{{\vec{\resid}} \mid \mX} &= \E{\vY - \hat{\vY} \mid \mX}
+\\ &= \E{\vY \mid \mX} - \E{\hat{\vY} \mid \mX}
+\\ &= \E{\vY \mid \mX} - \E{H\vY \mid \mX}
+\\ &= \E{\vY \mid \mX} - H\E{\vY \mid \mX}
+\\ &= \E{\vY \mid \mX} - H\mX\b
+\\ &= \mX\b - H\mX\b
+\\ &= \mX\b - \mX\b
+\\ &= \vec{0}
 \ea
 $$
 
-@eq-var-resid-unbiased:
+@eq-var-resid-leverage:
 
 $$
 \ba
-\Var{e(y)} &= \Var{y - \hy}
-\\ &= \Var{y} + \Var{\hy} - 2 \Cov{y, \hy}
-\\ &{\dot{\approx}} \Var{y} + 0 - 2 \cdot 0
-\\ &= \Var{y}
-\\ &= \ss
+{\vec{\resid}} &= (\idmat_n-H)\vY
+\\ \Var{{\vec{\resid}} \mid \mX} &= \Var{(\idmat_n-H)\vY \mid \mX}
+\\ &= (\idmat_n-H)\Var{\vY \mid \mX}\tp{(\idmat_n-H)}
+\\ &= (\idmat_n-H)\ss \idmat_n\tp{(\idmat_n-H)}
+\\ &= \ss(\idmat_n-H)\tp{(\idmat_n-H)}
+\\ &= \ss(\idmat_n-H)^2
+\\ &= \ss(\idmat_n - 2H + H^2)
+\\ &= \ss(\idmat_n-H) \qquad (\text{since } H^2 = H)
+\\ \Var{\resid_i \mid \mX} &= \left[\Var{{\vec{\resid}} \mid \mX}\right]_{ii}
+\\ &= \left[\ss(\idmat_n-H)\right]_{ii}
+\\ &= \ss(1-h_{ii})
 \ea
 $$
 :::
@@ -301,15 +367,17 @@ $$
 
 #### Characteristics of residuals in Gaussian models
 
-With enough data and a correct model, 
-the residuals will be approximately Gaussian distributed, 
-with variance $\sigma^2$, 
-which we can estimate using $\hat\sigma^2$;
-that is:
+In a correct Gaussian linear model,
+the deviations from the model-implied means
+are conditionally i.i.d. Gaussian:
 
 $$
-e_i \siid N(0, \hat\sigma^2)
+\devn(Y_i) \mid \mX \siid N(0, \sigma^2)
 $$
+
+Residuals $\resid_i$ are observed approximations
+to these deviations.
+Their spread is often summarized using $\hat\sigma^2$.
 
 ---
 
@@ -554,31 +622,79 @@ Residuals of interaction model for `hers` data, with and without intercept term
 
 #### Standardized residuals
 
-$$r_i = \frac{e_i}{\widehat{SD}(e_i)}$$
+For an ordinary linear model,
+the estimated standard deviation of the $i$th residual is
 
+$$
+\hSD{\resid_i} = \hat{\sigma}\sqrt{1-h_{ii}}
+$$
+
+so the standardized residual is
+
+$$
+\stdresid_i = \frac{\resid_i}{\hSD{\resid_i}}
+= \frac{\resid_i}{\hat{\sigma}\sqrt{1-h_{ii}}}
+$$
 :::
 
-Hence, with enough data and a correct model, the standardized residuals will be approximately standard Gaussian; that is,
+Hence, with enough data and a correct model,
+each standardized residual has an approximately standard Gaussian **marginal** distribution; that is,
 
 $$
-r_i \siid N(0,1)
+\stdresid_i \ddist N(0,1)
 $$
+
+but they are not independent.
+If $H$ is the hat matrix with entries $h_{ij}$,
+then
+
+$$
+\Cov{\resid_i,\resid_j \mid \mX}
+=
+\begin{cases}
+\ss(1-h_{ii}), & i=j,\\
+-\ss h_{ij}, & i\neq j,
+\end{cases}
+$$
+
+and therefore
+
+$$
+\Cov{\stdresid_i,\stdresid_j \mid \mX}
+\approx
+\begin{cases}
+1, & i=j,\\
+\dfrac{-h_{ij}}{\sqrt{(1-h_{ii})(1-h_{jj})}}, & i\neq j,
+\end{cases}
+$$
+
+In particular,
+for $i \neq j$,
+these covariances are generally nonzero.
 
 ### Marginal distributions of residuals
 
-To look for problems with our model, we can check whether the residuals $e_i$ and standardized residuals $r_i$ look like they have the distributions that they are supposed to have, according to the model.
+To look for problems with our model,
+we can check whether the residuals $\resid_i$
+and standardized residuals $\stdresid_i$
+look like they have the distributions
+that they are supposed to have,
+according to the model.
 
 ---
 
 #### Standardized residuals in R
 
 ```{r}
+h_ii <- hatvalues(bw_lm2)
+manual_std_resid <- resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - h_ii))
+manual_std_resid
 rstandard(bw_lm2)
-resid(bw_lm2) / sigma(bw_lm2)
 ```
 
 ::: notes
-These are not quite the same, because R is doing something more complicated and precise to get the standard errors. Let's not worry about those details for now; the difference is pretty small in this case:
+These are nearly the same.
+Any differences are from numerical rounding.
 
 :::
 
@@ -587,14 +703,14 @@ These are not quite the same, because R is doing something more complicated and 
 ```{r}
 rstandard_compare_plot <-
   tibble(
-    x = resid(bw_lm2) / sigma(bw_lm2),
+    x = resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - h_ii)),
     y = rstandard(bw_lm2)
   ) |>
   ggplot(aes(x = x, y = y)) +
   geom_point() +
   theme_bw() +
   coord_equal() +
-  xlab("resid(bw_lm2)/sigma(bw_lm2)") +
+  xlab("resid(bw_lm2)/(sigma(bw_lm2)*sqrt(1-h_ii))") +
   ylab("rstandard(bw_lm2)") +
   geom_abline(
     aes(
@@ -621,7 +737,8 @@ bw <-
     resid_lm2 = resid(bw_lm2),
     resid_lm2_alt = weight - fitted_lm2,
     std_resid_lm2 = rstandard(bw_lm2),
-    std_resid_lm2_alt = resid_lm2 / sigma(bw_lm2)
+    std_resid_lm2_alt =
+    resid_lm2 / (sigma(bw_lm2) * sqrt(1 - h_ii))
   )
 
 bw |>
@@ -700,16 +817,11 @@ Each point corresponds to one observation:
   plotted in increasing order as $r_{(1)}\le\cdots\le r_{(n)}$.
   In QQ-plot terminology,
   these ordered values are [sample quantiles](nonparametric-models.qmd#def-sample-quantile).
-  Let $r_{(1)} \le \cdots \le r_{(n)}$
-  be the [order statistics](nonparametric-models.qmd#def-order-statistics)
-  of the standardized residuals.
-  Let $\hat F_r$ be their [empirical CDF](nonparametric-models.qmd#def-empirical-cdf)
-  and $\hat Q_r$ the corresponding sample quantile function.
   The QQ plot uses points
   $$\left(\Phi^{-1}(p_i),\, r_{(i)}\right), \quad i = 1, \ldots, n,$$
   where $p_i$ denotes the plotting positions returned by `ppoints(n)`.
   For the common midpoint choice $p_i=(i-0.5)/n$,
-  we have $\hat Q_r(p_i)=r_{(i)}$.
+  the sample quantile at $p_i$ equals $r_{(i)}$.
   More generally,
   `qqnorm()` pairs the $i$th ordered residual
   with the corresponding theoretical quantile
@@ -834,8 +946,8 @@ To construct a QQ plot by hand:
    $$p_i = \frac{\text{rank}_i - 0.5}{n}$$
 2. Compute the **theoretical quantile**: $q_i = \Phi^{-1}(p_i)$,
    the value from $N(0,1)$ that corresponds to probability $p_i$.
-3. Plot $(q_i, r_i)$ — theoretical quantile $q_i$ on the x-axis,
-   observed standardized residual $r_i$ (see @def-stred) on the y-axis.
+3. Plot $(q_i, \stdresid_i)$ — theoretical quantile $q_i$ on the x-axis,
+   observed standardized residual $\stdresid_i$ (see @def-stred) on the y-axis.
 4. Add the **reference line** through the pairs of theoretical and empirical quantiles
    at probabilities 0.25 and 0.75.
 :::
@@ -936,7 +1048,7 @@ All three plots show the same data and reference line.
 
 ### Conditional distributions of residuals
 
-If our Gaussian linear regression model is correct, the residuals $e_i$ and standardized residuals $r_i$ should have:
+If our Gaussian linear regression model is correct, the residuals $\resid_i$ and standardized residuals $\stdresid_i$ should have:
 
 -   an approximately Gaussian distribution, with:
 -   a mean of 0
@@ -946,19 +1058,20 @@ This should be true **for every** value of $x$.
 
 ---
 
-If we didn't correctly guess the functional form of the linear component of the mean, 
-$$\text{E}[Y|X=x] = \beta_0 + \beta_1 X_1 + ... + \beta_p X_p$$
+If we didn't correctly guess the functional form of the linear component of the mean,
+for covariate vector $x = (x_1,\ldots,x_p)$,
+$$\E{Y \mid X=x} = \b_0 + \b_1 x_1 + ... + \b_p x_p$$
 
 Then the residuals might have nonzero mean.
 
-Regardless of whether we guessed the mean function correctly, ther the variance of the residuals might differ between values of $x$.
+Regardless of whether we guessed the mean function correctly, the variance of the residuals might differ between values of $x$.
 
 ---
 
 #### Residuals versus fitted values
 
 ::: notes
-To look for these issues, we can plot the residuals $e_i$ against the fitted values $\hat y_i$ (@fig-bw_lm2-resid-vs-fitted).
+To look for these issues, we can plot the residuals $\resid_i$ against the fitted values $\hat y_i$ (@fig-bw_lm2-resid-vs-fitted).
 :::
 
 :::{#fig-bw_lm2-resid-vs-fitted}
@@ -973,7 +1086,10 @@ autoplot(bw_lm2, which = 1, ncol = 1) |> print()
 ::: notes
 If the model is correct, the blue line should stay flat and close to 0, and the cloud of dots should have the same vertical spread regardless of the fitted value.
 
-If not, we probably need to change the functional form of linear component of the mean, $$\text{E}[Y|X=x] = \beta_0 + \beta_1 X_1 + ... + \beta_p X_p$$
+If not,
+we probably need to change the functional form
+of the linear component of the mean,
+$$\E{Y \mid X=x} = \b_0 + \b_1 x_1 + ... + \b_p x_p$$
 
 :::
 

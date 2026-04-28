@@ -188,6 +188,7 @@ Key macros to use:
 - **Aligned equations**: Use `\ba` / `\ea` for `\begin{aligned}` / `\end{aligned}`
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
+- **Deviation/error notation**: Use `\erf{...}` for deviations of estimates/estimators from their estimands; use `\devn(...)` for all other deviations (e.g., observations from population means)
 
 matrix-product helper macros:
 
@@ -198,7 +199,7 @@ matrix-product helper macros:
 
 Residual and deviation helper macros include:
 
-- `\err` for generic error or residual terms
+- `\err` is deprecated; prefer `\devn(...)` for new non-estimation deviations while legacy uses are being phased out
 - `\erf{\theta}` for estimate/estimand deviations
 - `\devn(...)` for other deviations
 - `\resid` for residual symbols (`r`)
@@ -212,6 +213,11 @@ Residual and deviation helper macros include:
   This avoids LaTeX "Double superscript" errors.
 
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
+
+When a repeatedly used expression needs a new macro,
+add it to `latex-macros/macros.qmd`
+in the `latex-macros` submodule
+and push that submodule update.
 
 ## Color Coding Strategy for Math Expressions
 
