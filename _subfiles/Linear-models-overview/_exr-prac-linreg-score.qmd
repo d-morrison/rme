@@ -1,0 +1,75 @@
+{{< include latex-macros/macros.qmd >}}
+
+::: {#exr-prac-linreg-score}
+#### Score equations for simple linear regression
+(adapted from @dobson4e, Chapter 6)
+
+Using the log-likelihood from @exr-prac-linreg-lik,
+derive the score equations for $\beta_0$ and $\beta_1$.
+That is, compute
+$\frac{\partial \ell}{\partial \beta_0} = 0$
+and
+$\frac{\partial \ell}{\partial \beta_1} = 0$,
+and show they are equivalent to the normal equations:
+
+$$
+\ba
+\sum_{i=1}^n y_i &= n\hat\beta_0 + \hat\beta_1 \sum_{i=1}^n x_i
+\\
+\sum_{i=1}^n x_i y_i &= \hat\beta_0 \sum_{i=1}^n x_i + \hat\beta_1 \sum_{i=1}^n x_i^2
+\ea
+$$
+:::
+
+::: {.solution}
+
+From @exr-prac-linreg-lik:
+
+$$
+\ell = -\frac{n}{2}\logf{2\pi\sigma^2}
+       - \frac{1}{2\sigma^2}\sum_{i=1}^n (y_i - \beta_0 - \beta_1 x_i)^2
+$$
+
+**Score with respect to $\beta_0$:**
+
+$$
+\ba
+\deriv{\beta_0}\ell
+&= -\frac{1}{2\sigma^2}\deriv{\beta_0}\sum_{i=1}^n (y_i - \beta_0 - \beta_1 x_i)^2
+\\
+&= -\frac{1}{2\sigma^2}\sum_{i=1}^n 2(y_i - \beta_0 - \beta_1 x_i)(-1)
+\\
+&= \frac{1}{\sigma^2}\sum_{i=1}^n (y_i - \beta_0 - \beta_1 x_i)
+\ea
+$$
+
+Setting equal to zero:
+
+$$
+\ba
+0 &= \sum_{i=1}^n (y_i - \beta_0 - \beta_1 x_i)
+\\
+\sum_{i=1}^n y_i &= n\beta_0 + \beta_1\sum_{i=1}^n x_i
+\ea
+$$
+
+**Score with respect to $\beta_1$:**
+
+$$
+\ba
+\deriv{\beta_1}\ell
+&= \frac{1}{\sigma^2}\sum_{i=1}^n x_i(y_i - \beta_0 - \beta_1 x_i)
+\ea
+$$
+
+Setting equal to zero:
+
+$$
+\sum_{i=1}^n x_i y_i = \beta_0\sum_{i=1}^n x_i + \beta_1\sum_{i=1}^n x_i^2
+$$
+
+These are the **normal equations**,
+whose solution gives the OLS/MLE estimators
+$\hat\beta_0$ and $\hat\beta_1$.
+
+:::
