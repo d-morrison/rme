@@ -395,6 +395,17 @@ add it to `latex-macros/macros.qmd`
 in the `latex-macros` submodule
 and push that submodule update.
 
+To push changes to the `latex-macros` submodule (`https://github.com/d-morrison/macros`),
+use the `SUBMODULES_TOKEN` environment variable for authentication:
+
+```bash
+cd latex-macros
+git remote set-url origin "https://x-access-token:${SUBMODULES_TOKEN}@github.com/d-morrison/macros.git"
+# make changes, commit, then push to a branch (main is protected; PRs required):
+git push origin main:copilot/your-branch-name
+# then open and merge a PR via the GitHub API or UI
+```
+
 ## Color Coding Strategy for Math Expressions
 
 Use `\red{...}` and `\blue{...}` purposefully and consistently to help readers:
