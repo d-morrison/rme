@@ -98,11 +98,28 @@ Paraphrase and summarize with a citation instead.
 
 ## Decomposing content into subfiles
 
-When splitting a chapter or formula sheet into include subfiles,
-keep the top-level section headers in the main `.qmd` file.
-Move only the section body content into the subfile.
-This keeps document structure visible in the parent file
-and makes partial includes easier to compose consistently.
+Quarto subfiles (files under `_subfiles/`) should **not** begin with a section heading.
+The heading for a subfile's content should be placed in the **parent** file that includes the subfile,
+immediately before the `{{< include ... >}}` shortcode.
+
+**Correct** — heading in the parent file:
+```markdown
+## My Section Title {#sec-my-section}
+
+{{< include _subfiles/chapter/_sec_my_content.qmd >}}
+```
+
+**Incorrect** — heading inside the subfile:
+```markdown
+<!-- inside _subfiles/chapter/_sec_my_content.qmd -->
+## My Section Title {#sec-my-section}
+
+Content starts here...
+```
+
+This keeps the document hierarchy centralized in the parent file,
+makes heading levels easy to audit,
+and avoids nesting errors when the same subfile might be included at different depths.
 
 ## Citation Grammar Conventions
 
