@@ -197,7 +197,19 @@ then $\devn(Y)$ also has a Gaussian distribution, and vice versa.
 :::
 
 :::{.proof}
-Left to the reader.
+
+By @def-resid-noise, $\devn(Y) = Y - \Expf{Y}$.
+Since $\devn(Y)$ is an affine function of $Y$ (a linear function plus a constant),
+and Gaussian distributions are closed under affine transformations,
+if $Y \sim \Normal(\mu, \ss)$, then:
+
+$$
+\devn(Y) = Y - \mu \sim \Normal(\mu - \mu, \ss) = \Normal(0, \ss)
+$$
+
+Conversely, since $Y = \Expf{Y} + \devn(Y) = \mu + \devn(Y)$,
+if $\devn(Y) \sim \Normal(0, \ss)$, then $Y = \mu + \devn(Y) \sim \Normal(\mu, \ss)$.
+
 :::
 
 ---
@@ -327,7 +339,6 @@ as $n$ grows.
 ---
 
 :::{.proof}
-\ 
 
 @eq-mean-resid-unbiased:
 
@@ -361,23 +372,63 @@ $$
 \\ &= \ss(1-h_{ii})
 \ea
 $$
+
 :::
 
 ---
 
-#### Characteristics of residuals in Gaussian models
+:::{#thm-resid-gaussian}
+#### Conditional distribution of residuals in Gaussian models
 
-In a correct Gaussian linear model,
-the deviations from the model-implied means
-are conditionally i.i.d. Gaussian:
+In a Gaussian linear regression model,
+the residuals $\resid_i$,
+conditional on the design matrix $\mX$,
+are normally distributed:
+
+$$\resid_i \mid \mX \sim \Normal\paren{0,\; \ss(1 - h_{ii})}$$ {#eq-resid-dist-exact}
+
+where $h_{ii}$ is the $i$-th diagonal element of the hat matrix (@def-hat-matrix).
+When leverage is roughly uniform,
+$\ss(1-h_{ii}) \approx \ss$ for large $n$;
+replacing the unknown $\ss$ with its estimate $\hs^2$ gives:
+
+$$\resid_i \approx \Normal(0, \hs^2)$$ {#eq-resid-dist-approx}
+
+:::
+
+---
+
+:::{.proof}
+
+Using the hat matrix (@def-hat-matrix),
+the residual vector is $\vec{\resid} = (I-H)\vY$,
+so the $i$-th residual is a linear combination of the observations:
+
+$$\resid_i = [(I-H)\vY]_i = \sum_{j=1}^n (\delta_{ij} - h_{ij})\, Y_j$$
+
+where $\delta_{ij}$ is the Kronecker delta
+($\delta_{ij} = 1$ if $i = j$, else $\delta_{ij} = 0$).
+
+Given $\mX$,
+the random variables $Y_1, \ldots, Y_n$ are conditionally independent Gaussians
+by the Gaussian model assumption.
+Therefore,
+conditional on $\mX$,
+the residual $\resid_i$ is a linear combination of independent Gaussians,
+so $\resid_i$ is Gaussian.
+
+The mean and variance follow from @thm-resid-unbiased:
 
 $$
-\devn(Y_i) \mid \mX \siid N(0, \sigma^2)
+\ba
+\Ef{\resid_i \mid \mX} &= 0
+\\ \Var{\resid_i \mid \mX} &= \ss(1 - h_{ii})
+\ea
 $$
 
-Residuals $\resid_i$ are observed approximations
-to these deviations.
-Their spread is often summarized using $\hat\sigma^2$.
+Therefore $\resid_i \mid \mX \sim \Normal(0, \ss(1 - h_{ii}))$.
+
+:::
 
 ---
 
@@ -397,7 +448,6 @@ Check R's output by computing the residuals directly.
 :::
 
 :::{.solution}
-\ 
 ```{r}
 bw$weight - fitted(bw_lm2)
 ```
