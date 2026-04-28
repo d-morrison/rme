@@ -33,6 +33,15 @@
 - **Verify output**: Check that expected files are created with correct content
 - **Never claim success without evidence**: Only report that something works after you've confirmed it yourself
 
+## Code Review Scope
+
+The `_extensions/` directory contains Quarto extensions installed from external repositories
+(e.g., via `quarto add`).
+These files are third-party code managed upstream.
+**Do not review or suggest changes to files under `_extensions/`.**
+Treat them as vendored dependencies — read them for context if needed,
+but do not flag issues or request modifications in those files.
+
 ## Pull Request Guidelines
 
 - Always ensure that PR branch is up to date with main branch before requesting PR review
