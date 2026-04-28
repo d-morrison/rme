@@ -83,12 +83,37 @@ but grammatically the citation key itself is treated as a singular pronoun/name.
 
 When adapting any content from another source,
 always include specific attribution in the chapter text.
+Always state the exact adapted exercise(s) or example(s),
+not just a broad chapter citation.
+When the source provides numbered exercises/examples,
+cite the exact number
+and the exact page number.
+When specific numbers are not available in the source,
+use chapter/section locators instead of inventing numbers.
 Use a BibTeX-backed citation key
 with a chapter or page locator
 (for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
 Do not use generic acknowledgements without locators
 or plaintext author-title references
 when a BibTeX citation is available.
+
+## Variable Definitions in Exercises
+
+When introducing model variables in exercises,
+list variable definitions as bullet points
+and/or a table.
+Do not define multiple variables inline in prose.
+Include symbol,
+plain-language meaning,
+and dataset column mapping.
+
+## Solution Wording
+
+In solution blocks,
+state the correct conclusions directly.
+Do not phrase final answers conditionally
+when the provided figure or context
+supports a specific conclusion.
 
 ## Code Formatting Guidelines
 
@@ -144,6 +169,15 @@ When introducing or editing formal statistical definitions in `.qmd` files:
 
 ## Quarto Code Chunk Options
 
+Default to
+`#| code-fold: true`
+for chunks that create figures or tables.
+Only set
+`#| code-fold: false`
+for those chunks
+if reviewers explicitly request it
+or if the surrounding narrative requires visible code to follow the argument.
+
 When the code **and** its console output are both needed for the surrounding narrative to make sense, use `#| code-fold: false` so that neither is hidden:
 
 ```qmd
@@ -157,6 +191,27 @@ sum(residuals(my_model)^2)
 Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
+
+## Quarto `df-print` behavior
+
+For this repository,
+configure Quarto YAML settings
+so data-frame printing is:
+- paged in HTML and RevealJS outputs
+- tibble-style in PDF and DOCX outputs
+
+When this configuration is in place,
+full dataset prints in exercises are expected behavior,
+not automatically a readability problem.
+Feedback that asks to trim dataset prints
+without checking these format settings
+can be incorrect.
+
+If a maintainer claim
+(or any other claim)
+appears to conflict with the repository configuration or rendered output,
+verify it against the code and outputs
+and politely correct it with evidence.
 
 ## Landscape Tables in PDF
 
