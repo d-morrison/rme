@@ -33,6 +33,22 @@
 - **Verify output**: Check that expected files are created with correct content
 - **Never claim success without evidence**: Only report that something works after you've confirmed it yourself
 
+## Narrative Flow
+
+When writing or editing chapter content,
+strive for **straightforward narrative flow**:
+
+- Introduce concepts before they are used.
+  Never reference a section, definition, or term
+  that has not yet been introduced at that point in the document.
+- Avoid forward references within a chapter
+  (e.g., "See @sec-later-section for details")
+  when those concepts are needed to understand the current content.
+  Reorder sections so that foundational material precedes applied material.
+- If two sections are closely related
+  (e.g., an "Observational Studies" section that relies on DAG concepts),
+  place the foundational section first.
+
 ## Code Review Scope
 
 The `_extensions/` directory contains Quarto extensions installed from external repositories
