@@ -28,7 +28,34 @@ This content is adapted from:
 
 # Causal Thinking and DAGs {#sec-pred-sel-causal}
 
-{{< include _sec-pred-sel-dag.qmd >}}
+DAG material for this course is covered in the
+[causal inference chapter](causal-inference.qmd#sec-pred-sel-dag).
+
+For the worked examples,
+see:
+
+- [The HERS DAG example](causal-inference.qmd#sec-pred-sel-hers-dag)
+- [The WCGS DAG example](causal-inference.qmd#sec-pred-sel-wcgs-dag)
+
+```{r}
+#| label: hers-data-setup
+#| include: false
+
+library(haven)
+library(dplyr)
+
+hers <- read_stata(fs::path_package("rme", "extdata/hersdata.dta"))
+
+hers_ldl <-
+  hers |>
+  filter(!is.na(LDL)) |>
+  mutate(
+    HT = factor(HT, levels = c(0, 1), labels = c("Placebo", "HT")),
+    statins = factor(statins, levels = c(0, 1), labels = c("No", "Yes")),
+    diabetes = factor(diabetes, levels = c(0, 1), labels = c("No", "Yes")),
+    smoking = factor(smoking, levels = c(0, 1), labels = c("No", "Yes"))
+  )
+```
 
 # Prediction {#sec-pred-sel-prediction}
 
