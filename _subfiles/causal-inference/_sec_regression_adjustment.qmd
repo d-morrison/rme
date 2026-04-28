@@ -1,0 +1,130 @@
+{{< include latex-macros/macros.qmd >}}
+
+Under the causal assumptions
+(consistency, conditional exchangeability, and positivity),
+the causal effect can be estimated
+by adjusting for the confounders $\vec{L}$
+in a regression model.
+
+## Direct standardization (G-computation) {#sec-causal-g-computation}
+
+The **G-computation** estimator
+(also called **direct standardization** or **standardization**)
+estimates the ATE by:
+
+1. Fitting a regression model:
+   $\hat{\mu}(a, \vec{l}) = \hat{\E}{Y \mid A = a, \vec{L} = \vec{l}}$
+
+2. Predicting the potential outcome mean for each individual
+   under both treatment levels $a = 1$ and $a = 0$:
+   $$\hat{Y}_i(a) = \hat{\mu}(a, \vec{L}_i)$$
+
+3. Averaging over the study population:
+   $$\widehat{\E}{Y(a)} = \frac{1}{n} \sum_{i=1}^n \hat{Y}_i(a)$$
+
+4. Estimating the ATE as the contrast:
+   $$\widehat{\text{ATE}} = \widehat{\E}{Y(1)} - \widehat{\E}{Y(0)}$$
+
+::: notes
+
+G-computation is model-based:
+it relies on the regression model being correctly specified.
+A misspecified model will produce biased causal estimates
+even if confounders are included.
+
+G-computation is easily generalized to:
+
+- Binary outcomes (using logistic regression)
+- Survival outcomes (using Cox or Weibull models)
+- Multiple treatments or treatment levels
+
+:::
+
+## Regression adjustment in linear models {#sec-causal-linear-adjustment}
+
+When the outcome is continuous
+and the regression model is linear,
+G-computation simplifies to the
+**adjusted treatment coefficient** from a linear regression:
+
+$$Y = \beta_0 + \beta_A A + \beta_L \vec{L} + \varepsilon$$
+
+Under consistency, conditional exchangeability,
+and positivity,
+the coefficient $\beta_A$ estimates
+the average causal effect of $A$ on $Y$
+(the ATE, if the model is correctly specified
+and effect modification by $\vec{L}$ is absent).
+
+::: notes
+
+The regression adjustment estimator for the ATE
+is equivalent to G-computation
+when the outcome model is linear and has no treatment-covariate interactions.
+When there are interactions,
+G-computation and regression adjustment can give different estimates.
+G-computation is preferred in that case.
+
+:::
+
+## Example: regression adjustment for LDL in HERS {#sec-causal-hers-ldl-adj}
+
+The HERS study DAG (see @sec-pred-sel-hers-dag)
+shows that `LDL` and `HDL` are mediators of the HT → CHD pathway.
+For estimating the total causal effect of HT on CHD,
+we should not adjust for `LDL` or `HDL`.
+
+However, to estimate the causal effect of **HT on LDL** itself,
+we use a separate regression model
+with `LDL` as the outcome.
+In this model,
+`LDL` is no longer a mediator but the outcome of interest.
+
+Since HT was randomized in HERS,
+no adjustment is needed for causal identification of HT → LDL.
+However, adjusting for strong predictors of LDL
+improves precision:
+
+```{r}
+#| label: causal-hers-ldl-setup
+#| code-fold: true
+
+library(haven)
+library(dplyr)
+
+hers <- read_stata(fs::path_package("rme", "extdata/hersdata.dta"))
+
+hers_ldl <-
+  hers |>
+  filter(!is.na(LDL)) |>
+  mutate(
+    HT = factor(HT, levels = c(0, 1), labels = c("Placebo", "HT")),
+    statins = factor(statins, levels = c(0, 1), labels = c("No", "Yes")),
+    diabetes = factor(diabetes, levels = c(0, 1), labels = c("No", "Yes")),
+    smoking = factor(smoking, levels = c(0, 1), labels = c("No", "Yes"))
+  )
+```
+
+::: {#tbl-causal-hers-ldl-adj}
+
+```{r}
+#| code-fold: true
+
+library(gtsummary)
+
+model_ldl_adj <-
+  lm(LDL ~ HT + age + BMI + diabetes + statins, data = hers_ldl)
+
+model_ldl_adj |>
+  tbl_regression() |>
+  bold_labels()
+```
+
+Adjusted regression for the causal effect of HT on LDL in HERS.
+Since HT was randomized, adjustment is for precision only.
+
+:::
+
+The estimated causal effect of HT on LDL
+is approximately −11 mg/dL (negative = lower LDL on HT),
+with narrower confidence intervals than the unadjusted estimate.

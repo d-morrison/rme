@@ -1,0 +1,94 @@
+{{< include latex-macros/macros.qmd >}}
+
+In an **observational study**,
+treatment is not assigned by the investigator.
+Instead, individuals self-select into treatment,
+or treatment is assigned based on clinical or administrative criteria.
+As a result, treatment groups may differ systematically
+in ways that also affect the outcome —
+this is called **confounding**.
+
+## Confounding {#sec-causal-confounding}
+
+:::{#def-confounding-obs}
+#### Confounding
+
+**Confounding** occurs when there is a common cause
+of both the treatment $A$ and the outcome $Y$.
+This common cause is called a **confounder**.
+
+In the potential outcomes framework,
+confounding means that treatment assignment is not independent
+of potential outcomes:
+$$A \not\perp\!\!\!\perp (Y(0), Y(1))$$
+
+As a result, the observed association between $A$ and $Y$
+does not equal the causal effect of $A$ on $Y$.
+
+:::
+
+## DAGs for identifying confounding {#sec-causal-dags-obs}
+
+Directed Acyclic Graphs (DAGs)
+provide a formal graphical tool
+for representing causal assumptions
+and identifying confounders, mediators, and colliders.
+See @sec-causal-dags-chapter for a detailed introduction to DAGs.
+
+In a DAG:
+
+- A **confounder** is a common cause of both treatment and outcome.
+  Adjusting for confounders removes confounding bias.
+- A **mediator** lies on the causal path from treatment to outcome.
+  Adjusting for mediators blocks the indirect causal pathway.
+- A **collider** has two or more causes on a path.
+  Adjusting for a collider opens a spurious non-causal path
+  (collider bias).
+
+The **backdoor criterion** (@def-backdoor-criterion)
+gives conditions under which a set of variables,
+if adjusted for,
+blocks all non-causal (backdoor) paths
+from treatment to outcome.
+
+:::{#def-backdoor-criterion}
+#### Backdoor criterion
+
+A set of variables $\vec{L}$ satisfies the **backdoor criterion**
+with respect to the ordered pair $(A, Y)$ in a DAG if:
+
+1. No variable in $\vec{L}$ is a descendant of $A$.
+2. $\vec{L}$ blocks every path between $A$ and $Y$
+   that has an arrow into $A$ (a "backdoor" path).
+
+If $\vec{L}$ satisfies the backdoor criterion,
+then adjusting for $\vec{L}$ identifies the causal effect of $A$ on $Y$:
+$$\E{Y(a)} = \sum_{\vec{l}} \E{Y \mid A = a, \vec{L} = \vec{l}} \P{\vec{L} = \vec{l}}$$
+
+:::
+
+## The WCGS observational study {#sec-causal-wcgs-obs}
+
+The Western Collaborative Group Study (WCGS)
+was a prospective observational cohort study,
+so it cannot rely on randomization to control confounding.
+See @sec-pred-sel-wcgs-dag for the WCGS DAG
+and the identification of the minimal adjustment set
+for estimating the causal effect of Type A behavior
+on coronary heart disease.
+
+::: notes
+
+In the WCGS,
+`age` is a confounder of the `personality_type` → `CHD` relationship:
+it causally affects both personality type and CHD risk.
+To estimate the total causal effect of personality type on CHD,
+we must adjust for `age` (and potentially other confounders)
+to block all backdoor paths.
+
+Contrast this with the HERS randomized trial:
+in HERS, randomization of HT ensures that
+there are no backdoor paths from HT to CHD,
+so no adjustment is needed for causal identification.
+
+:::
