@@ -128,71 +128,99 @@ callouty-theorem:
                           # or override a callout title
     callout: # parameters of the wrapping callout
              # see Quarto callout docs for details
-      type: important  # fallback; HTML border overridden to #C62828 (crimson) by custom.scss
+      type: thm  # custom type; color set in custom-callout block below
       appearance: minimal
   lem:
     override-title: false
     callout:
-      type: note  # fallback; HTML border overridden to #1565C0 (royal blue) by custom.scss
+      type: lem
       appearance: minimal
   cor:
     override-title: false
     callout:
-      type: caution  # fallback; HTML border overridden to #E65100 (burnt orange) by custom.scss
+      type: cor
       appearance: minimal
   prp:
     override-title: false
     callout:
-      type: warning  # fallback; HTML border overridden to #F9A825 (amber) by custom.scss
+      type: prp
       appearance: minimal
   cnj:
     override-title: false
     callout:
-      type: tip  # fallback; HTML border overridden to #00838F (dark cyan) by custom.scss
+      type: cnj
       appearance: minimal
   def:
     override-title: false
     callout:
-      type: note  # fallback; HTML border overridden to #1B5E20 (forest green) by custom.scss
+      type: def
       appearance: minimal
   exm:
     override-title: false
     callout:
-      type: tip  # fallback; HTML border overridden to #6A1B9A (deep purple) by custom.scss
+      type: exm
       appearance: minimal
   exr:
     override-title: false
     callout:
-      type: warning  # fallback; HTML border overridden to #4E342E (dark cocoa) by custom.scss
+      type: exr
       appearance: minimal
   proof: # also support wrapping proof-like environments
     override-title: true # override the callout title with
                          # the proof-type label,
                          # appending the element name when provided
     callout:
-      type: note  # blue
+      type: proof
       appearance: default
       collapse: true
       icon: true
   solution:
     override-title: true
     callout:
-      type: tip  # green
+      type: solution
       appearance: default
       collapse: true
       icon: true
   remark:
     override-title: true
     callout:
-      type: warning  # yellow
+      type: remark
       appearance: default
       collapse: false
       icon: true
+
+# Color palette for theorem/proof environments.
+# The coatless-quarto/custom-callout extension reads this block and injects
+# CSS (HTML) and LaTeX \definecolor (PDF) so each type gets a unique color.
+custom-callout:
+  thm:
+    color: "#C62828"  # crimson red
+  lem:
+    color: "#1565C0"  # royal blue
+  cor:
+    color: "#E65100"  # burnt orange
+  prp:
+    color: "#827717"  # dark olive gold
+  cnj:
+    color: "#00838F"  # dark cyan
+  def:
+    color: "#1B5E20"  # forest green (very distinct from theorem types)
+  exm:
+    color: "#6A1B9A"  # deep purple
+  exr:
+    color: "#880E4F"  # dark wine
+  proof:
+    color: "#37474F"  # blue-grey slate
+  solution:
+    color: "#4E342E"  # dark cocoa
+  remark:
+    color: "#F57F17"  # deep amber
 
 format:
   html:
     filters:
       - callouty-theorem
+      - coatless-quarto/custom-callout
     theme:
       light: [cosmo, custom.scss]
       dark: [darkly, custom.scss]
@@ -245,6 +273,7 @@ format:
   pdf:
     filters:
       - callouty-theorem
+      - coatless-quarto/custom-callout
     geometry:
       - top=15mm
       - bottom=20mm
@@ -272,6 +301,7 @@ format:
   docx:
     filters:
       - callouty-theorem
+      - coatless-quarto/custom-callout
     toc: true
     toc-depth: 3
     number-sections: true
