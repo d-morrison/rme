@@ -1,0 +1,54 @@
+---
+title: "Package Versions"
+format:
+  html: default
+  revealjs:
+    output-file: package-versions-slides.html
+  pdf:
+    output-file: package-versions-handout.pdf
+  docx:
+    output-file: package-versions-handout.docx
+---
+
+This appendix lists the package versions
+currently recorded in `renv.lock`.
+The table below is generated directly from the lockfile.
+
+```{r}
+#| label: tbl-renv-package-versions
+#| tbl-cap: "Package versions recorded in `renv.lock`."
+#| echo: false
+#| code-fold: false
+
+lock <- tryCatch(
+  jsonlite::fromJSON("renv.lock"),
+  error = function(e) {
+    stop(
+      "Could not read `renv.lock` in the repository root. ",
+      "This appendix requires a valid lockfile.",
+      call. = FALSE
+    )
+  }
+)
+packages <- lock$Packages
+
+# Extract a package field value from the lockfile entry.
+# Return NA when the field is not present.
+field_value <- function(x, field) {
+  if (is.null(x[[field]])) {
+    return(NA_character_)
+  }
+
+  as.character(x[[field]])
+}
+
+package_versions <- data.frame(
+  Package = names(packages),
+  Version = vapply(packages, field_value, character(1), field = "Version"),
+  Source = vapply(packages, field_value, character(1), field = "Source"),
+  stringsAsFactors = FALSE
+)
+
+package_versions <- dplyr::arrange(package_versions, Package)
+knitr::kable(package_versions)
+```

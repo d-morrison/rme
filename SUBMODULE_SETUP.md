@@ -17,13 +17,13 @@ The LaTeX macros submodule has been successfully configured and is now tracking 
 After the submodule is properly set up on GitHub, others cloning this repository should run:
 
 ```bash
-git clone --recurse-submodules https://github.com/d-morrison/rme.git
+git clone --recurse-submodules --single-branch https://github.com/d-morrison/rme.git
 ```
 
 Or if already cloned:
 
 ```bash
-git submodule update --init --recursive
+git submodule update --init --recursive --single-branch
 ```
 
 ## Updating the Macros

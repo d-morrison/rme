@@ -5,7 +5,7 @@
 > 
 > Before committing ANY changes to `.qmd`, `.R`, or config files:
 > 
-> 1. **Run `quarto render` on the FULL repository** (not individual files)
+> 1. **Run `quarto render <chapter.qmd> --to html` on each chapter whose subfiles were edited** (not individual subfiles; not the full book; HTML format only unless you are specifically fixing a non-HTML format issue)
 > 2. **Verify it completes successfully** (exit code 0, no errors)
 > 3. **Run linter on changed files**:
 >    - For R files: `lintr::lint("path/to/file.R")`  
@@ -19,7 +19,8 @@
 > **CRITICAL RULES:**
 > - **CI is NOT the test** - you must test locally BEFORE pushing
 > - **NEVER rely on CI to discover rendering, lint, or spelling errors** - that's your job
-> - **ALWAYS run full `quarto render`** - testing individual files is insufficient
+> - **Only render HTML format** (`--to html`) unless specifically fixing a non-HTML format issue
+> - **Only render edited chapters** — run `quarto render <chapter.qmd> --to html` on the parent `.qmd` that includes each edited subfile; do not render the full book
 > - **Only fix lint/spell issues in code YOU changed** - don't fix unrelated pre-existing issues
 > - **This is a hard requirement - no exceptions, no excuses**
 
@@ -28,7 +29,7 @@
 **CRITICAL**: Do not make assumptions about what code will do - always test it yourself.
 
 - **Test your changes**: Run the actual commands to verify functionality
-- **Run `quarto render` on FULL repository**: Testing individual files misses cross-file issues
+- **Run `quarto render <chapter.qmd> --to html` on each edited chapter**: Only render chapters whose subfiles were edited, in HTML format (not the full book, not all formats)
 - **Verify output**: Check that expected files are created with correct content
 - **Never claim success without evidence**: Only report that something works after you've confirmed it yourself
 
@@ -58,6 +59,31 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Subfile Structure Convention
+
+Quarto subfiles (files under `_subfiles/`) should **not** begin with a section heading.
+The heading for a subfile's content should be placed in the **parent** file that includes the subfile,
+immediately before the `{{< include ... >}}` shortcode.
+
+**Correct** — heading in the parent file:
+```markdown
+## My Section Title {#sec-my-section}
+
+{{< include _subfiles/chapter/_sec_my_content.qmd >}}
+```
+
+**Incorrect** — heading inside the subfile:
+```markdown
+<!-- inside _subfiles/chapter/_sec_my_content.qmd -->
+## My Section Title {#sec-my-section}
+
+Content starts here...
+```
+
+This keeps the document hierarchy centralized in the parent file,
+makes heading levels easy to audit,
+and avoids nesting errors when the same subfile might be included at different depths.
+
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
@@ -74,12 +100,37 @@ but grammatically the citation key itself is treated as a singular pronoun/name.
 
 When adapting any content from another source,
 always include specific attribution in the chapter text.
+Always state the exact adapted exercise(s) or example(s),
+not just a broad chapter citation.
+When the source provides numbered exercises/examples,
+cite the exact number
+and the exact page number.
+When specific numbers are not available in the source,
+use chapter/section locators instead of inventing numbers.
 Use a BibTeX-backed citation key
 with a chapter or page locator
 (for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
 Do not use generic acknowledgements without locators
 or plaintext author-title references
 when a BibTeX citation is available.
+
+## Variable Definitions in Exercises
+
+When introducing model variables in exercises,
+list variable definitions as bullet points
+and/or a table.
+Do not define multiple variables inline in prose.
+Include symbol,
+plain-language meaning,
+and dataset column mapping.
+
+## Solution Wording
+
+In solution blocks,
+state the correct conclusions directly.
+Do not phrase final answers conditionally
+when the provided figure or context
+supports a specific conclusion.
 
 ## Code Formatting Guidelines
 
@@ -96,6 +147,19 @@ When parenthetical references or short asides are supplementary
 place them in a `::: notes` div
 instead of leaving them inline in the main narrative.
 
+## Fenced Divs and List Indentation in Quarto
+
+Do not indent `:::` fenced div markers
+as if they were list-continuation content.
+In this project,
+indented fenced div markers can render as literal `:::`
+instead of being parsed as div blocks.
+
+When you need a notes/callout div related to a list item,
+end the list first,
+then start the div at the left margin
+with blank lines around the fenced block.
+
 Example:
 ```r
 # Good: Each instruction on its own line
@@ -107,7 +171,29 @@ Example:
 # First, check if the input is valid. Then, process the data. Finally, return the result.
 ```
 
+## Definition Formatting
+
+When introducing or editing formal statistical definitions in `.qmd` files:
+
+- Use a definition div with an id beginning `#def-`
+- Put the definition title in a heading inside the div
+  and choose the heading level to match the surrounding section depth
+  (for example, `####` or `#####`)
+- If a definition uses other statistical terms
+  (for example, empirical CDF),
+  ensure those terms also have formal `#def-` div definitions
+  in the relevant scope before relying on them
+
 ## Quarto Code Chunk Options
+
+Default to
+`#| code-fold: true`
+for chunks that create figures or tables.
+Only set
+`#| code-fold: false`
+for those chunks
+if reviewers explicitly request it
+or if the surrounding narrative requires visible code to follow the argument.
 
 When the code **and** its console output are both needed for the surrounding narrative to make sense, use `#| code-fold: false` so that neither is hidden:
 
@@ -122,6 +208,27 @@ sum(residuals(my_model)^2)
 Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
+
+## Quarto `df-print` behavior
+
+For this repository,
+configure Quarto YAML settings
+so data-frame printing is:
+- paged in HTML and RevealJS outputs
+- tibble-style in PDF and DOCX outputs
+
+When this configuration is in place,
+full dataset prints in exercises are expected behavior,
+not automatically a readability problem.
+Feedback that asks to trim dataset prints
+without checking these format settings
+can be incorrect.
+
+If a maintainer claim
+(or any other claim)
+appears to conflict with the repository configuration or rendered output,
+verify it against the code and outputs
+and politely correct it with evidence.
 
 ## Landscape Tables in PDF
 
@@ -153,6 +260,7 @@ Key macros to use:
 - **Aligned equations**: Use `\ba` / `\ea` for `\begin{aligned}` / `\end{aligned}`
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
+- **Deviation/error notation**: Use `\erf{...}` for deviations of estimates/estimators from their estimands; use `\devn(...)` for all other deviations (e.g., observations from population means)
 
 matrix-product helper macros:
 
@@ -163,7 +271,7 @@ matrix-product helper macros:
 
 Residual and deviation helper macros include:
 
-- `\err` for generic error or residual terms
+- `\err` is deprecated; prefer `\devn(...)` for new non-estimation deviations while legacy uses are being phased out
 - `\erf{\theta}` for estimate/estimand deviations
 - `\devn(...)` for other deviations
 - `\resid` for residual symbols (`r`)
@@ -177,6 +285,11 @@ Residual and deviation helper macros include:
   This avoids LaTeX "Double superscript" errors.
 
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
+
+When a repeatedly used expression needs a new macro,
+add it to `latex-macros/macros.qmd`
+in the `latex-macros` submodule
+and push that submodule update.
 
 ## Color Coding Strategy for Math Expressions
 
@@ -272,6 +385,27 @@ This repository uses JAGS (Just Another Gibbs Sampler) for Bayesian analysis:
 - R packages `rjags` and `runjags` depend on JAGS being installed
 - The lint workflow also needs these packages installed to avoid false positives
 
+## Quarto Slide Breaks
+
+Use `{{< slidebreak >}}` instead of raw `---` to insert slide breaks in `.qmd` files.
+The `{{< slidebreak >}}` shortcode produces a slide break only in `revealjs` output,
+and produces no output in other formats (HTML, PDF, etc.).
+This allows the same source file to render correctly across multiple output formats.
+
+Example:
+
+```markdown
+## Slide 1
+
+Content here.
+
+{{< slidebreak >}}
+
+## Slide 2
+
+More content.
+```
+
 ## Computer Algebra Systems (CAS)
 
 The Copilot environment includes two computer algebra systems for symbolic mathematics.
@@ -333,7 +467,7 @@ maxima --very-quiet --batch=/tmp/cas_check.mac
 
 **CRITICAL REQUIREMENTS** before requesting code review:
 
-1. **Run `quarto render` yourself locally** on the full repository and ensure it passes
+1. **Run `quarto render <chapter.qmd> --to html`** on each chapter whose subfiles you edited — do NOT render the full book, and do NOT render all formats unless you are specifically fixing a non-HTML format issue
 2. **Verify it completes successfully** (exit code 0, no errors)
 3. **Do NOT rely solely on CI workflows** to catch rendering issues
 4. **Test the actual command and wait for completion** - do not assume success
@@ -347,7 +481,8 @@ maxima --very-quiet --batch=/tmp/cas_check.mac
 - All documents render correctly (check for missing images, broken math, etc.)
 
 **Common mistakes to avoid**:
-- Testing individual files only (use `quarto render` for full repository)
+- Rendering all chapters when only a few subfiles changed (only render chapters with edited subfiles)
+- Rendering all output formats when only HTML is needed (use `--to html` unless fixing a specific format issue)
 - Not waiting for the command to complete
 - Assuming success without checking the exit code
 - Claiming "it works" without actually running the command
