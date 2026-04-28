@@ -59,7 +59,44 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
-## Subfile Structure Convention
+## Attribution for Adapted Content
+
+When content is adapted from published sources (textbooks, papers, websites),
+**always provide explicit attribution** in the document.
+Use `@citekey` Pandoc citation syntax and include a prose note explaining what was adapted.
+
+Examples of acceptable attribution:
+
+- "Adapted from @vittinghoff2e [Chapter 10]."
+- "The following example is based on @kleinbaum2010logistic [Chapter 8]."
+- "This approach follows @hulley1998hers."
+
+Attribution should appear:
+
+- At the top of the chapter or section (in the Acknowledgements or Introduction),
+  *or*
+- Adjacent to the specific content being adapted (as a prose sentence or in a `::: notes` div).
+
+**Always include chapter and/or page numbers** in inline citations where applicable,
+so that readers can locate the source material.
+Use Pandoc's citation locator syntax: `[@citekey, Chapter 8]` or `[@citekey, p. 194]`.
+Include both chapter and page when both are known.
+Do **not** invent page numbers.
+Only cite a page after opening the source PDF
+and confirming the exact page.
+If you have not verified a page directly from the source PDF,
+cite chapter-level location only.
+
+Examples of attribution with page numbers
+(formatting examples):
+
+- "Adapted from [@vittinghoff2e, Chapter 10, p. 194]."
+- "The following example is based on [@kleinbaum2010logistic, Chapter 8, p. 230]."
+
+Do **not** reproduce verbatim text from copyrighted sources without clear quotation marks and attribution.
+Paraphrase and summarize with a citation instead.
+
+## Decomposing content into subfiles
 
 Quarto subfiles (files under `_subfiles/`) should **not** begin with a section heading.
 The heading for a subfile's content should be placed in the **parent** file that includes the subfile,
@@ -96,7 +133,27 @@ This applies whether the citation refers to one author or multiple authors (e.g.
 Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
 but grammatically the citation key itself is treated as a singular pronoun/name.
 
-## Attribution for Adapted Content
+## DAG Naming for Categorical Variables
+
+In DAGs,
+use node names that represent the full categorical variable,
+not a specific level of that variable.
+
+Example:
+use `personality_type`,
+not `TypeA`.
+
+## Evidence and Source Citation Requirements
+
+For factual claims that are not directly proved in the text,
+always include a specific source citation.
+Do not leave factual statements uncited.
+
+Always cite papers and books using
+BibTeX entries in `references.bib`
+and Quarto/Pandoc citation syntax
+(for example `[@MickeyGreenland1989]`),
+rather than plaintext author-date references.
 
 When adapting any content from another source,
 always include specific attribution in the chapter text.
@@ -249,6 +306,53 @@ Use this pattern:
 
 Apply this only where needed,
 so HTML and RevealJS output stay unchanged.
+
+## Figures and Tables: Use Div Format
+
+Prefer the **Quarto div format** for new figures and tables
+rather than chunk-option `fig-cap`/`tbl-cap`.
+The div format makes it easier to write and format multi-sentence captions.
+Existing chunk-option captions in older files are acceptable
+unless you are already refactoring that content.
+
+**Correct** (div format):
+````qmd
+::: {#fig-my-figure}
+
+```{r}
+plot(x, y)
+```
+
+Caption text here.
+This can span multiple lines and include *markdown*.
+
+:::
+````
+
+**Correct** (div format for tables):
+````qmd
+::: {#tbl-my-table}
+
+```{r}
+my_table
+```
+
+Caption text here.
+
+:::
+````
+
+**Incorrect** (chunk option format):
+````qmd
+```{r}
+#| label: fig-my-figure
+#| fig-cap: "Caption text here."
+plot(x, y)
+```
+````
+
+Use this for newly added or substantially revised figures and tables in `.qmd` files.
+
 
 ## Math Notation
 
