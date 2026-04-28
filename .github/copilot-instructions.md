@@ -44,6 +44,9 @@ but do not flag issues or request modifications in those files.
 
 ## Pull Request Guidelines
 
+- **When you start working on a PR, immediately remove any existing review requests.**
+  This signals to reviewers that the PR is not yet ready for review
+  and prevents premature reviews of incomplete work.
 - Always ensure that PR branch is up to date with main branch before requesting PR review
 - **ALWAYS verify all changed hyperlinks are correct before requesting PR review**:
   - Check that internal links point to existing files/sections
