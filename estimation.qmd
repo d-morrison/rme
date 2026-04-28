@@ -184,20 +184,30 @@ secondary.
 
 The **accuracy** of an estimator for a given estimand does not have a
 consensus formal definition, but all of the usual candidates are related
-to the distributions of the *errors* made by the resulting estimates.
+to the distributions of the *estimation errors* made by the resulting estimates.
 
 :::
 
-## Error
+## Estimation error
 
-::: {#def-error}
-#### Error
+::: {#def-estimation-error}
+#### Estimation error
 
-The **error** of an estimate $\hth$ of a true value $\th$, often denoted $\eps(\hth)$, or more completely $\eps(\hth, \th)$, is the
-difference between the estimate and its estimand $\theta$; that is:
+The **estimation error** of an estimate $\hth$ of a true value $\th$
+is the difference between
+the estimate and the estimand $\th$:
 
-$$\eps(\hth) \eqdef \hth - \th$$
+$$\erf{\hth} \eqdef \hth - \th$$
 :::
+
+## Residuals
+
+See [Linear-model residual definitions and terminology](Linear-models-overview.qmd#sec-lm-residuals)
+for residual definitions
+and for the relationship between
+residuals,
+model deviations,
+and estimation error.
 
 Some frequently-used measures of accuracy include:
 
@@ -207,9 +217,10 @@ Some frequently-used measures of accuracy include:
 #### Mean squared error
 
 The **mean squared error** of an estimator $\hth$, denoted
-$\mselr{\hth}$, is the expectation of the square of the error[^1]:
+$\mselr{\hth}$, is the expectation of the square
+of the estimation error[^1]:
 
-$$\mselr{\hth} \eqdef \E{(\err(\hth))^2}$$
+$$\mselr{\hth} \eqdef \E{\sqf{\erf{\hth}}}$$
 :::
 
 ## Mean absolute error
@@ -218,10 +229,10 @@ $$\mselr{\hth} \eqdef \E{(\err(\hth))^2}$$
 #### Mean absolute error
 
 The **mean absolute error** of an estimator is the expectation of the
-absolute value of the error:
+absolute value of the estimation error:
 
 $$
-\maelr{\hth} \eqdef \E{\abs{\err(\hth)}}
+\maelr{\hth} \eqdef \E{\abs{\erf{\hth}}}
 $$
 :::
 
@@ -231,9 +242,9 @@ $$
 #### Bias
 
 The **bias** of an estimator $\hth$ for an estimand $\theta$ is the
-expected value of the error:
+expected value of the estimation error:
 
-$$\bias{\hth} \eqdef \E{\err(\hth)}$$ {#eq-bias-def}
+$$\bias{\hth} \eqdef \E{\erf{\hth}}$$ {#eq-bias-def}
 :::
 
 ---
@@ -250,7 +261,7 @@ $$\bias{\hth} =\E{\hth} - \theta$$
 $$
 \begin{aligned}
 \bias{\hth} 
-&\eqdef \E{\err(\hth)}\\
+&\eqdef \E{\erf{\hth}}\\
 &= \E{\hth - \theta}\\
 &=\E{\hth} - \E{\theta}\\
 &=\E{\hth} - \theta
@@ -318,7 +329,7 @@ $$
 $$
 \ba
 \mselr{\hth} 
-&\eqdef \E{\sqf{\eps(\hth)}}\\
+&\eqdef \E{\sqf{\erf{\hth}}}\\
 &= \E{\sqf{\hth - \th}}\\
 &= \E{\sqf{\hth - \E{\hth}}}\\
 &\eqdef \Var{\hth}
@@ -354,19 +365,31 @@ $$\SE{\hth} \eqdef \SD{\hth}$$
 
 :::
 
-"Standard error" is a confusing concept in a few ways. First of all, it isn't even defined as a characteristic of the [error](#def-error), $\eps(\hth)$! Moreover, it is just a synonym for standard deviation, so it seems like a redundant concept. However, standard errors help us construct p-values and confidence intervals, so they come up a lot - often enough to give them their own name.
+"Standard error" is a confusing concept in a few ways.
+First of all,
+it isn't even defined as a characteristic of the [estimation error](#def-estimation-error),
+$\erf{\hth}$!
+Moreover,
+it is just a synonym for standard deviation,
+so it seems like a redundant concept.
+However,
+standard errors help us construct p-values and confidence intervals,
+so they come up a lot - often enough to give them their own name.
 
-We can relate standard error to actual error, by rearranging the result from @thm-mse-bias-variance:
+We can relate standard error to estimation error,
+by rearranging the result from @thm-mse-bias-variance:
 
 $$
 \ba
 \Var{\hth} &= \Var{\hth - \th}\\
-&= \Var{\eps(\hth)}\\
+&= \Var{\erf{\hth}}\\
 \ea
 $$
-So the variance of the estimator is equal to the variance of the error, and the standard error is equal to the standard deviation of the error:
+So the variance of the estimator is equal to the variance of the estimation error,
+and the standard error is equal to the standard deviation
+of the estimation error:
 
-$$\SE{\hth} = \SD{\eps(\hth)}$$
+$$\SE{\hth} = \SD{\erf{\hth}}$$
 
 ---
 
