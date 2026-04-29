@@ -8,8 +8,9 @@ and
 a corresponding estimated covariance matrix
 $\hS \eqdef \widehat{\Covt}(\hvb)$,
 calculate a 95% confidence interval for the difference in means
-comparing covariate patterns $\vx$ and $\vxs$,
-$\mu(\vx) - \mu(\vxs)$.
+comparing covariate patterns $\vx$ and $\vxs$:
+
+$$\Delta \mu \eqdef \mu(\vx) - \mu(\vxs)$$
 
 :::
 
@@ -19,16 +20,11 @@ $\mu(\vx) - \mu(\vxs)$.
 
 ::: notes
 
-The difference in means is a linear function of $\hvb$,
-so we can construct the confidence interval directly:
-
-$$\widehat{\mu(\vx) - \mu(\vxs)} \pm t_{n-p}(0.975) \cdot \HSE{\widehat{\mu(\vx) - \mu(\vxs)}}$$
-
-No transformation is needed (unlike for odds ratios in logistic regression).
+We can construct the confidence interval directly:
 
 :::
 
-$$\mu(\vx) - \mu(\vxs) \in \paren{\widehat{\mu(\vx) - \mu(\vxs)} \pm t_{n-p}(0.975) \cdot \HSE{\widehat{\mu(\vx) - \mu(\vxs)}}}$$
+$$\Delta \mu \in \widehat{\Delta \mu} \pm t_{n-p}(0.975) \cdot \HSE{\widehat{\Delta \mu}}$$
 
 :::
 
@@ -37,7 +33,7 @@ $$\mu(\vx) - \mu(\vxs) \in \paren{\widehat{\mu(\vx) - \mu(\vxs)} \pm t_{n-p}(0.9
 :::{#exr-diff-means-as-lincom}
 
 Express the difference in means
-$\mu(\vx) - \mu(\vxs)$ as a linear function of $\vb$.
+$\Delta \mu \eqdef \mu(\vx) - \mu(\vxs)$ as a linear function of $\vb$.
 
 :::
 
@@ -47,12 +43,14 @@ $\mu(\vx) - \mu(\vxs)$ as a linear function of $\vb$.
 
 $$
 \ba
-\mu(\vx) - \mu(\vxs)
-&= \tp{\vx}\vb - \tp{(\vxs)}\vb
+\Delta \mu
+&= \mu(\vx) - \mu(\vxs)
 \\
-&= (\vx - \vxs)'\vb
+&= \iprodf{\vx}{\vb} - \iprodf{(\vxs)}{\vb}
 \\
-&= \diffvx'\vb
+&= \iprodf{\vx - \vxs}{\vb}
+\\
+&= \iprodf{\diffvx}{\vb}
 \ea
 $${#eq-diff-means-lincom}
 
@@ -67,11 +65,11 @@ where $\diffvx \eqdef \vx - \vxs$.
 ::: notes
 
 How can we estimate the standard error of
-$\widehat{\mu(\vx) - \mu(\vxs)}$?
+$\widehat{\Delta \mu}$?
 
 :::
 
-$$\blue{\HSE{\widehat{\mu(\vx) - \mu(\vxs)}}} = \blue{?}$$
+$$\blue{\HSE{\widehat{\Delta \mu}}} = \blue{?}$$
 
 :::
 
@@ -80,16 +78,16 @@ $$\blue{\HSE{\widehat{\mu(\vx) - \mu(\vxs)}}} = \blue{?}$$
 :::{#sol-se-diff-means}
 
 $$
-\green{\SE{\widehat{\mu(\vx) - \mu(\vxs)}}} =
-\sqrt{\red{\Var{\widehat{\mu(\vx) - \mu(\vxs)}}}}
+\green{\SE{\widehat{\Delta \mu}}} =
+\sqrt{\red{\Var{\widehat{\Delta \mu}}}}
 $${#eq-se-sqrt-var-diff-means}
 
 By @sol-diff-means-as-lincom and [the variance of a linear combination](probability.qmd#thm-var-lincom):
 
 $$
 \ba
-\red{\Var{\widehat{\mu(\vx) - \mu(\vxs)}}}
-&= \Var{(\diffvx)'\hvb}
+\red{\Var{\widehat{\Delta \mu}}}
+&= \Var{\iprodf{\diffvx}{\hvb}}
 \\
 &= \pt{\diffvx}\Cov{\hvb}(\diffvx)
 \\
@@ -127,11 +125,11 @@ Combining @eq-var-diff-means and the Gauss-Markov theorem:
 #### Estimated variance and standard error of difference in means
 
 $$
-\orange{\hVar{\widehat{\mu(\vx) - \mu(\vxs)}}} = \orange{\tp{\diffvx}\hat{\Sigma}(\diffvx)}
+\orange{\hVar{\widehat{\Delta \mu}}} = \orange{\tp{\diffvx}\hat{\Sigma}(\diffvx)}
 $${#eq-est-var-diff-means}
 
 $$
-\blue{\HSE{\widehat{\mu(\vx) - \mu(\vxs)}}} =
+\blue{\HSE{\widehat{\Delta \mu}}} =
 \blue{\sqrt{\tp{\diffvx}\hat{\Sigma}(\diffvx)}}
 $${#eq-est-se-diff-means}
 
@@ -151,8 +149,6 @@ the only change is to replace $\vx$ with $\diffvx = \vx - \vxs$.
 :::
 
 ---
-
-#### In R
 
 In R, we can compute the CI for the difference in means
 by computing the predicted means for both covariate patterns
