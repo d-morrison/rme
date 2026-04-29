@@ -399,6 +399,7 @@ Key macros to use:
 
 matrix-product helper macros:
 
+- `\dprod{u}{v}` for dot products (`u \cdot v`)
 - `\iprod{u}{v}` for inner products (`\tp{u} v`)
 - `\oprod{u}{v}` for outer products (`u \tp{v}`)
 - `\siprod{u}` for self-inner products (`\tp{u} u`)
