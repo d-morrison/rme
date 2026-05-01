@@ -423,14 +423,14 @@ Residual and deviation helper macros include:
 **Vector–scalar product ordering** (for dimensional clarity):
 
 - When multiplying a **column vector** by a scalar, write the **vector on the left**:
-  use `\vb\,s` not `s\,\vb`.
+  use `\vb \s` not `s\ \vb`.
 - When multiplying a **row vector** (or a transpose) by a scalar, write the **vector on the right**:
-  use `s\,\tp{\vb}` not `\tp{\vb}\,s`.
+  use `s \tp{\vb}` not `\tp{\vb} s`.
 
 This ordering makes the matrix dimensions of expressions immediately readable
 and is consistent with the convention that column vectors are always written first
-in scalar multiples (e.g., a gradient $\nabla f = \vb\,\pi(1-\pi)$,
-not $\pi(1-\pi)\,\vb$).
+in scalar multiples (e.g., a gradient $\nabla f = \vb \pi(1-\pi)$,
+not $\pi(1-\pi) \vb$).
 
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
 
