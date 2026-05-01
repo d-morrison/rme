@@ -422,8 +422,8 @@ Residual and deviation helper macros include:
 
 **Vector–scalar product ordering** (for dimensional clarity):
 
-- When multiplying a **column vector** by a scalar, write the **vector on the left**:
-  use `\vb \s` not `s\ \vb`.
+- When multiplying a **column vector** `\vb` by a scalar `s`, write the **vector on the left**:
+  use `\vb s` not `s \vb`.
 - When multiplying a **row vector** (or a transpose) by a scalar, write the **vector on the right**:
   use `s \tp{\vb}` not `\tp{\vb} s`.
 
