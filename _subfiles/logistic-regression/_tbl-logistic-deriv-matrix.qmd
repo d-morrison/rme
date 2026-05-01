@@ -4,12 +4,24 @@
 Each entry gives the derivative of the **column quantity**
 with respect to the **row quantity**;
 that is, the entry in row $i$ and column $j$ is
-$\derivf{(\text{column } j \text{ quantity})}{(\text{row } i \text{ quantity})}$.
+$\derivf{(\text{col } j)}{(\text{row } i)}$.
 
-When differentiating a scalar with respect to a vector ($\vx$ or $\vb$),
-the result is a vector of partial derivatives.
-When differentiating a vector with respect to itself,
-the result is the identity matrix $\idmat$.
+**Dimensions** of each entry depend on the types of the row and column quantities:
+
+- **Scalar/scalar** (upper-left $3 \times 3$ block):
+  row and column are both scalars ($\prob$, $\odds$, or $\logodds$);
+  derivative is a scalar.
+- **Gradient** (lower-left $2 \times 3$ block):
+  row is a $p$-vector ($\vx$ or $\vb$), column is a scalar;
+  derivative is a $p$-vector (gradient).
+- **Jacobian** (lower-right $2 \times 2$ block):
+  both row and column are $p$-vectors;
+  derivative is a $p \times p$ matrix.
+- **Undefined** (upper-right $3 \times 2$ block):
+  row is a scalar, column is $\vx$ or $\vb$.
+  Since $\vx$ and $\vb$ are model inputs rather than functions of
+  $\prob$, $\odds$, or $\logodds$,
+  these derivatives are not defined.
 :::
 
 :::{#tbl-logistic-deriv-matrix}
@@ -22,36 +34,44 @@ $$
   & 1
   & \dfrac{1}{\sqf{1-\prob}}
   & \dfrac{1}{\prob(1-\prob)}
-  & \mathbf{0}
-  & \mathbf{0} \\[10pt]
+  & \text{undef}
+  & \text{undef} \\[10pt]
 \odds
   & \sqf{1-\prob}
   & 1
   & \dfrac{1}{\odds}
-  & \mathbf{0}
-  & \mathbf{0} \\[10pt]
+  & \text{undef}
+  & \text{undef} \\[10pt]
 \logodds
   & \prob(1-\prob)
   & \odds
   & 1
-  & \mathbf{0}
-  & \mathbf{0} \\[10pt]
+  & \text{undef}
+  & \text{undef} \\[10pt]
 \vx
   & \prob(1-\prob)\,\vb
   & \odds\,\vb
   & \vb
   & \idmat
-  & \mathbf{0} \\[10pt]
+  & \mat{0} \\[10pt]
 \vb
   & \prob(1-\prob)\,\vx
   & \odds\,\vx
   & \vx
-  & \mathbf{0}
+  & \mat{0}
   & \idmat \\
 \end{array}
 $$
 
-Matrix of logistic regression derivatives.
+Matrix of logistic regression derivatives
+($p$ = number of predictors,
+$\logodds = \vx \cdot \vb$,
+$\odds = e^\logodds$,
+$\prob = \odds / (1 + \odds)$).
 Each entry is the derivative of the **column quantity**
 with respect to the **row quantity**.
+Entries marked "undef" are not defined
+because the column quantity is a model input,
+not a function of the row quantity.
 :::
+
