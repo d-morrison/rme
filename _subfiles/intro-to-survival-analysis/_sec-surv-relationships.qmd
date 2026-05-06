@@ -25,45 +25,45 @@ $$
 Some proofs (others left as exercises):
 
 $$
-\begin{aligned}
-S'(t) &= \deriv{t}(1-F(t))\\
-&= -F'(t)\\
-&= -f(t)\\
-\end{aligned}
+\ba
+\surv'(t) &= \deriv{t}(1-\cdf(t))\\
+&= -\cdf'(t)\\
+&= -\pdf(t)\\
+\ea
 $$
 
 ---
 
 $$
-\begin{aligned}
-\deriv{t}\log{\surv(t)}
-&= \frac{S'(t)}{\surv(t)}\\
-&= -\frac{f(t)}{\surv(t)}\\
+\ba
+\deriv{t}\logf{\surv(t)}
+&= \frac{\surv'(t)}{\surv(t)}\\
+&= -\frac{\pdf(t)}{\surv(t)}\\
 &= -\haz(t)\\
-\end{aligned}
+\ea
 $$
 
 ---
 
 $$
-\begin{aligned}
+\ba
 \cuhaz(t)
-&\eqdef \int_{u=0}^t h(u) du\\
-&= \int_0^t -\deriv{u}\text{log}\left\{S(u)\right\} du\\
-&= \left[-\text{log}\left\{S(u)\right\}\right]_{u=0}^{u=t}\\
-&= \left[\text{log}\left\{S(u)\right\}\right]_{u=t}^{u=0}\\
+&\eqdef \int_{u=0}^t \haz(u) du\\
+&= \int_0^t -\deriv{u}\logf{\surv(u)} du\\
+&= \sb{-\logf{\surv(u)}}_{u=0}^{u=t}\\
+&= \sb{\logf{\surv(u)}}_{u=t}^{u=0}\\
 &= \logf{\surv(0)} - \logf{\surv(t)}\\
 &= \logf{1} - \logf{\surv(t)}\\
 &= 0 - \logf{\surv(t)}\\
 &=-\logf{\surv(t)}
-\end{aligned}
+\ea
 $$
 
 ---
 
 Corollary:
 
-$$\surv(t) = \text{exp}\left\{-\cuhaz(t)\right\}$$
+$$\surv(t) = \expf{-\cuhaz(t)}$$
 
 ---
 
@@ -79,10 +79,7 @@ The first day is the most dangerous:
 #| echo: true
 
 # download `survexp.rda` from:
-# paste0(
-# "https://github.com/therneau/survival/raw/",
-# "f3ac93704949ff26e07720b56f2b18ffa8066470/",
-# "Data/survexp.rda")
+# https://github.com/therneau/survival/raw/f3ac937/Data/survexp.rda
 
 # (newer versions of `survival` don't have the first-year breakdown; see:
 # https://cran.r-project.org/web/packages/survival/news.html)
@@ -108,7 +105,12 @@ cols[1] <- 2
 cols[2] <- 3
 cols[3] <- 4
 
-plot(age1, s1, type = "b", lwd = 2, xlab = "Age", ylab = "Daily Hazard Rate", col = cols)
+plot(
+  age1, s1,
+  type = "b", lwd = 2,
+  xlab = "Age", ylab = "Daily Hazard Rate",
+  col = cols
+)
 
 text(10, .003, "First Day", col = 2)
 text(18, .00030, "Rest of First Week", col = 3)
@@ -132,7 +134,11 @@ s2 <- survexp.us[5:113, "female", "2004"]
 
 age1 <- 1:109
 
-plot(age1[yrs], s1[yrs], type = "l", lwd = 2, xlab = "Age", ylab = "Daily Hazard Rate")
+plot(
+  age1[yrs], s1[yrs],
+  type = "l", lwd = 2,
+  xlab = "Age", ylab = "Daily Hazard Rate"
+)
 lines(age1[yrs], s2[yrs], col = 2, lwd = 2)
 legend(5, 5e-6, c("Males", "Females"), col = 1:2, lwd = 2)
 ```
