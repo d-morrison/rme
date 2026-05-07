@@ -35,6 +35,62 @@ is a direct measure of the causal effect.
 <!-- Include paths below are relative to the project root (standard for Quarto) -->
 {{< include _subfiles/shared/_sec_hers_intro.qmd >}}
 
+::: {#fig-hers-swimmer}
+
+```{r}
+#| code-fold: true
+
+rct_swimmer <- data.frame(
+  id = paste("Participant", LETTERS[1:10]),
+  start = 0.1,
+  end = c(4.8, 4.6, 4.9, 4.3, 4.7, 4.8, 4.4, 4.9, 4.5, 4.7),
+  arm = c(
+    rep("Hormone therapy", 5),
+    rep("Placebo", 5)
+  ),
+  outcome = c(
+    "CHD event", "No CHD event", "No CHD event", "CHD event", "No CHD event",
+    "No CHD event", "CHD event", "No CHD event", "CHD event", "No CHD event"
+  ),
+  stringsAsFactors = FALSE
+)
+
+rct_events <- rct_swimmer[rct_swimmer$outcome == "CHD event", ]
+rct_events$time <- rct_events$end
+rct_events$event <- "CHD event"
+
+swimplot::swimmer_plot(
+  df = rct_swimmer,
+  id = "id",
+  start = "start",
+  end = "end",
+  name_fill = "arm",
+  width = 0.8
+) +
+  swimplot::swimmer_points(
+    df_points = rct_events,
+    id = "id",
+    time = "time",
+    name_shape = "event",
+    size = 2.8
+  ) +
+  ggplot2::scale_shape_manual(values = c("CHD event" = 17)) +
+  ggplot2::labs(
+    x = "Follow-up time (years)",
+    y = "Participant",
+    fill = "Study arm",
+    shape = "Outcome"
+  ) +
+  ggplot2::theme_minimal(base_size = 11)
+```
+
+Schematic swimmer chart
+for participants in a randomized controlled trial.
+Bars show follow-up time
+and triangles indicate observed CHD events.
+
+:::
+
 In HERS, hormone therapy (HT) was randomized,
 so the treatment groups were exchangeable at baseline.
 The observed difference in CHD event rates between

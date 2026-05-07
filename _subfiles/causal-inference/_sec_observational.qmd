@@ -8,6 +8,72 @@ As a result, treatment groups may differ systematically
 in ways that also affect the outcome —
 this is called **confounding**.
 
+## Prospective cohort example: WCGS {#sec-causal-wcgs-cohort}
+
+The WCGS (Western Collaborative Group Study)
+is a prospective cohort study
+in which men were followed over time
+for coronary heart disease (CHD) outcomes.
+Unlike an RCT,
+the exposure (Type A vs Type B behavior pattern)
+was observed rather than randomized.
+
+::: {#fig-wcgs-swimmer}
+
+```{r}
+#| code-fold: true
+
+wcgs_swimmer <- data.frame(
+  id = paste("Participant", 1:10),
+  start = 0.1,
+  end = c(9.0, 8.2, 8.7, 9.0, 7.6, 8.8, 9.0, 8.4, 7.9, 9.0),
+  personality_type = c(
+    rep("Type A", 5),
+    rep("Type B", 5)
+  ),
+  outcome = c(
+    "CHD event", "No CHD event", "CHD event", "No CHD event", "No CHD event",
+    "No CHD event", "CHD event", "No CHD event", "CHD event", "No CHD event"
+  ),
+  stringsAsFactors = FALSE
+)
+
+wcgs_events <- wcgs_swimmer[wcgs_swimmer$outcome == "CHD event", ]
+wcgs_events$time <- wcgs_events$end
+wcgs_events$event <- "CHD event"
+
+swimplot::swimmer_plot(
+  df = wcgs_swimmer,
+  id = "id",
+  start = "start",
+  end = "end",
+  name_fill = "personality_type",
+  width = 0.8
+) +
+  swimplot::swimmer_points(
+    df_points = wcgs_events,
+    id = "id",
+    time = "time",
+    name_shape = "event",
+    size = 2.8
+  ) +
+  ggplot2::scale_shape_manual(values = c("CHD event" = 17)) +
+  ggplot2::labs(
+    x = "Follow-up time (years)",
+    y = "Participant",
+    fill = "Personality type",
+    shape = "Outcome"
+  ) +
+  ggplot2::theme_minimal(base_size = 11)
+```
+
+Schematic swimmer chart
+for participants in a prospective cohort study.
+Bars show observed follow-up
+and triangles indicate CHD events.
+
+:::
+
 ## Confounding {#sec-causal-confounding}
 
 :::{#def-confounding-obs}
