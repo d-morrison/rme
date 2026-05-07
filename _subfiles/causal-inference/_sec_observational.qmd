@@ -23,43 +23,35 @@ was observed rather than randomized.
 ```{r}
 #| code-fold: true
 
-wcgs_swimmer_schematic <- data.frame(
-  id = paste("Participant", 1:10),
-  start = 0.1,
-  end = c(9.0, 8.2, 8.7, 9.0, 7.6, 8.8, 9.0, 8.4, 7.9, 9.0),
-  personality_type = c(
-    rep("Type A", 5),
-    rep("Type B", 5)
-  ),
-  outcome = c(
-    "CHD event", "No CHD event", "CHD event", "No CHD event", "No CHD event",
-    "No CHD event", "CHD event", "No CHD event", "CHD event", "No CHD event"
-  ),
-  stringsAsFactors = FALSE
-)
+wcgs <- readRDS(fs::path_package("rme", "extdata/wcgs.rds"))
+wcgs <- as.data.frame(wcgs)
 
-wcgs_events_schematic <- wcgs_swimmer_schematic[
-  wcgs_swimmer_schematic$outcome == "CHD event",
+wcgs_swimmer <- wcgs[
+  !is.na(wcgs$time169) & !is.na(wcgs$chd69) & !is.na(wcgs$dibpat),
 ]
-wcgs_events_schematic$time <- wcgs_events_schematic$end
-wcgs_events_schematic$event <- "CHD event"
+wcgs_swimmer <- wcgs_swimmer[order(wcgs_swimmer$time169, decreasing = TRUE), ]
+wcgs_swimmer <- wcgs_swimmer[1:120, ]
 
-swimplot::swimmer_plot(
-  df = wcgs_swimmer_schematic,
-  id = "id",
+wcgs_swimmer$id_plot <- paste("Participant", seq_len(nrow(wcgs_swimmer)))
+wcgs_swimmer$start <- 0.1
+wcgs_swimmer$end_years <- wcgs_swimmer$time169 / 365.25
+wcgs_swimmer$personality_type <- as.character(wcgs_swimmer$dibpat)
+
+wcgs_events <- wcgs_swimmer[wcgs_swimmer$chd69 == "Yes", ]
+if (nrow(wcgs_events) > 0) {
+  wcgs_events$event <- "CHD event"
+  wcgs_events$time <- wcgs_events$end_years
+}
+
+wcgs_plot <- swimplot::swimmer_plot(
+  df = wcgs_swimmer,
+  id = "id_plot",
   start = "start",
-  end = "end",
+  end = "end_years",
   name_fill = "personality_type",
+  identifiers = FALSE,
   width = 0.8
 ) +
-  swimplot::swimmer_points(
-    df_points = wcgs_events_schematic,
-    id = "id",
-    time = "time",
-    name_shape = "event",
-    size = 2.8
-  ) +
-  ggplot2::scale_shape_manual(values = c("CHD event" = 17)) +
   ggplot2::labs(
     x = "Follow-up time (years)",
     y = "Participant",
@@ -67,11 +59,25 @@ swimplot::swimmer_plot(
     shape = "Outcome"
   ) +
   ggplot2::theme_minimal(base_size = 11)
+
+if (nrow(wcgs_events) > 0) {
+  wcgs_plot <- wcgs_plot +
+    swimplot::swimmer_points(
+      df_points = wcgs_events,
+      id = "id_plot",
+      time = "time",
+      name_shape = "event",
+      size = 2.8
+    ) +
+    ggplot2::scale_shape_manual(values = c("CHD event" = 17))
+}
+
+wcgs_plot
 ```
 
-Schematic swimmer chart
-for participants in a prospective cohort study.
-Bars show observed follow-up
+Swimmer chart
+using observed WCGS participant data.
+Bars show observed follow-up time,
 and triangles indicate CHD events.
 
 :::

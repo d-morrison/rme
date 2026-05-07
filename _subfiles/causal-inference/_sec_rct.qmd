@@ -40,56 +40,65 @@ is a direct measure of the causal effect.
 ```{r}
 #| code-fold: true
 
-hers_swimmer_schematic <- data.frame(
-  id = paste("Participant", LETTERS[1:10]),
-  start = 0.1,
-  end = c(4.8, 4.6, 4.9, 4.3, 4.7, 4.8, 4.4, 4.9, 4.5, 4.7),
-  arm = c(
-    rep("Hormone therapy", 5),
-    rep("Placebo", 5)
-  ),
-  outcome = c(
-    "CHD event", "No CHD event", "No CHD event", "CHD event", "No CHD event",
-    "No CHD event", "CHD event", "No CHD event", "CHD event", "No CHD event"
-  ),
-  stringsAsFactors = FALSE
-)
+hers <- readRDS(fs::path_package("rme", "extdata/hers.rds"))
+hers <- as.data.frame(hers)
 
-hers_events_schematic <- hers_swimmer_schematic[
-  hers_swimmer_schematic$outcome == "CHD event",
+hers_swimmer <- hers[!is.na(hers$LDL) & !is.na(hers$LDL1), ]
+hers_swimmer <- hers_swimmer[
+  order(hers_swimmer$HT, hers_swimmer$LDL1 - hers_swimmer$LDL),
 ]
-hers_events_schematic$time <- hers_events_schematic$end
-hers_events_schematic$event <- "CHD event"
+hers_swimmer <- hers_swimmer[1:80, ]
 
-swimplot::swimmer_plot(
-  df = hers_swimmer_schematic,
+hers_swimmer$id <- paste("Participant", seq_len(nrow(hers_swimmer)))
+hers_swimmer$start <- 0.1
+hers_swimmer$end <- 1
+hers_swimmer$arm <- ifelse(hers_swimmer$HT == 1, "Hormone therapy", "Placebo")
+hers_swimmer$ldl_increase <- hers_swimmer$LDL1 > hers_swimmer$LDL
+
+hers_events <- hers_swimmer[hers_swimmer$ldl_increase, ]
+if (nrow(hers_events) > 0) {
+  hers_events$time <- 1
+  hers_events$event <- "LDL increased at year 1"
+}
+
+hers_plot <- swimplot::swimmer_plot(
+  df = hers_swimmer,
   id = "id",
   start = "start",
   end = "end",
   name_fill = "arm",
+  identifiers = FALSE,
   width = 0.8
 ) +
-  swimplot::swimmer_points(
-    df_points = hers_events_schematic,
-    id = "id",
-    time = "time",
-    name_shape = "event",
-    size = 2.8
-  ) +
-  ggplot2::scale_shape_manual(values = c("CHD event" = 17)) +
   ggplot2::labs(
-    x = "Follow-up time (years)",
+    x = "Follow-up time (years from baseline lipid measurement)",
     y = "Participant",
     fill = "Study arm",
-    shape = "Outcome"
+    shape = "Observed year-1 outcome"
   ) +
   ggplot2::theme_minimal(base_size = 11)
+
+if (nrow(hers_events) > 0) {
+  hers_plot <- hers_plot +
+    swimplot::swimmer_points(
+      df_points = hers_events,
+      id = "id",
+      time = "time",
+      name_shape = "event",
+      size = 2.8
+    ) +
+    ggplot2::scale_shape_manual(values = c("LDL increased at year 1" = 17))
+}
+
+hers_plot
 ```
 
-Schematic swimmer chart
-for participants in a randomized controlled trial.
-Bars show follow-up time
-and triangles indicate observed CHD events.
+Swimmer chart
+using observed HERS participant data.
+Bars show baseline-to-year-1 follow-up
+for participants with both LDL and LDL1 measured;
+triangles indicate participants
+whose LDL increased at year 1.
 
 :::
 
