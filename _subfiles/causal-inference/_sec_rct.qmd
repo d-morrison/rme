@@ -41,29 +41,37 @@ is a direct measure of the causal effect.
 #| code-fold: true
 
 hers <- readRDS(fs::path_package("rme", "extdata/hers.rds"))
+# swimplot expects base data.frame column indexing.
 hers <- as.data.frame(hers)
+max_participants_display <- 80
+follow_up_end <- 1
 
+# Keep only participants with both baseline and year-1 LDL values.
 hers_swimmer <- hers[!is.na(hers$LDL) & !is.na(hers$LDL1), ]
+# Sort by treatment arm,
+# then by LDL change,
+# for visual grouping.
 hers_swimmer <- hers_swimmer[
   order(hers_swimmer$HT, hers_swimmer$LDL1 - hers_swimmer$LDL),
 ]
-hers_swimmer <- hers_swimmer[1:80, ]
+n_hers_plot <- min(max_participants_display, nrow(hers_swimmer))
+hers_swimmer <- hers_swimmer[seq_len(n_hers_plot), ]
 
-hers_swimmer$id <- paste("Participant", seq_len(nrow(hers_swimmer)))
+hers_swimmer$display_id <- paste("Participant", seq_len(nrow(hers_swimmer)))
 hers_swimmer$start <- 0.1
-hers_swimmer$end <- 1
+hers_swimmer$end <- follow_up_end
 hers_swimmer$arm <- ifelse(hers_swimmer$HT == 1, "Hormone therapy", "Placebo")
-hers_swimmer$ldl_increase <- hers_swimmer$LDL1 > hers_swimmer$LDL
+hers_swimmer$ldl_increased_at_year1 <- hers_swimmer$LDL1 > hers_swimmer$LDL
 
-hers_events <- hers_swimmer[hers_swimmer$ldl_increase, ]
+hers_events <- hers_swimmer[hers_swimmer$ldl_increased_at_year1, ]
 if (nrow(hers_events) > 0) {
-  hers_events$time <- 1
+  hers_events$time <- follow_up_end
   hers_events$event <- "LDL increased at year 1"
 }
 
 hers_plot <- swimplot::swimmer_plot(
   df = hers_swimmer,
-  id = "id",
+  id = "display_id",
   start = "start",
   end = "end",
   name_fill = "arm",
@@ -82,7 +90,7 @@ if (nrow(hers_events) > 0) {
   hers_plot <- hers_plot +
     swimplot::swimmer_points(
       df_points = hers_events,
-      id = "id",
+      id = "display_id",
       time = "time",
       name_shape = "event",
       size = 2.8
@@ -99,6 +107,8 @@ Bars show baseline-to-year-1 follow-up
 for participants with both LDL and LDL1 measured;
 triangles indicate participants
 whose LDL increased at year 1.
+For readability,
+the figure displays 80 participants.
 
 :::
 

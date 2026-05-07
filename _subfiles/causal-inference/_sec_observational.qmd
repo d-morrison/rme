@@ -24,17 +24,27 @@ was observed rather than randomized.
 #| code-fold: true
 
 wcgs <- readRDS(fs::path_package("rme", "extdata/wcgs.rds"))
+# swimplot expects base data.frame column indexing.
 wcgs <- as.data.frame(wcgs)
+max_participants_display <- 120
+days_per_year <- 365.25
 
 wcgs_swimmer <- wcgs[
   !is.na(wcgs$time169) & !is.na(wcgs$chd69) & !is.na(wcgs$dibpat),
 ]
-wcgs_swimmer <- wcgs_swimmer[order(wcgs_swimmer$time169, decreasing = TRUE), ]
-wcgs_swimmer <- wcgs_swimmer[1:120, ]
+wcgs_swimmer <- wcgs_swimmer[
+  order(wcgs_swimmer$time169, decreasing = TRUE),
+]
+n_wcgs_plot <- min(max_participants_display, nrow(wcgs_swimmer))
+wcgs_swimmer <- wcgs_swimmer[seq_len(n_wcgs_plot), ]
 
-wcgs_swimmer$id_plot <- paste("Participant", seq_len(nrow(wcgs_swimmer)))
+wcgs_swimmer$display_id <- paste("Participant", seq_len(nrow(wcgs_swimmer)))
 wcgs_swimmer$start <- 0.1
-wcgs_swimmer$end_years <- wcgs_swimmer$time169 / 365.25
+wcgs_swimmer$end_years <- wcgs_swimmer$time169 / days_per_year
+# dibpat stores behavior pattern labels
+# (Type A or Type B).
+# Convert to character
+# for swimplot fill mapping.
 wcgs_swimmer$personality_type <- as.character(wcgs_swimmer$dibpat)
 
 wcgs_events <- wcgs_swimmer[wcgs_swimmer$chd69 == "Yes", ]
@@ -45,7 +55,7 @@ if (nrow(wcgs_events) > 0) {
 
 wcgs_plot <- swimplot::swimmer_plot(
   df = wcgs_swimmer,
-  id = "id_plot",
+  id = "display_id",
   start = "start",
   end = "end_years",
   name_fill = "personality_type",
@@ -64,7 +74,7 @@ if (nrow(wcgs_events) > 0) {
   wcgs_plot <- wcgs_plot +
     swimplot::swimmer_points(
       df_points = wcgs_events,
-      id = "id_plot",
+      id = "display_id",
       time = "time",
       name_shape = "event",
       size = 2.8
@@ -79,6 +89,10 @@ Swimmer chart
 using observed WCGS participant data.
 Bars show observed follow-up time,
 and triangles indicate CHD events.
+`time169` is recorded in days
+and converted to years for plotting.
+For readability,
+the figure displays 120 participants.
 
 :::
 
