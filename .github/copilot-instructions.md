@@ -399,8 +399,9 @@ Key macros to use:
 
 matrix-product helper macros:
 
-- `\dprod{u}{v}` for dot products (`u \cdot v`)
+- `\dprod{u}{v}` for dot products
 - `\iprod{u}{v}` for inner products (`\tp{u} v`)
+- For vector:vector inner products in chapter/exam formulas, prefer `\dprod{u}{v}` over transpose form unless dimensions are the focus.
 - `\oprod{u}{v}` for outer products (`u \tp{v}`)
 - `\siprod{u}` for self-inner products (`\tp{u} u`)
 - `\soprod{u}` for self-outer products (`u \tp{u}`)
