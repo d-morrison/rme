@@ -399,8 +399,9 @@ Key macros to use:
 
 matrix-product helper macros:
 
-- `\dprod{u}{v}` for dot products (`u \cdot v`)
+- `\dprod{u}{v}` for dot products
 - `\iprod{u}{v}` for inner products (`\tp{u} v`)
+- For vector:vector inner products in chapter/exam formulas, prefer `\dprod{u}{v}` over transpose form unless dimensions are the focus.
 - `\oprod{u}{v}` for outer products (`u \tp{v}`)
 - `\siprod{u}` for self-inner products (`\tp{u} u`)
 - `\soprod{u}` for self-outer products (`u \tp{u}`)
@@ -419,6 +420,18 @@ Residual and deviation helper macros include:
   (e.g., `\vxs` expands to `{{\vec{x}^*}}` which has `^*`), wrap it in parentheses first:
   use `\tp{(\vxs)}` not `\tp{\vxs}`.
   This avoids LaTeX "Double superscript" errors.
+
+**Vector–scalar product ordering** (for dimensional clarity):
+
+- When multiplying a **column vector** `\vb` by a scalar `s`, write the **vector on the left**:
+  use `\vb s` not `s \vb`.
+- When multiplying a **row vector** (or a transpose) by a scalar, write the **vector on the right**:
+  use `s \tp{\vb}` not `\tp{\vb} s`.
+
+This ordering makes the matrix dimensions of expressions immediately readable
+and is consistent with the convention that column vectors are always written first
+in scalar multiples (e.g., a gradient $\nabla f = \vb \pi(1-\pi)$,
+not $\pi(1-\pi) \vb$).
 
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
 

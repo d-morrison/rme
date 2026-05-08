@@ -22,16 +22,16 @@ format:
     analysis.
 
 $$
-\begin{aligned} 
-f(t) &= \lambda e^{-\lambda t}\\
-\log{f(t)} &= \log{\lambda}-\lambda t\\
-F(t) &= 1-e^{-\lambda t}\\
-\surv(t)&= e^{-\lambda t}\\
-\cuhaz(t) &= -\log{\surv(t)}
+\ba
+\pdf(t) &= \lambda \ef{-\lambda t}\\
+\logf{\pdf(t)} &= \logf{\lambda}-\lambda t\\
+\cdf(t) &= 1-\ef{-\lambda t}\\
+\surv(t)&= \ef{-\lambda t}\\
+\cuhaz(t) &= -\logf{\surv(t)}
 \\   &= \lambda t\\
 \haz(t) &= \lambda\\
-\text{E}(T) &= \lambda^{-1}
-\end{aligned}
+\E{T} &= \lambda^{-1}
+\ea
 $$
 
 ## Weibull Distribution
@@ -39,22 +39,22 @@ $$
 Using the Kalbfleisch and Prentice (2002) notation:
 
 $$
-\begin{aligned}
-f(t)&= \lambda p (\lambda t)^{p-1}e^{-(\lambda t)^p}\\
-F(t)&=1 - e^{-(\lambda t)^p}\\
-\surv(t)&=e^{-(\lambda t)^p}\\
+\ba
+\pdf(t)&= \lambda p (\lambda t)^{p-1}\ef{-(\lambda t)^p}\\
+\cdf(t)&=1 - \ef{-(\lambda t)^p}\\
+\surv(t)&=\ef{-(\lambda t)^p}\\
 \haz(t)&=\lambda p (\lambda t)^{p-1}\\
 \cuhaz(t)&=(\lambda t)^p\\
-\log{\cuhaz(t)} &= p \log{\lambda t} 
-\\ &= p \log{\lambda} + p \log{t}
-\\ \text{E}(T) &= \lambda^{-1} \cdot \Gamma\left(1 + \frac{1}{p}\right)
-\end{aligned}
+\logf{\cuhaz(t)} &= p \logf{\lambda t} 
+\\ &= p \logf{\lambda} + p \logf{t}
+\\ \E{T} &= \lambda^{-1} \cdot \Gamma\left(1 + \frac{1}{p}\right)
+\ea
 $$
 
 ::: callout-note
 Recall from calculus:
 
--   $\Gamma(t) \stackrel{\text{def}}{=}\int_{u=0}^{\infty}u^{t-1}e^{-u}du$
+-   $\Gamma(t) \eqdef \int_{u=0}^{\infty}u^{t-1}\ef{-u}du$
 
 -   $\Gamma(t) = (t-1)!$ for integers $t \in \mathbb Z$
 
@@ -65,11 +65,11 @@ library(ggplot2)
 ggplot() + 
   geom_function(fun = gamma) +
   geom_point(aes(x = 1:5, y = gamma(1:5))) +
-  xlim(1,5) +
+  xlim(1, 5) +
   xlab("t") +
   ylab(expression(Gamma(t))) + 
   theme_bw() + 
-  theme(axis.title.y = element_text(angle=0)) +
+  theme(axis.title.y = element_text(angle = 0)) +
   expand_limits(y = 0)
 
 ```
@@ -81,38 +81,44 @@ varying:
 ```{r}
 #| fig-cap: "Density functions for Weibull distribution"
 library(ggplot2)
-lambda = 1
+lambda <- 1
 ggplot() +
   geom_function(
     aes(col = "0.25"),
-    fun = \(x) dweibull(x, shape = 0.25, scale = 1/lambda)) +
+    fun = \(x) dweibull(x, shape = 0.25, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "0.5"),
-    fun = \(x) dweibull(x, shape = 0.5, scale = 1/lambda)) +
+    fun = \(x) dweibull(x, shape = 0.5, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "1"),
-    fun = \(x) dweibull(x, shape = 1, scale = 1/lambda)) +
+    fun = \(x) dweibull(x, shape = 1, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "1.5"),
-    fun = \(x) dweibull(x, shape = 1.5, scale = 1/lambda)) +
+    fun = \(x) dweibull(x, shape = 1.5, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "2"),
-    fun = \(x) dweibull(x, shape = 2, scale = 1/lambda)) +
+    fun = \(x) dweibull(x, shape = 2, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "5"),
-    fun = \(x) dweibull(x, shape = 5, scale = 1/lambda)) +
-  theme_bw() + 
+    fun = \(x) dweibull(x, shape = 5, scale = 1 / lambda)
+  ) +
+  theme_bw() +
   xlim(0, 2.5) +
   ylab("f(t)") +
-  theme(axis.title.y = element_text(angle=0)) +
-  theme(legend.position="bottom") +
+  theme(axis.title.y = element_text(angle = 0)) +
+  theme(legend.position = "bottom") +
   guides(
-    col = 
+    col =
       guide_legend(
         title = "p",
-        label.theme = 
-          element_text(
-            size = 12)))
+        label.theme = element_text(size = 12)
+      )
+  )
 ```
 
 ### Properties of Weibull hazard functions
@@ -151,36 +157,41 @@ with $\lambda = 1$ and $p$ varying:
 #| fig-cap: "Hazard functions for Weibull distribution"
 library(ggplot2)
 library(eha)
-lambda = 1
+lambda <- 1
 
 ggplot() +
   geom_function(
     aes(col = "0.25"),
-    fun = \(x) hweibull(x, shape = 0.25, scale = 1/lambda)) +
+    fun = \(x) hweibull(x, shape = 0.25, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "0.5"),
-    fun = \(x) hweibull(x, shape = 0.5, scale = 1/lambda)) +
+    fun = \(x) hweibull(x, shape = 0.5, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "1"),
-    fun = \(x) hweibull(x, shape = 1, scale = 1/lambda)) +
+    fun = \(x) hweibull(x, shape = 1, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "1.5"),
-    fun = \(x) hweibull(x, shape = 1.5, scale = 1/lambda)) +
+    fun = \(x) hweibull(x, shape = 1.5, scale = 1 / lambda)
+  ) +
   geom_function(
     aes(col = "2"),
-    fun = \(x) hweibull(x, shape = 2, scale = 1/lambda)) +
-  theme_bw() + 
-  xlim(0, 2.5) + 
+    fun = \(x) hweibull(x, shape = 2, scale = 1 / lambda)
+  ) +
+  theme_bw() +
+  xlim(0, 2.5) +
   ylab(expr(lambda)) +
-  theme(axis.title.y = element_text(angle=0)) +
-  theme(legend.position="bottom") +
+  theme(axis.title.y = element_text(angle = 0)) +
+  theme(legend.position = "bottom") +
   guides(
-    col = 
+    col =
       guide_legend(
         title = "p",
-        label.theme = 
-          element_text(
-            size = 12)))
+        label.theme = element_text(size = 12)
+      )
+  )
 ```
 
 ---
@@ -189,36 +200,46 @@ ggplot() +
 #| label: fig-surv-weibull
 #| fig-cap: "Survival functions for Weibull distribution"
 library(ggplot2)
-lambda = 1
+lambda <- 1
 
 ggplot() +
   geom_function(
     aes(col = "0.25"),
-    fun = \(x) pweibull(lower = FALSE, x, shape = 0.25, scale = 1/lambda)) +
+    fun = pweibull,
+    args = list(shape = 0.25, scale = 1 / lambda, lower.tail = FALSE)
+  ) +
   geom_function(
     aes(col = "0.5"),
-    fun = \(x) pweibull(lower = FALSE, x, shape = 0.5, scale = 1/lambda)) +
+    fun = pweibull,
+    args = list(shape = 0.5, scale = 1 / lambda, lower.tail = FALSE)
+  ) +
   geom_function(
     aes(col = "1"),
-    fun = \(x) pweibull(lower = FALSE, x, shape = 1, scale = 1/lambda)) +
+    fun = pweibull,
+    args = list(shape = 1, scale = 1 / lambda, lower.tail = FALSE)
+  ) +
   geom_function(
     aes(col = "1.5"),
-    fun = \(x) pweibull(lower = FALSE, x, shape = 1.5, scale = 1/lambda)) +
+    fun = pweibull,
+    args = list(shape = 1.5, scale = 1 / lambda, lower.tail = FALSE)
+  ) +
   geom_function(
     aes(col = "2"),
-    fun = \(x) pweibull(lower = FALSE, x, shape = 2, scale = 1/lambda)) +
-  theme_bw() + 
-  xlim(0, 2.5) + 
+    fun = pweibull,
+    args = list(shape = 2, scale = 1 / lambda, lower.tail = FALSE)
+  ) +
+  theme_bw() +
+  xlim(0, 2.5) +
   ylab("S(t)") +
-  theme(axis.title.y = element_text(angle=0)) +
-  theme(legend.position="bottom") +
+  theme(axis.title.y = element_text(angle = 0)) +
+  theme(legend.position = "bottom") +
   guides(
-    col = 
+    col =
       guide_legend(
         title = "p",
-        label.theme = 
-          element_text(
-            size = 12)))
+        label.theme = element_text(size = 12)
+      )
+  )
 ```
 
 ## Exponential Regression
@@ -401,31 +422,32 @@ other variables and without the pairing.
 #| eval: false
 library(haven)
 library(survival)
-anderson = 
+anderson <-
   paste0(
     "http://web1.sph.emory.edu/dkleinb/allDatasets",
-    "/surv2datasets/anderson.dta") |> 
-  read_dta() |> 
+    "/surv2datasets/anderson.dta"
+  ) |>
+  read_dta() |>
   mutate(
-    status = status |> 
+    status = status |>
       case_match(
         1 ~ "relapse",
         0 ~ "censored"
       ),
-    sex = sex |> 
+    sex = sex |>
       case_match(
         0 ~ "female",
         1 ~ "male"
       ),
-    
-    rx = rx |> 
+
+    rx = rx |>
       case_match(
         0 ~ "new",
         1 ~ "standard"
       ),
-    
-    surv = Surv(time = survt,event = (status == "relapse"))
-  ) 
+
+    surv = Surv(time = survt, event = (status == "relapse"))
+  )
 
 print(anderson)
 ```
@@ -435,30 +457,31 @@ print(anderson)
 #| label: anderson-load-local
 library(haven)
 library(survival)
-anderson = 
+anderson <-
   fs::path_package(
-    "rme", "extdata/anderson.dta") |> 
-  read_dta() |> 
+    "rme", "extdata/anderson.dta"
+  ) |>
+  read_dta() |>
   mutate(
-    status = status |> 
+    status = status |>
       case_match(
         1 ~ "relapse",
         0 ~ "censored"
       ),
-    sex = sex |> 
+    sex = sex |>
       case_match(
         0 ~ "female",
         1 ~ "male"
       ),
-    
-    rx = rx |> 
+
+    rx = rx |>
       case_match(
         0 ~ "new",
         1 ~ "standard"
       ),
-    
-    surv = Surv(time = survt,event = (status == "relapse"))
-  ) 
+
+    surv = Surv(time = survt, event = (status == "relapse"))
+  )
 
 print(anderson)
 ```
@@ -467,30 +490,33 @@ print(anderson)
 
 ```{r}
 
-anderson.cox0 = coxph(
+anderson_cox0 <- coxph(
   formula = surv ~ rx,
-  data = anderson)
-summary(anderson.cox0)
+  data = anderson
+)
+summary(anderson_cox0)
 ```
 
 ### Weibull parametric model
 
 ```{r}
-anderson.weib <- survreg(
+anderson_weib <- survreg(
   formula = surv ~ rx,
   data = anderson,
-  dist = "weibull")
-summary(anderson.weib)
+  dist = "weibull"
+)
+summary(anderson_weib)
 ```
 
 ### Exponential parametric model
 
 ```{r}
-anderson.exp <- survreg(
+anderson_exp <- survreg(
   formula = surv ~ rx,
   data = anderson,
-  dist = "exp")
-summary(anderson.exp)
+  dist = "exp"
+)
+summary(anderson_exp)
 ```
 
 ### Diagnostic - complementary log-log survival plot
@@ -499,7 +525,8 @@ summary(anderson.exp)
 library(survminer)
 survfit(
   formula = surv ~ rx,
-  data = anderson) |> 
+  data = anderson
+) |>
   ggsurvplot(fun = "cloglog")
 ```
 
