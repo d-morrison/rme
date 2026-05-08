@@ -26,17 +26,25 @@ was observed rather than randomized.
 wcgs <- readRDS(fs::path_package("rme", "extdata/wcgs.rds"))
 # swimplot expects base data.frame column indexing.
 wcgs <- as.data.frame(wcgs)
-max_participants_display <- 120
+n_per_personality_display <- 40
 days_per_year <- 365.25
 
 wcgs_swimmer <- wcgs[
   !is.na(wcgs$time169) & !is.na(wcgs$chd69) & !is.na(wcgs$dibpat),
 ]
 wcgs_swimmer <- wcgs_swimmer[
-  order(wcgs_swimmer$time169, decreasing = TRUE),
+  order(wcgs_swimmer$dibpat, -wcgs_swimmer$time169),
 ]
-n_wcgs_plot <- min(max_participants_display, nrow(wcgs_swimmer))
-wcgs_swimmer <- wcgs_swimmer[seq_len(n_wcgs_plot), ]
+wcgs_swimmer <- do.call(
+  rbind,
+  lapply(
+    split(wcgs_swimmer, wcgs_swimmer$dibpat),
+    function(df_type) {
+      n_take <- min(n_per_personality_display, nrow(df_type))
+      df_type[seq_len(n_take), ]
+    }
+  )
+)
 
 wcgs_swimmer$display_id <- paste("Participant", seq_len(nrow(wcgs_swimmer)))
 wcgs_swimmer$start <- 0.1
@@ -68,6 +76,17 @@ wcgs_plot <- swimplot::swimmer_plot(
     fill = "Personality type",
     shape = "Outcome"
   ) +
+  ggplot2::facet_wrap(
+    ~dibpat,
+    ncol = 1,
+    scales = "free_y",
+    labeller = ggplot2::labeller(
+      dibpat = c(
+        "Type A" = "Type A behavior pattern",
+        "Type B" = "Type B behavior pattern"
+      )
+    )
+  ) +
   ggplot2::theme_minimal(base_size = 11)
 
 if (nrow(wcgs_events) > 0) {
@@ -92,7 +111,9 @@ and triangles indicate CHD events.
 `time169` is recorded in days
 and converted to years for plotting.
 For readability,
-the figure displays 120 participants.
+the figure displays up to 40 participants
+per personality type,
+with one facet for each type.
 
 :::
 

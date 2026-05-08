@@ -43,7 +43,7 @@ is a direct measure of the causal effect.
 hers <- readRDS(fs::path_package("rme", "extdata/hers.rds"))
 # swimplot expects base data.frame column indexing.
 hers <- as.data.frame(hers)
-max_participants_display <- 80
+n_per_arm_display <- 20
 follow_up_end <- 1
 
 # Keep only participants with both baseline and year-1 LDL values.
@@ -54,8 +54,16 @@ hers_swimmer <- hers[!is.na(hers$LDL) & !is.na(hers$LDL1), ]
 hers_swimmer <- hers_swimmer[
   order(hers_swimmer$HT, hers_swimmer$LDL1 - hers_swimmer$LDL),
 ]
-n_hers_plot <- min(max_participants_display, nrow(hers_swimmer))
-hers_swimmer <- hers_swimmer[seq_len(n_hers_plot), ]
+hers_swimmer <- do.call(
+  rbind,
+  lapply(
+    split(hers_swimmer, hers_swimmer$HT),
+    function(df_arm) {
+      n_take <- min(n_per_arm_display, nrow(df_arm))
+      df_arm[seq_len(n_take), ]
+    }
+  )
+)
 
 hers_swimmer$display_id <- paste("Participant", seq_len(nrow(hers_swimmer)))
 hers_swimmer$start <- 0.1
@@ -84,6 +92,14 @@ hers_plot <- swimplot::swimmer_plot(
     fill = "Study arm",
     shape = "Observed year-1 outcome"
   ) +
+  ggplot2::facet_wrap(
+    ~HT,
+    ncol = 1,
+    scales = "free_y",
+    labeller = ggplot2::labeller(
+      HT = c("0" = "Placebo", "1" = "Hormone therapy")
+    )
+  ) +
   ggplot2::theme_minimal(base_size = 11)
 
 if (nrow(hers_events) > 0) {
@@ -108,7 +124,9 @@ for participants with both LDL and LDL1 measured;
 triangles indicate participants
 whose LDL increased at year 1.
 For readability,
-the figure displays 80 participants.
+the figure displays up to 20 participants
+per study arm,
+with one facet for each arm.
 
 :::
 
