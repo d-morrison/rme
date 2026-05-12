@@ -1,4 +1,5 @@
 
+
 ```{r}
 library(pander)
 library(ggplot2)
@@ -15,8 +16,8 @@ hers = rmb::hers |> haven::zap_labels()
 
 ```{r}
 #| label: process-data
-data1 = 
-  hers |> 
+data1 =
+  hers |>
   filter(
     diabetes == 0,
     exercise == 0)
@@ -24,17 +25,17 @@ data1 =
 n.obs <- nrow(data1)
 
 
-glucose_data = 
-  data1 |> 
+glucose_data =
+  data1 |>
   pull(glucose)
 
-plot1 = 
-  data1 |> 
+plot1 =
+  data1 |>
   ggplot() +
   geom_histogram(aes(x = glucose), bins = 30) +
   theme_classic()
 
-plot1 |> ggplotly() 
+plot1 |> ggplotly()
 
 ```
 
@@ -43,21 +44,21 @@ Looks somewhat plausibly Gaussian. Good enough for this example!
 ## Construct the likelihood and log-likelihood functions
 
 ```{r}
-# it's computationally better to construct the log-likelihood first and then 
+# it's computationally better to construct the log-likelihood first and then
 # exponentiate it to get the likelihood
 
 loglik = function(
-    mu = mean(x), # I'm assigning default values, which the function will use 
+    mu = mean(x), # I'm assigning default values, which the function will use
     # unless we tell it otherwise
     sigma = sd(x), # note that you can define some defaults based on other arguments
-    x = glucose_data, 
+    x = glucose_data,
     n = length(x)
 )
 {
-  
-  normalizing_constants = -n/2 * log((sigma^2) * 2 * pi) 
-  
-  likelihood_kernel = - 1/(2 * sigma^2) * 
+
+  normalizing_constants = -n/2 * log((sigma^2) * 2 * pi)
+
+  likelihood_kernel = - 1/(2 * sigma^2) *
     {
       # I have to do this part in a somewhat complicated way
       # so that we can pass in vectors of possible values of mu
@@ -65,11 +66,11 @@ loglik = function(
       # for the binomial case it's easier
       sum(x^2) - 2 * sum(x) * mu + n * mu^2
     }
-  
+
   answer = normalizing_constants + likelihood_kernel
-  
+
   return(answer)
-  
+
 }
 
 # `...` means pass any inputs to lik() along to loglik()
@@ -78,16 +79,16 @@ lik = function(...) exp(loglik(...))
 
 ```
 
-### Graph the Likelihood
+## Graph the Likelihood
 
 :::{#fig-likelihood-mu}
 
 ```{r}
-mu_likplot <- 
-  ggplot() + 
-  geom_function(fun = function(x) lik(mu = x)) + 
+mu_likplot <-
+  ggplot() +
+  geom_function(fun = function(x) lik(mu = x)) +
   xlim(mean(glucose_data) + c(-1,1) * sd(glucose_data)) +
-  ylab("likelihood") + 
+  ylab("likelihood") +
   xlab("mu") +
   geom_vline(xintercept = mean(glucose_data), col = "red")
 
@@ -97,7 +98,7 @@ Likelihood of `hers` data w.r.t. $\mu$
 
 :::
 
-### Graph the Log-likelihood
+## Graph the Log-likelihood
 
 :::{#fig-loglik-mu}
 
