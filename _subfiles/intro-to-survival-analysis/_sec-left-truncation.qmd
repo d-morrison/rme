@@ -174,7 +174,10 @@ km1_df <- tibble(
 km2_df <- tibble(
   time = km2_summary$time - median(pbc_data$age),
   surv = km2_summary$surv,
-  analysis = "Age as time scale\n(left-truncated; centered at median age)"
+  analysis = paste0(
+    "Age as time scale\n",
+    "(left-truncated; centered at median enrollment age)"
+  )
 )
 
 km_combined <- bind_rows(km1_df, km2_df)
@@ -183,7 +186,7 @@ ggplot(km_combined) +
   aes(x = time, y = surv, color = analysis) +
   geom_step() +
   labs(
-    x = "Years",
+    x = "Years (from enrollment, or years relative to median enrollment age)",
     y = "Estimated survival probability",
     color = "Analysis",
     caption = "Data: rmb::pbc (PBC clinical trial, Dickson et al. 1989)"
@@ -200,10 +203,11 @@ were only observed from their age at enrollment.
 When centered at the median enrollment age,
 the two analyses can be compared on a common scale.
 Note that ignoring this truncation
-would lead to overestimated survival,
-since participants who died quickly after diagnosis
-(and thus at younger ages)
-were never enrolled and are not represented in the data.
+would lead to overestimated survival:
+participants who died at younger ages ---
+before reaching their enrollment age ---
+were never observed and are excluded from the data,
+leading to a risk set that over-represents longer survivors.
 :::
 
 ### Effect of Ignoring Left-Truncation
