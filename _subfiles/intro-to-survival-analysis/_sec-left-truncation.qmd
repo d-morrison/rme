@@ -2,71 +2,28 @@
 
 This section is adapted from [@vittinghoff2e, Chapter 6].
 
-## Interval Censoring
-
-Standard survival analysis assumes
-that the time of events occurring during the study
-is known more or less exactly.
-This is almost always the case
-for well-documented events like:
-
-- Death
-- Hospitalization
-- Diagnosis of AIDS
-
-However,
-the timing of many events is not observed with this level of precision.
-
-### What is Interval Censoring?
-
-**Interval censoring** occurs when
-the exact time of an event is not known,
-but we know it occurred within a specific time interval.
-
-**Common examples:**
-
-1. **HIV infection in prospective cohort studies**:
-   Participants are tested for infection at semi-annual visits.
-   The actual time of infection
-   is only known to fall between
-   the last negative test
-   and the first positive test.
-
-2. **Development of cervical abnormalities**:
-   Clinical exams may be performed periodically,
-   months or years apart.
-   Newly observed changes
-   may have occurred at any time
-   since the last exam.
-
-### Approaches to Interval Censoring
-
-**When intervals are regularly spaced:**
-
-- Pooled logistic regression (Section 5.5.2 of @vittinghoff2e)
-  can handle interval censoring
-  when intervals arise from
-  a regular study follow-up schedule
-
-**When intervals are irregular:**
-
-- Unequal spacing between intervals
-- Intervals that vary by individual
-- Requires specialized methods beyond the scope of these notes
-
-## Left-Truncation
-
 ### Choosing the Time Origin
 
 Survival times are measured from some initial time,
 with more than one possible choice of origin.
 
-**Example - Primary Biliary Cholangitis (PBC) study:**
+::: {#exm-pbc-time-origin}
 
-- Could measure survival from **cohort enrollment** until death
-- Alternatively,
-  could measure survival from **diagnosis** until death
-  (more meaningful biologically)
+#### Time origin choice in the PBC study
+
+In the @dickson1989prognosis Primary Biliary Cholangitis (PBC) study,
+survival time could be measured from:
+
+- **Cohort enrollment**:
+  time from when the patient entered the study
+- **Diagnosis**:
+  time from PBC diagnosis (more biologically meaningful)
+
+When using time-since-diagnosis as the timescale,
+patients who had already survived some time since diagnosis
+before enrolling introduce **left-truncation**.
+
+:::
 
 ### What is Left-Truncation?
 
@@ -157,9 +114,9 @@ Denote:
 Use the `Surv()` function with entry time:
 
 ```r
-Surv(time = time_since_origin,
-     event = status,
-     origin = truncation_time)
+Surv(time  = entry_time,
+     time2 = exit_time,
+     event = status)
 ```
 
 **In Stata:**
@@ -167,6 +124,86 @@ Surv(time = time_since_origin,
 ```stata
 stset years_since_diag, failure(status) entry(disease_dur)
 ```
+
+### Numerical Example: PBC Study
+
+The `pbc` dataset from the `rmb` package
+contains data from a clinical trial
+of D-penicillamine treatment in primary biliary cholangitis (PBC)
+[@dickson1989prognosis].
+
+Here we demonstrate the effect of left-truncation
+by comparing analyses using two different time scales:
+
+1. Time from enrollment (standard approach, no truncation)
+2. Age as the time scale (introduces left-truncation,
+   since patients are observed from their current age, not from birth)
+
+```{r}
+#| label: fig-pbc-km-truncation
+#| code-fold: true
+library(rmb)
+library(survival)
+library(ggplot2)
+library(dplyr)
+
+pbc_data <- rmb::pbc
+
+# Analysis 1: time from enrollment (no truncation)
+km_enroll <- survfit(
+  Surv(years, as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Analysis 2: age as time scale (left-truncated)
+km_age <- survfit(
+  Surv(time = age, time2 = age + years, event = as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Extract KM estimates at specific times for each analysis
+km1_summary <- summary(km_enroll, times = seq(0, 12, by = 0.5))
+km2_summary <- summary(km_age, times = seq(26, 78, by = 0.5))
+
+km1_df <- tibble(
+  time = km1_summary$time,
+  surv = km1_summary$surv,
+  analysis = "Time from enrollment"
+)
+
+km2_df <- tibble(
+  time = km2_summary$time - median(pbc_data$age),
+  surv = km2_summary$surv,
+  analysis = "Age as time scale\n(left-truncated; centered at median age)"
+)
+
+km_combined <- bind_rows(km1_df, km2_df)
+
+ggplot(km_combined, aes(x = time, y = surv, color = analysis)) +
+  geom_step() +
+  labs(
+    x = "Years",
+    y = "Estimated survival probability",
+    color = "Analysis",
+    caption = "Data: rmb::pbc (PBC clinical trial, Dickson et al. 1989)"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+::: {.notes}
+The curve using age as the time scale
+accounts for the fact that participants
+were only observed from their age at enrollment.
+When centered at the median enrollment age,
+the two analyses can be compared on a common scale.
+Note that ignoring this truncation
+would lead to overestimated survival,
+since participants who died quickly after diagnosis
+(and thus at younger ages)
+were never enrolled and are not represented in the data.
+:::
 
 ### Effect of Ignoring Left-Truncation
 
@@ -191,8 +228,3 @@ When left-truncation is ignored:
 A fecundability study that excludes couples
 who never conceive
 exhibits right-truncation.
-
-## References {.unnumbered}
-
-::: {#refs}
-:::

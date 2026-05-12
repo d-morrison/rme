@@ -152,6 +152,37 @@ This keeps the document hierarchy centralized in the parent file,
 makes heading levels easy to audit,
 and avoids nesting errors when the same subfile might be included at different depths.
 
+### One subtopic per subfile
+
+Each subfile should cover exactly one subtopic or section.
+Do **not** combine multiple independent subtopics in a single subfile.
+If a topic naturally splits into distinct subtopics,
+create one subfile per subtopic and include each separately in the parent file.
+
+**Correct** — separate subfiles per subtopic:
+```markdown
+## Interval Censoring {#sec-interval-censoring}
+
+{{< include _subfiles/chapter/_sec_interval_censoring.qmd >}}
+
+## Left-Truncation {#sec-left-truncation}
+
+{{< include _subfiles/chapter/_sec_left_truncation.qmd >}}
+```
+
+**Incorrect** — both subtopics in one subfile:
+```markdown
+## Interval Censoring and Left-Truncation
+
+{{< include _subfiles/chapter/_sec_interval_censoring_and_left_truncation.qmd >}}
+```
+
+### No references section in subfiles
+
+Subfiles must **not** include a `## References` section.
+References sections belong only in parent `.qmd` files (chapters, index pages, etc.).
+Do **not** add `## References {.unnumbered}` or `:::{#refs}:::` to any file under `_subfiles/`.
+
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,

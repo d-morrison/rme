@@ -1,0 +1,116 @@
+{{< include latex-macros/macros.qmd >}}
+
+This section is adapted from [@vittinghoff2e, Chapter 6].
+
+Standard survival analysis assumes
+that the time of events occurring during the study
+is known more or less exactly.
+This is almost always the case
+for well-documented events like:
+
+- Death
+- Hospitalization
+- Diagnosis of AIDS
+
+However,
+the timing of many events is not observed with this level of precision.
+
+### What is Interval Censoring?
+
+::: {#def-interval-censoring}
+
+#### Interval Censoring
+
+**Interval censoring** occurs when
+the exact time of an event is not known,
+but we know it occurred within a specific time interval.
+
+:::
+
+### Common Examples
+
+1. **HIV infection in prospective cohort studies**:
+   Participants are tested for infection at semi-annual visits.
+   The actual time of infection
+   is only known to fall between
+   the last negative test
+   and the first positive test.
+
+2. **Development of cervical abnormalities**:
+   Clinical exams may be performed periodically,
+   months or years apart.
+   Newly observed changes
+   may have occurred at any time
+   since the last exam.
+
+### Approaches to Interval Censoring
+
+**When intervals are regularly spaced:**
+
+- Pooled logistic regression (Section 5.5.2 of @vittinghoff2e)
+  can handle interval censoring
+  when intervals arise from
+  a regular study follow-up schedule
+
+**When intervals are irregular:**
+
+- Unequal spacing between intervals
+- Intervals that vary by individual
+- Requires specialized methods beyond the scope of these notes
+
+### Numerical Example: MIRA HSV-2 Study
+
+The `mira_hsv` dataset from the `rmb` package
+contains data from the
+MIRA randomized trial evaluating HIV prevention [@debruyn2011mira].
+Participants were tested for HSV-2 antibodies every 3 months.
+
+The data have a **panel structure**:
+one row per participant per visit,
+with the HSV-2 test result at each visit.
+
+```{r}
+#| label: tbl-mira-hsv-example
+#| code-fold: true
+library(rmb)
+
+# Show panel data for three example participants
+example_ids <- c(28, 103, 119)
+
+mira_hsv_example <- mira_hsv[
+  mira_hsv$id %in% example_ids,
+  c("id", "mos", "hsv2")
+]
+
+caption_text <- paste(
+  "HSV-2 test results for three example participants in the MIRA study.",
+  "For subjects 28 and 103, the seroconversion time is known only",
+  "to fall in the interval (15, 18] months.",
+  "For subject 119, seroconversion occurred in (9, 12] months."
+)
+
+knitr::kable(
+  mira_hsv_example,
+  col.names = c("Subject ID", "Months", "HSV-2 positive"),
+  caption   = caption_text
+)
+```
+
+For participants who seroconverted,
+the exact time of infection is unknown,
+but bounded by the last negative and first positive test.
+This is the defining feature of interval censoring.
+
+The interval-censored structure for these three participants is:
+
+| Subject | Last negative visit (months) | First positive visit (months) | Interval |
+|---------|------------------------------|-------------------------------|----------|
+| 28      | 15                           | 18                            | (15, 18] |
+| 103     | 15                           | 18                            | (15, 18] |
+| 119     | 9                            | 12                            | (9, 12]  |
+
+Since visits occur every 3 months,
+the infection time is known to within a 3-month window.
+This regular spacing allows pooled logistic regression
+to handle the interval censoring,
+as described in @vittinghoff2e [Section 5.5.2].
