@@ -192,17 +192,19 @@ library(dplyr)
 mros_data <- mros
 
 # Compute cumulative incidence functions (CIF) for each event type
+# (no group argument, so there is one group; element names are "1 1" and "1 2")
 mros_cif <- cuminc(
   ftime   = mros_data$years,
   fstatus = mros_data$status
 )
 
-# Robustly extract CIF by cause code
+# Extract CIF by cause code
 # cuminc() names elements "group cause" (e.g., "1 1", "1 2");
-# use endsWith() to find the right element regardless of group label
+# use endsWith() so the name is found by cause code regardless of group label.
+# Since no group argument is given there is exactly one match per cause.
 cif_names <- names(mros_cif)[names(mros_cif) != "Tests"]
-fracture_name <- cif_names[endsWith(cif_names, " 1")]
-death_name    <- cif_names[endsWith(cif_names, " 2")]
+fracture_name <- cif_names[endsWith(cif_names, " 1")]  # cause 1 = fracture
+death_name    <- cif_names[endsWith(cif_names, " 2")]  # cause 2 = death
 
 # Extract CIF estimates into data frame
 fracture_cif <- tibble(
