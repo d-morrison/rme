@@ -130,15 +130,59 @@ The cumulative incidence function:
 - Accounts for all competing risks
 - Differs from cause-specific hazards in how it treats competing events
 
-**Interpretation:**
+```{r}
+#| label: mros-cif-setup
+#| include: false
+library(rmb)
+library(cmprsk)
+library(survival)
+library(ggplot2)
+library(dplyr)
 
-If at 5 years the cumulative incidence of fracture is 0.080
-and for death is 0.093,
-then:
+mros_data <- mros
 
-- 8.0% developed fracture before death
-- 9.3% died without fracture
-- 82.7% remain alive without fracture
+# Compute cumulative incidence functions (CIF) for each event type
+# (no group argument, so there is exactly one group)
+mros_cif <- cuminc(
+  ftime   = mros_data$years,
+  fstatus = mros_data$status
+)
+
+# Extract CIF by cause code using endsWith() for robustness
+cif_names <- names(mros_cif)[names(mros_cif) != "Tests"]
+fracture_name <- cif_names[endsWith(cif_names, " 1")]  # cause 1 = fracture
+death_name    <- cif_names[endsWith(cif_names, " 2")]  # cause 2 = death
+
+fracture_cif <- tibble(
+  time  = mros_cif[[fracture_name]]$time,
+  cif   = mros_cif[[fracture_name]]$est,
+  event = "Hip fracture"
+)
+
+death_cif <- tibble(
+  time  = mros_cif[[death_name]]$time,
+  cif   = mros_cif[[death_name]]$est,
+  event = "Death without fracture"
+)
+
+cif_df <- bind_rows(fracture_cif, death_cif)
+
+# 5-year CIF: last time point <= 5 (right-continuous step function)
+fracture_cif_five_yr <-
+  fracture_cif$cif[max(which(fracture_cif$time <= 5))]
+death_cif_five_yr <-
+  death_cif$cif[max(which(death_cif$time <= 5))]
+```
+
+**Interpretation (MrOS study):**
+
+In the MrOS study,
+at 5 years of follow-up:
+
+- `r round(fracture_cif_five_yr * 100, 1)`% of men had experienced a hip fracture
+- `r round(death_cif_five_yr * 100, 1)`% had died without a fracture
+- `r round((1 - fracture_cif_five_yr - death_cif_five_yr) * 100, 1)`%
+  remained alive without fracture
 
 ## Estimation of Cumulative Incidence
 
@@ -183,55 +227,13 @@ The outcome variable is coded as:
 ```{r}
 #| label: fig-mros-cif
 #| code-fold: true
-library(rmb)
-library(cmprsk)
-library(survival)
-library(ggplot2)
-library(dplyr)
-
-mros_data <- mros
-
-# Compute cumulative incidence functions (CIF) for each event type
-# (no group argument, so there is one group; element names are "1 1" and "1 2")
-mros_cif <- cuminc(
-  ftime   = mros_data$years,
-  fstatus = mros_data$status
-)
-
-# Extract CIF by cause code
-# cuminc() names elements "group cause" (e.g., "1 1", "1 2");
-# use endsWith() so the name is found by cause code regardless of group label.
-# Since no group argument is given there is exactly one match per cause.
-cif_names <- names(mros_cif)[names(mros_cif) != "Tests"]
-fracture_name <- cif_names[endsWith(cif_names, " 1")]  # cause 1 = fracture
-death_name    <- cif_names[endsWith(cif_names, " 2")]  # cause 2 = death
-
-# Extract CIF estimates into data frame
-fracture_cif <- tibble(
-  time  = mros_cif[[fracture_name]]$time,
-  cif   = mros_cif[[fracture_name]]$est,
-  event = "Hip fracture"
-)
-
-death_cif <- tibble(
-  time  = mros_cif[[death_name]]$time,
-  cif   = mros_cif[[death_name]]$est,
-  event = "Death without fracture"
-)
-
-cif_df <- bind_rows(fracture_cif, death_cif)
-
-# Compute 5-year CIF values for inline reporting
-fracture_cif_five_yr <- fracture_cif$cif[which.min(abs(fracture_cif$time - 5))]
-death_cif_five_yr <- death_cif$cif[which.min(abs(death_cif$time - 5))]
-
 ggplot(cif_df) +
   aes(x = time, y = cif, color = event) +
   geom_step() +
   labs(
-    x     = "Years of follow-up",
-    y     = "Cumulative incidence",
-    color = "Event type",
+    x       = "Years of follow-up",
+    y       = "Cumulative incidence",
+    color   = "Event type",
     caption = "Data: rmb::mros (MrOS study, Orwoll et al. 2005)"
   ) +
   scale_y_continuous(limits = c(0, 0.20)) +
