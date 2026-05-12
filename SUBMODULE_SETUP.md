@@ -1,43 +1,44 @@
 # LaTeX Macros Submodule Setup
 
-## ✅ Setup Complete!
+This repository uses a git submodule for shared LaTeX macros. The
+superproject pins the exact submodule commit used by the notes, while
+`.gitmodules` records `main` as the upstream branch to use when pulling
+future macro updates.
 
-The LaTeX macros submodule has been successfully configured and is now tracking the remote repository at https://github.com/d-morrison/macros.git.
+## Current Status
 
-### Current Status
-
-- ✅ Submodule URL: https://github.com/d-morrison/macros.git
-- ✅ Submodule path: `latex-macros/`
-- ✅ Current commit: 902bab8
-- ✅ All 52 `.qmd` files updated to reference `latex-macros/macros.qmd`
-- ✅ GitHub Actions workflows configured to checkout submodules
+- Submodule URL: https://github.com/d-morrison/macros.git
+- Submodule branch: `main`
+- Submodule path: `latex-macros/`
+- Chapter sources include `latex-macros/macros.qmd`
+- GitHub Actions workflows checkout submodules
 
 ## For Future Clones
 
-After the submodule is properly set up on GitHub, others cloning this repository should run:
+When cloning this repository, include submodules:
 
 ```bash
-git clone --recurse-submodules --single-branch https://github.com/d-morrison/rme.git
+git clone --recurse-submodules https://github.com/d-morrison/rme.git
 ```
 
 Or if already cloned:
 
 ```bash
-git submodule update --init --recursive --single-branch
+git submodule update --init --recursive
 ```
 
 ## Updating the Macros
 
-To update the macros in the future:
+To move this repository's pinned macro version to the latest upstream
+`main`:
 
 ```bash
-cd latex-macros
-# Make changes to macros.qmd
-git add macros.qmd
-git commit -m "Update macros"
-git push
-cd ..
-git add latex-macros  # Update the submodule reference
+git submodule update --remote --merge latex-macros
+git add latex-macros
 git commit -m "Update latex-macros submodule"
 git push
 ```
+
+If you need to edit the macros themselves, commit and push those changes
+inside `latex-macros/` first, then commit the updated `latex-macros`
+pointer in this repository.
