@@ -1,0 +1,198 @@
+{{< include latex-macros/macros.qmd >}}
+
+This section is adapted from [@vittinghoff2e, Chapter 6].
+
+## Interval Censoring
+
+Standard survival analysis assumes
+that the time of events occurring during the study
+is known more or less exactly.
+This is almost always the case
+for well-documented events like:
+
+- Death
+- Hospitalization
+- Diagnosis of AIDS
+
+However,
+the timing of many events is not observed with this level of precision.
+
+### What is Interval Censoring?
+
+**Interval censoring** occurs when
+the exact time of an event is not known,
+but we know it occurred within a specific time interval.
+
+**Common examples:**
+
+1. **HIV infection in prospective cohort studies**:
+   Participants are tested for infection at semi-annual visits.
+   The actual time of infection
+   is only known to fall between
+   the last negative test
+   and the first positive test.
+
+2. **Development of cervical abnormalities**:
+   Clinical exams may be performed periodically,
+   months or years apart.
+   Newly observed changes
+   may have occurred at any time
+   since the last exam.
+
+### Approaches to Interval Censoring
+
+**When intervals are regularly spaced:**
+
+- Pooled logistic regression (Section 5.5.2 of @vittinghoff2e)
+  can handle interval censoring
+  when intervals arise from
+  a regular study follow-up schedule
+
+**When intervals are irregular:**
+
+- Unequal spacing between intervals
+- Intervals that vary by individual
+- Requires specialized methods beyond the scope of these notes
+
+## Left-Truncation
+
+### Choosing the Time Origin
+
+Survival times are measured from some initial time,
+with more than one possible choice of origin.
+
+**Example - Primary Biliary Cholangitis (PBC) study:**
+
+- Could measure survival from **cohort enrollment** until death
+- Alternatively,
+  could measure survival from **diagnosis** until death
+  (more meaningful biologically)
+
+### What is Left-Truncation?
+
+**Left-truncation** occurs when some survival times are not observed
+because the sampling scheme tends to miss short survival times.
+
+::: {#def-left-truncation}
+
+#### Left-Truncation
+
+**Left-truncated** data arise when
+individuals can only enter the study
+if they survive beyond a certain time point.
+Those who experience the event
+before that time point are never observed.
+
+:::
+
+**Key feature:**
+There must be a time delay between:
+
+1. The event that defines the time origin (e.g., diagnosis)
+2. Entry into the study cohort (e.g., enrollment)
+
+### Left-Truncation vs. Staggered Entry
+
+**Important distinction:**
+
+- **Staggered entry**: Participants enroll at different calendar times
+  - Does NOT necessarily imply left-truncation
+  - Example: enrolling patients at the time of diagnosis
+    (truncation times = 0)
+
+- **Left-truncation**: Participants must survive some period
+  before they can be enrolled
+  - Example: recruiting from a referral center
+    where months/years elapse between diagnosis and enrollment
+
+### Why Left-Truncation Matters
+
+Patients with rapid disease progression
+are less likely to be enrolled because they may:
+
+- Die before referral to the study center
+- Die before recruitment into the study
+
+This leads to:
+
+- **Undercounting** of short survival times
+- **Selection bias** toward longer survivors
+- **Overestimation** of survival probabilities if ignored
+
+### Truncated vs. Censored Data
+
+**Censored data:**
+
+- Event time falls outside the follow-up period
+- Data are **incomplete** but the individual is observed
+
+**Truncated data:**
+
+- Individual is not observed at all
+  if they would have had an event outside the observation window
+- Truncated individuals leave no trace
+  - Called "ghosts" in the survival analysis literature
+
+### Independent Truncation Assumption
+
+Analysis under left-truncation
+requires the **independent truncation assumption**:
+
+The time of delayed entry and subsequent survival are independent.
+
+This is satisfied when:
+
+- Disease incidence and post-diagnosis survival are independent
+
+### Implementation
+
+Denote:
+
+- $V$: truncation time (delay between origin and study entry)
+- $X$: follow-up time relative to the time origin
+- $\delta$: censoring indicator
+
+**In R:**
+
+Use the `Surv()` function with entry time:
+
+```r
+Surv(time = time_since_origin,
+     event = status,
+     origin = truncation_time)
+```
+
+**In Stata:**
+
+```stata
+stset years_since_diag, failure(status) entry(disease_dur)
+```
+
+### Effect of Ignoring Left-Truncation
+
+When left-truncation is ignored:
+
+- Survival probabilities are **overestimated**
+  (especially at early time points)
+- The analysis fails to account
+  for undersampling of short survival times
+- Hazard ratios in Cox models may be attenuated
+  (effect is less predictable)
+
+### Right-Truncation
+
+**Right-truncation** can also occur if:
+
+- Study recruits based on an endpoint
+- People with large event times (or who never had the event)
+  are not recruited
+
+**Example:**
+A fecundability study that excludes couples
+who never conceive
+exhibits right-truncation.
+
+## References {.unnumbered}
+
+::: {#refs}
+:::

@@ -1,0 +1,206 @@
+{{< include latex-macros/macros.qmd >}}
+
+This section is adapted from [@vittinghoff2e, Chapter 6].
+
+## What Are Competing Risks?
+
+::: {#def-competing-risks}
+
+#### Competing Risks Data
+
+**Competing risks data** arise when multiple events can occur,
+and follow-up can end due to occurrence of one or more of those types of events,
+precluding observation of at least one of the other event types.
+
+:::
+
+Competing risks are common in medical research.
+For example,
+in a study of bone fracture risk in elderly men,
+participants may:
+
+- Experience the event of interest (fracture)
+- Die before experiencing a fracture (competing event)
+- Be lost to follow-up or reach the end of the study period (censored)
+
+### Why Competing Risks Matter
+
+When analyzing time-to-event data,
+standard survival analysis methods make assumptions about censoring.
+The **independent censoring assumption** assumes that
+the future risk of censored observations
+can be represented by those who remain under follow-up.
+
+This assumption is reasonable for:
+
+- Administrative censoring (end of study)
+- Loss to follow-up (if unrelated to outcome risk)
+
+However,
+this assumption is questionable for competing events like death,
+because:
+
+1. We cannot extrapolate beyond participant lifetimes
+2. Death fundamentally alters the risk set for the primary outcome
+3. Projecting to a setting "without death" creates a hypothetical population
+
+### Approaches to Analyzing Competing Risks Data
+
+Two main approaches exist for analyzing competing risks:
+
+1. **Elimination approach**:
+   Extrapolates to a scenario where a competing event is not possible
+   (appropriate for losses to follow-up)
+
+2. **Accommodation approach**:
+   Acknowledges and allows for the competing risks in the analysis
+   (appropriate for death and other true competing events)
+
+## Notation for Competing Risks
+
+We denote competing risks outcome data using two variables:
+
+- $Y$: time of the first observed event of any type
+- $\delta = k$: if the $k$-th event type occurs first
+
+where each of the $K$ possible types of failure
+are denoted by a numerical code.
+
+**Example coding scheme:**
+
+- 0: loss to follow-up (censored)
+- 1: event of interest (e.g., fracture)
+- 2: competing event (e.g., death)
+
+A participant followed for 18 months who dies
+before experiencing a fracture
+would have $Y = 18$ months and $\delta = 2$.
+
+## Summaries for Competing Risks Data
+
+### Cause-Specific Hazard Functions
+
+::: {#def-cause-specific-hazard}
+
+#### Cause-Specific Hazard Function
+
+The **cause-specific hazard function** for event type $k$,
+denoted $h_k(t)$,
+is the short-term rate at which participants experience
+the onset of the $k$-th event
+among those who have not yet experienced
+the event of interest or a competing event prior to time $t$.
+
+:::
+
+**Key properties:**
+
+- The numerator counts only events of type $k$
+- The denominator includes all participants
+  who could have developed the event by time $t$
+- Reduces to the ordinary hazard function when there is only one failure type
+
+**Estimation:**
+
+To estimate and model cause-specific hazard functions:
+
+1. Set up data as ordinary survival data
+2. Define the $k$-th failure type as the only "event"
+3. Treat all competing causes (including death) as "censored"
+
+You can then examine predictor effects on the cause-specific hazard
+using standard Cox proportional hazards models.
+
+### Cumulative Incidence Functions
+
+::: {#def-cumulative-incidence}
+
+#### Cumulative Incidence Function
+
+The **cumulative incidence function** (CIF) for cause type $k$ at time $t$,
+denoted $F_k(t)$,
+is the proportion of the population
+who have experienced the $k$-th event prior to time $t$.
+
+:::
+
+The cumulative incidence function:
+
+- Measures the prevalence of a particular event at each time $t$
+- Accounts for all competing risks
+- Differs from cause-specific hazards in how it treats competing events
+
+**Interpretation:**
+
+If at 5 years the cumulative incidence of fracture is 0.080
+and for death is 0.093,
+then:
+
+- 8.0% developed fracture before death
+- 9.3% died without fracture
+- 82.7% remain alive without fracture
+
+## Estimation of Cumulative Incidence
+
+The cumulative incidence at time $t$ is calculated as:
+
+$$
+\hat{F}_k(t) = \sum_{t_i \le t} \hat{S}(t_{i-1}) \times \frac{d_{ki}}{n_i}
+$$
+
+where:
+
+- $t_i$ are the ordered event times
+- $d_{ki}$ is the number of type-$k$ events at time $t_i$
+- $n_i$ is the number at risk at time $t_i$
+- $\hat{S}(t_{i-1})$ is the Kaplan-Meier estimate of event-free survival
+  just before time $t_i$
+
+The estimation proceeds in steps:
+
+1. Calculate the overall event-free probability at each time point
+   using the Kaplan-Meier method
+   (combining all event types)
+2. For each time interval,
+   calculate the probability of a new type-$k$ event as:
+   - Probability of being event-free at the start of the interval
+   - Times the rate of type-$k$ events during the interval
+3. The cumulative incidence is the cumulative sum
+   of these time-specific probabilities
+
+## Modeling Competing Risks
+
+When analyzing competing risks data with predictors,
+two main approaches are available:
+
+### Cause-Specific Hazards Models
+
+Fit separate Cox models for each event type,
+treating other event types as censored:
+
+**Advantages:**
+
+- Standard software can be used
+- Straightforward interpretation of hazard ratios
+- Can assess effects on each failure type separately
+
+**Limitations:**
+
+- Results do not directly estimate cumulative incidence
+- Interpretation can be challenging when effects differ across event types
+
+### Subdistribution Hazards Models (Fine-Gray Model)
+
+An alternative approach directly models the cumulative incidence function
+using subdistribution hazards [@fine1999proportional].
+
+The Fine-Gray model:
+
+- Directly estimates the effect on cumulative incidence
+- Keeps participants who experience competing events in the risk set
+- Requires specialized software (e.g., `cmprsk` package in R)
+
+## References {.unnumbered}
+
+::: {#refs}
+:::
