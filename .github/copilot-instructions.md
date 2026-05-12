@@ -2,23 +2,32 @@
 
 > [!IMPORTANT]
 > **MANDATORY TESTING BEFORE EVERY COMMIT:**
-> 
+>
 > Before committing ANY changes to `.qmd`, `.R`, or config files:
-> 
+>
 > 1. **Run `quarto render <chapter.qmd> --to html` on each chapter whose subfiles were edited** (not individual subfiles; not the full book; HTML format only unless you are specifically fixing a non-HTML format issue)
 > 2. **Verify it completes successfully** (exit code 0, no errors)
-> 3. **Run linter on changed files**:
->    - For R files: `lintr::lint("path/to/file.R")`  
+> 3. **Address ALL rendering warnings**:
+>    - Review output for `[WARNING]` or `Warning:` messages
+>    - Fix warnings related to:
+>      - Math rendering (TeX/LaTeX errors, undefined commands like `\atop`)
+>      - Missing resources (images, files)
+>      - Broken links or references
+>      - Deprecated syntax or constructs
+>    - **Fix all warnings you can address** - document any that cannot be fixed
+> 4. **Run linter on changed files**:
+>    - For R files: `lintr::lint("path/to/file.R")`
 >    - For .qmd files with R code: Extract and lint R code chunks
 >    - **Fix lint issues in code you wrote or modified** - ignore pre-existing issues in unchanged code
-> 4. **Run spellcheck**: `spelling::spell_check_package()`
+> 5. **Run spellcheck**: `spelling::spell_check_package()`
 >    - **Fix spelling errors you introduced** - ignore pre-existing errors
 >    - Add technical terms to `inst/WORDLIST` if needed (create file if it doesn't exist, one word per line)
-> 5. Only then commit your changes
+> 6. Only then commit your changes
 >
 > **CRITICAL RULES:**
 > - **CI is NOT the test** - you must test locally BEFORE pushing
 > - **NEVER rely on CI to discover rendering, lint, or spelling errors** - that's your job
+> - **ALWAYS address rendering warnings** - they indicate problems that will cause issues in different output formats
 > - **Only render HTML format** (`--to html`) unless specifically fixing a non-HTML format issue
 > - **Only render edited chapters** — run `quarto render <chapter.qmd> --to html` on the parent `.qmd` that includes each edited subfile; do not render the full book
 > - **Only fix lint/spell issues in code YOU changed** - don't fix unrelated pre-existing issues
