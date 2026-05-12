@@ -1,0 +1,186 @@
+
+Graphical diagnostics are usually the first step,
+but formal tests can provide numerical summaries.
+
+For linear regression residuals,
+three common tests are:
+
+- `fligner.test()` for equal variances across groups
+  (the Fligner--Killeen test).
+- Levene / Brown--Forsythe test
+  (a median-centered Levene variant,
+  where standard Levene centers on group means,
+  and Brown--Forsythe centers on group medians for more robustness;
+  e.g., via `car::leveneTest(..., center = median)` or equivalent code).
+- `shapiro.test()` /
+  [Shapiro--Wilk test](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test)
+  for normality.
+
+---
+
+#### Fligner--Killeen test (homoskedasticity across groups)
+
+Suppose residuals are split into groups
+($g = 1, \ldots, G$),
+for example by a categorical predictor.
+
+The test starts from absolute deviations from each group median:
+$$
+d_{gi} = |e_{gi} - \text{median}(e_{g1}, \ldots, e_{g,n_g})|.
+$$
+
+After ranking the pooled $d_{gi}$ values,
+the Fligner--Killeen statistic is built from normal scores of those ranks.
+
+Under the null hypothesis of equal variances,
+the test statistic is approximately $\chi^2_{G-1}$.
+Small p-values suggest heteroskedasticity.
+
+---
+
+#### Levene / Brown--Forsythe test (homoskedasticity across groups)
+
+Levene's test transforms residuals to within-group absolute deviations:
+$$
+z_{gi} = |e_{gi} - c_g|,
+$$
+where $c_g$ is the group center.
+
+Classical Levene uses the group mean for $c_g$.
+Brown--Forsythe uses the group median,
+which is more robust.
+
+Then run a one-way ANOVA on $z_{gi}$ by group:
+$$
+F = \frac{\text{MS}_{\text{between}}}{\text{MS}_{\text{within}}}
+\sim F_{G-1, N-G}
+\quad\text{under }H_0.
+$$
+
+Small p-values suggest unequal residual variance.
+
+For simple linear regression,
+@kutner2005applied [pp. 116--117] describes
+the Brown--Forsythe test
+by splitting observations into two $X$-level groups
+(low versus high),
+computing absolute deviations from each group median,
+and applying a two-sample pooled-variance t test:
+let
+$$
+z_{ij} = |e_{ij} - \tilde e_i|,
+$$
+where
+$j$ indexes observations within group $i$,
+and $\tilde e_i$ is the median residual in group $i$.
+Then:
+$$
+t_{\text{BF}} =
+\frac{\bar z_{1} - \bar z_{2}}
+{s_p \sqrt{1/n_{1} + 1/n_{2}}},
+\quad
+t_{\text{BF}} \approx t_{n_{1}+n_{2}-2}
+\text{ under }H_0.
+$$
+Here,
+$\bar z_{1}$ and $\bar z_{2}$
+are the means of the $z_{ij}$ values
+in groups $i=1$ and $i=2$,
+$s_p$ is their pooled standard deviation,
+and $n_{1}, n_{2}$ are the two group sample sizes.
+Large $|t_{\text{BF}}|$
+indicates nonconstant residual variance.
+
+---
+
+#### Shapiro--Wilk test (normality of standardized residuals)
+
+For ordered standardized residuals
+$r_{(1)} \le \cdots \le r_{(n)}$,
+the Shapiro--Wilk statistic is:
+$$
+W =
+\frac{\left(\sum_{i=1}^n a_i r_{(i)}\right)^2}
+{\sum_{i=1}^n (r_i - \bar r)^2},
+$$
+where $a_i$ are constants from normal-order-statistic moments.
+The numerator uses ordered residuals $r_{(i)}$,
+while the denominator uses the original (unordered) residuals.
+
+If residuals are Gaussian,
+$W$ tends to be close to 1.
+Small $W$ (and small p-value)
+indicates departure from normality.
+
+---
+
+#### Numerical example (`birthweight` interaction model)
+
+```{r}
+diag_bw <-
+  broom::augment(bw_lm2, data = bw) |>
+  transmute(
+    sex,
+    resid_lm2 = .resid,
+    std_resid_lm2 = .std.resid
+  )
+
+fligner_bw <- fligner.test(resid_lm2 ~ sex, data = diag_bw)
+
+levene_bw <-
+  diag_bw |>
+  group_by(sex) |>
+  mutate(
+    med_resid = median(resid_lm2),
+    abs_dev = abs(resid_lm2 - med_resid)
+  ) |>
+  ungroup()
+
+levene_fit <- aov(abs_dev ~ sex, data = levene_bw)
+levene_tab <- summary(levene_fit)[[1]]
+levene_F <- unname(levene_tab[1, "F value"])
+levene_p <- unname(levene_tab[1, "Pr(>F)"])
+
+shapiro_bw <- shapiro.test(diag_bw$std_resid_lm2)
+
+tibble(
+  test = c(
+    "Fligner--Killeen: equal variance by sex",
+    "Levene/Brown--Forsythe: equal variance by sex",
+    "Shapiro--Wilk: normality of standardized residuals"
+  ),
+  statistic = c(
+    unname(fligner_bw$statistic),
+    levene_F,
+    unname(shapiro_bw$statistic)
+  ),
+  p_value = c(
+    fligner_bw$p.value,
+    levene_p,
+    shapiro_bw$p.value
+  )
+) |>
+  mutate(
+    statistic = signif(statistic, 4),
+    p_value = signif(p_value, 4)
+  )
+```
+
+Interpretation rule:
+for all three tests,
+a small p-value is evidence against the corresponding model assumption.
+
+Compared with visual diagnostics:
+
+- Fligner–Killeen / Levene summarizes the same heteroskedasticity signal
+  that we inspect in residuals-vs-fitted (@fig-bw_lm2-resid-vs-fitted)
+  and scale-location (@fig-bw-scale-loc) plots.
+- Shapiro–Wilk summarizes the same normality signal
+  that we inspect in QQ plots (@fig-qqplot-autoplot)
+  and standardized-residual histograms (@fig-marg-stresd).
+- Use tests and plots together:
+  the tests provide a single numerical summary,
+  while the plots show the shape and practical size of departures.
+
+---
+

@@ -1,0 +1,952 @@
+
+(adapted from @dobson4e §6.3.3; for more information on prediction, see @james2013introduction and @rms2e).
+
+::: notes
+If we have a lot of covariates in our dataset, we might want to choose a small subset to use in our model.
+
+There are a few possible metrics to consider for choosing a "best" model.
+:::
+
+### DAGs for variable selection
+
+For explanatory models,
+variable inclusion should not rely on automated algorithms alone.
+Directed acyclic graphs (DAGs)
+can help us encode substantive assumptions
+about which variables are confounders,
+mediators,
+or colliders.
+
+In a Dobson-style workflow,
+we use the DAG first
+to decide a defensible adjustment set,
+then compare candidate regression models
+within that set using predictive or likelihood-based criteria.
+This keeps model selection aligned with study design,
+rather than only with numerical fit.
+
+In this workflow,
+the DAG encodes hypothesized time ordering
+and causal pathways.
+That helps us decide
+which variables belong in the candidate model set
+before we run stepwise,
+subset,
+or penalized selection methods.
+The key point
+is that a variable can improve apparent fit
+while still distorting the effect we care about
+if it sits on a causal pathway
+or induces collider bias
+[@dobson4e, §6.3.3].
+
+:::{#exm-dag-heat-deaths}
+
+#### high temperatures and mortality
+
+Suppose the research question is:
+"What is the effect of high temperatures on deaths?"
+
+A plausible DAG includes:
+high temperatures $\rightarrow$ deaths,
+high temperatures $\rightarrow$ blackouts,
+high temperatures $\rightarrow$ forest fires,
+blackouts $\rightarrow$ deaths,
+forest fires $\rightarrow$ air pollution,
+and both forest fires and air pollution $\rightarrow$ deaths
+[@dobson4e, §6.3.3].
+
+```{r}
+#| label: fig-dag-heat-deaths
+#| fig-cap: DAG for the high temperatures and mortality example.
+#| fig-alt: DAG showing high temperatures pointing to deaths,
+#|   blackouts, and forest fires; blackouts pointing to deaths;
+#|   forest fires pointing to air pollution and deaths; and air
+#|   pollution pointing to deaths.
+#| code-fold: true
+dag_heat_deaths <- ggdag::dagify(
+  D ~ T + B + F + P,
+  B ~ T,
+  F ~ T,
+  P ~ F,
+  exposure = "T",
+  outcome = "D",
+  labels = c(
+    T = "High temperatures",
+    D = "Deaths",
+    B = "Blackouts",
+    F = "Forest fires",
+    P = "Air pollution"
+  )
+)
+
+dag_heat_deaths |>
+  ggdag::ggdag(use_labels = "label") +
+  ggdag::theme_dag()
+```
+
+If our estimand is the total effect
+of high temperatures on deaths,
+then blackouts,
+forest fires,
+and air pollution are mediators on downstream pathways.
+Adjusting for them
+would remove part of the effect
+we are trying to estimate.
+
+But if the estimand changes
+to the effect of blackouts on deaths,
+then high temperatures become a confounder
+because they are a common cause
+of both blackouts and deaths.
+So the same variable
+can be "adjust for" or "do not adjust for"
+depending on the causal question.
+
+:::
+
+:::{#exm-dag-salmonellosis-weather}
+
+#### salmonellosis and weather
+
+For daily salmonellosis counts,
+a plausible DAG has temperature and rainfall
+as direct causes of risk,
+with both variables also affecting humidity.
+If humidity has no direct arrow to salmonellosis,
+then humidity is not a causal driver;
+it mainly reflects shared variation
+from temperature and rainfall.
+Including humidity in the regression
+is therefore usually unnecessary
+for estimating the weather effects,
+and it may reduce interpretability
+because humidity is a collider of temperature and rainfall.
+Conditioning on humidity can induce misleading associations
+and bias weather-effect estimates
+when that conditioning opens a path
+between temperature and rainfall
+that is not otherwise blocked
+[@dobson4e, §6.3.3].
+
+```{r}
+#| label: fig-dag-salmonellosis-weather
+#| fig-cap: DAG for the salmonellosis and weather example.
+#| fig-alt: DAG with arrows from season to temperature and rainfall;
+#|   from temperature and rainfall to humidity;
+#|   and from temperature, rainfall, and test change to salmonellosis.
+#| code-fold: true
+dag_salmonellosis_weather <- ggdag::dagify(
+  S ~ T + R + C,
+  H ~ T + R,
+  T ~ Se,
+  R ~ Se,
+  labels = c(
+    S = "Salmonellosis",
+    T = "Temperature",
+    R = "Rainfall",
+    H = "Humidity",
+    C = "Test change",
+    Se = "Season"
+  )
+)
+
+dag_salmonellosis_weather |>
+  ggdag::ggdag(use_labels = "label") +
+  ggdag::theme_dag()
+```
+
+The same DAG can include
+a "change in test" indicator
+when surveillance switched
+to a more sensitive diagnostic test.
+That variable can improve predictive accuracy
+and face validity,
+but omitting it does not invalidate
+causal interpretation
+for temperature and rainfall effects
+if it is not on their causal paths
+[@dobson4e, §6.3.3].
+
+Likewise,
+season may cause both temperature and rainfall,
+but if season has no direct path to salmonellosis
+beyond those weather variables,
+including season can obscure interpretation
+of the proximal weather effects
+[@dobson4e, §6.3.3].
+
+Finally,
+DAG-informed variable definitions matter.
+In one intensive-care example,
+a "nutrition score" looked highly predictive of mortality
+until investigators clarified
+that people near death were often coded as zero
+because no assessment was completed.
+So the recorded variable
+combined nutrition with prognosis,
+and naive selection would overstate
+its scientific meaning
+[@dobson4e, §6.3.3].
+
+:::
+
+### Mean squared error
+
+We might want to minimize the **mean squared error**,
+$\E{(y-\hat y)^2}$,
+for new observations
+that weren't in our data set when we fit the model.
+
+Unfortunately,
+$$\frac{1}{n}\sum_{i=1}^n (y_i-\hat y_i)^2$$
+gives a biased estimate of $\E{(y-\hat y)^2}$ for new data.
+If we want an unbiased estimate,
+we will have to be clever.
+
+This is one reason that $R^2$ is not enough for model selection.
+$R^2$ does not decrease as we add explanatory variables,
+even when those variables do not improve out-of-sample prediction.
+That can lead to overfitting.
+
+With a training/test split,
+we estimate coefficients in the training data
+and compute prediction error in held-out data:
+
+$$
+\hat\b_{\text{train}} =
+(\tp{X_{\text{train}}}X_{\text{train}})^{-1}
+\tp{X_{\text{train}}}y_{\text{train}}
+$$
+
+$$
+\hat e_{i,\text{test}} =
+y_{\text{test},i} -
+\cb{
+\hat\b_{0,\text{train}} +
+\sum_{j=1}^p \hat\b_{j,\text{train}}x_{\text{test},ij}
+},
+\quad i \in \text{test set}
+$$
+
+$$
+\text{RMSE} = \sqrt{
+\frac{1}{n_{\text{test}}}
+\sum_{i \in \text{test set}} (\hat e_{i,\text{test}})^2
+}
+$$
+
+#### Train/validation/test splits
+
+In many applications,
+we split the data into
+training,
+validation,
+and test sets.
+This extends the basic train/test split
+by separating model tuning
+from final model assessment.
+This framework follows
+[@james2021islr2e, pp. 198-201].
+
+- Use the **training set** to estimate model parameters.
+- Use the **validation set** to compare candidate models,
+  choose transformations,
+  or tune hyperparameters.
+- Use the **test set** once at the end
+  to estimate final out-of-sample performance.
+
+Keeping the test set untouched during model building
+helps avoid optimistic bias
+from repeatedly trying many models.
+If data are limited,
+$k$-fold cross-validation
+can replace a single validation split
+for more stable tuning.
+
+:::{#exm-train-validation-test-split}
+#### Numerical example
+
+The example below
+uses R's built-in `mtcars` dataset
+($n=32$ cars)
+to predict fuel efficiency (`mpg`)
+from vehicle weight (`wt`).
+It uses one random split
+to compare linear,
+quadratic,
+cubic,
+and quartic models
+(`mpg ~ wt`,
+`mpg ~ wt + I(wt^2)`,
+`mpg ~ wt + I(wt^2) + I(wt^3)`,
+and `mpg ~ wt + I(wt^2) + I(wt^3) + I(wt^4)`)
+on a validation set,
+then reports the chosen model's test RMSE
+on untouched test data
+[@james2021islr2e, p. 213].
+
+```{r}
+#| code-fold: false
+set.seed(108)
+n <- nrow(mtcars)
+
+n_train <- floor(0.6 * n)
+n_valid <- floor(0.2 * n)
+
+idx_train <- sample.int(n, size = n_train)
+idx_remaining <- setdiff(seq_len(n), idx_train)
+idx_valid <- sample(idx_remaining, size = n_valid)
+idx_test <- setdiff(idx_remaining, idx_valid)
+
+split_sizes <- tibble::tibble(
+  split = c("training", "validation", "test"),
+  n = c(length(idx_train), length(idx_valid), length(idx_test))
+)
+```
+
+:::{#tbl-train-validation-test-split-sizes}
+```{r}
+split_sizes
+```
+
+Sizes of the training,
+validation,
+and test splits
+:::
+
+```{r}
+train_dat <- mtcars[idx_train, ]
+valid_dat <- mtcars[idx_valid, ]
+test_dat <- mtcars[idx_test, ]
+
+model_linear <- lm(mpg ~ wt, data = train_dat)
+model_quadratic <- lm(mpg ~ wt + I(wt^2), data = train_dat)
+model_cubic <- lm(mpg ~ wt + I(wt^2) + I(wt^3), data = train_dat)
+model_quartic <- lm(
+  mpg ~ wt + I(wt^2) + I(wt^3) + I(wt^4),
+  data = train_dat
+)
+
+compute_rmse <- function(model, data) {
+  sqrt(mean((data$mpg - predict(model, newdata = data))^2))
+}
+
+candidate_models <- list(
+  linear = model_linear,
+  quadratic = model_quadratic,
+  cubic = model_cubic,
+  quartic = model_quartic
+)
+
+validation_results <- tibble::tibble(
+  model = names(candidate_models)
+) |>
+  dplyr::mutate(
+    training_RMSE = purrr::map_dbl(
+      model,
+      \(model_name) compute_rmse(candidate_models[[model_name]], train_dat)
+    ),
+    validation_RMSE = purrr::map_dbl(
+      model,
+      \(model_name) compute_rmse(candidate_models[[model_name]], valid_dat)
+    )
+  )
+
+model_labels <- c(
+  linear = "linear model",
+  quadratic = "quadratic model",
+  cubic = "cubic model",
+  quartic = "quartic model"
+)
+
+chosen_model_name <-
+  validation_results |>
+  dplyr::arrange(validation_RMSE) |>
+  dplyr::slice(1) |>
+  dplyr::pull(model)
+
+chosen_model_label <- model_labels[[chosen_model_name]]
+
+chosen_model <- candidate_models[[chosen_model_name]]
+chosen_model_validation_rmse <- compute_rmse(chosen_model, valid_dat)
+
+performance_comparison <- tibble::tibble(
+  split = c("validation", "test"),
+  model = chosen_model_name,
+  RMSE = c(
+    chosen_model_validation_rmse,
+    compute_rmse(chosen_model, test_dat)
+  )
+)
+```
+
+```{r}
+#| label: setup-model-fit-figure-partitions
+partition_colors <- c(
+  training = "#1b9e77",
+  validation = "#d95f02",
+  test = "#7570b3"
+)
+partition_shapes <- c(
+  training = 16,
+  validation = 17,
+  test = 15
+)
+wt_range <- range(c(train_dat$wt, valid_dat$wt, test_dat$wt))
+mpg_range <- range(c(train_dat$mpg, valid_dat$mpg, test_dat$mpg))
+wt_grid <- seq(wt_range[1], wt_range[2], length.out = 200)
+```
+
+```{r}
+#| label: fig-linear-model-superimposed
+#| fig-cap: Linear model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted linear regression line is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+abline(model_linear, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "linear fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+```{r}
+#| label: fig-quadratic-model-superimposed
+#| fig-cap: Quadratic model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted quadratic curve is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+quadratic_pred <- predict(
+  model_quadratic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, quadratic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "quadratic fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+```{r}
+#| label: fig-cubic-model-superimposed
+#| fig-cap: Cubic model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted cubic curve is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+cubic_pred <- predict(
+  model_cubic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, cubic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "cubic fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+```{r}
+#| label: fig-quartic-model-superimposed
+#| fig-cap: Quartic model fit superimposed on data partitions
+#| fig-alt: Scatterplot of miles per gallon versus vehicle weight.
+#|   Points are colored and shaped by training,
+#|   validation,
+#|   and test partitions.
+#|   The fitted quartic curve is superimposed.
+#| code-fold: true
+plot(
+  train_dat$wt,
+  train_dat$mpg,
+  xlab = "wt",
+  ylab = "mpg",
+  pch = partition_shapes[["training"]],
+  xlim = wt_range,
+  ylim = mpg_range,
+  col = partition_colors[["training"]]
+)
+points(
+  valid_dat$wt,
+  valid_dat$mpg,
+  pch = partition_shapes[["validation"]],
+  col = partition_colors[["validation"]]
+)
+points(
+  test_dat$wt,
+  test_dat$mpg,
+  pch = partition_shapes[["test"]],
+  col = partition_colors[["test"]]
+)
+quartic_pred <- predict(
+  model_quartic,
+  newdata = data.frame(wt = wt_grid)
+)
+lines(wt_grid, quartic_pred, col = "blue", lwd = 2)
+legend(
+  "topright",
+  legend = c("training", "validation", "test", "quartic fit"),
+  col = c(unname(partition_colors), "blue"),
+  pch = c(unname(partition_shapes), NA),
+  lty = c(NA, NA, NA, 1),
+  lwd = c(NA, NA, NA, 2),
+  bty = "n"
+)
+```
+
+:::{#tbl-train-validation-results}
+```{r}
+validation_results
+```
+
+Training and validation RMSE for candidate models
+:::
+
+The chosen model is
+the `r chosen_model_label`,
+because it has the lower validation RMSE.
+
+:::{#tbl-train-validation-test-rmse}
+```{r}
+performance_comparison
+```
+
+Validation and test RMSE
+for the chosen model
+:::
+
+:::
+
+---
+
+#### Cross-validation
+
+Rather than one arbitrary split,
+$k$-fold cross-validation repeatedly partitions the data into training and test folds.
+For each split we compute prediction error,
+then summarize errors across folds and replications.
+The preferred model has lower prediction error,
+with simpler models favored when errors are similar.
+
+When the number of candidate explanatory variables is small,
+we can compare all possible subsets ($2^p$ models)
+using the same cross-validation metric.
+
+```{r}
+data("carbohydrate", package = "dobson")
+library(cvTools)
+full_model <- lm(carbohydrate ~ ., data = carbohydrate)
+cv_full <-
+  full_model |> cvFit(
+    data = carbohydrate, K = 5, R = 10,
+    y = carbohydrate$carbohydrate
+  )
+
+reduced_model <- full_model |> update(formula = ~ . - age)
+
+cv_reduced <-
+  reduced_model |> cvFit(
+    data = carbohydrate, K = 5, R = 10,
+    y = carbohydrate$carbohydrate
+  )
+```
+
+---
+
+```{r}
+results_reduced <-
+  tibble(
+    model = "wgt+protein",
+    errs = cv_reduced$reps[]
+  )
+results_full <-
+  tibble(
+    model = "wgt+age+protein",
+    errs = cv_full$reps[]
+  )
+
+cv_results <-
+  bind_rows(results_reduced, results_full)
+
+cv_results |>
+  ggplot(aes(y = model, x = errs)) +
+  geom_boxplot()
+```
+
+---
+
+##### comparing metrics
+
+```{r}
+compare_results <- tribble(
+  ~model, ~cvRMSE, ~r.squared, ~adj.r.squared, ~trainRMSE, ~loglik,
+  "full",
+  cv_full$cv,
+  summary(full_model)$r.squared,
+  summary(full_model)$adj.r.squared,
+  sigma(full_model),
+  logLik(full_model) |> as.numeric(),
+  "reduced",
+  cv_reduced$cv,
+  summary(reduced_model)$r.squared,
+  summary(reduced_model)$adj.r.squared,
+  sigma(reduced_model),
+  logLik(reduced_model) |> as.numeric()
+)
+
+compare_results
+```
+
+---
+
+```{r}
+anova(full_model, reduced_model)
+```
+
+---
+
+#### Best subset selection
+
+When the number of candidate predictors is modest,
+we can use **best subset selection**.
+For each model size $k = 0, 1, \ldots, p$,
+we fit all $\binom{p}{k}$ models
+and keep the best model of size $k$
+(e.g., by lowest RSS in the training data).
+
+This gives at most $p+1$ candidate models to compare across model sizes,
+using criteria such as
+cross-validated prediction error,
+$C_p$,
+AIC/BIC,
+or adjusted $R^2$.
+In that sense,
+best subset selection is more exhaustive
+than one-path methods like forward or backward stepwise selection.
+
+::: notes
+For a full algorithmic treatment,
+including validation and criterion-based comparison across model size,
+see the ISLR treatment of best subset selection
+[@james2013introduction].
+:::
+
+```{r}
+hers_subset <- rmb::hers |> haven::zap_labels() |>
+  dplyr::select(LDL, age, weight, BMI, HDL, TG, SBP) |>
+  tidyr::drop_na()
+
+hers_lm_subset <- lm(
+  LDL ~ age + weight + BMI + HDL + TG + SBP,
+  data = hers_subset
+)
+
+hers_best_subset <- olsrr::ols_step_best_subset(hers_lm_subset)
+
+hers_best_subset$metrics |>
+  dplyr::arrange(dplyr::desc(adjr)) |>
+  dplyr::slice_head(n = 5)
+```
+
+---
+
+#### Stepwise regression
+
+Stepwise methods are another common approach.
+Forward selection adds variables one at a time.
+Backward selection starts with the full model
+and removes variables sequentially.
+Both approaches can select different models from the same data.
+
+::: {.callout-warning}
+## Caution about stepwise selection
+
+Stepwise regression has several known problems:
+
+- It tends to select too many variables (overfitting)
+- P-values and confidence intervals are biased after selection
+- It ignores model uncertainty
+- Results can be unstable across different samples
+
+Consider using cross-validation, penalized methods (like Lasso), 
+or subject-matter knowledge instead.
+See @rms2e and @heinze2018variable for more discussion.
+:::
+
+```{r}
+library(olsrr)
+olsrr:::ols_step_both_aic(full_model)
+```
+
+---
+
+#### Lasso
+
+Lasso is a penalized regression method
+that shrinks coefficient estimates toward zero.
+It adds an $L_1$ penalty term
+to the objective function,
+creating a trade-off between model fit and parsimony.
+The intercept is not penalized.
+
+As the tuning parameter $\lambda$ increases,
+more coefficients are shrunken strongly,
+and some become exactly zero.
+So lasso both regularizes the model
+and performs variable selection.
+In practice,
+$\lambda$ is usually chosen by cross-validation
+to minimize prediction error.
+
+For Gaussian linear models,
+the penalized least-squares forms are:
+
+$$
+\hat\b^{\text{lasso}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda \sum_{j=1}^p |\b_j|
+}
+$$
+
+$$
+\hat\b^{\text{ridge}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda \sum_{j=1}^p \b_j^2
+}
+$$
+
+$$
+\hat\b^{\text{elastic-net}} =
+\arg\min_{\b_0,\ldots,\b_p}
+\cb{
+\sum_{i=1}^n
+\cb{
+y_i - \b_0 - \sum_{j=1}^p \b_j x_{ij}
+}^2
++
+\lambda
+\cb{
+\a \sum_{j=1}^p |\b_j|
++
+\frac{1-\a}{2}\sum_{j=1}^p \b_j^2
+}
+}
+$$
+
+```{r}
+library(glmnet)
+y <- carbohydrate$carbohydrate
+x <- carbohydrate |>
+  select(age, weight, protein) |>
+  as.matrix()
+fit <- glmnet(x, y)
+```
+
+---
+
+```{r}
+#| fig-cap: "Lasso selection"
+#| label: fig-carbs-lasso
+autoplot(fit, xvar = "lambda")
+```
+
+---
+
+```{r}
+cvfit <- cv.glmnet(x, y)
+plot(cvfit)
+```
+
+---
+
+```{r}
+coef(cvfit, s = "lambda.1se")
+```
+
+---
+
+### Likelihood ratio test for nested models {#sec-linreg-LRT}
+
+For a general MLE-focused discussion of likelihood-ratio tests,
+see [Likelihood ratio tests for MLEs](intro-MLEs.qmd#sec-lrt-mles).
+
+A **likelihood ratio test (LRT)** compares two nested models
+by computing twice the difference in their log-likelihoods:
+
+$$2(\llik_1 - \llik_0) \dot \sim \chi^2_q \quad \text{(asymptotically under } H_0 \text{)}$$
+
+where $q = p_2 - p_1$ is the number of extra parameters in the full model.
+
+---
+
+```{r}
+logLik(bw_lm2)
+logLik(bw_lm1)
+
+log_LR <- (logLik(bw_lm2) - logLik(bw_lm1)) |> as.numeric()
+delta_df <- (bw_lm1$df.residual - df.residual(bw_lm2))
+
+
+x_max <- 1
+```
+
+---
+
+```{r}
+#| label: fig-chisq-plot
+#| fig-cap: "Chi-square distribution"
+
+d_log_LR <- function(x, df = delta_df) dchisq(x, df = df)
+
+chisq_plot <-
+  ggplot() +
+  geom_function(fun = d_log_LR) +
+  stat_function(
+    fun = d_log_LR,
+    xlim = c(2 * log_LR, x_max),
+    geom = "area",
+    fill = "gray"
+  ) +
+  geom_segment(
+    aes(
+      x = 2 * log_LR,
+      xend = 2 * log_LR,
+      y = 0,
+      yend = d_log_LR(2 * log_LR)
+    ),
+    col = "red"
+  ) +
+  xlim(0.0001, x_max) +
+  ylim(0, 4) +
+  ylab("p(X=x)") +
+  xlab("Likelihood-ratio test statistic [x] = 2 * log(likelihood ratio)") +
+  theme_classic()
+chisq_plot |> print()
+```
+
+---
+
+Now we can get the p-value:
+
+```{r}
+#| label: LRT-pval
+pchisq(
+  q = 2 * log_LR,
+  df = delta_df,
+  lower = FALSE
+) |>
+  print()
+```
+
+---
+
+In practice you don't have to do this by hand; there are functions to do it for you:
+
+```{r}
+# built in
+lmtest::lrtest(bw_lm2, bw_lm1)
+```
+
+---
+
+{{< include _subfiles/Linear-models-overview/_sec_linreg_Ftest.qmd >}}

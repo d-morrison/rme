@@ -1,0 +1,189 @@
+{{< include latex-macros/macros.qmd >}}
+
+:::{#exr-ci-diff-means}
+
+Given
+a maximum likelihood estimate $\hvb$
+and
+a corresponding estimated covariance matrix
+$\hS \eqdef \widehat{\Covt}(\hvb)$,
+calculate a 95% confidence interval for the difference in means
+comparing covariate patterns $\vx$ and $\vxs$:
+
+$$\Delta \mu \eqdef \mu(\vx) - \mu(\vxs)$$
+
+:::
+
+---
+
+:::{#sol-ci-diff-means}
+
+::: notes
+
+We can construct the confidence interval directly:
+
+:::
+
+$$\Delta \mu \in \widehat{\Delta \mu} \pm t_{n-p}(0.975) \cdot \HSE{\widehat{\Delta \mu}}$$
+
+:::
+
+---
+
+:::{#exr-diff-means-as-lincom}
+
+Express the difference in means
+$\Delta \mu \eqdef \mu(\vx) - \mu(\vxs)$ as a linear function of $\vb$.
+
+:::
+
+---
+
+:::{#sol-diff-means-as-lincom}
+
+$$
+\ba
+\Delta \mu
+&= \mu(\vx) - \mu(\vxs)
+\\
+&= \dprodf{\vx}{\vb} - \dprodf{(\vxs)}{\vb}
+\\
+&= \dprodf{(\vx - \vxs)}{\vb}
+\\
+&= \dprodf{\diffvx}{\vb}
+\ea
+$${#eq-diff-means-lincom}
+
+where $\diffvx \eqdef \vx - \vxs$.
+
+:::
+
+---
+
+:::{#exr-se-diff-means}
+
+::: notes
+
+How can we estimate the standard error of
+$\widehat{\Delta \mu}$?
+
+:::
+
+$$\blue{\HSE{\widehat{\Delta \mu}}} = \blue{?}$$
+
+:::
+
+---
+
+:::{#sol-se-diff-means}
+
+$$
+\green{\SE{\widehat{\Delta \mu}}} =
+\sqrt{\red{\Var{\widehat{\Delta \mu}}}}
+$${#eq-se-sqrt-var-diff-means}
+
+By @sol-diff-means-as-lincom and [the variance of a linear combination](probability.qmd#thm-var-lincom):
+
+$$
+\ba
+\red{\Var{\widehat{\Delta \mu}}}
+&= \Var{\dprodf{\diffvx}{\hvb}}
+\\
+&= \pt{\diffvx}\Cov{\hvb}(\diffvx)
+\\
+&= \red{\pt{\diffvx}\Sigma(\diffvx)}
+\ea
+$${#eq-var-diff-means}
+
+where $\Sigma \eqdef \Covt(\hvb)$.
+
+---
+
+::: notes
+
+Expanding @eq-var-diff-means out of matrix-vector notation, we have:
+
+:::
+
+$$
+\ba
+\red{\pt{\diffvx}\Sigma(\diffvx)}
+&= \sumip\sumjp (\diffvx)_i \Sigma_{ij} (\diffvx)_j
+\\
+&= \sumip\sumjp (\Delta x_i) \Sigma_{ij} (\Delta x_j)
+\\
+&= \red{\sumip\sumjp (x_i - x^*_i) \Covt(\hvb_i,\hvb_j) (x_j - x^*_j)}
+\ea
+$$
+
+---
+
+Combining @eq-var-diff-means and the Gauss-Markov theorem:
+
+:::{#thm-est-se-diff-means}
+
+#### Estimated variance and standard error of difference in means
+
+$$
+\orange{\hVar{\widehat{\Delta \mu}}} = \orange{\tp{\diffvx}\hat{\Sigma}(\diffvx)}
+$${#eq-est-var-diff-means}
+
+$$
+\blue{\HSE{\widehat{\Delta \mu}}} =
+\blue{\sqrt{\tp{\diffvx}\hat{\Sigma}(\diffvx)}}
+$${#eq-est-se-diff-means}
+
+:::
+
+::: notes
+
+Note: on the RHS, we have plugged in $\hat{\Sigma}$,
+our estimate of $\Sigma$.
+
+Compare this result with the formula for
+[inference for predicted means](#exr-se-mean):
+the only change is to replace $\vx$ with $\diffvx = \vx - \vxs$.
+
+:::
+
+:::
+
+---
+
+In R, we can compute the CI for the difference in means
+by computing the predicted means for both covariate patterns
+and applying the variance formula directly:
+
+```{r}
+#| label: tbl-bw-diff-means
+#| tbl-cap: "95% CI for difference in birthweight means (male vs. female)"
+library(dplyr)
+new_data_pair <- tibble(
+  sex = factor(c("female", "male"), levels = levels(bw$sex)),
+  age = c(40, 40)
+)
+
+pred_pair <-
+  bw_lm2 |>
+  predict(
+    newdata = new_data_pair,
+    se.fit = TRUE
+  )
+
+design_mat <- model.matrix(delete.response(terms(bw_lm2)), new_data_pair)
+delta_x <- design_mat[2, ] - design_mat[1, ]
+
+sigma_hat <- vcov(bw_lm2)
+
+diff_mean_hat <- diff(pred_pair$fit)
+se_diff <- sqrt(t(delta_x) %*% sigma_hat %*% delta_x)
+t_crit <- qt(0.975, df = bw_lm2$df.residual)
+
+tibble(
+  diff_mean = diff_mean_hat,
+  se = as.numeric(se_diff),
+  ci_lower = diff_mean_hat - t_crit * se,
+  ci_upper = diff_mean_hat + t_crit * se
+) |>
+  knitr::kable(digits = 3)
+```

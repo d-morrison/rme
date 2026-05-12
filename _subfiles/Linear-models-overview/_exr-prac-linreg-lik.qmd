@@ -1,0 +1,66 @@
+{{< include latex-macros/macros.qmd >}}
+
+::: {#exr-prac-linreg-lik}
+#### Likelihood for simple linear regression
+(adapted from @kleinbaum2014applied, Chapter 6, and @dobson4e, Chapter 6)
+
+Suppose $Y_i \mid x_i \simind \Normal(\mu_i, \sigma^2)$,
+where $\mu_i = \beta_0 + \beta_1 x_i$.
+
+**(a)** Write the likelihood $\Lik(\beta_0, \beta_1, \sigma^2; \vy, \vx)$
+for observed data $(y_i, x_i)$, $i = 1, \ldots, n$.
+
+**(b)** Write the log-likelihood $\ell(\beta_0, \beta_1, \sigma^2; \vy, \vx)$
+and show it simplifies to
+
+$$
+\ell
+= -\frac{n}{2}\logf{2\pi\sigma^2}
+  - \frac{1}{2\sigma^2}\text{RSS},
+$$
+
+where $\text{RSS} = \sum_{i=1}^n (y_i - \mu_i)^2$.
+
+**(c)** Explain why maximizing $\ell$ over $(\beta_0, \beta_1)$
+is equivalent to minimizing $\text{RSS}$.
+:::
+
+::: {.solution}
+
+**(a)**
+
+$$
+\Lik(\beta_0, \beta_1, \sigma^2; \vy, \vx)
+= \prod_{i=1}^n (2\pi\sigma^2)^{-1/2}
+  \expf{-\frac{(y_i - \mu_i)^2}{2\sigma^2}}
+$$
+
+where $\mu_i = \beta_0 + \beta_1 x_i$.
+
+**(b)**
+
+$$
+\ba
+\ell
+&= \sum_{i=1}^n \logf{(2\pi\sigma^2)^{-1/2}\expf{-\frac{(y_i-\mu_i)^2}{2\sigma^2}}}
+\\
+&= -\frac{n}{2}\logf{2\pi\sigma^2}
+   - \frac{1}{2\sigma^2}\sum_{i=1}^n (y_i - \mu_i)^2
+\\
+&= -\frac{n}{2}\logf{2\pi\sigma^2}
+   - \frac{\text{RSS}}{2\sigma^2}
+\ea
+$$
+
+**(c)**
+
+Since $-\frac{n}{2}\logf{2\pi\sigma^2}$ does not depend on $\beta_0$ or $\beta_1$,
+and $\sigma^2 > 0$,
+maximizing $\ell$ over $(\beta_0, \beta_1)$
+is equivalent to maximizing $-\frac{\text{RSS}}{2\sigma^2}$,
+which is equivalent to minimizing $\text{RSS}$.
+
+This shows that for Gaussian errors,
+the **maximum likelihood estimator** equals the **ordinary least squares estimator**.
+
+:::

@@ -1,0 +1,98 @@
+#### Interpreting the layout of the covariance matrix
+
+The covariance matrix $\widehat{\Covt}(\hvb)$ is a $p \times p$ symmetric matrix,
+where $p$ is the number of regression coefficients
+(including the intercept, if present).
+Its rows and columns correspond to those $p$ coefficient estimates.
+When an intercept is included,
+the coefficients are typically written
+$\hat\b_0, \hat\b_1, \ldots$,
+with $\hat\b_0$ denoting the intercept.
+The matrix entries themselves are still indexed by position,
+so matrix row/column index $1$ corresponds to the intercept term when one is included.
+
+The general layout is:
+
+$$
+\widehat{\Covt}(\hvb) =
+\begin{array}{c|cccc}
+  & \hat\b_0 & \hat\b_1 & \cdots & \hat\b_{p-1} \\
+\hline
+\hat\b_0     & \Var{\hat\b_0}                    & \Covs{\hat\b_0}{\hat\b_1}     & \cdots & \Covs{\hat\b_0}{\hat\b_{p-1}}     \\
+\hat\b_1     & \Covs{\hat\b_1}{\hat\b_0}         & \Var{\hat\b_1}                & \cdots & \Covs{\hat\b_1}{\hat\b_{p-1}}     \\
+\vdots       & \vdots                             & \vdots                        & \ddots & \vdots \\
+\hat\b_{p-1} & \Covs{\hat\b_{p-1}}{\hat\b_0}     & \Covs{\hat\b_{p-1}}{\hat\b_1} & \cdots & \Var{\hat\b_{p-1}}
+\end{array}
+$$
+
+That is:
+
+- The **diagonal** entries are the **variances** of the individual coefficient estimates:
+  the entry in matrix position $(j+1, j+1)$ is $\Var{\hat\b_j}$,
+  for $j = 0, 1, \ldots, p - 1$.
+- The **off-diagonal** entries are the **covariances** between pairs of coefficient estimates:
+  the entry in matrix position $(i+1, j+1)$ is $\Covs{\hat\b_i}{\hat\b_j}$,
+  for $i \neq j$.
+- The matrix is **symmetric**: $\Covs{\hat\b_i}{\hat\b_j} = \Covs{\hat\b_j}{\hat\b_i}$.
+
+
+
+
+:::{#exm-vcov-bw}
+
+For model [-@eq-BW-lm-interact],
+which has four coefficients
+$(\hat\b_0, \hat\b_M, \hat\b_A, \hat\b_{AM})$,
+the covariance matrix has the following layout:
+
+$$
+\Covt(\hvb) =
+\begin{array}{c|cccc}
+  & \hat\b_0 & \hat\b_M & \hat\b_A & \hat\b_{AM} \\
+\hline
+\hat\b_0   & \Var{\hat\b_0}                & \Covs{\hat\b_0}{\hat\b_M}    & \Covs{\hat\b_0}{\hat\b_A}    & \Covs{\hat\b_0}{\hat\b_{AM}}    \\
+\hat\b_M   & \Covs{\hat\b_M}{\hat\b_0}    & \Var{\hat\b_M}               & \Covs{\hat\b_M}{\hat\b_A}    & \Covs{\hat\b_M}{\hat\b_{AM}}    \\
+\hat\b_A   & \Covs{\hat\b_A}{\hat\b_0}    & \Covs{\hat\b_A}{\hat\b_M}    & \Var{\hat\b_A}               & \Covs{\hat\b_A}{\hat\b_{AM}}    \\
+\hat\b_{AM}& \Covs{\hat\b_{AM}}{\hat\b_0} & \Covs{\hat\b_{AM}}{\hat\b_M} & \Covs{\hat\b_{AM}}{\hat\b_A} & \Var{\hat\b_{AM}}
+\end{array}
+$$
+
+The estimate of that matrix, $\hat{\Covt}\paren{\hb}$ is in @tbl-vcov.
+
+:::{#tbl-vcov}
+
+```{r}
+#| code-fold: show
+bw_lm2 |> vcov()
+```
+
+Covariance matrix of $\hvb$ for `birthweight` model [-@eq-BW-lm-interact] (with interaction term)
+
+:::
+
+::: notes
+The square roots of the diagonal entries give the standard errors of the coefficient estimates:
+:::
+
+```{r}
+#| code-fold: show
+bw_lm2 |>
+  vcov() |>
+  diag() |>
+  sqrt()
+```
+
+```{r}
+#| label: tbl-mod-intx
+#| tbl-cap: "Estimated model for `birthweight` data with interaction term"
+bw_lm2 |>
+  parameters() |>
+  print_md()
+```
+
+::: notes
+So we can do confidence intervals, hypothesis tests, and p-values exactly as in the one-variable case we looked at previously.
+:::
+
+:::
+

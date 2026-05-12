@@ -1,0 +1,134 @@
+
+-   The exponential distribution is the base distribution for survival
+    analysis.
+-   The distribution has a constant hazard $\lambda$
+-   The mean survival time is $\lambda^{-1}$
+
+---
+
+#### Mathematical details of exponential distribution
+
+$$
+\ba
+f(t) &= \lambda \ef{-\lambda t}
+\\
+F(t) &= 1-\ef{-\lambda t}\\
+\surv(t)&= \ef{-\lambda t}\\
+\logf{\surv(t)}&=-\lambda t\\
+\haz(t) &= \frac{f(t)}{\surv(t)} = \frac{\lambda \ef{-\lambda t}}{\ef{-\lambda t}}=\lambda
+\\
+E(t) &= \lambda^{-1}
+\\
+Var(t) &= \lambda^{-2}
+\\
+\logf{f(t)} &= \logf{\lambda} - \lambda t
+\\
+\deriv{\lambda} \logf{f(t)} &= \lambda^{-1} - t
+\\
+&= \Expf{t} - t
+\\
+&= -(\Expf{t} - t)
+\\
+&= -\eps
+\ea
+$$
+
+---
+
+
+#### Prediction intervals for time-to-event outcomes
+
+{{< include _subfiles/intro-to-survival-analysis/_exr_survival_prediction_intervals.qmd >}}
+
+---
+
+#### Estimating $\lambda$ {.smaller}
+
+-   Suppose we have $m$ exponential survival times of
+    $t_1, t_2,\ldots,t_m$ and $k$ right-censored values at
+    $u_1,u_2,\ldots,u_k$.
+
+-   A survival time of $t_i=10$ means that subject $i$ died at time 10.
+    A right-censored time $u_i=10$ means that at time 10, subject $i$
+    was still alive and that we have no further follow-up.
+
+-   For the moment we will assume that the survival distribution is
+    exponential and that all the subjects have the same parameter
+    $\lambda$.
+
+We have $m$ exponential survival times of $t_1, t_2,\ldots,t_m$ and $k$
+right-censored values at $u_1,u_2,\ldots,u_k$. The log-likelihood of an
+observed survival time $t_i$ is
+$$
+\logf{\lambda \ef{-\lambda t_i}} =
+\logf{\lambda}-\lambda t_i
+$$ and the likelihood of a censored value is the probability of that
+outcome (survival greater than $u_j$) so the log-likelihood is
+
+$$
+\ba
+\ell_j(\lambda) &= \logf{\ef{-\lambda u_j}}
+\\ &= -\lambda u_j
+\ea
+$$
+
+---
+
+:::{#thm-mle-exp}
+Let $T=\sum t_i$ and $U=\sum u_j$. Then:
+
+$$
+\hat{\lambda}_{ML} = \frac{m}{T+U}
+$$ {#eq-mle-exp}
+:::
+
+---
+
+::: proof
+
+$$
+\ba
+\ell(\lambda) &= \sum_{i=1}^m(\logf{\lambda}-\lambda t_i) + \sum_{j=1}^k (-\lambda u_j)\\
+&= m \logf{\lambda} -(T+U)\lambda\\
+\ell'(\lambda)
+&=m\lambda^{-1} -(T+U)\\
+\hat{\lambda} &= \frac{m}{T+U}
+\ea
+$$
+:::
+
+---
+
+$$
+\ba
+\ell''&=-m/\lambda^2\\
+&< 0\\
+\hat E[T] &= \hat\lambda^{-1}\\
+&= \frac{T+U}{m}
+\ea
+$$
+
+---
+
+#### Fisher Information and Standard Error
+
+$$
+\ba
+\E{-\ell''}
+& = m/\lambda^2\\
+\Varf{\hat\lambda}
+&\approx \invf{\E{-\ell''}}\\
+&=\lambda^2/m\\
+\text{SE}\left(\hat\lambda\right)
+&= \sqrt{\Varf{\hat\lambda}}\\
+&\approx \lambda/\sqrt{m}
+\ea
+$$
+
+::: notes
+$\hat\lambda$ depends on the censoring times of the censored
+observations, but $\Varf{\hat\lambda}$ only depends on
+the number of uncensored observations, $m$, and not on the number of
+censored observations ($k$).
+:::
+

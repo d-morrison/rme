@@ -1,0 +1,66 @@
+
+```{r}
+bw <-
+  bw |>
+  mutate(
+    predlm2 = predict(bw_lm2),
+    residlm2 = weight - predlm2,
+    std_resid = residlm2 / sigma(bw_lm2),
+    # std_resid_builtin = rstandard(bw_lm2), # uses leverage
+    sqrt_abs_std_resid = std_resid |> abs() |> sqrt()
+  )
+```
+
+##### Residuals vs fitted
+
+```{r}
+resid_vs_fit <- bw |>
+  ggplot(
+    aes(x = predlm2, y = residlm2, col = sex, shape = sex)
+  ) +
+  geom_point() +
+  theme_classic() +
+  geom_hline(yintercept = 0)
+
+print(resid_vs_fit)
+```
+
+
+##### Standardized residuals vs fitted
+
+```{r}
+bw |>
+  ggplot(
+    aes(x = predlm2, y = std_resid, col = sex, shape = sex)
+  ) +
+  geom_point() +
+  theme_classic() +
+  geom_hline(yintercept = 0)
+```
+
+##### Standardized residuals vs gestational age
+
+```{r}
+bw |>
+  ggplot(
+    aes(x = age, y = std_resid, col = sex, shape = sex)
+  ) +
+  geom_point() +
+  theme_classic() +
+  geom_hline(yintercept = 0)
+```
+
+##### `sqrt(abs(std_resid))` vs fitted
+
+Compare with `autoplot(bw_lm2, 3)` (note: `autoplot` uses leverage-adjusted `rstandard()`)
+
+```{r}
+bw |>
+  ggplot(
+    aes(x = predlm2, y = sqrt_abs_std_resid, col = sex, shape = sex)
+  ) +
+  geom_point() +
+  theme_classic() +
+  geom_hline(yintercept = 0)
+```
+

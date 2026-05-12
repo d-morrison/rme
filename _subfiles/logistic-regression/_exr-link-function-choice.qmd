@@ -1,0 +1,87 @@
+{{< include latex-macros/macros.qmd >}}
+
+::: {#exr-link-function-choice}
+#### Choosing a link function for binary outcomes
+(adapted from @dunn2018generalized, Chapter 3)
+
+Two researchers are modeling the probability $\pi(x)$
+that a patient experiences a side effect,
+as a function of dose $x > 0$:
+
+- Researcher A uses the **logit** link:
+  $\logit(\pi) = \beta_0 + \beta_1 x$
+- Researcher B uses the **log** link:
+  $\logf{\pi} = \beta_0 + \beta_1 x$
+
+**(a)** For each model,
+write $\pi(x)$ as an explicit function of $x$.
+
+**(b)** For the log-link model (Researcher B),
+what constraint on the parameters ensures $\pi(x) \leq 1$ for all $x > 0$?
+
+**(c)** Which link is more commonly used for binary outcomes?
+Give one practical advantage of that link.
+:::
+
+---
+
+::: {.solution}
+
+**(a)**
+
+**Logit link (Researcher A):**
+
+$$
+\pi(x) = \frac{e^{\beta_0 + \beta_1 x}}{1 + e^{\beta_0 + \beta_1 x}}
+= \expitf{\beta_0 + \beta_1 x}
+$$
+
+This is always in $(0, 1)$,
+regardless of the values of $\beta_0$, $\beta_1$, or $x$.
+
+**Log link (Researcher B):**
+
+$$
+\pi(x) = e^{\beta_0 + \beta_1 x}
+$$
+
+This is always positive, but may exceed 1.
+
+**(b)**
+
+For the log-link model,
+$\pi(x) \leq 1$ requires
+$e^{\beta_0 + \beta_1 x} \leq 1$.
+
+Since the exponential function is increasing,
+this is equivalent to
+$$
+\beta_0 + \beta_1 x \leq 0
+\qquad \text{for all } x > 0.
+$$
+
+Because this must hold for all positive $x$,
+a positive slope $\beta_1 > 0$ is not possible on this unbounded domain:
+for sufficiently large $x$,
+we would have $\beta_0 + \beta_1 x > 0$.
+Thus we need $\beta_1 \leq 0$.
+Also, to keep $\beta_0 + \beta_1 x \leq 0$
+for $x$ arbitrarily close to 0,
+we need $\beta_0 \leq 0$.
+So the parameter constraint is
+$\beta_0 \leq 0$ and $\beta_1 \leq 0$.
+
+**(c)**
+
+The **logit link** is more commonly used for binary outcomes.
+
+One practical advantage:
+the logit link **automatically constrains** $\pi(x) \in (0,1)$
+for any real values of $\beta_0$, $\beta_1$, and $x$,
+eliminating the risk of predicted probabilities outside $[0,1]$.
+Additionally, the logit link yields odds ratios as
+the natural measure of association,
+which are widely used in epidemiology
+(see @vittinghoff2e [Chapter 5]).
+
+:::
