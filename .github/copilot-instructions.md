@@ -462,6 +462,38 @@ plot(x, y)
 
 Use this for newly added or substantially revised figures and tables in `.qmd` files.
 
+## Chunk Label Prefixes (`fig-` and `tbl-`)
+
+Only use `fig-` or `tbl-` chunk/div label prefixes when the chunk or div **actually renders a cross-referenceable figure or table**.
+Do **not** use these prefixes for setup, computation-only, or helper chunks that produce no visible output.
+
+**Correct** — `fig-` label on a chunk that produces a figure:
+````qmd
+```{r}
+#| label: fig-my-plot
+plot(x, y)
+```
+````
+
+**Correct** — setup chunk that only computes values (no figure/table produced):
+````qmd
+```{r}
+#| label: my-setup-chunk
+#| include: false
+my_value <- compute_something()
+```
+````
+
+**Incorrect** — `tbl-` label on a chunk that only computes values:
+````qmd
+```{r}
+#| label: tbl-my-values   # wrong: no table is rendered
+my_value <- compute_something()
+```
+````
+
+Using the wrong prefix can cause Quarto cross-reference errors or mislead readers about what the chunk produces.
+
 
 ## Math Notation
 
