@@ -17,7 +17,7 @@ git submodule update --init --recursive
 To move the pinned macros forward to the latest upstream `main`:
 
 ```bash
-git submodule update --remote --merge latex-macros
+git submodule update --remote --checkout latex-macros
 git add latex-macros
 git commit -m "Update latex-macros submodule"
 ```

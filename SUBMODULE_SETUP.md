@@ -11,7 +11,7 @@ future macro updates.
 - Submodule branch: `main`
 - Submodule path: `latex-macros/`
 - Chapter sources include `latex-macros/macros.qmd`
-- GitHub Actions workflows checkout submodules
+- GitHub Actions workflows check out submodules
 
 ## For Future Clones
 
@@ -33,7 +33,7 @@ To move this repository's pinned macro version to the latest upstream
 `main`:
 
 ```bash
-git submodule update --remote --merge latex-macros
+git submodule update --remote --checkout latex-macros
 git add latex-macros
 git commit -m "Update latex-macros submodule"
 git push
