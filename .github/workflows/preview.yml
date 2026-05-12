@@ -17,8 +17,10 @@ on:
       - '.github/workflows/preview.yml'
       - '.github/workflows/publish.yml'
       - '*.qmd'
+      - 'chapters/**/*.qmd'
       - '_subfiles/**'
       - '*.scss'
+      - 'latex-macros'
   workflow_dispatch:
     inputs:
       reset_freeze:
@@ -30,6 +32,7 @@ concurrency: preview-${{ github.ref }}
 
 jobs:
   build-deploy:
+    if: github.event_name != 'pull_request' || github.event.action != 'labeled' || contains(fromJSON('["clear freezer", "preview:pdf", "preview:docx", "preview:revealjs"]'), github.event.label.name)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -47,18 +50,30 @@ jobs:
         with:
           tinytex: false
 
-      - uses: r-lib/actions/setup-r@HEAD
+      - uses: r-lib/actions/setup-r@v2
         with:
+          r-version: '4.6.0'
           use-public-rspm: true
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
           # `libglpk-dev` is required for the igraph/ggdag/ggraph dependency stack.
-          # Keep this dependency aligned with other workflows that restore/render the same renv set.
-          sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev libglpk-dev
+          # Keep the shared renv-related system dependencies aligned with other workflows
+          # that restore/render the same renv set.
+          # This preview workflow also installs additional preview-specific tooling
+          # (for example, build helpers such as `cmake`, `libgit2-dev`, `libnode-dev`,
+          # `libx11-dev`, and `pandoc`),
+          # so the full list here is intentionally broader than publish/lint.
+          sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev libglpk-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libtiff5-dev libwebp-dev libnode109 cmake libgit2-dev libnode-dev libx11-dev pandoc
+          
 
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+  
       - uses: r-lib/actions/setup-renv@v2
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install local package
         run: |
@@ -79,7 +94,7 @@ jobs:
           Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
 
       - name: Restore Quarto freeze
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && !contains(github.event.pull_request.labels.*.name, 'clear freezer')
         uses: actions/cache/restore@v4
         with:
           path: _freeze
@@ -104,11 +119,11 @@ jobs:
 
       - name: Render docx (website profile)
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:docx')
-        run: quarto render --profile website --to docx
+        run: quarto render --profile website --to docx --no-clean
 
       - name: Render revealjs (website profile)
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
-        run: quarto render --profile website --to revealjs
+        run: quarto render --profile website --to revealjs --no-clean
 
       - name: Render html (website profile)
         if: github.event.action != 'closed' # skip the build if the PR has been closed
@@ -136,6 +151,7 @@ jobs:
         with:
           source-dir: _site/
           comment: false
+          action: ${{ github.event.action != 'closed' && 'deploy' || 'remove' }}
       
       - name: Delete old preview comment
         uses: marocchino/sticky-pull-request-comment@v3

@@ -1,0 +1,75 @@
+{{< include latex-macros/macros.qmd >}}
+
+::: {#exr-prac-mle-se}
+#### Standard error of an MLE (adapted from @dobson4e, Chapter 5)
+
+Let $X_1, \ldots, X_n \siid \Pois(\rate)$.
+
+**(a)** Derive the Hessian $\ell''(\rate; \vx) = \deriv[2]{\rate}\ell(\rate;\vx)$.
+
+**(b)** Derive the observed information $I(\rate; \vx) = -\ell''(\rate; \vx)$.
+
+**(c)** Evaluate $I(\hat\rate_{ML}; \vx)$.
+
+**(d)** Give an approximate 95% confidence interval for $\rate$
+using the asymptotic normal distribution of the MLE.
+:::
+
+::: {.solution}
+
+**(a)**
+
+From @exr-prac-score-zero, $\ell'(\rate; \vx) = \frac{n\bar{x}}{\rate} - n$.
+
+$$
+\ba
+\ell''(\rate; \vx)
+&= \deriv{\rate}\sb{\frac{n\bar{x}}{\rate} - n}
+\\
+&= -\frac{n\bar{x}}{\rate^2}
+\ea
+$$
+
+**(b)**
+
+$$
+I(\rate; \vx) = -\ell''(\rate; \vx) = \frac{n\bar{x}}{\rate^2}
+$$
+
+**(c)**
+
+Assuming $\bar{x} > 0$
+(i.e., at least one $x_i > 0$),
+substituting $\hat\rate_{ML} = \bar{x}$:
+
+$$
+I(\hat\rate_{ML}; \vx) = \frac{n\bar{x}}{\bar{x}^2} = \frac{n}{\bar{x}}
+$$
+
+**(d)**
+
+By the asymptotic theory of MLEs:
+
+$$
+\hat\rate_{ML}
+\;\dot\sim\;
+\Normal\!\paren{\rate,\; \frac{1}{n\mathcal{I}(\rate)}}
+$$
+
+We estimate this asymptotic variance
+using the observed information
+evaluated at the MLE.
+Since $I(\hat\rate_{ML};\vx)^{-1} = \bar{x}/n$:
+
+$$
+\SE{\hat\rate_{ML}} \approx \sqrt{\frac{\bar{x}}{n}}
+$$
+
+An approximate 95% CI for $\rate$ is:
+
+$$
+\hat\rate_{ML} \pm 1.96 \times \sqrt{\frac{\bar{x}}{n}}
+= \bar{x} \pm 1.96\sqrt{\frac{\bar{x}}{n}}
+$$
+
+:::

@@ -1,0 +1,415 @@
+{{< include latex-macros/macros.qmd >}}
+
+These paper-and-pencil exercises
+use actual datasets.
+No numerical computation is required.
+
+::: {#exr-lm-eoc-main-effects}
+Main-effects model interpretation.
+
+Adapted from
+the main-effects interpretation exercise in
+[@vittinghoff2e, Chapter 4].
+
+Dataset summary:
+The
+`ToothGrowth`
+dataset contains one row per guinea pig.
+Variable definitions:
+- $Y$:
+  tooth length (`len`)
+- $X$:
+  dose (`dose`)
+- $Z$:
+  supplement indicator (`supp`)
+  with
+  $Z=1$
+  for
+  `VC`
+  and
+  $Z=0$
+  for
+  `OJ`
+
+Consider the additive model
+
+$$
+\E{Y|X=x,Z=z}
+= \b_0 + \b_X x + \b_Z z.
+$$
+
+State the interpretation of
+$\b_0$,
+$\b_X$,
+and
+$\b_Z$.
+Which interpretations depend on the reference level
+`OJ`?
+:::
+
+```{r}
+eoc_tg <-
+  ToothGrowth |>
+  as_tibble() |>
+  mutate(supp = relevel(supp, ref = "OJ"))
+
+eoc_tg
+glimpse(eoc_tg)
+```
+
+```{r}
+#| label: fig-eoc-lm-main-effects
+#| fig-cap: "ToothGrowth data with additive (parallel-lines) fit"
+#| code-fold: true
+
+eoc_tg_add <-
+  lm(len ~ dose + supp, data = eoc_tg)
+
+eoc_tg_grid <-
+  expand_grid(
+    dose = seq(min(eoc_tg$dose), max(eoc_tg$dose), length.out = 100),
+    supp = levels(eoc_tg$supp)
+  )
+
+eoc_tg_grid <-
+  eoc_tg_grid |>
+  mutate(len_hat = predict(eoc_tg_add, newdata = eoc_tg_grid))
+
+ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
+  geom_point(alpha = 0.7) +
+  geom_line(
+    data = eoc_tg_grid,
+    aes(y = len_hat)
+  ) +
+  labs(color = "supplement")
+```
+
+::: {.solution}
+\ 
+
+$\b_0$
+is the mean tooth length
+for guinea pigs given
+`OJ`
+at dose
+0.
+
+$\b_X$
+is the change in mean tooth length
+for each one-unit increase in dose.
+In this additive model,
+that dose effect is the same
+for
+`OJ`
+and
+`VC`.
+
+$\b_Z$
+is the mean tooth-length difference
+between
+`VC`
+and
+`OJ`
+at the same dose.
+The interpretations that depend on
+`OJ`
+as the reference level are
+$\b_0$
+and
+$\b_Z$.
+:::
+
+---
+
+::: {#exr-lm-eoc-interaction}
+Interaction interpretation.
+
+Adapted from
+the interaction-slope interpretation example in
+[@dobson4e, §6.7.1].
+
+Use
+`ToothGrowth`
+as introduced in
+[Exercise @exr-lm-eoc-main-effects].
+Variable definitions:
+- $Y$:
+  tooth length (`len`)
+- $X$:
+  dose (`dose`)
+- $Z$:
+  supplement indicator (`supp`)
+  with
+  $Z=1$
+  for
+  `VC`
+  and
+  $Z=0$
+  for
+  `OJ`
+
+Consider the interaction model
+
+$$
+\E{Y|X=x,Z=z}
+= \b_0 + \b_X x + \b_Z z + \b_{XZ}(x\cdot z).
+$$
+
+Using the plot,
+write the slope with respect to
+$X$
+for
+`OJ`
+and for
+`VC`.
+Then interpret
+$\b_{XZ}$.
+:::
+
+```{r}
+#| label: fig-eoc-lm-interaction
+#| fig-cap: "ToothGrowth data with interaction (non-parallel-lines) fit"
+#| code-fold: true
+eoc_tg_int <-
+  lm(len ~ dose * supp, data = eoc_tg)
+
+eoc_tg_grid2 <-
+  expand_grid(
+    dose = seq(min(eoc_tg$dose), max(eoc_tg$dose), length.out = 100),
+    supp = levels(eoc_tg$supp)
+  )
+
+eoc_tg_grid2 <-
+  eoc_tg_grid2 |>
+  mutate(len_hat = predict(eoc_tg_int, newdata = eoc_tg_grid2))
+
+ggplot(eoc_tg, aes(x = dose, y = len, color = supp)) +
+  geom_point(alpha = 0.7) +
+  geom_line(
+    data = eoc_tg_grid2,
+    aes(y = len_hat)
+  ) +
+  labs(color = "supplement")
+```
+
+::: {.solution}
+\ 
+
+For
+`OJ`,
+the dose slope is
+$\b_X$.
+
+For
+`VC`,
+the dose slope is
+$\b_X + \b_{XZ}$.
+
+Therefore,
+$\b_{XZ}$
+is the difference in dose slopes
+between
+`VC`
+and
+`OJ`.
+:::
+
+---
+
+::: {#exr-lm-eoc-centering}
+Centering and coefficient changes.
+
+Adapted from
+the centering/reparameterization exercise in
+[@kleinbaum2014applied, Chapter 14].
+
+Dataset summary:
+The
+`PLOS`
+dataset contains one row per paper.
+Variable definitions:
+- $Y$:
+  title length (`nchar`)
+- $X$:
+  number of authors (`authors`)
+- $X^*$:
+  centered author count (`authors_centered`),
+  constructed from `authors`,
+  defined as
+  $X^* = X - 10$
+
+Start from
+
+$$
+\E{Y|X=x}
+= \b_0 + \b_Xx.
+$$
+
+Rewrite the model in terms of
+$X^*$.
+Express
+$\g_0$
+and
+$\g_X$
+in terms of
+$\b_0$
+and
+$\b_X$.
+:::
+
+```{r}
+data(PLOS, package = "dobson")
+
+eoc_plos <-
+  PLOS |>
+  as_tibble() |>
+  mutate(authors_centered = authors - 10)
+
+eoc_plos
+glimpse(eoc_plos)
+```
+
+```{r}
+#| label: fig-eoc-lm-centering
+#| fig-cap: "PLOS data with original and centered parameterizations"
+#| code-fold: true
+
+eoc_plos_orig <-
+  lm(nchar ~ authors, data = eoc_plos)
+
+eoc_plos_cent <-
+  lm(nchar ~ authors_centered, data = eoc_plos)
+
+eoc_plos_grid <-
+  tibble(
+    authors = seq(
+      min(eoc_plos$authors),
+      max(eoc_plos$authors),
+      length.out = 100
+    )
+  ) |>
+  mutate(authors_centered = authors - 10)
+
+eoc_plos_grid <-
+  eoc_plos_grid |>
+  mutate(
+    fit_original = predict(eoc_plos_orig, newdata = eoc_plos_grid),
+    fit_centered = predict(eoc_plos_cent, newdata = eoc_plos_grid)
+  )
+
+ggplot(eoc_plos, aes(x = authors, y = nchar)) +
+  geom_point(alpha = 0.7) +
+  geom_line(
+    data = eoc_plos_grid,
+    aes(y = fit_original, color = "original parameterization")
+  ) +
+  geom_line(
+    data = eoc_plos_grid,
+    aes(y = fit_centered, color = "centered parameterization"),
+    linetype = 2
+  ) +
+  labs(color = "")
+```
+
+::: {.solution}
+\ 
+
+Since
+$x = x^* + 10$:
+
+$$
+\ba
+\E{Y|X^*=x^*}
+&= \b_0 + \b_X(x^* + 10)\\
+&= (\b_0 + 10\b_X) + \b_Xx^*.
+\ea
+$$
+
+So
+
+$$
+\g_0 = \b_0 + 10\b_X,
+\quad
+\g_X = \b_X.
+$$
+
+Centering shifts the intercept,
+but does not change the slope.
+:::
+
+---
+
+::: {#exr-lm-eoc-diagnostics}
+Diagnostics from observed residual patterns.
+
+Adapted from
+the residual-diagnostics example in
+[@dunn2018generalized, Chapter 3].
+
+Dataset summary:
+The
+`mtcars`
+dataset contains one row per car model.
+Variable definitions:
+- $Y$:
+  fuel economy (`mpg`)
+- $X$:
+  vehicle weight (`wt`)
+- $H$:
+  horsepower (`hp`)
+
+Consider the model
+
+$$
+\E{Y|X=x,H=h}
+= \b_0 + \b_Xx + \b_Hh.
+$$
+
+Based on the residual-vs-fitted
+and Q-Q plots,
+which assumptions look most questionable?
+State one practical follow-up step.
+:::
+
+```{r}
+eoc_mtcars <-
+  mtcars |>
+  as_tibble()
+
+eoc_mtcars
+glimpse(eoc_mtcars)
+```
+
+```{r}
+#| label: fig-eoc-lm-diagnostics
+#| fig-cap: "Diagnostic plots for linear model fit to mtcars data"
+#| code-fold: true
+#| layout-ncol: 2
+#| fig-subcap:
+#| - "Residuals versus fitted"
+#| - "Normal Q-Q"
+eoc_mtcars_fit <-
+  lm(mpg ~ wt + hp, data = eoc_mtcars)
+
+autoplot(eoc_mtcars_fit, which = 1, ncol = 1)
+autoplot(eoc_mtcars_fit, which = 2, ncol = 1)
+```
+
+::: {.solution}
+\ 
+
+The residual-vs-fitted plot shows
+nonlinearity and non-constant spread.
+The Q-Q plot shows
+mild tail departures from normality.
+
+The correct conclusion is that
+linearity and constant-variance assumptions
+are the most questionable here.
+A practical next step is to fit
+a model with a nonlinear weight term
+(for example,
+a spline or polynomial in
+`wt`)
+and then re-check diagnostics.
+:::

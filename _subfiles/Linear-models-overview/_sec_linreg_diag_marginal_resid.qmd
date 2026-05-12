@@ -1,0 +1,126 @@
+
+To look for problems with our model,
+we can check whether the residuals $\resid_i$
+and standardized residuals $\stdresid_i$
+look like they have the distributions
+that they are supposed to have,
+according to the model.
+
+---
+
+#### Standardized residuals in R
+
+```{r}
+h_ii <- hatvalues(bw_lm2)
+manual_std_resid <- resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - h_ii))
+manual_std_resid
+rstandard(bw_lm2)
+```
+
+::: notes
+These are nearly the same.
+Any differences are from numerical rounding.
+
+:::
+
+---
+
+```{r}
+rstandard_compare_plot <-
+  tibble(
+    x = resid(bw_lm2) / (sigma(bw_lm2) * sqrt(1 - h_ii)),
+    y = rstandard(bw_lm2)
+  ) |>
+  ggplot(aes(x = x, y = y)) +
+  geom_point() +
+  theme_bw() +
+  coord_equal() +
+  xlab("resid(bw_lm2)/(sigma(bw_lm2)*sqrt(1-h_ii))") +
+  ylab("rstandard(bw_lm2)") +
+  geom_abline(
+    aes(
+      intercept = 0,
+      slope = 1,
+      col = "x=y"
+    )
+  ) +
+  labs(colour = "") +
+  scale_colour_manual(values = "red")
+
+print(rstandard_compare_plot)
+```
+
+---
+
+Let's add these residuals to the `tibble` of our dataset:
+
+```{r}
+bw <-
+  bw |>
+  mutate(
+    fitted_lm2 = fitted(bw_lm2),
+    resid_lm2 = resid(bw_lm2),
+    resid_lm2_alt = weight - fitted_lm2,
+    std_resid_lm2 = rstandard(bw_lm2),
+    std_resid_lm2_alt =
+      resid_lm2 / (sigma(bw_lm2) * sqrt(1 - h_ii))
+  )
+
+bw |>
+  select(
+    sex,
+    age,
+    weight,
+    fitted_lm2,
+    resid_lm2,
+    std_resid_lm2
+  )
+```
+
+---
+
+::: notes
+
+Now let's build histograms:
+
+:::
+
+```{r}
+#| fig-cap: "Marginal distribution of (nonstandardized) residuals"
+#| label: fig-marg-dist-resid
+resid_marginal_hist <-
+  bw |>
+  ggplot(aes(x = resid_lm2)) +
+  geom_histogram()
+
+print(resid_marginal_hist)
+```
+
+::: notes
+Hard to tell with this small amount of data, but I'm a bit concerned that the histogram doesn't show a bell-curve shape.
+
+:::
+
+---
+
+
+```{r}
+#| fig-cap: "Marginal distribution of standardized residuals"
+#| label: fig-marg-stresd
+std_resid_marginal_hist <-
+  bw |>
+  ggplot(aes(x = std_resid_lm2)) +
+  geom_histogram()
+
+print(std_resid_marginal_hist)
+```
+
+::: notes
+This looks similar, although the scale of the x-axis got narrower, because we divided by $\hat\sigma$ (roughly speaking).
+
+Still hard to tell if the distribution is Gaussian.
+
+:::
+
+---
+
