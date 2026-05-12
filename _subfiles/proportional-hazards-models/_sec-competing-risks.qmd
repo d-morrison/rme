@@ -197,16 +197,23 @@ mros_cif <- cuminc(
   fstatus = mros_data$status
 )
 
+# Robustly extract CIF by cause code
+# cuminc() names elements "group cause" (e.g., "1 1", "1 2");
+# use endsWith() to find the right element regardless of group label
+cif_names <- names(mros_cif)[names(mros_cif) != "Tests"]
+fracture_name <- cif_names[endsWith(cif_names, " 1")]
+death_name    <- cif_names[endsWith(cif_names, " 2")]
+
 # Extract CIF estimates into data frame
 fracture_cif <- tibble(
-  time  = mros_cif[["1 1"]]$time,
-  cif   = mros_cif[["1 1"]]$est,
+  time  = mros_cif[[fracture_name]]$time,
+  cif   = mros_cif[[fracture_name]]$est,
   event = "Hip fracture"
 )
 
 death_cif <- tibble(
-  time  = mros_cif[["1 2"]]$time,
-  cif   = mros_cif[["1 2"]]$est,
+  time  = mros_cif[[death_name]]$time,
+  cif   = mros_cif[[death_name]]$est,
   event = "Death without fracture"
 )
 
