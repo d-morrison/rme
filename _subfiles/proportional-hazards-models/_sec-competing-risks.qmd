@@ -221,7 +221,14 @@ death_cif <- tibble(
 
 cif_df <- bind_rows(fracture_cif, death_cif)
 
-ggplot(cif_df, aes(x = time, y = cif, color = event)) +
+# Compute 5-year CIF values for inline reporting
+fracture_cif_at_five_yr <-
+  fracture_cif$cif[which.min(abs(fracture_cif$time - 5))]
+death_cif_at_five_yr <-
+  death_cif$cif[which.min(abs(death_cif$time - 5))]
+
+ggplot(cif_df) +
+  aes(x = time, y = cif, color = event) +
   geom_step() +
   labs(
     x     = "Years of follow-up",
@@ -236,8 +243,8 @@ ggplot(cif_df, aes(x = time, y = cif, color = event)) +
 
 At approximately 5 years of follow-up:
 
-- About 8% of men had experienced a hip fracture
-- About 9.3% had died without a fracture
+- About `r round(fracture_cif_at_five_yr * 100, 1)`% of men had experienced a hip fracture
+- About `r round(death_cif_at_five_yr * 100, 1)`% had died without a fracture
 
 These two cumulative incidences sum to less than the overall
 event probability because many men are still event-free at 5 years.
@@ -272,7 +279,8 @@ proper_df <- fracture_cif |>
 
 comparison_df <- bind_rows(naive_df, proper_df)
 
-ggplot(comparison_df, aes(x = time, y = cif, color = method)) +
+ggplot(comparison_df) +
+  aes(x = time, y = cif, color = method) +
   geom_step() +
   labs(
     x     = "Years of follow-up",

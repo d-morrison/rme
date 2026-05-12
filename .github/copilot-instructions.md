@@ -259,6 +259,44 @@ When adding or editing text in source code (such as comments, documentation stri
 - A phrase is typically a complete thought, clause, or sentence
 - This improves readability and makes diffs clearer
 
+## ggplot2 Layer Style
+
+Always put `ggplot()` and `aes()` calls in **separate layers**.
+Never pass `aes()` as an argument to `ggplot()`.
+
+**Correct:**
+```r
+ggplot(my_data) +
+  aes(x = time, y = value, color = group) +
+  geom_line()
+```
+
+**Incorrect:**
+```r
+ggplot(my_data, aes(x = time, y = value, color = group)) +
+  geom_line()
+```
+
+## No Hard-Coded Results in Narrative Text
+
+Do not hard-code numerical results (percentages, means, counts, etc.)
+in Quarto narrative text.
+Use inline R expressions instead,
+so that the numbers update automatically if the data or code changes.
+
+**Correct:**
+```markdown
+At 5 years, `r round(surv_5yr * 100, 1)`% of participants had experienced the event.
+```
+
+**Incorrect:**
+```markdown
+At 5 years, 8% of participants had experienced the event.
+```
+
+Compute the values in a code chunk (using `#| include: false` if needed),
+then reference them with inline `` `r expr` `` expressions.
+
 ## Parentheticals and Asides in Quarto
 
 When parenthetical references or short asides are supplementary

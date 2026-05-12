@@ -179,7 +179,8 @@ km2_df <- tibble(
 
 km_combined <- bind_rows(km1_df, km2_df)
 
-ggplot(km_combined, aes(x = time, y = surv, color = analysis)) +
+ggplot(km_combined) +
+  aes(x = time, y = surv, color = analysis) +
   geom_step() +
   labs(
     x = "Years",
@@ -215,6 +216,40 @@ When left-truncation is ignored:
   for undersampling of short survival times
 - Hazard ratios in Cox models may be attenuated
   (effect is less predictable)
+
+The following example illustrates the bias using the PBC data.
+The naive analysis treats all participants as entering the risk set
+at the earliest observed age,
+whereas the proper analysis uses counting-process notation
+to enter each participant at their actual enrollment age.
+
+```{r}
+#| label: tbl-pbc-truncation-bias
+#| code-fold: true
+# Naive analysis: ignoring delayed entry
+# (treats all subjects as if they entered the risk set at age 0)
+km_naive_age <- survfit(
+  Surv(age + years, as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Extract estimates at age 60 for comparison
+surv_naive_at_sixty  <- summary(km_naive_age, times = 60)$surv
+surv_proper_at_sixty <- summary(km_age, times = 60)$surv
+```
+
+At age 60,
+the naive analysis (ignoring delayed entry)
+estimates survival at
+`r scales::percent(surv_naive_at_sixty, accuracy = 0.1)`,
+compared to
+`r scales::percent(surv_proper_at_sixty, accuracy = 0.1)`
+with the proper left-truncation correction.
+
+The naive estimate is inflated
+because the risk set at each age incorrectly includes
+participants who had not yet been enrolled
+(and thus had not actually been observed to be at risk).
 
 ### Right-Truncation
 
