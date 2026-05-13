@@ -107,6 +107,78 @@ function alignEquationAnchorsWithDefault() {
   });
 }
 
+function markCollapseTogglesExpanded(collapseEl) {
+  const toggleTargets = [];
+  if (collapseEl.id) {
+    toggleTargets.push("#" + collapseEl.id);
+  }
+
+  const genericCollapseClasses = new Set(["collapse", "show", "collapsing", "callout-collapse", "navbar-collapse"]);
+  collapseEl.classList.forEach(function (className) {
+    if (!genericCollapseClasses.has(className)) {
+      toggleTargets.push("." + className);
+    }
+  });
+
+  document.querySelectorAll("[data-bs-target], [href]").forEach(function (toggle) {
+    if (
+      toggleTargets.includes(toggle.getAttribute("data-bs-target")) ||
+      toggleTargets.includes(toggle.getAttribute("href"))
+    ) {
+      toggle.classList.remove("collapsed");
+      toggle.setAttribute("aria-expanded", "true");
+    }
+  });
+}
+
+function expandCollapsedAncestors(target) {
+  if (!target) {
+    return;
+  }
+
+  const collapsedAncestors = [];
+  let current = target.parentElement;
+  while (current) {
+    if (current.classList && current.classList.contains("collapse") && !current.classList.contains("show")) {
+      collapsedAncestors.unshift(current);
+    }
+    current = current.parentElement;
+  }
+
+  collapsedAncestors.forEach(function (collapseEl) {
+    if (window.bootstrap && window.bootstrap.Collapse) {
+      window.bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).show();
+    } else {
+      collapseEl.classList.add("show");
+      collapseEl.style.height = "";
+    }
+
+    markCollapseTogglesExpanded(collapseEl);
+  });
+}
+
+function revealEquationHashTarget() {
+  if (!window.location.hash) {
+    return;
+  }
+
+  const id = decodeURIComponent(window.location.hash.slice(1));
+  if (!id) {
+    return;
+  }
+
+  const target = document.getElementById(id);
+  if (!target) {
+    return;
+  }
+
+  expandCollapsedAncestors(target);
+
+  window.setTimeout(function () {
+    target.scrollIntoView({ block: "center" });
+  }, 400);
+}
+
 function ensureEquationAnchorStyles() {
   if (document.getElementById("equation-anchor-styles")) {
     return;
@@ -179,9 +251,14 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   alignEquationAnchorsWithDefault();
+  revealEquationHashTarget();
 });
 
-window.addEventListener("load", alignEquationAnchorsWithDefault);
+window.addEventListener("load", function () {
+  alignEquationAnchorsWithDefault();
+  revealEquationHashTarget();
+});
+window.addEventListener("hashchange", revealEquationHashTarget);
 </script>
 ]]
 end
