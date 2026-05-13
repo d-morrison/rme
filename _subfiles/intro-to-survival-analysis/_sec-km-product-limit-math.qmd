@@ -10,7 +10,9 @@ $$
 \Pr(Y \geq y_j \mid Y > y_{j-1}) = 1.
 $$
 
-Then:
+Then the event $\{Y \geq y_j\}$ is contained in the event
+$\{Y > y_{j-1}\}$, because $y_j > y_{j-1}$. Therefore intersecting
+$\{Y \geq y_j\}$ with $\{Y > y_{j-1}\}$ does not change the event:
 
 :::{#thm-km-gaps}
 
@@ -22,7 +24,7 @@ $$\Pr(Y \geq y_j) = \Pr(Y > y_{j-1})$$
 :::{.proof}
 
 $$
-\ba
+\begin{aligned}
 \Pr(Y \geq y_j)
 \\
 &= \Pr(Y \geq y_j, Y > y_{j-1})
@@ -32,23 +34,56 @@ $$
 &= 1 \Pr(Y > y_{j-1})
 \\
 &= \Pr(Y > y_{j-1})
-\ea
+\end{aligned}
 $$
 :::
 
-Thus all the between-exit-time factors drop out, and the marginal survival
-through an exit time $y_j$ can be written recursively as:
+The first equality uses the containment
+$\{Y \geq y_j\} \subseteq \{Y > y_{j-1}\}$. The second equality uses the
+multiplication rule for probabilities, and the third equality uses the
+between-exit-time survival assumption.
+
+Let
+$\kappa(y_j) = \Pr(Y > y_j \mid Y \geq y_j)$
+denote the conditional probability of surviving past the exit time $y_j$,
+given survival up to $y_j$. The marginal survival through $y_j$ can then be
+written recursively:
 
 $$
 \begin{aligned}
 \Pr(Y > y_j)
+&= \Pr(Y > y_j, Y \geq y_j)\\
 &= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y \geq y_j)\\
 &= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y > y_{j-1})\\
 &= \kappa(y_j)\Pr(Y > y_{j-1}).
 \end{aligned}
 $$
 
-Applying this recursion back to the first exit time gives:
+Here the first line again uses containment: if $Y > y_j$, then
+$Y \geq y_j$. The third line substitutes the result from above,
+$\Pr(Y \geq y_j) = \Pr(Y > y_{j-1})$.
+
+The same recursion can be applied repeatedly. If
+$S_j = \Pr(Y > y_j)$ and $S_0 = 1$, then:
+
+$$
+\begin{aligned}
+S_1
+&= \kappa(y_1)S_0\\
+&= \kappa(y_1),\\
+S_2
+&= \kappa(y_2)S_1\\
+&= \kappa(y_2)\kappa(y_1),\\
+S_3
+&= \kappa(y_3)S_2\\
+&= \kappa(y_3)\kappa(y_2)\kappa(y_1).
+\end{aligned}
+$$
+
+Continuing in this way gives
+$S_j = \prod_{k=1}^j \kappa(y_k)$. Replacing the conditional survival
+probabilities with their empirical estimates gives the Kaplan-Meier
+product-limit estimate:
 
 $$
 \begin{aligned}
