@@ -504,12 +504,17 @@ Use this for newly added or substantially revised figures and tables in `.qmd` f
 Only use `fig-` or `tbl-` chunk/div label prefixes when the chunk or div **actually renders a cross-referenceable figure or table**.
 Do **not** use these prefixes for setup, computation-only, or helper chunks that produce no visible output.
 
-**Correct** — `fig-` label on a chunk that produces a figure:
+**Correct** — `fig-` label on a div that produces a cross-referenceable figure:
 ````qmd
+::: {#fig-my-plot}
+
 ```{r}
-#| label: fig-my-plot
 plot(x, y)
 ```
+
+Caption text here.
+
+:::
 ````
 
 **Correct** — setup chunk that only computes values (no figure/table produced):
