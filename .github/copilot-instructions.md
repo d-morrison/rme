@@ -281,6 +281,43 @@ When introducing or editing formal statistical definitions in `.qmd` files:
   ensure those terms also have formal `#def-` div definitions
   in the relevant scope before relying on them
 
+## Div Titles vs. Markdown Headings
+
+**CRITICAL**: Div titles (headings inside divs like `:::{#def-...}`, `:::{#thm-...}`, `:::{#exm-...}`, etc.) are NOT the same as regular markdown headings.
+
+**Rules for div titles:**
+- Div titles must remain inside their divs
+- Div titles use heading syntax (`####`, `###`, etc.) but serve as titles for the div content
+- **NEVER move a div title outside of its div or change its heading level when fixing heading level jumps**
+- Div titles should match the nesting level of their surrounding context, but this is different from regular heading hierarchy
+
+**How to identify div titles:**
+- They appear immediately after a div opener like `:::{#def-something}`, `:::{#thm-something}`, `:::{#exm-something}`, etc.
+- They are inside the div block (between `:::` markers)
+
+**Example of correct div title:**
+```qmd
+:::{#def-confounder}
+#### Confounder
+
+A **confounder** is a variable...
+:::
+```
+
+**Wrong - do NOT do this:**
+```qmd
+#### Confounder
+
+:::{#def-confounder}
+A **confounder** is a variable...
+:::
+```
+
+**When fixing heading level jumps:**
+- Only fix regular markdown headings (those NOT inside divs)
+- Leave div titles at their original heading levels
+- Div titles may appear to "jump" levels, but this is correct because they serve a different purpose
+
 ## Quarto Code Chunk Options
 
 Default to
