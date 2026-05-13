@@ -75,15 +75,27 @@ km_curve <-
   relocate(km_factor, .before = hazard)
 km_curve |>
   mutate(
+    km_factor_math = paste0("\\frac{", at_risk - events, "}{", at_risk, "}"),
+    km_surv_curve = paste0(
+      "$",
+      purrr::map_chr(
+        row_number(),
+        \(i) paste(km_factor_math[seq_len(i)], collapse = " \\times ")
+      ),
+      " = ",
+      round(km_surv_curve, 4),
+      "$"
+    ),
     hazard = paste0(
       "$\\frac{", events, "}{", at_risk, "} = ",
       round(hazard, 4), "$"
     ),
     km_factor = paste0(
-      "$\\frac{", at_risk - events, "}{", at_risk, "} = ",
+      "$", km_factor_math, " = ",
       round(km_factor, 4), "$"
     )
   ) |>
+  select(-km_factor_math) |>
   rename(
     `$y$`                        = Y,
     `$d(y)$`                     = events,
