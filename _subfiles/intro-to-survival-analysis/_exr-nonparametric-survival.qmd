@@ -32,11 +32,13 @@ Let:
 - $n$: total sample size
 - $y$: study exit time;
 - $d(y)$: number of events at $y$;
+- $c(y)$: number exiting without events ("censored") at $y$
 - $q(y)$: number censored or continuing in the study at $y$;
 - $e(y) = d(y) + q(y)$: total exiting at $y$;
 - $E(y)$: cumulative exits prior to $y$;
 - $r(y) = n - E(y)$: number at risk at $y$;
-- $\hat{\kappa}(y) = \hat{\Pr}(Y > y \mid Y \geq y) = \frac{q(y)}{r(y)}$: conditional survival factor;
+- $r^*(y) = r(y) - e(y)$: number at risk after $y$;
+- $\hat{\kappa}(y) = \hat{\Pr}(Y > y \mid Y \geq y) = [r(y) - d(y)]/r(y)$: conditional survival factor;
 - $\hat{\lambda}(y) = \hat{\Pr}(Y = y \mid Y \geq y) = \frac{d(y)}{r(y)} = 1 - \hat{\kappa}(y)$: estimated discrete hazard;
 - $\hat{\Lambda}(y) = \sum_{k:\, y_k \leq y} \hat{\lambda}(y_k)$: cumulative hazard;
 - $\hat{S}_{KM}(y) = \prod_{k:\, y_k \leq y} \hat{\kappa}(y_k)$: Kaplan-Meier survival estimate.
@@ -63,6 +65,7 @@ km_curve <-
     exiting = events + censored,
     exited = cumsum(exiting) |> dplyr::lag(default = 0),
     at_risk = study_size - exited,
+    r_star = at_risk - exiting,
     hazard = events / at_risk,
     km_factor = 1 - hazard,
     km_surv_curve = cumprod(km_factor),
@@ -71,13 +74,24 @@ km_curve <-
   select(-study_size) |> 
   relocate(km_factor, .before = hazard)
 km_curve |>
+  mutate(
+    hazard = paste0(
+      "$\\frac{", events, "}{", at_risk, "} = ",
+      round(hazard, 4), "$"
+    ),
+    km_factor = paste0(
+      "$\\frac{", at_risk - events, "}{", at_risk, "} = ",
+      round(km_factor, 4), "$"
+    )
+  ) |>
   rename(
     `$y$`                        = Y,
     `$d(y)$`                     = events,
-    `$q(y)$`                     = censored,
+    `$c(y)$`                     = censored,
     `$e(y)$`                     = exiting,
     `$E(y)$`                     = exited,
     `$r(y)$`                     = at_risk,
+    `$r^*(y)$`                   = r_star,
     `$\\hat{\\kappa}(y)$`         = km_factor,
     `$\\hat{\\lambda}(y)$`       = hazard,
     `$\\hat{\\Lambda}(y)$`       = cusum_hazard,
