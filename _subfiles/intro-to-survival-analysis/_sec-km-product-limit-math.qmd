@@ -46,16 +46,21 @@ between-exit-time survival assumption.
 Let
 $\kappa(y_j) = \Pr(Y > y_j \mid Y \geq y_j)$
 denote the conditional probability of surviving past the exit time $y_j$,
-given survival up to $y_j$. The marginal survival through $y_j$ can then be
+given survival up to $y_j$. 
+The marginal survival through $y_j$ can then be
 written recursively:
 
 $$
 \begin{aligned}
-\Pr(Y > y_j)
+\survf{y_j}
+&=\Pr(Y > y_j)
+\\
 &= \Pr(Y > y_j, Y \geq y_j)\\
 &= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y \geq y_j)\\
 &= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y > y_{j-1})\\
-&= \kappa(y_j)\Pr(Y > y_{j-1}).
+&= \kappa(y_j)\Pr(Y > y_{j-1})
+\\
+&= \kappa(y_j)\survf{y_{j-1}}.
 \end{aligned}
 $$
 
@@ -90,10 +95,13 @@ $$
 \hat{\Pr}(Y > t)
 &= \hat{S}_{KM}(t)\\
 &= \prod_{k:\, y_k \leq t} \hat{\Pr}(Y > y_k \mid Y \geq y_k)\\
-&= \prod_{k:\, y_k \leq t} \hat{\kappa}(y_k)\\
-&= \prod_{k:\, y_k \leq t} \frac{r(y_k) - d(y_k)}{r(y_k)}.
+&= \prod_{k:\, y_k \leq t} \hat{\kappa}_k\\
+&= \prod_{k:\, y_k \leq t} \frac{r_k - d_k}{r_k}
 \end{aligned}
 $$
+
+where $r_k$ is the number at risk at time $y_k$
+and $d_k$ is the number of events at time $y_k$.
 
 For any time $t$ between two consecutive exit times, the estimate stays
 constant, because the only additional conditional survival factors are 1.

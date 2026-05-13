@@ -1,0 +1,163 @@
+:::{#exr-na-curve-by-hand}
+Compute the Nelson-Aalen (NA) estimated survival curve, by hand.
+:::
+
+::::{#sol-na-curve-by-hand .solution}
+
+Let:
+
+- $n$: total sample size
+- $y$: study exit time;
+- $d(y)$: number of events at $y$;
+- $c(y)$: number exiting without events ("censored") at $y$
+- $e(y) = d(y) + c(y)$: total exiting at $y$;
+- $E(y)$: cumulative exits prior to $y$;
+- $r(y) = n - E(y)$: number at risk at $y$;
+- $r^*(y) = r(y) - e(y)$: number at risk after $y$;
+- $\hat{\haz}(y) = \frac{d(y)}{r(y)}$: Nelson-Aalen hazard increment;
+- $\hat{\kappa}(y) = \expf{-\hat{\haz}(y)}$: Nelson-Aalen conditional survival factor;
+- $\hat{\cuhaz}_{NA}(y) = \sum_{k:\, y_k \leq y} \hat{\haz}(y_k)$: Nelson-Aalen cumulative hazard estimate;
+- $\hsurv_{NA}(y) = \expf{-\hat{\cuhaz}_{NA}(y)} = \prod_{k:\, y_k \leq y} \hat{\kappa}(y_k)$: Nelson-Aalen survival estimate.
+
+:::{#tbl-na-curve}
+```{r}
+#| label: NA-fit-implement
+library(dplyr)
+na_curve <-
+  data1 |>
+  summarise(.by  = Y,
+            events = sum(D == 1),
+            censored = sum(D == 0)) |>
+  arrange(Y) |>
+  mutate(
+    study_size = nrow(data1),
+    exiting = events + censored,
+    exited = cumsum(exiting) |> dplyr::lag(default = 0),
+    at_risk = study_size - exited,
+    r_star = at_risk - exiting,
+    hazard = events / at_risk,
+    kappa = exp(-hazard),
+    cusum_hazard = cumsum(hazard),
+    na_surv_curve = exp(-cusum_hazard)
+  ) |>
+  select(-study_size)
+na_curve |>
+  mutate(
+    hazard_math = paste0("\\frac{", events, "}{", at_risk, "}"),
+    cusum_hazard_round = round(cusum_hazard, 4),
+    na_surv_curve = paste0(
+      "$\\expf{-", cusum_hazard_round, "}",
+      " = ",
+      round(na_surv_curve, 4),
+      "$"
+    ),
+    cusum_hazard = paste0(
+      "$",
+      purrr::map_chr(
+        row_number(),
+        \(i) paste(hazard_math[seq_len(i)], collapse = " + ")
+      ),
+      " = ",
+      cusum_hazard_round,
+      "$"
+    ),
+    kappa = paste0(
+      "$\\expf{-", hazard_math, "} = ",
+      round(kappa, 4), "$"
+    ),
+    hazard = paste0(
+      "$", hazard_math, " = ",
+      round(hazard, 4), "$"
+    )
+  ) |>
+  select(-hazard_math, -cusum_hazard_round) |>
+  rename(
+    `$y$`                                  = Y,
+    `$d(y)$`                               = events,
+    `$c(y)$`                               = censored,
+    `$e(y)$`                               = exiting,
+    `$E(y)$`                               = exited,
+    `$r(y)$`                               = at_risk,
+    `$r^*(y)$`                             = r_star,
+    `$\\hat{\\haz}(y)$`                    = hazard,
+    `$\\hat{\\kappa}(y)$`                  = kappa,
+    `$\\hat{\\cuhaz}_{NA}(y)$`             = cusum_hazard,
+    `$\\hsurv_{NA}(y)$`                    = na_surv_curve
+  ) |>
+  pander()
+```
+
+Nelson-Aalen survival curve calculations
+
+:::
+
+::::
+
+:::{#exr-na-survfit}
+Implement the NA survival curve estimator in R.
+Check the output of your implementation against the version in the `survival` package.
+:::
+
+:::{#sol-na-survfit .solution}
+
+```{r}
+#| label: NA-survfit
+NA_model <-
+  data1 |>
+  survfit(formula = surv ~ 1,
+          type = "fleming-harrington")
+
+NA_model |> summary()
+```
+
+:::
+
+:::{#exr-km-na-graph}
+Add the NA estimated survival curve to the graph from @exr-km-graph-1.
+:::
+
+:::{#sol-km-na-graph .solution}
+
+```{r}
+#| label: km-na-fig
+km_and_na <-
+  bind_rows(
+    .id = "model",
+    "Kaplan-Meier" = KM_model |> fortify(surv.connect = FALSE),
+    "Nelson-Aalen" = NA_model |> fortify(surv.connect = FALSE)
+  ) |>
+  as_tibble()
+
+km_and_na |>
+  ggplot(aes(x = time, y = surv, col = model)) +
+  geom_step() +
+  theme_bw() +
+  ylab("S(t) = P(T>=t)") +
+  xlab("Survival time (t, days)") +
+  theme(legend.position = "bottom")
+```
+
+:::
+
+:::{#exr-na-median}
+Find the NA estimate of median survival time.
+:::
+
+:::{#sol-na-median .solution}
+
+```{r}
+#| label: na-median
+NA_model |> quantile(prob = 0.5) |> as_tibble()
+```
+
+:::
+
+:::{#exr-compare-km-na}
+Describe the similarities and differences between the graphs of the KM and NA survival function estimates.
+:::
+
+:::{#sol-compare-km-na .solution}
+
+The curves are very similar for this data set, with the KM curve returning slightly lower estimates of survival.
+
+:::
