@@ -14,9 +14,9 @@ Let:
 - $E(y)$: cumulative exits prior to $y$;
 - $r(y) = n - E(y)$: number at risk at $y$;
 - $r^*(y) = r(y) - e(y)$: number at risk after $y$;
-- $\hat{\lambda}(y) = \frac{d(y)}{r(y)}$: Nelson-Aalen hazard increment;
-- $\hat{\kappa}(y) = \expf{-\hat{\lambda}(y)}$: Nelson-Aalen conditional survival factor;
-- $\hat{\cuhaz}_{NA}(y) = \sum_{k:\, y_k \leq y} \hat{\lambda}(y_k)$: Nelson-Aalen cumulative hazard estimate;
+- $\hat{\haz}(y) = \frac{d(y)}{r(y)}$: Nelson-Aalen hazard increment;
+- $\hat{\kappa}(y) = \expf{-\hat{\haz}(y)}$: Nelson-Aalen conditional survival factor;
+- $\hat{\cuhaz}_{NA}(y) = \sum_{k:\, y_k \leq y} \hat{\haz}(y_k)$: Nelson-Aalen cumulative hazard estimate;
 - $\hsurv_{NA}(y) = \expf{-\hat{\cuhaz}_{NA}(y)} = \prod_{k:\, y_k \leq y} \hat{\kappa}(y_k)$: Nelson-Aalen survival estimate.
 
 :::{#tbl-na-curve}
@@ -35,42 +35,42 @@ na_curve <-
     exited = cumsum(exiting) |> dplyr::lag(default = 0),
     at_risk = study_size - exited,
     r_star = at_risk - exiting,
-    lambda_hat = events / at_risk,
-    kappa = exp(-lambda_hat),
-    cusum_lambda_hat = cumsum(lambda_hat),
-    na_surv_curve = exp(-cusum_lambda_hat)
+    hazard_hat = events / at_risk,
+    kappa = exp(-hazard_hat),
+    cusum_hazard_hat = cumsum(hazard_hat),
+    na_surv_curve = exp(-cusum_hazard_hat)
   ) |>
   select(-study_size)
 na_curve |>
   mutate(
-    lambda_math = paste0("\\frac{", events, "}{", at_risk, "}"),
-    cusum_lambda_hat_round = round(cusum_lambda_hat, 4),
+    hazard_math = paste0("\\frac{", events, "}{", at_risk, "}"),
+    cusum_hazard_hat_round = round(cusum_hazard_hat, 4),
     na_surv_curve = paste0(
-      "$\\expf{-", cusum_lambda_hat_round, "}",
+      "$\\expf{-", cusum_hazard_hat_round, "}",
       " = ",
       round(na_surv_curve, 4),
       "$"
     ),
-    cusum_lambda_hat = paste0(
+    cusum_hazard_hat = paste0(
       "$",
       purrr::map_chr(
         row_number(),
-        \(i) paste(lambda_math[seq_len(i)], collapse = " + ")
+        \(i) paste(hazard_math[seq_len(i)], collapse = " + ")
       ),
       " = ",
-      cusum_lambda_hat_round,
+      cusum_hazard_hat_round,
       "$"
     ),
     kappa = paste0(
-      "$\\expf{-", lambda_math, "} = ",
+      "$\\expf{-", hazard_math, "} = ",
       round(kappa, 4), "$"
     ),
-    lambda_hat = paste0(
-      "$", lambda_math, " = ",
-      round(lambda_hat, 4), "$"
+    hazard_hat = paste0(
+      "$", hazard_math, " = ",
+      round(hazard_hat, 4), "$"
     )
   ) |>
-  select(-lambda_math, -cusum_lambda_hat_round) |>
+  select(-hazard_math, -cusum_hazard_hat_round) |>
   rename(
     `$y$`                                  = Y,
     `$d(y)$`                               = events,
@@ -79,9 +79,9 @@ na_curve |>
     `$E(y)$`                               = exited,
     `$r(y)$`                               = at_risk,
     `$r^*(y)$`                             = r_star,
-    `$\\hat{\\lambda}(y)$`                 = lambda_hat,
+    `$\\hat{\\haz}(y)$`                    = hazard_hat,
     `$\\hat{\\kappa}(y)$`                  = kappa,
-    `$\\hat{\\cuhaz}_{NA}(y)$`             = cusum_lambda_hat,
+    `$\\hat{\\cuhaz}_{NA}(y)$`             = cusum_hazard_hat,
     `$\\hsurv_{NA}(y)$`                    = na_surv_curve
   ) |>
   pander::pander()
