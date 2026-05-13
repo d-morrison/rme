@@ -43,6 +43,101 @@ least $t_i$.
 of $t_i$, then the group of survivors immediately following time $t_i$
 is reduced by the fraction $$\frac{r_i-d_i}{r_i}=1-\frac{d_i}{r_i}$$
 
+:::{#fig-risk-set-dropout-cartoon}
+
+```{r}
+#| code-fold: true
+#| echo: false
+
+risk_cartoon <- tibble::tibble(
+  person = paste("Person", 1:8),
+  exit_time = c(2, 3, 4, 5, 6, 6, 7, 8),
+  status = c(
+    "Event",
+    "Censored",
+    "Event",
+    "Censored",
+    "Event",
+    "Censored",
+    "Event",
+    "Censored"
+  )
+) |>
+  dplyr::mutate(person_id = dplyr::row_number())
+
+risk_counts <- tibble::tibble(time = c(0, 2, 4, 6, 8)) |>
+  dplyr::mutate(
+    at_risk = purrr::map_int(time, \(t) sum(risk_cartoon$exit_time >= t)),
+    label = paste0("r(", time, ") = ", at_risk)
+  )
+
+ggplot2::ggplot(risk_cartoon) +
+  ggplot2::aes(y = person_id) +
+  ggplot2::geom_segment(
+    ggplot2::aes(
+      x = 0,
+      xend = exit_time,
+      yend = person_id
+    ),
+    linewidth = 1,
+    color = "grey50"
+  ) +
+  ggplot2::geom_point(
+    ggplot2::aes(
+      x = exit_time,
+      shape = status,
+      fill = status
+    ),
+    size = 3,
+    color = "black"
+  ) +
+  ggplot2::geom_vline(
+    data = dplyr::filter(risk_counts, time > 0),
+    ggplot2::aes(xintercept = time),
+    linetype = "dashed",
+    color = "grey85"
+  ) +
+  ggplot2::geom_text(
+    data = risk_counts,
+    ggplot2::aes(
+      x = time,
+      y = max(risk_cartoon$person_id) + 0.8,
+      label = label
+    ),
+    size = 3.4,
+    vjust = 0
+  ) +
+  ggplot2::scale_shape_manual(values = c(Event = 21, Censored = 22)) +
+  ggplot2::scale_fill_manual(
+    values = c(Event = "#F8766D", Censored = "#00BFC4")
+  ) +
+  ggplot2::scale_y_continuous(
+    breaks = risk_cartoon$person_id,
+    labels = risk_cartoon$person
+  ) +
+  ggplot2::coord_cartesian(ylim = c(0.5, max(risk_cartoon$person_id) + 1.6)) +
+  ggplot2::labs(
+    x = "Time",
+    y = NULL,
+    shape = NULL,
+    fill = NULL
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "bottom",
+    panel.grid.minor = ggplot2::element_blank()
+  )
+```
+
+Cartoon risk-set view:
+each line is one individual,
+circles are events,
+squares are censoring times.
+Dashed lines mark selected times,
+and labels above show the number at risk.
+
+:::
+
 {{< slidebreak >}}
 
 {{< include _subfiles/intro-to-survival-analysis/_def-km-estimator.qmd >}}
