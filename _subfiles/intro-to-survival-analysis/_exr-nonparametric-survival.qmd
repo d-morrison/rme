@@ -4,8 +4,9 @@
 
 - $Y$ is study exit time
 - $D$ is reason for study exit:
-- $D=1$: event
-- $D=0$: censored
+  - $D=1$: event
+  - $D=0$: censored
+- $Y^*$ is the combination of $Y$ and $D$ into a single `Surv()` variable.
 
 ```{r}
 #| label: tbl-surv1
@@ -16,7 +17,8 @@
 library(tibble)
 data1 <- tibble(
   Y = c(1, 3, 7, 10, 13, 15, 16, 16, 16),
-  D = c(1, 1, 1,  1,  0,  1,  0,  0,  0)
+  D = c(1, 1, 1,  1,  0,  1,  0,  0,  0),
+  S = survival::Surv(Y, D)
 )
 print(data1)
 ```
@@ -24,6 +26,20 @@ print(data1)
 ## Compute the Kaplan-Meier (KM) estimated survival curve, by hand
 
 ::::{.sol}
+
+Let:
+
+- $n$: total sample size
+- $y$: study exit time;
+- $d(y)$: number of events at $y$;
+- $q(y)$: number censored or continuing in the study at $y$;
+- $e(y) = d(y) + q(y)$: total exiting at $y$;
+- $E(y)$: cumulative exits prior to $y$;
+- $r(y) = n - E(y)$: number at risk at $y$;
+- $\hat{\kappa}(y) = \hat{\Pr}(Y > y \mid Y \geq y) = \frac{q(y)}{r(y)}$: conditional survival factor;
+- $\hat{\lambda}(y) = \hat{\Pr}(Y = y \mid Y \geq y) = \frac{d(y)}{r(y)} = 1 - \hat{\kappa}(y)$: estimated discrete hazard;
+- $\hat{\Lambda}(y) = \sum_{k:\, y_k \leq y} \hat{\lambda}(y_k)$: cumulative hazard;
+- $\hat{S}_{KM}(y) = \prod_{k:\, y_k \leq y} \hat{\kappa}(y_k)$: Kaplan-Meier survival estimate.
 
 :::{#tbl-km-curve}
 ```{r}
@@ -40,7 +56,7 @@ km_curve <-
   summarise(.by  = Y,
             events = sum(D == 1),
             censored = sum(D == 0)) |>
-  bind_rows(start_data) |>
+  # bind_rows(start_data) |>
   arrange(Y) |>
   mutate(
     study_size = nrow(data1),
@@ -58,11 +74,11 @@ km_curve |>
   rename(
     `$y$`                        = Y,
     `$d(y)$`                     = events,
-    `$c(y)$`                     = censored,
+    `$q(y)$`                     = censored,
     `$e(y)$`                     = exiting,
     `$E(y)$`                     = exited,
-    `$n(y)$`                     = at_risk,
-    `$1-\\hat{\\lambda}(y)$`     = km_factor,
+    `$r(y)$`                     = at_risk,
+    `$\\hat{\\kappa}(y)$`         = km_factor,
     `$\\hat{\\lambda}(y)$`       = hazard,
     `$\\hat{\\Lambda}(y)$`       = cusum_hazard,
     `$\\hat{S}_{KM}(y)$`         = km_surv_curve
@@ -70,17 +86,7 @@ km_curve |>
   pander()
 ```
 
-Kaplan-Meier survival curve calculation.
-$y$: study exit time;
-$d(y)$: number of events at $y$;
-$c(y)$: number censored at $y$;
-$e(y) = d(y) + c(y)$: total exiting at $y$;
-$E(y)$: cumulative exits prior to $y$;
-$n(y) = n - E(y)$: number at risk at $y$;
-$\hat{\lambda}(y) = \hat{\Pr}(Y = y \mid Y \geq y) = d(y)/n(y)$: estimated discrete hazard;
-$1 - \hat{\lambda}(y)$: conditional survival factor;
-$\hat{\Lambda}(y) = \sum_{k:\, y_k \leq y} \hat{\lambda}(y_k)$: cumulative hazard;
-$\hat{S}_{KM}(y) = \prod_{k:\, y_k \leq y} (1 - \hat{\lambda}(y_k))$: Kaplan-Meier survival estimate.
+Kaplan-Meier survival curve calculations
 
 :::
 
