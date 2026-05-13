@@ -1,0 +1,331 @@
+{{< include latex-macros/macros.qmd >}}
+
+This section is adapted from [@vittinghoff2e, Chapter 6].
+
+### What Are Competing Risks?
+
+::: {#def-competing-risks}
+
+#### Competing Risks Data
+
+**Competing risks data** arise when multiple events can occur,
+and follow-up can end due to occurrence of one or more of those types of events,
+precluding observation of at least one of the other event types.
+
+:::
+
+Competing risks are common in medical research.
+For example,
+in a study of bone fracture risk in elderly men,
+participants may:
+
+- Experience the event of interest (fracture)
+- Die before experiencing a fracture (competing event)
+- Be lost to follow-up or reach the end of the study period (censored)
+
+#### Why Competing Risks Matter
+
+When analyzing time-to-event data,
+standard survival analysis methods make assumptions about censoring.
+The **independent censoring assumption** assumes that
+the future risk of censored observations
+can be represented by those who remain under follow-up.
+
+This assumption is reasonable for:
+
+- Administrative censoring (end of study)
+- Loss to follow-up (if unrelated to outcome risk)
+
+However,
+this assumption is questionable for competing events like death,
+because:
+
+1. We cannot extrapolate beyond participant lifetimes
+2. Death fundamentally alters the risk set for the primary outcome
+3. Projecting to a setting "without death" creates a hypothetical population
+
+#### Approaches to Analyzing Competing Risks Data
+
+Two main approaches exist for analyzing competing risks:
+
+1. **Elimination approach**:
+   Extrapolates to a scenario where a competing event is not possible
+   (appropriate for losses to follow-up)
+
+2. **Accommodation approach**:
+   Acknowledges and allows for the competing risks in the analysis
+   (appropriate for death and other true competing events)
+
+### Notation for Competing Risks
+
+We denote competing risks outcome data using two variables:
+
+- $Y$: time of the first observed event of any type
+- $\delta = k$: if the $k$-th event type occurs first
+
+where each of the $K$ possible types of failure
+are denoted by a numerical code.
+
+**Example coding scheme:**
+
+- 0: loss to follow-up (censored)
+- 1: event of interest (e.g., fracture)
+- 2: competing event (e.g., death)
+
+A participant followed for 18 months who dies
+before experiencing a fracture
+would have $Y = 18$ months and $\delta = 2$.
+
+### Summaries for Competing Risks Data
+
+#### Cause-Specific Hazard Functions
+
+::: {#def-cause-specific-hazard}
+
+#### Cause-Specific Hazard Function
+
+The **cause-specific hazard function** for event type $k$,
+denoted $h_k(t)$,
+is the short-term rate at which participants experience
+the onset of the $k$-th event
+among those who have not yet experienced
+the event of interest or a competing event prior to time $t$.
+
+:::
+
+**Key properties:**
+
+- The numerator counts only events of type $k$
+- The denominator includes all participants
+  who could have developed the event by time $t$
+- Reduces to the ordinary hazard function when there is only one failure type
+
+**Estimation:**
+
+To estimate and model cause-specific hazard functions:
+
+1. Set up data as ordinary survival data
+2. Define the $k$-th failure type as the only "event"
+3. Treat all competing causes (including death) as "censored"
+
+You can then examine predictor effects on the cause-specific hazard
+using standard Cox proportional hazards models.
+
+#### Cumulative Incidence Functions
+
+::: {#def-cumulative-incidence}
+
+#### Cumulative Incidence Function
+
+The **cumulative incidence function** (CIF) for cause type $k$ at time $t$,
+denoted $F_k(t)$,
+is the proportion of the population
+who have experienced the $k$-th event prior to time $t$.
+
+:::
+
+The cumulative incidence function:
+
+- Measures the prevalence of a particular event at each time $t$
+- Accounts for all competing risks
+- Differs from cause-specific hazards in how it treats competing events
+
+```{r}
+#| label: mros-cif-setup
+#| include: false
+library(rmb)
+library(cmprsk)
+library(survival)
+library(ggplot2)
+library(dplyr)
+
+mros_data <- mros
+
+# Compute cumulative incidence functions (CIF) for each event type
+# (no group argument, so there is exactly one group)
+mros_cif <- cuminc(
+  ftime   = mros_data$years,
+  fstatus = mros_data$status
+)
+
+# Extract CIF by cause code using endsWith() for robustness
+cif_names <- names(mros_cif)[names(mros_cif) != "Tests"]
+fracture_name <- cif_names[endsWith(cif_names, " 1")]  # cause 1 = fracture
+death_name    <- cif_names[endsWith(cif_names, " 2")]  # cause 2 = death
+
+fracture_cif <- tibble(
+  time  = mros_cif[[fracture_name]]$time,
+  cif   = mros_cif[[fracture_name]]$est,
+  event = "Hip fracture"
+)
+
+death_cif <- tibble(
+  time  = mros_cif[[death_name]]$time,
+  cif   = mros_cif[[death_name]]$est,
+  event = "Death without fracture"
+)
+
+cif_df <- bind_rows(fracture_cif, death_cif)
+
+# 5-year CIF: last time point <= 5 (right-continuous step function)
+fracture_cif_five_yr <-
+  tail(fracture_cif$cif[fracture_cif$time <= 5], 1)
+death_cif_five_yr <-
+  tail(death_cif$cif[death_cif$time <= 5], 1)
+```
+
+**Interpretation (MrOS study):**
+
+In the MrOS study,
+at 5 years of follow-up:
+
+- `r round(fracture_cif_five_yr * 100, 1)`% of men had experienced a hip fracture
+- `r round(death_cif_five_yr * 100, 1)`% had died without a fracture
+- `r round((1 - fracture_cif_five_yr - death_cif_five_yr) * 100, 1)`%
+  remained alive without fracture
+
+### Estimation of Cumulative Incidence
+
+The cumulative incidence at time $t$ is calculated as:
+
+$$
+\hat{F}_k(t) = \sum_{t_i \le t} \hat{S}(t_{i-1}) \times \frac{d_{ki}}{n_i}
+$$
+
+where:
+
+- $t_i$ are the ordered event times
+- $d_{ki}$ is the number of type-$k$ events at time $t_i$
+- $n_i$ is the number at risk at time $t_i$
+- $\hat{S}(t_{i-1})$ is the Kaplan-Meier estimate of event-free survival
+  just before time $t_i$
+
+The estimation proceeds in steps:
+
+1. Calculate the overall event-free probability at each time point
+   using the Kaplan-Meier method
+   (combining all event types)
+2. For each time interval,
+   calculate the probability of a new type-$k$ event as:
+   - Probability of being event-free at the start of the interval
+   - Times the rate of type-$k$ events during the interval
+3. The cumulative incidence is the cumulative sum
+   of these time-specific probabilities
+
+#### Numerical Example: MrOS Study
+
+The `mros` dataset from the `rmb` package
+contains data from the
+Osteoporotic Fractures in Men (MrOS) study [@orwoll2005design],
+a prospective cohort study of older men.
+The outcome variable is coded as:
+
+- 0: censored (no fracture or death during follow-up)
+- 1: hip fracture (event of interest)
+- 2: death without fracture (competing event)
+
+```{r}
+#| label: fig-mros-cif
+#| code-fold: true
+ggplot(cif_df) +
+  aes(x = time, y = cif, color = event) +
+  geom_step() +
+  labs(
+    x       = "Years of follow-up",
+    y       = "Cumulative incidence",
+    color   = "Event type",
+    caption = "Data: rmb::mros (MrOS study, Orwoll et al. 2005)"
+  ) +
+  scale_y_continuous(limits = c(0, 0.20)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+At approximately 5 years of follow-up:
+
+- About `r round(fracture_cif_five_yr * 100, 1)`% of men had experienced a hip fracture
+- About `r round(death_cif_five_yr * 100, 1)`% had died without a fracture
+
+These two cumulative incidences sum to less than the overall
+event probability because many men are still event-free at 5 years.
+
+#### Naive vs. Proper Cumulative Incidence
+
+A naive approach treats competing events as censored
+and uses the standard Kaplan-Meier method:
+$1 - \hat{S}(t)$.
+This overestimates the true cumulative incidence
+because it assumes censored individuals
+(including those who died)
+have the same risk as those still event-free.
+
+```{r}
+#| label: fig-mros-cif-vs-naive
+#| code-fold: true
+# Naive KM estimate for fracture (treating death as censored)
+km_naive <- survfit(
+  Surv(years, status == 1) ~ 1,
+  data = mros_data
+)
+
+naive_df <- tibble(
+  time  = km_naive$time,
+  cif   = 1 - km_naive$surv,
+  method = "Naive KM (1 - S(t))"
+)
+
+proper_df <- fracture_cif |>
+  mutate(method = "Proper CIF")
+
+comparison_df <- bind_rows(naive_df, proper_df)
+
+ggplot(comparison_df) +
+  aes(x = time, y = cif, color = method) +
+  geom_step() +
+  labs(
+    x     = "Years of follow-up",
+    y     = "Estimated probability of fracture",
+    color = "Method",
+    caption = "Data: rmb::mros (MrOS study)"
+  ) +
+  scale_y_continuous(limits = c(0, 0.15)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+The naive KM curve overestimates the probability of fracture
+because it imagines a hypothetical world without competing mortality.
+The proper CIF curve represents the actual clinical probability
+of experiencing a fracture.
+
+### Modeling Competing Risks
+
+When analyzing competing risks data with predictors,
+two main approaches are available:
+
+#### Cause-Specific Hazards Models
+
+Fit separate Cox models for each event type,
+treating other event types as censored:
+
+**Advantages:**
+
+- Standard software can be used
+- Straightforward interpretation of hazard ratios
+- Can assess effects on each failure type separately
+
+**Limitations:**
+
+- Results do not directly estimate cumulative incidence
+- Interpretation can be challenging when effects differ across event types
+
+#### Subdistribution Hazards Models (Fine-Gray Model)
+
+An alternative approach directly models the cumulative incidence function
+using subdistribution hazards [@fine1999proportional].
+
+The Fine-Gray model:
+
+- Directly estimates the effect on cumulative incidence
+- Keeps participants who experience competing events in the risk set
+- Requires specialized software (e.g., `cmprsk` package in R)
