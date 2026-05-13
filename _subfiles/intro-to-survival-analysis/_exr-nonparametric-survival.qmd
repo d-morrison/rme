@@ -37,8 +37,7 @@ Let:
 - $y$: study exit time;
 - $d(y)$: number of events at $y$;
 - $c(y)$: number exiting without events ("censored") at $y$
-- $q(y)$: number censored or continuing in the study at $y$;
-- $e(y) = d(y) + q(y)$: total exiting at $y$;
+- $e(y) = d(y) + c(y)$: total exiting at $y$;
 - $E(y)$: cumulative exits prior to $y$;
 - $r(y) = n - E(y)$: number at risk at $y$;
 - $r^*(y) = r(y) - e(y)$: number at risk after $y$;
@@ -61,7 +60,7 @@ km_curve <-
   summarise(.by  = Y,
             events = sum(D == 1),
             censored = sum(D == 0)) |>
-  # bind_rows(start_data) |>
+  bind_rows(start_data) |>
   arrange(Y) |>
   mutate(
     study_size = nrow(data1),
@@ -133,8 +132,7 @@ Here's the version from the `survival` package:
 ```{r}
 #| label: survfit
 library(survival)
-data1 |>
-  survfit(Surv(time = Y, event = D) ~ 1, data = _) |>
+survfit(Surv(time = Y, event = D) ~ 1, data = data1) |>
   summary()
 ```
 
@@ -167,7 +165,7 @@ data1 <- data1 |>
   mutate(
     surv = Surv(time = Y, event = D)
   )
-KM_model <- data1 |> survfit(formula = surv ~ 1)
+KM_model <- survfit(formula = surv ~ 1, data = data1)
 KM_model |> autoplot()
 
 ```
