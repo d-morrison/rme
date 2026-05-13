@@ -161,6 +161,37 @@ This keeps the document hierarchy centralized in the parent file,
 makes heading levels easy to audit,
 and avoids nesting errors when the same subfile might be included at different depths.
 
+### One subtopic per subfile
+
+Each subfile should cover exactly one subtopic or section.
+Do **not** combine multiple independent subtopics in a single subfile.
+If a topic naturally splits into distinct subtopics,
+create one subfile per subtopic and include each separately in the parent file.
+
+**Correct** — separate subfiles per subtopic:
+```markdown
+## Interval Censoring {#sec-interval-censoring}
+
+{{< include _subfiles/chapter/_sec_interval_censoring.qmd >}}
+
+## Left-Truncation {#sec-left-truncation}
+
+{{< include _subfiles/chapter/_sec_left_truncation.qmd >}}
+```
+
+**Incorrect** — both subtopics in one subfile:
+```markdown
+## Interval Censoring and Left-Truncation
+
+{{< include _subfiles/chapter/_sec_interval_censoring_and_left_truncation.qmd >}}
+```
+
+### No references section in subfiles
+
+Subfiles must **not** include a `## References` section.
+References sections belong only in parent `.qmd` files (chapters, index pages, etc.).
+Do **not** add `## References {.unnumbered}` or `:::{#refs}:::` to any file under `_subfiles/`.
+
 ## Citation Grammar Conventions
 
 When using Pandoc-style citation keys (e.g., `@dobson4e`) as the grammatical subject of a sentence,
@@ -236,6 +267,44 @@ When adding or editing text in source code (such as comments, documentation stri
 - Each phrase should be on its own line in the source code
 - A phrase is typically a complete thought, clause, or sentence
 - This improves readability and makes diffs clearer
+
+## ggplot2 Layer Style
+
+Always put `ggplot()` and `aes()` calls in **separate layers**.
+Never pass `aes()` as an argument to `ggplot()`.
+
+**Correct:**
+```r
+ggplot(my_data) +
+  aes(x = time, y = value, color = group) +
+  geom_line()
+```
+
+**Incorrect:**
+```r
+ggplot(my_data, aes(x = time, y = value, color = group)) +
+  geom_line()
+```
+
+## No Hard-Coded Results in Narrative Text
+
+Do not hard-code numerical results (percentages, means, counts, etc.)
+in Quarto narrative text.
+Use inline R expressions instead,
+so that the numbers update automatically if the data or code changes.
+
+**Correct:**
+```markdown
+At 5 years, `r round(surv_5yr * 100, 1)`% of participants had experienced the event.
+```
+
+**Incorrect:**
+```markdown
+At 5 years, 8% of participants had experienced the event.
+```
+
+Compute the values in a code chunk (using `#| include: false` if needed),
+then reference them with inline `` `r expr` `` expressions.
 
 ## Parentheticals and Asides in Quarto
 
@@ -429,6 +498,43 @@ plot(x, y)
 ````
 
 Use this for newly added or substantially revised figures and tables in `.qmd` files.
+
+## Chunk Label Prefixes (`fig-` and `tbl-`)
+
+Only use `fig-` or `tbl-` chunk/div label prefixes when the chunk or div **actually renders a cross-referenceable figure or table**.
+Do **not** use these prefixes for setup, computation-only, or helper chunks that produce no visible output.
+
+**Correct** — `fig-` label on a div that produces a cross-referenceable figure:
+````qmd
+::: {#fig-my-plot}
+
+```{r}
+plot(x, y)
+```
+
+Caption text here.
+
+:::
+````
+
+**Correct** — setup chunk that only computes values (no figure/table produced):
+````qmd
+```{r}
+#| label: my-setup-chunk
+#| include: false
+my_value <- compute_something()
+```
+````
+
+**Incorrect** — `tbl-` label on a chunk that only computes values:
+````qmd
+```{r}
+#| label: tbl-my-values   # wrong: no table is rendered
+my_value <- compute_something()
+```
+````
+
+Using the wrong prefix can cause Quarto cross-reference errors or mislead readers about what the chunk produces.
 
 
 ## Math Notation
