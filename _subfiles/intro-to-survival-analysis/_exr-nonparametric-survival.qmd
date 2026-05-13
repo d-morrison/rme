@@ -23,9 +23,11 @@ data1 <- tibble(
 print(data1)
 ```
 
-## Compute the Kaplan-Meier (KM) estimated survival curve, by hand
+:::{#exr-km-curve-by-hand}
+Compute the Kaplan-Meier (KM) estimated survival curve, by hand.
+:::
 
-::::{.sol}
+::::{#sol-km-curve-by-hand .solution}
 
 Let:
 
@@ -40,8 +42,44 @@ Let:
 - $r^*(y) = r(y) - e(y)$: number at risk after $y$;
 - $\hat{\kappa}(y) = \hat{\Pr}(Y > y \mid Y \geq y) = [r(y) - d(y)]/r(y)$: conditional survival factor;
 - $\hat{\lambda}(y) = \hat{\Pr}(Y = y \mid Y \geq y) = \frac{d(y)}{r(y)} = 1 - \hat{\kappa}(y)$: estimated discrete hazard;
-- $\hat{\Lambda}(y) = \sum_{k:\, y_k \leq y} \hat{\lambda}(y_k)$: cumulative hazard;
 - $\hat{S}_{KM}(y) = \prod_{k:\, y_k \leq y} \hat{\kappa}(y_k)$: Kaplan-Meier survival estimate.
+
+To see why multiplying the conditional survival factors estimates marginal survival,
+write the ordered distinct exit times as $y_1 < y_2 < \cdots < y_m$.
+The Kaplan-Meier construction assumes that the conditional probability of surviving
+between consecutive exit times is 1.
+For consecutive exit times $y_{j-1}$ and $y_j$, this means:
+
+$$
+\Pr(Y \geq y_j \mid Y > y_{j-1}) = 1.
+$$
+
+Thus all the between-exit-time factors drop out, and the marginal survival
+through an exit time $y_j$ can be written recursively as:
+
+$$
+\begin{aligned}
+\Pr(Y > y_j)
+&= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y \geq y_j)\\
+&= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y > y_{j-1})\\
+&= \kappa(y_j)\Pr(Y > y_{j-1}).
+\end{aligned}
+$$
+
+Applying this recursion back to the first exit time gives:
+
+$$
+\begin{aligned}
+\hat{\Pr}(Y > t)
+&= \hat{S}_{KM}(t)\\
+&= \prod_{k:\, y_k \leq t} \hat{\Pr}(Y > y_k \mid Y \geq y_k)\\
+&= \prod_{k:\, y_k \leq t} \hat{\kappa}(y_k)\\
+&= \prod_{k:\, y_k \leq t} \frac{r(y_k) - d(y_k)}{r(y_k)}.
+\end{aligned}
+$$
+
+For any time $t$ between two consecutive exit times, the estimate stays constant,
+because the only additional conditional survival factors are 1.
 
 :::{#tbl-km-curve}
 ```{r}
@@ -68,13 +106,13 @@ km_curve <-
     r_star = at_risk - exiting,
     hazard = events / at_risk,
     km_factor = 1 - hazard,
-    km_surv_curve = cumprod(km_factor),
-    cusum_hazard = cumsum(hazard)
-  ) |> 
-  select(-study_size) |> 
+    km_surv_curve = cumprod(km_factor)
+  ) |>
+  select(-study_size) |>
   relocate(km_factor, .before = hazard)
 km_curve |>
   mutate(
+    hazard_math = paste0("\\frac{", events, "}{", at_risk, "}"),
     km_factor_math = paste0("\\frac{", at_risk - events, "}{", at_risk, "}"),
     km_surv_curve = paste0(
       "$",
@@ -87,7 +125,7 @@ km_curve |>
       "$"
     ),
     hazard = paste0(
-      "$\\frac{", events, "}{", at_risk, "} = ",
+      "$", hazard_math, " = ",
       round(hazard, 4), "$"
     ),
     km_factor = paste0(
@@ -95,7 +133,7 @@ km_curve |>
       round(km_factor, 4), "$"
     )
   ) |>
-  select(-km_factor_math) |>
+  select(-hazard_math, -km_factor_math) |>
   rename(
     `$y$`                        = Y,
     `$d(y)$`                     = events,
@@ -106,7 +144,6 @@ km_curve |>
     `$r^*(y)$`                   = r_star,
     `$\\hat{\\kappa}(y)$`         = km_factor,
     `$\\hat{\\lambda}(y)$`       = hazard,
-    `$\\hat{\\Lambda}(y)$`       = cusum_hazard,
     `$\\hat{S}_{KM}(y)$`         = km_surv_curve
   ) |>
   pander()
@@ -118,13 +155,12 @@ Kaplan-Meier survival curve calculations
 
 ::::
 
-## Implement the KM survival curve estimator in R
-
+:::{#exr-km-survfit}
+Implement the KM survival curve estimator in R.
 Check the output of your implementation against the version in the `survival` package.
+:::
 
-
-
-:::{.sol}
+:::{#sol-km-survfit .solution}
 
 See above for implementation.
 Here's the version from the `survival` package:
@@ -139,9 +175,11 @@ data1 |>
 
 :::
 
-## Graph the KM estimated survival curve for the data in @tbl-surv1 {#sec-km-graph-1}
+:::{#exr-km-graph-1}
+Graph the KM estimated survival curve for the data in @tbl-surv1.
+:::
 
-:::{.sol}
+:::{#sol-km-graph-1 .solution}
 
 ```{r}
 #| label: km-fig
@@ -160,7 +198,7 @@ or
 ```{r}
 #| label: autoplot-fig
 library(ggfortify)
-data1 <- data1 |> 
+data1 <- data1 |>
   mutate(
     surv = Surv(time = Y, event = D)
   )
@@ -171,11 +209,11 @@ KM_model |> autoplot()
 
 :::
 
+:::{#exr-km-median}
+Find the KM estimate of median survival time.
+:::
 
-
-## Find the KM estimate of median survival time.
-
-:::{.sol}
+:::{#sol-km-median .solution}
 
 ```{r}
 #| label: km-median
@@ -184,14 +222,28 @@ KM_model |> quantile(prob = 0.5) |> as_tibble()
 
 :::
 
+:::{#exr-na-curve-by-hand}
+Compute the Nelson-Aalen (NA) estimated survival curve, by hand.
+:::
 
+::::{#sol-na-curve-by-hand .solution}
 
-## Compute the Nelson-Aalen (NA) estimated survival curve, by hand
+Let:
 
+- $n$: total sample size
+- $y$: study exit time;
+- $d(y)$: number of events at $y$;
+- $c(y)$: number exiting without events ("censored") at $y$
+- $e(y) = d(y) + c(y)$: total exiting at $y$;
+- $E(y)$: cumulative exits prior to $y$;
+- $r(y) = n - E(y)$: number at risk at $y$;
+- $r^*(y) = r(y) - e(y)$: number at risk after $y$;
+- $\hat{\lambda}(y) = \frac{d(y)}{r(y)}$: Nelson-Aalen hazard increment;
+- $\hat{\Lambda}_{NA}(y) = \sum_{k:\, y_k \leq y} \hat{\lambda}(y_k)$: Nelson-Aalen cumulative hazard estimate;
+- $\hat{\eta}(y) = \exp[-\hat{\lambda}(y)]$: Nelson-Aalen survival factor;
+- $\hat{S}_{NA}(y) = \exp[-\hat{\Lambda}_{NA}(y)] = \prod_{k:\, y_k \leq y} \hat{\eta}(y_k)$: Nelson-Aalen survival estimate.
 
-
-:::{.sol}
-
+:::{#tbl-na-curve}
 ```{r}
 #| label: NA-fit-implement
 library(dplyr)
@@ -200,42 +252,88 @@ na_curve <-
   summarise(.by  = Y,
             events = sum(D == 1),
             censored = sum(D == 0)) |>
-  bind_rows(
-    tibble(
-      Y = 0,
-      events = 0,
-      censored = 0
-    )
-  ) |>
   arrange(Y) |>
   mutate(
     study_size = nrow(data1),
     exiting = events + censored,
     exited = cumsum(exiting) |> dplyr::lag(default = 0),
     at_risk = study_size - exited,
+    r_star = at_risk - exiting,
     hazard = events / at_risk,
     na_factor = exp(-hazard),
     cusum_hazard = cumsum(hazard),
     na_surv_curve = cumprod(na_factor)
-  )
-pander(na_curve)
+  ) |>
+  select(-study_size) |>
+  relocate(na_factor, .before = hazard)
+na_curve |>
+  mutate(
+    hazard_math = paste0("\\frac{", events, "}{", at_risk, "}"),
+    na_factor_math = paste0("e^{-", hazard_math, "}"),
+    na_surv_curve = paste0(
+      "$",
+      purrr::map_chr(
+        row_number(),
+        \(i) paste(na_factor_math[seq_len(i)], collapse = " \\times ")
+      ),
+      " = ",
+      round(na_surv_curve, 4),
+      "$"
+    ),
+    cusum_hazard = paste0(
+      "$",
+      purrr::map_chr(
+        row_number(),
+        \(i) paste(hazard_math[seq_len(i)], collapse = " + ")
+      ),
+      " = ",
+      round(cusum_hazard, 4),
+      "$"
+    ),
+    hazard = paste0(
+      "$", hazard_math, " = ",
+      round(hazard, 4), "$"
+    ),
+    na_factor = paste0(
+      "$", na_factor_math, " = ",
+      round(na_factor, 4), "$"
+    )
+  ) |>
+  select(-hazard_math, -na_factor_math) |>
+  rename(
+    `$y$`                        = Y,
+    `$d(y)$`                     = events,
+    `$c(y)$`                     = censored,
+    `$e(y)$`                     = exiting,
+    `$E(y)$`                     = exited,
+    `$r(y)$`                     = at_risk,
+    `$r^*(y)$`                   = r_star,
+    `$\\hat{\\eta}(y)$`           = na_factor,
+    `$\\hat{\\lambda}(y)$`       = hazard,
+    `$\\hat{\\Lambda}_{NA}(y)$`  = cusum_hazard,
+    `$\\hat{S}_{NA}(y)$`         = na_surv_curve
+  ) |>
+  pander()
 ```
+
+Nelson-Aalen survival curve calculations
 
 :::
 
-## Implement the NA survival curve estimator in R
+::::
 
+:::{#exr-na-survfit}
+Implement the NA survival curve estimator in R.
 Check the output of your implementation against the version in the `survival` package.
+:::
 
-
-
-:::{.sol}
+:::{#sol-na-survfit .solution}
 
 ```{r}
 #| label: NA-survfit
-NA_model <- 
+NA_model <-
   data1 |>
-  survfit(formula = surv ~ 1, 
+  survfit(formula = surv ~ 1,
           type = "fleming-harrington")
 
 NA_model |> summary()
@@ -243,9 +341,11 @@ NA_model |> summary()
 
 :::
 
-## Add the NA estimated survival curve to the graph from @sec-km-graph-1
+:::{#exr-km-na-graph}
+Add the NA estimated survival curve to the graph from @exr-km-graph-1.
+:::
 
-:::{.sol}
+:::{#sol-km-na-graph .solution}
 
 ```{r}
 #| label: km-na-fig
@@ -268,11 +368,11 @@ km_and_na |>
 
 :::
 
+:::{#exr-na-median}
+Find the NA estimate of median survival time.
+:::
 
-
-## Find the NA estimate of median survival time.
-
-:::{.sol}
+:::{#sol-na-median .solution}
 
 ```{r}
 #| label: na-median
@@ -281,13 +381,11 @@ NA_model |> quantile(prob = 0.5) |> as_tibble()
 
 :::
 
+:::{#exr-compare-km-na}
+Describe the similarities and differences between the graphs of the KM and NA survival function estimates.
+:::
 
-
-## Describe the similarities and differences between the graphs of the KM and NA survival function estimates
-
-
-
-:::{.sol}
+:::{#sol-compare-km-na .solution}
 
 The curves are very similar for this data set, with the KM curve returning slightly lower estimates of survival.
 
