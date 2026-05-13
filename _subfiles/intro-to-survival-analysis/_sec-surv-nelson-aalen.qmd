@@ -4,7 +4,7 @@
 :::{#def-na-cuhaz-est}
 #### Nelson-Aalen Cumulative Hazard Estimator
 :::: notes
-The point hazard at time $t_i$ can be estimated by $d_i/Y_i$, which
+The point hazard at time $t_i$ can be estimated by $d_i/r_i$, which
 leads to the **Nelson-Aalen estimator of the cumulative hazard**:
 ::::
 
@@ -24,9 +24,9 @@ The variance of this estimator is approximately:
 
 $$
 \begin{aligned}
-\hat{\text{Var}}\left(\hat H_{NA} (t)\right)
-&= \sum_{t_i <t}\frac{(d_i/Y_i)(1-d_i/Y_i)}{Y_i}\\
-&\approx \sum_{t_i <t}\frac{d_i}{Y_i^2}
+\hat{\text{Var}}\left(\hat{\cuhaz}_{NA} (t)\right)
+&= \sum_{t_i \le t}\frac{(d_i/r_i)(1-d_i/r_i)}{r_i}\\
+&\approx \sum_{t_i \le t}\frac{d_i}{r_i^2}
 \end{aligned}
 $${#eq-var-NA-cuhaz-est}
 
@@ -40,12 +40,17 @@ survival function:
 
 $$
 \ba
-\hat S_{NA}(t)
-&= \expf{-\hat H_{NA}(t)}\\
-&= \expf{-\sum_{t_i < t}\frac{d_i}{Y_i}}\\
-&= \prod_{t_i < t}\expf{-\frac{d_i}{Y_i}}\\
+\hsurv_{NA}(t)
+&= \expf{-\hat{\cuhaz}_{NA}(t)}\\
+&= \expf{-\sum_{t_i \le t}\frac{d_i}{r_i}}\\
+&= \prod_{t_i \le t}\expf{-\frac{d_i}{r_i}}\\
+&= \prod_{t_i \le t}\hat{\kappa}^{NA}_i
 \ea
 $$
+
+where $\hat{\kappa}^{NA}_i = \expf{-\hat{\haz}_i} = \expf{-d_i/r_i}$
+is the Nelson-Aalen conditional survival factor
+(compare with the KM factor $\hat{\kappa}^{KM}_i = 1 - d_i/r_i$).
 
 ---
 
@@ -53,8 +58,8 @@ Compare these with the corresponding Kaplan-Meier estimates:
 
 $$
 \ba
-\hat H_{KM}(t) &= -\sum_{t_i < t}\logf{1-\frac{d_i}{Y_i}}\\
-\hat S_{KM}(t) &= \prod_{t_i < t}\sb{1-\frac{d_i}{Y_i}}
+\hat{\cuhaz}_{KM}(t) &= -\sum_{t_i \le t}\logf{1-\frac{d_i}{r_i}}\\
+\hsurv_{KM}(t) &= \prod_{t_i \le t}\sb{1-\frac{d_i}{r_i}}
 \ea
 $$
 
@@ -109,3 +114,7 @@ km_and_na |>
 
 The Kaplan-Meier and Nelson-Aalen survival estimates are very similar
 for this dataset.
+
+{{< slidebreak >}}
+
+{{< include _subfiles/intro-to-survival-analysis/_exr-nelson-aalen.qmd >}}
