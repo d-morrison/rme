@@ -102,10 +102,11 @@ Check the output of your implementation against the version in the `survival` pa
 
 ```{r}
 #| label: NA-survfit
-NA_model <-
-  data1 |>
-  survfit(formula = surv ~ 1,
-          type = "fleming-harrington")
+NA_model <- survival::survfit(
+  formula = S ~ 1,
+  data = data1,
+  type = "fleming-harrington"
+)
 
 NA_model |> summary()
 ```
@@ -120,16 +121,31 @@ Add the NA estimated survival curve to the graph from @exr-km-graph-1.
 
 ```{r}
 #| label: km-na-fig
+KM_model_local <- survival::survfit(formula = S ~ 1, data = data1)
+NA_model_local <- survival::survfit(
+  formula = S ~ 1,
+  data = data1,
+  type = "fleming-harrington"
+)
+
 km_and_na <-
   bind_rows(
-    .id = "model",
-    "Kaplan-Meier" = KM_model |> fortify(surv.connect = FALSE),
-    "Nelson-Aalen" = NA_model |> fortify(surv.connect = FALSE)
+    tibble(
+      model = "Kaplan-Meier",
+      time = summary(KM_model_local)$time,
+      surv = summary(KM_model_local)$surv
+    ),
+    tibble(
+      model = "Nelson-Aalen",
+      time = summary(NA_model_local)$time,
+      surv = summary(NA_model_local)$surv
+    )
   ) |>
   as_tibble()
 
 km_and_na |>
-  ggplot(aes(x = time, y = surv, col = model)) +
+  ggplot() +
+  aes(x = time, y = surv, col = model) +
   geom_step() +
   theme_bw() +
   ylab("S(t) = P(T>=t)") +
