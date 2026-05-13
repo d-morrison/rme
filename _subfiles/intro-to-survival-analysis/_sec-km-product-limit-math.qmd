@@ -1,0 +1,119 @@
+To see why multiplying the conditional survival factors estimates marginal
+survival, write the ordered distinct exit times as
+$y_1 < y_2 < \cdots < y_m$.
+Here $Y$ denotes exit time
+(either event time or censoring time),
+while $T$ denotes the underlying event time,
+which is not always observed.
+
+Because $y_{j-1}$ and $y_j$ are consecutive distinct exit times,
+there are no exits between them.
+Therefore the conditional probability of surviving between these two
+times is 1:
+
+$$
+\Pr(Y \geq y_j \mid Y > y_{j-1}) = 1.
+$$
+
+Then the event $\{Y \geq y_j\}$ is contained in the event
+$\{Y > y_{j-1}\}$, because $y_j > y_{j-1}$. Therefore intersecting
+$\{Y \geq y_j\}$ with $\{Y > y_{j-1}\}$ does not change the event:
+
+:::{#thm-km-gaps}
+#### Consecutive Exit-Time Identity
+
+If $\Pr(Y \geq y_j \mid Y > y_{j-1}) = 1$, then:
+
+$$\Pr(Y \geq y_j) = \Pr(Y > y_{j-1})$$
+:::
+
+:::{.proof}
+
+$$
+\ba
+\Pr(Y \geq y_j)
+\\
+&= \Pr(Y \geq y_j, Y > y_{j-1})
+\\
+&= \Pr(Y \geq y_j \mid Y > y_{j-1}) \Pr(Y > y_{j-1})
+\\
+&= 1 \Pr(Y > y_{j-1})
+\\
+&= \Pr(Y > y_{j-1})
+\ea
+$$
+:::
+
+The first equality uses the containment
+$\{Y \geq y_j\} \subseteq \{Y > y_{j-1}\}$. The second equality uses the
+multiplication rule for probabilities, and the third equality uses the
+between-exit-time survival assumption.
+
+Let
+$\kappa(y_j) = \Pr(Y > y_j \mid Y \geq y_j)$
+denote the conditional probability of surviving past the exit time $y_j$,
+given survival up to $y_j$. 
+The marginal survival through $y_j$ can then be
+written recursively:
+
+$$
+\ba
+\survf{y_j}
+=\Pr(Y > y_j)
+\\
+&= \Pr(Y > y_j, Y \geq y_j)\\
+&= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y \geq y_j)\\
+&= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y > y_{j-1})\\
+&= \kappa(y_j)\Pr(Y > y_{j-1})
+\\
+&= \kappa(y_j)\survf{y_{j-1}}.
+\ea
+$$
+
+Here the first line again uses containment: if $Y > y_j$, then
+$Y \geq y_j$. The third line substitutes the result from above,
+$\Pr(Y \geq y_j) = \Pr(Y > y_{j-1})$.
+
+The same recursion can be applied repeatedly. If
+$S_j = \Pr(Y > y_j)$ and $S_0 = 1$, then:
+
+$$
+\ba
+S_1
+&= \kappa(y_1)S_0\\
+&= \kappa(y_1),\\
+S_2
+&= \kappa(y_2)S_1\\
+&= \kappa(y_2)\kappa(y_1),\\
+S_3
+&= \kappa(y_3)S_2\\
+&= \kappa(y_3)\kappa(y_2)\kappa(y_1).
+\ea
+$$
+
+Continuing in this way gives
+$S_j = \prod_{k=1}^j \kappa(y_k)$.
+
+To estimate the survival function for the underlying event time $T$,
+we replace the conditional survival probabilities $\Pr(T > y_k \mid T \geq y_k)$
+with their empirical estimates at the observed exit times.
+This gives the Kaplan-Meier product-limit estimator:
+
+$$
+\ba
+\hat{\Pr}(T > t)
+&= \hat{S}_{KM}(t)\\
+&= \prod_{k:\, y_k \leq t} \hat{\Pr}(T > y_k \mid T \geq y_k)\\
+&= \prod_{k:\, y_k \leq t} \hat{\kappa}_k\\
+&= \prod_{k:\, y_k \leq t} \frac{r_k - d_k}{r_k}
+\ea
+$$
+
+where $r_k$ is the number at risk at time $y_k$
+and $d_k$ is the number of events (not total exits) at time $y_k$.
+The empirical factor $(r_k - d_k)/r_k$ estimates $\Pr(T > y_k \mid T \geq y_k)$
+by counting only events in the numerator,
+since censoring times do not provide information about the event time distribution.
+
+For any time $t$ between two consecutive exit times, the estimate stays
+constant, because the only additional conditional survival factors are 1.

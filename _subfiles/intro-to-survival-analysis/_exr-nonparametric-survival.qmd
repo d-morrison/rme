@@ -1,0 +1,184 @@
+:::{#exr-km-curve-by-hand}
+
+@tbl-surv1 lists some simulated survival data, where:
+
+- $Y$ is study exit time
+- $D$ is reason for study exit:
+  - $D=1$: event
+  - $D=0$: censored
+- `S` is the combination of $Y$ and $D$ into a single `Surv()` variable.
+
+:::{#tbl-surv1}
+
+```{r}
+#| tbl-pos: H
+library(tibble)
+data1 <- tibble(
+  Y = c(1, 3, 7, 10, 13, 15, 16, 16, 16),
+  D = c(1, 1, 1,  1,  0,  1,  0,  0,  0),
+  S = survival::Surv(Y, D)
+)
+knitr::kable(data1)
+```
+Simulated survival data for @exr-km-curve-by-hand.
+:::
+
+Compute the Kaplan-Meier (KM) estimated survival curve by hand.
+
+:::
+
+::::{#sol-km-curve-by-hand .solution}
+
+Let:
+
+- $n$: total sample size
+- $y$: study exit time;
+- $d(y)$: number of events at $y$;
+- $c(y)$: number exiting without events ("censored") at $y$
+- $e(y) = d(y) + c(y)$: total exiting at $y$;
+- $E(y)$: cumulative exits prior to $y$;
+- $r(y) = n - E(y)$: number at risk at $y$;
+- $r^*(y) = r(y) - e(y)$: number at risk after $y$;
+- $\hat{\kappa}(y) = \hat{\Pr}(T > y \mid T \geq y) = [r(y) - d(y)]/r(y)$: conditional survival factor;
+- $\hat{\haz}(y) = \hat{\Pr}(T = y \mid T \geq y) = \frac{d(y)}{r(y)} = 1 - \hat{\kappa}(y)$: estimated discrete hazard;
+- $\hsurv_{KM}(y) = \prod_{k:\, y_k \leq y} \hat{\kappa}(y_k)$: Kaplan-Meier survival estimate.
+
+:::{#tbl-km-curve}
+```{r}
+library(pander)
+library(tidyverse)
+
+start_data <- tibble(
+  Y = 0,
+  events = 0,
+  censored = 0
+)
+km_curve <-
+  data1 |>
+  summarise(.by  = Y,
+            events = sum(D == 1),
+            censored = sum(D == 0)) |>
+  bind_rows(start_data) |>
+  arrange(Y) |>
+  mutate(
+    study_size = nrow(data1),
+    exiting = events + censored,
+    exited = cumsum(exiting) |> dplyr::lag(default = 0),
+    at_risk = study_size - exited,
+    r_star = at_risk - exiting,
+    hazard = events / at_risk,
+    km_factor = 1 - hazard,
+    km_surv_curve = cumprod(km_factor)
+  ) |>
+  select(-study_size) |>
+  relocate(km_factor, .before = hazard)
+km_curve |>
+  mutate(
+    hazard_math = paste0("\\frac{", events, "}{", at_risk, "}"),
+    km_factor_math = paste0("\\frac{", at_risk - events, "}{", at_risk, "}"),
+    km_surv_curve = paste0(
+      "$",
+      purrr::map_chr(
+        row_number(),
+        \(i) paste(km_factor_math[seq_len(i)], collapse = " \\times ")
+      ),
+      " = ",
+      round(km_surv_curve, 4),
+      "$"
+    ),
+    hazard = paste0(
+      "$", hazard_math, " = ",
+      round(hazard, 4), "$"
+    ),
+    km_factor = paste0(
+      "$", km_factor_math, " = ",
+      round(km_factor, 4), "$"
+    )
+  ) |>
+  select(-hazard_math, -km_factor_math) |>
+  rename(
+    `$y$`                        = Y,
+    `$d(y)$`                     = events,
+    `$c(y)$`                     = censored,
+    `$e(y)$`                     = exiting,
+    `$E(y)$`                     = exited,
+    `$r(y)$`                     = at_risk,
+    `$r^*(y)$`                   = r_star,
+    `$\\hat{\\kappa}(y)$`         = km_factor,
+    `$\\hat{\\haz}(y)$`          = hazard,
+    `$\\hsurv_{KM}(y)$`          = km_surv_curve
+  ) |>
+  pander()
+```
+
+Kaplan-Meier survival curve calculations
+
+:::
+
+::::
+
+:::{#exr-km-survfit}
+Implement the KM survival curve estimator in R.
+Check the output of your implementation against the version in the `survival` package.
+:::
+
+:::{#sol-km-survfit .solution}
+
+See above for implementation.
+Here's the version from the `survival` package:
+
+```{r}
+#| label: survfit
+library(survival)
+survfit(Surv(time = Y, event = D) ~ 1, data = data1) |>
+  summary()
+```
+
+:::
+
+:::{#exr-km-graph-1}
+Graph the KM estimated survival curve for the data in @tbl-surv1.
+:::
+
+:::{#sol-km-graph-1 .solution}
+
+```{r}
+#| label: km-fig
+library(ggplot2)
+km_curve |>
+  ggplot(aes(x = Y, y = km_surv_curve)) +
+  geom_step() +
+  geom_point(data = km_curve |> filter(censored > 0), shape = 3) +
+  ylab("KM Survival Curve") +
+  expand_limits(y = c(0, 1), x = 0) +
+  scale_y_continuous(labels = scales::percent)
+```
+
+or
+
+```{r}
+#| label: autoplot-fig
+library(ggfortify)
+data1 <- data1 |>
+  mutate(
+    surv = Surv(time = Y, event = D)
+  )
+KM_model <- survfit(formula = surv ~ 1, data = data1)
+KM_model |> autoplot()
+
+```
+
+:::
+
+:::{#exr-km-median}
+Find the KM estimate of median survival time.
+:::
+
+:::{#sol-km-median .solution}
+
+```{r}
+#| label: km-median
+KM_model |> quantile(prob = 0.5) |> as_tibble()
+```
+
+:::
