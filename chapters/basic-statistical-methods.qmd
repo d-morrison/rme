@@ -669,6 +669,149 @@ to 1 (perfect linear fit).
 For simple linear regression, $R^2 = r^2$.
 :::
 
+
+# Bootstrap Confidence Intervals {#sec-bootstrap-ci}
+
+::: notes
+Adapted from
+[@vittinghoff2e, Section 3.6, pp. 62–63].
+:::
+
+## When to use the bootstrap {#sec-bootstrap-when}
+
+Bootstrapping is a widely applicable method
+for obtaining standard errors and CIs
+in three situations:
+
+- Approximate methods for computing valid CIs have been developed
+  but are not conveniently implemented in standard software.
+- Developing closed-form approximate methods has turned out to be intractable.
+- The dataset violates the assumptions underlying established methods badly enough
+  that the resulting CIs would be unreliable.
+
+## The bootstrap procedure {#sec-bootstrap-procedure}
+
+::: {#def-bootstrap-sample}
+#### Bootstrap sample
+
+A **bootstrap sample** is a sample of size $n$
+drawn **with replacement** from the observed data of size $n$.
+Because sampling is with replacement,
+each bootstrap sample contains some observations more than once
+and omits others entirely.
+:::
+
+::: {#def-bootstrap-distribution}
+#### Bootstrap distribution
+
+The **bootstrap distribution** of a statistic
+is the empirical distribution of that statistic
+computed across a large number $B$ of bootstrap samples.
+It serves as an estimate of the sampling distribution of the statistic.
+The **bootstrap standard error** is the standard deviation
+of the bootstrap distribution.
+:::
+
+The key idea is to treat the observed sample as a stand-in
+for the source population,
+and to mimic repeated sampling from that population
+by resampling with replacement from the observed data.
+
+## Bootstrap CI methods {#sec-bootstrap-methods}
+
+Three methods for constructing a CI from the bootstrap distribution
+are in common use
+[@vittinghoff2e, Section 3.6, p. 63]:
+
+### Normal approximation {#sec-bootstrap-normal}
+
+If the bootstrap distribution of the statistic of interest
+is approximately normal,
+replace the model-based standard error in a conventional CI
+with the bootstrap standard deviation:
+
+$$\hat\theta \pm z^* \cdot \widehat{\text{SE}}_{\text{boot}}$$
+
+This method requires fewer bootstrap replicates than percentile-based methods,
+but is less reliable when the sampling distribution departs from normality,
+particularly in the tails.
+
+### Percentile method {#sec-bootstrap-percentile}
+
+The CI is constructed from the empirical quantiles of the bootstrap distribution.
+A 95% CI spans the 2.5th to 97.5th percentiles
+of the $B$ bootstrap estimates.
+
+Because the extreme percentiles of a finite sample are noisy estimates
+of the corresponding population quantiles,
+a larger number of replicates is required
+(typically $B \geq 1{,}000$).
+
+### Bias-corrected and accelerated (BCa) method {#sec-bootstrap-bca}
+
+The BCa interval adjusts the percentile-based CI
+to account for both bias
+(a shift between the observed statistic and the median of the bootstrap distribution)
+and skewness in the bootstrap distribution
+[@james2021islr2e, Chapter 5, p. 209].
+BCa intervals are preferred when the bootstrap distribution is noticeably skewed.
+
+## Bootstrap CI in R {#sec-bootstrap-R}
+
+The `boot` package (included with base R) provides
+`boot()` for resampling and `boot.ci()` for all three CI types.
+
+### Bootstrap CI for the slope of SBP on age {#sec-bootstrap-hers}
+
+::: {#exm-hers-bootstrap}
+
+We adapt the example from
+[@vittinghoff2e, Section 3.6, p. 62]:
+a simple linear regression of systolic blood pressure (`SBP`) on `age`
+in the HERS dataset.
+
+```{r}
+#| label: exm-bootstrap-sbp-age
+#| code-fold: true
+library(boot)
+
+# statistic function: returns the slope of SBP ~ age
+boot_slope <- function(data, indices) {
+  fit <- lm(SBP ~ age, data = data[indices, ])
+  coef(fit)[["age"]]
+}
+
+set.seed(42)
+boot_result <- boot(
+  data = hers,
+  statistic = boot_slope,
+  R = 1000
+)
+
+boot_result
+```
+
+The bootstrap standard error closely matches
+the model-based standard error from `lm()`.
+All three bootstrap intervals below are consistent with the parametric CI.
+
+```{r}
+#| label: exm-bootstrap-sbp-age-ci
+#| code-fold: true
+boot.ci(
+  boot_result,
+  type = c("norm", "perc", "bca")
+)
+```
+
+The normal, percentile, and BCa intervals are all similar here,
+consistent with the bootstrap distribution being approximately symmetric.
+In cases with more skewness,
+the BCa interval would differ more from the others,
+and should be preferred.
+
+:::
+
 ## Further reading
 
 For a more thorough treatment of linear regression,
