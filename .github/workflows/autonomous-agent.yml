@@ -1,0 +1,251 @@
+name: Autonomous Local Agent
+
+on:
+  issues:
+    types: [assigned, labeled]
+  pull_request:
+    types: [assigned, labeled]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Direct prompt for the agent"
+        required: true
+        type: string
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      should_run: ${{ steps.gate.outputs.should_run }}
+      target_number: ${{ steps.gate.outputs.target_number }}
+      is_pr: ${{ steps.gate.outputs.is_pr }}
+      same_repo_pr: ${{ steps.gate.outputs.same_repo_pr }}
+      head_ref: ${{ steps.gate.outputs.head_ref }}
+      prompt: ${{ steps.gate.outputs.prompt }}
+      trigger: ${{ steps.gate.outputs.trigger }}
+    steps:
+      - name: Decide whether to run
+        id: gate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const eventName = context.eventName;
+            const payload = context.payload;
+            const actor = context.actor || "";
+
+            const botActors = new Set(["github-actions[bot]", "dependabot[bot]"]);
+            if (botActors.has(actor)) {
+              core.setOutput("should_run", "false");
+              return;
+            }
+
+            let shouldRun = false;
+            let isPr = false;
+            let targetNumber = "";
+            let headRef = "";
+            let sameRepoPr = "true";
+            let trigger = "";
+            let prompt = "";
+
+            if (eventName === "workflow_dispatch") {
+              shouldRun = true;
+              trigger = "workflow_dispatch";
+              prompt = (payload.inputs && payload.inputs.prompt) ? payload.inputs.prompt : "No prompt provided.";
+            } else if (eventName === "issue_comment") {
+              const issue = payload.issue;
+              const body = (payload.comment && payload.comment.body) ? payload.comment.body : "";
+              const hasCommand = /(^|\s)\/agent(\s|$)/i.test(body);
+
+              if (hasCommand) {
+                shouldRun = true;
+                isPr = Boolean(issue.pull_request);
+                targetNumber = String(issue.number);
+                trigger = "issue_comment";
+                if (isPr) {
+                  const pr = await github.rest.pulls.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: issue.number
+                  });
+                  headRef = pr.data.head.ref;
+                  sameRepoPr = pr.data.head.repo.full_name === `${context.repo.owner}/${context.repo.repo}` ? "true" : "false";
+                }
+
+                const cleaned = body.replace(/\/agent/ig, "").trim();
+                prompt = cleaned || "Please handle this request from the issue/PR conversation.";
+              }
+            } else if (eventName === "issues") {
+              const issue = payload.issue;
+              targetNumber = String(issue.number);
+              trigger = payload.action || "issues";
+              const label = payload.label ? payload.label.name : "";
+              const assigned = payload.assignee ? payload.assignee.login : "";
+              const matchesLabel = label === "agent-run";
+              const matchesAssignee = Boolean(assigned);
+
+              if (matchesLabel || matchesAssignee) {
+                shouldRun = true;
+                isPr = false;
+                prompt = `Work on issue #${issue.number}: ${issue.title}\n\n${issue.body || ""}\n\nProvide a concrete implementation plan and, if applicable, code changes.`;
+              }
+            } else if (eventName === "pull_request") {
+              const pr = payload.pull_request;
+              targetNumber = String(pr.number);
+              trigger = payload.action || "pull_request";
+              const label = payload.label ? payload.label.name : "";
+              const assigned = payload.assignee ? payload.assignee.login : "";
+              const matchesLabel = label === "agent-run";
+              const matchesAssignee = Boolean(assigned);
+
+              if (matchesLabel || matchesAssignee) {
+                shouldRun = true;
+                isPr = true;
+                headRef = pr.head.ref;
+                sameRepoPr = pr.head.repo.full_name === `${context.repo.owner}/${context.repo.repo}` ? "true" : "false";
+                prompt = `Work on pull request #${pr.number}: ${pr.title}\n\n${pr.body || ""}\n\nMake the requested code updates directly on this PR branch, then summarize what changed.`;
+              }
+            }
+
+            core.setOutput("should_run", shouldRun ? "true" : "false");
+            core.setOutput("is_pr", isPr ? "true" : "false");
+            core.setOutput("target_number", targetNumber);
+            core.setOutput("head_ref", headRef);
+            core.setOutput("same_repo_pr", sameRepoPr);
+            core.setOutput("trigger", trigger);
+            core.setOutput("prompt", prompt);
+
+  run-agent:
+    needs: preflight
+    if: needs.preflight.outputs.should_run == 'true' && (needs.preflight.outputs.is_pr != 'true' || needs.preflight.outputs.same_repo_pr == 'true')
+    runs-on: self-hosted
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    env:
+      AGENT_MODEL: ollama/llama3.2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.preflight.outputs.is_pr == 'true' && needs.preflight.outputs.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Install Aider
+        run: |
+          set -euo pipefail
+          if ! command -v python3 >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y python3 python3-pip
+          elif ! python3 -m pip --version >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y python3-pip
+          fi
+          python3 -m pip install --user --upgrade aider-chat
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Ensure Ollama model is available
+        run: |
+          set -euo pipefail
+          if ! command -v ollama >/dev/null 2>&1; then
+            echo "Ollama is required on the self-hosted runner."
+            exit 1
+          fi
+          ollama pull llama3.2
+
+      - name: Build prompt file
+        run: |
+          cat > .agent_prompt.txt <<'EOF'
+          You are an autonomous engineering agent running in GitHub Actions.
+          Repository: ${{ github.repository }}
+          Trigger: ${{ needs.preflight.outputs.trigger }}
+          Target number: ${{ needs.preflight.outputs.target_number }}
+
+          User request:
+          ${{ needs.preflight.outputs.prompt }}
+
+          Constraints:
+          - If this is a PR trigger, edit files and keep changes focused.
+          - If this is an issue trigger without a PR, provide a concrete implementation plan in your response.
+          - Do not invent APIs or files that don't exist.
+          - Keep output concise.
+          EOF
+
+      - name: Run Aider
+        id: aider
+        run: |
+          set -euo pipefail
+          if ! command -v aider >/dev/null 2>&1; then
+            export PATH="$HOME/.local/bin:$PATH"
+          fi
+          aider --model "${AGENT_MODEL}" --yes --message-file .agent_prompt.txt > .agent_output.txt 2>&1 || true
+          echo "output_file=.agent_output.txt" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push PR changes
+        id: commit
+        if: needs.preflight.outputs.is_pr == 'true'
+        run: |
+          set -euo pipefail
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: autonomous agent updates for #${{ needs.preflight.outputs.target_number }}"
+            git push origin "HEAD:${{ needs.preflight.outputs.head_ref }}"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment with result
+        if: needs.preflight.outputs.target_number != ''
+        uses: actions/github-script@v7
+        env:
+          TARGET_NUMBER: ${{ needs.preflight.outputs.target_number }}
+          IS_PR: ${{ needs.preflight.outputs.is_pr }}
+          COMMIT_CHANGED: ${{ steps.commit.outputs.changed || 'false' }}
+        with:
+          script: |
+            const fs = require("fs");
+            const targetNumber = Number(process.env.TARGET_NUMBER || "0");
+            const isPr = process.env.IS_PR === "true";
+            const changed = process.env.COMMIT_CHANGED === "true";
+
+            let output = "";
+            try {
+              output = fs.readFileSync(".agent_output.txt", "utf8");
+            } catch (e) {
+              output = "No agent output was captured.";
+            }
+
+            const tail = output.split("\n").slice(-80).join("\n").trim() || "No output.";
+            const statusLine = isPr
+              ? (changed ? "Applied updates and pushed commits to this PR branch." : "No file changes were produced.")
+              : "Issue triage mode completed.";
+
+            const body = [
+              "### Autonomous Agent Result",
+              "",
+              statusLine,
+              "",
+              "<details><summary>Agent output (tail)</summary>",
+              "",
+              "```text",
+              tail,
+              "```",
+              "",
+              "</details>"
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: targetNumber,
+              body
+            });
