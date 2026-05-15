@@ -93,6 +93,25 @@ jobs:
           SHA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
 
+      # Build a WebFetch permission list from the shared stats-allowlist repo
+      # so Claude can read pages from d-morrison.github.io and other approved
+      # sites referenced in the book.
+      - name: Build allowed-tools list from stats-allowlist
+        id: tools
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/d-morrison/stats-allowlist/main/allowlist.txt -o /tmp/allowlist.txt
+          WEBFETCH=$(tr -d '\r' < /tmp/allowlist.txt \
+            | grep -v '^[[:space:]]*$' \
+            | grep -v '^[[:space:]]*#' \
+            | sed -E 's#^[[:space:]]*https?://##' \
+            | sed -E 's#/.*$##' \
+            | sed -E 's#[^A-Za-z0-9.-]+$##' \
+            | tr '[:upper:]' '[:lower:]' \
+            | sort -u \
+            | sed 's#.*#WebFetch(domain:&)#' \
+            | paste -sd, -)
+          echo "allowed=Bash(Rscript *),Bash(quarto *),${WEBFETCH}" >> "$GITHUB_OUTPUT"
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
@@ -110,8 +129,9 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
           # Allow the pre-commit checklist tools from CLAUDE.md (Rscript for
-          # lint/spell-check, quarto render for chapter previews).
-          claude_args: '--allowed-tools "Bash(Rscript *),Bash(quarto *)"'
+          # lint/spell-check, quarto render for chapter previews) plus
+          # WebFetch for every host in the shared stats-allowlist.
+          claude_args: '--allowed-tools "${{ steps.tools.outputs.allowed }}"'
 
       - name: Re-request review from d-morrison if Claude pushed commits
         if: always() && (github.event.pull_request.number || github.event.issue.pull_request) && steps.head_before.outputs.sha != ''
