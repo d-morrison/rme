@@ -122,67 +122,7 @@ $$\surv(t) = \P(A_t=1) = \E{A_t}$$
 
 If $T$ is a nonnegative random variable, then:
 
-$$\E{T} = \int_{t=0}^{\infty} \surv(t)dt$$
-
-:::
-
----
-
-:::{#fig-surv-and-mean-integration-bounds}
-
-```{r}
-#| code-fold: true
-u_max <- 6
-
-old_par <- par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
-on.exit(par(old_par), add = TRUE)
-
-plot(
-  NA,
-  xlim = c(0, u_max),
-  ylim = c(0, u_max),
-  xlab = "t",
-  ylab = "u",
-  main = "Before reversing order"
-)
-polygon(
-  x = c(0, u_max, 0),
-  y = c(0, u_max, u_max),
-  col = grDevices::adjustcolor("steelblue", alpha.f = 0.3),
-  border = NA
-)
-abline(a = 0, b = 1, lty = 2)
-text(x = 0.6 * u_max, y = 0.2 * u_max, labels = "0 ≤ t ≤ u")
-text(x = 0.2 * u_max, y = 0.93 * u_max, labels = "0 ≤ u < ∞")
-
-plot(
-  NA,
-  xlim = c(0, u_max),
-  ylim = c(0, u_max),
-  xlab = "t",
-  ylab = "u",
-  main = "After reversing order"
-)
-polygon(
-  x = c(0, u_max, 0),
-  y = c(0, u_max, u_max),
-  col = grDevices::adjustcolor("tomato", alpha.f = 0.3),
-  border = NA
-)
-abline(a = 0, b = 1, lty = 2)
-text(x = 0.2 * u_max, y = 0.93 * u_max, labels = "0 ≤ t < ∞")
-text(x = 0.6 * u_max, y = 0.2 * u_max, labels = "t ≤ u < ∞")
-```
-
-The same triangular region
-in the $(t, u)$-plane
-can be written in two equivalent ways:
-$0 \le t \le u < \infty$
-or
-$0 \le t < \infty,\ t \le u < \infty$.
-These correspond
-to the two integration orders
-used in the proof.
+$$\E{T} = \int_{t=0}^{\infty} \surv(t)\,dt$$
 
 :::
 
@@ -196,11 +136,72 @@ Adapted from the StatProofBook proof
 at
 <https://statproofbook.github.io/P/mean-nnrvar.html>.
 
-Figure @fig-surv-and-mean-integration-bounds
-shows the same triangular integration region
-written in two equivalent ways
-before and after
-reversing the order of integration.
+:::{#fig-surv-and-mean-integration-bounds layout-ncol=2}
+
+```{r}
+#| label: fig-integration-before
+#| fig-cap: "Original order: for each $u$, $t$ ranges over $[0, u]$."
+#| code-fold: true
+library(ggplot2)
+u_max <- 6
+tri_df <- data.frame(t = c(0, u_max, 0), u = c(0, u_max, u_max))
+ggplot(tri_df, aes(x = t, y = u)) +
+  geom_polygon(fill = "steelblue", alpha = 0.3) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  annotate(
+    "text",
+    x = 0.65 * u_max,
+    y = 0.15 * u_max,
+    label = "0 ≤ t ≤ u"
+  ) +
+  annotate(
+    "text",
+    x = 0.15 * u_max,
+    y = 0.9 * u_max,
+    label = "0 ≤ u < ∞"
+  ) +
+  coord_fixed() +
+  theme_bw() +
+  labs(x = "t", y = "u")
+```
+
+```{r}
+#| label: fig-integration-after
+#| fig-cap: "Reversed order: for each $t$, $u$ ranges over $[t, \\infty)$."
+#| code-fold: true
+library(ggplot2)
+u_max <- 6
+tri_df <- data.frame(t = c(0, u_max, 0), u = c(0, u_max, u_max))
+ggplot(tri_df, aes(x = t, y = u)) +
+  geom_polygon(fill = "tomato", alpha = 0.3) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  annotate(
+    "text",
+    x = 0.15 * u_max,
+    y = 0.9 * u_max,
+    label = "0 ≤ t < ∞"
+  ) +
+  annotate(
+    "text",
+    x = 0.65 * u_max,
+    y = 0.15 * u_max,
+    label = "t ≤ u < ∞"
+  ) +
+  coord_fixed() +
+  theme_bw() +
+  labs(x = "t", y = "u")
+```
+
+The same triangular region in the $(t, u)$-plane,
+described in two equivalent ways:
+$0 \le t \le u < \infty$ (left, original order)
+and $0 \le t < \infty,\ t \le u < \infty$ (right, reversed order).
+
+:::
+
+Figure @fig-surv-and-mean-integration-bounds shows the same integration
+region under the two equivalent orderings.
+The third step below swaps the order of integration (Fubini's theorem):
 
 $$
 \ba

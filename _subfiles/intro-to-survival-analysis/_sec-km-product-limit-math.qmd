@@ -1,10 +1,15 @@
 To see why multiplying the conditional survival factors estimates marginal
 survival, write the ordered distinct exit times as
 $y_1 < y_2 < \cdots < y_m$.
+Here $Y$ denotes exit time
+(either event time or censoring time),
+while $T$ denotes the underlying event time,
+which is not always observed.
 
-The Kaplan-Meier construction assumes that the conditional probability of
-surviving between consecutive exit times is 1.
-For consecutive exit times $y_{j-1}$ and $y_j$, this means:
+Because $y_{j-1}$ and $y_j$ are consecutive distinct exit times,
+there are no exits between them.
+Therefore the conditional probability of surviving between these two
+times is 1:
 
 $$
 \Pr(Y \geq y_j \mid Y > y_{j-1}) = 1.
@@ -15,6 +20,7 @@ $\{Y > y_{j-1}\}$, because $y_j > y_{j-1}$. Therefore intersecting
 $\{Y \geq y_j\}$ with $\{Y > y_{j-1}\}$ does not change the event:
 
 :::{#thm-km-gaps}
+#### Consecutive Exit-Time Identity
 
 If $\Pr(Y \geq y_j \mid Y > y_{j-1}) = 1$, then:
 
@@ -86,22 +92,28 @@ S_3
 $$
 
 Continuing in this way gives
-$S_j = \prod_{k=1}^j \cs(y_k)$. Replacing the conditional survival
-probabilities with their empirical estimates gives the Kaplan-Meier
-product-limit estimate:
+$S_j = \prod_{k=1}^j \cs(y_k)$.
+
+To estimate the survival function for the underlying event time $T$,
+we replace the conditional survival probabilities $\Pr(T > y_k \mid T \geq y_k)$
+with their empirical estimates at the observed exit times.
+This gives the Kaplan-Meier product-limit estimator:
 
 $$
 \ba
-\hat{\Pr}(Y > t)
+\hat{\Pr}(T > t)
 &= \hat{S}_{KM}(t)\\
-&= \prod_{k:\, y_k \leq t} \hat{\Pr}(Y > y_k \mid Y \geq y_k)\\
+&= \prod_{k:\, y_k \leq t} \hat{\Pr}(T > y_k \mid T \geq y_k)\\
 &= \prod_{k:\, y_k \leq t} \hat{\cs}_k\\
 &= \prod_{k:\, y_k \leq t} \frac{r_k - d_k}{r_k}
 \ea
 $$
 
 where $r_k$ is the number at risk at time $y_k$
-and $d_k$ is the number of events at time $y_k$.
+and $d_k$ is the number of events (not total exits) at time $y_k$.
+The empirical factor $(r_k - d_k)/r_k$ estimates $\Pr(T > y_k \mid T \geq y_k)$
+by counting only events in the numerator,
+since censoring times do not provide information about the event time distribution.
 
 For any time $t$ between two consecutive exit times, the estimate stays
 constant, because the only additional conditional survival factors are 1.
