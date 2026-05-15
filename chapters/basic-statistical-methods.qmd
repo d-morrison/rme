@@ -707,6 +707,23 @@ each bootstrap sample contains some observations more than once
 and omits others entirely.
 :::
 
+::: {#exm-bootstrap-sample-toy}
+
+#### Bootstrap sample
+
+Consider a dataset of five observations: $\{3,\;7,\;5,\;2,\;9\}$ ($n = 5$).
+Two possible bootstrap samples drawn with replacement are:
+
+| Bootstrap sample | Values drawn | Notes |
+|:---:|:---:|:---|
+| 1 | $3,\;3,\;7,\;5,\;9$ | 3 appears twice; 2 not drawn |
+| 2 | $2,\;7,\;7,\;9,\;5$ | 7 appears twice; 3 not drawn |
+
+Each sample has size $n = 5$
+but may repeat or omit individual observations from the original dataset.
+
+:::
+
 ::: {#def-bootstrap-distribution}
 #### Bootstrap distribution
 
@@ -716,6 +733,53 @@ computed across a large number $B$ of bootstrap samples.
 It serves as an estimate of the sampling distribution of the statistic.
 The **bootstrap standard error** is the standard deviation
 of the bootstrap distribution.
+:::
+
+::: {#exm-bootstrap-distribution-toy}
+
+#### Bootstrap distribution
+
+```{r}
+#| label: setup-boot-dist-toy
+#| include: false
+set.seed(42)
+toy <- c(3, 7, 5, 2, 9, 4, 8, 1, 6, 10)
+boot_means_toy <- replicate(
+  1000,
+  mean(sample(toy, replace = TRUE))
+)
+boot_se_toy <- sd(boot_means_toy)
+boot_ci_norm_lo <- mean(toy) - 1.96 * boot_se_toy
+boot_ci_norm_hi <- mean(toy) + 1.96 * boot_se_toy
+boot_ci_perc <- quantile(boot_means_toy, c(0.025, 0.975))
+```
+
+Using the 10-observation dataset $\{3, 7, 5, 2, 9, 4, 8, 1, 6, 10\}$
+(observed mean `r mean(toy)`),
+we draw $B = 1{,}000$ bootstrap resamples
+and compute the sample mean of each.
+The bootstrap distribution is centered near the observed mean
+with bootstrap standard error `r round(boot_se_toy, 2)`.
+
+::: {#fig-boot-dist-toy}
+
+```{r}
+#| code-fold: true
+library(ggplot2)
+ggplot(data.frame(mean = boot_means_toy)) +
+  aes(x = mean) +
+  geom_histogram(bins = 30, color = "white", fill = "steelblue") +
+  geom_vline(xintercept = mean(toy), color = "red", linewidth = 1) +
+  labs(x = "Bootstrap mean", y = "Count")
+```
+
+Bootstrap distribution of the sample mean
+($B = 1{,}000$ replicates, $n = 10$ toy dataset).
+The red line marks the observed mean (`r mean(toy)`).
+The distribution is approximately normal and centered near $\bar{x}$.
+
+:::
+
 :::
 
 The key idea is to treat the observed sample as a stand-in
@@ -742,6 +806,22 @@ This method requires fewer bootstrap replicates than percentile-based methods,
 but is less reliable when the sampling distribution departs from normality,
 particularly in the tails.
 
+::: {#exm-bootstrap-normal-toy}
+
+#### Normal approximation
+
+Continuing from @exm-bootstrap-distribution-toy:
+the observed mean is `r mean(toy)`
+and the bootstrap standard error is `r round(boot_se_toy, 2)`.
+The 95% normal-approximation CI is:
+
+$$\bar{x} \pm 1.96 \cdot \widehat{\text{SE}}_{\text{boot}}$$
+
+which here evaluates to
+(`r round(boot_ci_norm_lo, 2)`, `r round(boot_ci_norm_hi, 2)`).
+
+:::
+
 ### Percentile method {#sec-bootstrap-percentile}
 
 The CI is constructed from the empirical quantiles of the bootstrap distribution.
@@ -753,6 +833,19 @@ of the corresponding population quantiles,
 a larger number of replicates is required
 (typically $B \geq 1{,}000$).
 
+::: {#exm-bootstrap-percentile-toy}
+
+#### Percentile method
+
+Continuing from @exm-bootstrap-distribution-toy
+with $B = 1{,}000$ bootstrap means:
+the 2.5th percentile is `r round(boot_ci_perc[[1]], 2)`
+and the 97.5th percentile is `r round(boot_ci_perc[[2]], 2)`,
+giving a 95% CI of
+(`r round(boot_ci_perc[[1]], 2)`, `r round(boot_ci_perc[[2]], 2)`).
+
+:::
+
 ### Bias-corrected and accelerated (BCa) method {#sec-bootstrap-bca}
 
 The BCa interval adjusts the percentile-based CI
@@ -761,6 +854,20 @@ to account for both bias
 and skewness in the bootstrap distribution
 [@james2021islr2e, Chapter 5, p. 209].
 BCa intervals are preferred when the bootstrap distribution is noticeably skewed.
+
+::: {#exm-bootstrap-bca-toy}
+
+#### Bias-corrected and accelerated method
+
+The BCa interval for the toy dataset is computed automatically
+by `boot.ci()` in R,
+which handles the bias-correction and acceleration adjustments internally.
+The comprehensive worked example below
+demonstrates all three CI methods side by side,
+making it straightforward to compare the BCa interval
+to the normal and percentile intervals.
+
+:::
 
 ## Bootstrap CI in R {#sec-bootstrap-R}
 

@@ -76,6 +76,11 @@ strive for **straightforward narrative flow**:
 - If two sections are closely related
   (e.g., an "Observational Studies" section that relies on DAG concepts),
   place the foundational section first.
+- **After every definition or concept, include a concrete example** —
+  preferably numerical — to illustrate the abstract idea.
+  Use a `{#exm-...}` div immediately following the `{#def-...}` div.
+  The example should show specific numbers or a small dataset,
+  not just repeat the definition in different words.
 
 ## Code Review Scope
 
