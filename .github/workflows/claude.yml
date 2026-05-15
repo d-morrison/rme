@@ -100,6 +100,9 @@ jobs:
         id: tools
         run: |
           curl -fsSL https://raw.githubusercontent.com/d-morrison/stats-allowlist/main/allowlist.txt -o /tmp/allowlist.txt
+          # Reject anything that isn't a strictly valid hostname so a typo or
+          # tampered upstream entry can't inject extra claude_args via " or
+          # other shell metacharacters.
           WEBFETCH=$(tr -d '\r' < /tmp/allowlist.txt \
             | grep -v '^[[:space:]]*$' \
             | grep -v '^[[:space:]]*#' \
@@ -107,10 +110,15 @@ jobs:
             | sed -E 's#/.*$##' \
             | sed -E 's#[^A-Za-z0-9.-]+$##' \
             | tr '[:upper:]' '[:lower:]' \
+            | grep -E '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$' \
             | sort -u \
             | sed 's#.*#WebFetch(domain:&)#' \
             | paste -sd, -)
-          echo "allowed=Bash(Rscript *),Bash(quarto *),${WEBFETCH}" >> "$GITHUB_OUTPUT"
+          if [ -n "$WEBFETCH" ]; then
+            echo "allowed=Bash(Rscript *),Bash(quarto *),${WEBFETCH}" >> "$GITHUB_OUTPUT"
+          else
+            echo "allowed=Bash(Rscript *),Bash(quarto *)" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Run Claude Code
         id: claude
