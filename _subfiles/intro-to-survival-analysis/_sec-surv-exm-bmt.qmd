@@ -5,18 +5,18 @@ Data from @copelan1991treatment
 
 ![Recovery process from a bone marrow transplant (Fig. 1.1 from @klein2003survival)](../images/bone marrow multi-stage model.png){#fig-bmt-mst}
 
-## Study design
+### Study design
 
-### Treatment {.unnumbered}
+##### Treatment {.unnumbered}
 
 -   **allogeneic** (from a donor) **bone marrow transplant therapy**
 
-### Inclusion criteria {.unnumbered}
+##### Inclusion criteria {.unnumbered}
 
 -   **acute myeloid leukemia (AML)**
 -   **acute lymphoblastic leukemia (ALL).**
 
-### Possible intermediate events {.unnumbered}
+##### Possible intermediate events {.unnumbered}
 
 -   **graft vs. host disease (GVHD)**: an immunological rejection
 response to the transplant
@@ -24,21 +24,21 @@ response to the transplant
 
 One or the other, both in either order, or neither may occur.
 
-### End point events
+##### End point events
 
 -   relapse of the disease
 -   death
 
 Any or all of these events may be censored.
 
-## `KMsurv::bmt` data in R
+### `KMsurv::bmt` data in R
 
 ```{r}
 library(KMsurv)
 ?bmt
 ```
 
-## Analysis plan
+### Analysis plan
 
 -   We concentrate for now on disease-free survival (`t2` and `d3`) for
 the three risk groups, ALL, AML Low Risk, and AML High Risk.
@@ -47,7 +47,7 @@ and test for differences.
 -   We will construct the cumulative hazard curves and compare them.
 -   We will estimate the hazard functions, interpret, and compare them.
 
-## Survival Function Estimate and Variance
+### Survival Function Estimate and Variance
 
 $$\hsurv(t) = \prod_{t_i \le t}\sb{1-\frac{d_i}{r_i}}$$ where
 $r_i$ is the number at risk at time $t_i$.
@@ -68,7 +68,7 @@ difference of survival functions.
 
 ---
 
-### Kaplan-Meier survival curves
+##### Kaplan-Meier survival curves
 
 ```{r}
 #| code-summary: "code to preprocess and model `bmt` data"
@@ -110,7 +110,7 @@ autoplot(
 
 ---
 
-## Understanding Greenwood's formula (optional)
+### Understanding Greenwood's formula (optional)
 
 ::: notes
 To see where Greenwood's formula comes from, let $x_i = Y_i - d_i$. We
@@ -122,18 +122,18 @@ independent binomials $\text{Bin}(Y_i,p_i)$. Letting $\surv(t)$ be the
 
 $$
 \begin{aligned}
-\hsurv(t) &=\prod_{t_i<t}x_i/Y_i\\
-\surv(t)&=\prod_{t_i<t}p_i
+\hsurv(t) &=\prod_{t_i \le t}x_i/Y_i\\
+\surv(t)&=\prod_{t_i \le t}p_i
 \end{aligned}
 $$
 
 $$
 \begin{aligned}
 \frac{\hsurv(t)}{\surv(t)}
-&= \prod_{t_i<t} \frac{x_i}.    {p_iY_i}
-\\ &= \prod_{t_i<t} \frac{\hat p_i}{p_i}
-\\ &= \prod_{t_i<t} \paren{1+\frac{\hat p_i-p_i}{p_i}}
-\\ &\approx 1+\sum_{t_i<t} \frac{\hat p_i-p_i}{p_i}
+&= \prod_{t_i \le t} \frac{x_i}.    {p_iY_i}
+\\ &= \prod_{t_i \le t} \frac{\hat p_i}{p_i}
+\\ &= \prod_{t_i \le t} \paren{1+\frac{\hat p_i-p_i}{p_i}}
+\\ &\approx 1+\sum_{t_i \le t} \frac{\hat p_i-p_i}{p_i}
 \end{aligned}
 $$
 
@@ -142,18 +142,18 @@ $$
 $$
 \begin{aligned}
 \text{Var}\left(\frac{\hsurv(t)}{\surv(t)}\right)
-&\approx \text{Var}\left(1+\sum_{t_i<t} \frac{\hat p_i-p_i}{p_i}\right)
-\\ &=\sum_{t_i<t} \frac{1}{p_i^2}\frac{p_i(1-p_i)}{Y_i}
-\\ &= \sum_{t_i<t} \frac{(1-p_i)}{p_iY_i}
-\\ &\approx\sum_{t_i<t} \frac{(1-x_i/Y_i)}{x_i}
-\\ &=\sum_{t_i<t} \frac{Y_i-x_i}{x_iY_i}
-\\ &=\sum_{t_i<t} \frac{d_i}{Y_i(Y_i-d_i)}
+&\approx \text{Var}\left(1+\sum_{t_i \le t} \frac{\hat p_i-p_i}{p_i}\right)
+\\ &=\sum_{t_i \le t} \frac{1}{p_i^2}\frac{p_i(1-p_i)}{Y_i}
+\\ &= \sum_{t_i \le t} \frac{(1-p_i)}{p_iY_i}
+\\ &\approx\sum_{t_i \le t} \frac{(1-x_i/Y_i)}{x_i}
+\\ &=\sum_{t_i \le t} \frac{Y_i-x_i}{x_iY_i}
+\\ &=\sum_{t_i \le t} \frac{d_i}{Y_i(Y_i-d_i)}
 \\ \tf \Varf{\hsurv(t)}
-&\approx \hsurv(t)^2\sum_{t_i<t} \frac{d_i}{Y_i(Y_i-d_i)}
+&\approx \hsurv(t)^2\sum_{t_i \le t} \frac{d_i}{Y_i(Y_i-d_i)}
 \end{aligned}
 $$
 
-## Test for differences among the disease groups
+### Test for differences among the disease groups
 
 Here we compute a chi-square test for assocation between disease group
 (`group`) and disease-free survival:
@@ -162,7 +162,7 @@ Here we compute a chi-square test for assocation between disease group
 survdiff(surv ~ group, data = bmt)
 ```
 
-## Cumulative Hazard
+### Cumulative Hazard
 
 $$
 \begin{aligned}
@@ -193,8 +193,8 @@ $$
 \begin{aligned}
 \hat \cuhaz(t)
 &= -\logf{\hsurv(t)}\\
-&= -\logf{\prod_{t_i < t}\sb{1-\frac{d_i}{Y_i}}}\\
-&= -\sum_{t_i < t}\logf{1-\frac{d_i}{Y_i}}
+&= -\logf{\prod_{t_i \le t}\sb{1-\frac{d_i}{Y_i}}}\\
+&= -\sum_{t_i \le t}\logf{1-\frac{d_i}{Y_i}}
 \end{aligned}
 $$
 
@@ -203,7 +203,7 @@ hazard**.
 
 ---
 
-### Example: Cumulative Hazard Curves for Bone-Marrow Transplant (`bmt`) data
+#### Example: Cumulative Hazard Curves for Bone-Marrow Transplant (`bmt`) data
 
 ```{r}
 #| fig-cap: "Disease-Free Cumulative Hazard by Disease Group"

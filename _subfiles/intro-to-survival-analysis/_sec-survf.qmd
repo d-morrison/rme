@@ -48,10 +48,10 @@ distribution family of models is:
 $$
 P(T> t) =
 \begin{cases}
-\ef{-\lambda t}, & t \ge 0 \\
+\ef{-\haz t}, & t \ge 0 \\
 1, & t \le 0
 \end{cases}
-$$ where $\lambda > 0$.
+$$ where $\haz > 0$.
 
 @fig-exp-survfuns shows some examples of exponential survival functions.
 
@@ -112,7 +112,7 @@ ggplot() +
 
 If $A_t$ represents survival status at time $t$, with $A_t = 1$ denoting alive at time $t$ and $A_t = 0$ denoting deceased at time $t$, then:
 
-$$\surv(t) = \Pr(A_t=1) = \Expp[A_t]$$
+$$\surv(t) = \P(A_t=1) = \E{A_t}$$
 
 :::
 
@@ -122,7 +122,67 @@ $$\surv(t) = \Pr(A_t=1) = \Expp[A_t]$$
 
 If $T$ is a nonnegative random variable, then:
 
-$$\Expp[T] = \int_{t=0}^{\infty} \surv(t)dt$$
+$$\E{T} = \int_{t=0}^{\infty} \surv(t)dt$$
+
+:::
+
+---
+
+:::{#fig-surv-and-mean-integration-bounds}
+
+```{r}
+#| code-fold: true
+u_max <- 6
+
+old_par <- par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+on.exit(par(old_par), add = TRUE)
+
+plot(
+  NA,
+  xlim = c(0, u_max),
+  ylim = c(0, u_max),
+  xlab = "t",
+  ylab = "u",
+  main = "Before reversing order"
+)
+polygon(
+  x = c(0, u_max, 0),
+  y = c(0, u_max, u_max),
+  col = grDevices::adjustcolor("steelblue", alpha.f = 0.3),
+  border = NA
+)
+abline(a = 0, b = 1, lty = 2)
+text(x = 0.6 * u_max, y = 0.2 * u_max, labels = "0 ≤ t ≤ u")
+text(x = 0.2 * u_max, y = 0.93 * u_max, labels = "0 ≤ u < ∞")
+
+plot(
+  NA,
+  xlim = c(0, u_max),
+  ylim = c(0, u_max),
+  xlab = "t",
+  ylab = "u",
+  main = "After reversing order"
+)
+polygon(
+  x = c(0, u_max, 0),
+  y = c(0, u_max, u_max),
+  col = grDevices::adjustcolor("tomato", alpha.f = 0.3),
+  border = NA
+)
+abline(a = 0, b = 1, lty = 2)
+text(x = 0.2 * u_max, y = 0.93 * u_max, labels = "0 ≤ t < ∞")
+text(x = 0.6 * u_max, y = 0.2 * u_max, labels = "t ≤ u < ∞")
+```
+
+The same triangular region
+in the $(t, u)$-plane
+can be written in two equivalent ways:
+$0 \le t \le u < \infty$
+or
+$0 \le t < \infty,\ t \le u < \infty$.
+These correspond
+to the two integration orders
+used in the proof.
 
 :::
 
@@ -130,6 +190,28 @@ $$\Expp[T] = \int_{t=0}^{\infty} \surv(t)dt$$
 
 :::{.proof}
 
-See <https://statproofbook.github.io/P/mean-nnrvar.html>.
+Adapted from the StatProofBook proof
+"Mean of non-negative random variable"
+[@statproofbook]
+at
+<https://statproofbook.github.io/P/mean-nnrvar.html>.
+
+Figure @fig-surv-and-mean-integration-bounds
+shows the same triangular integration region
+written in two equivalent ways
+before and after
+reversing the order of integration.
+
+$$
+\ba
+\E{T}
+&= \int_{u=0}^{\infty} u\pdf(u)\,du\\
+&= \int_{u=0}^{\infty}\paren{\int_{t=0}^{u} 1\,dt}\pdf(u)\,du\\
+&= \int_{u=0}^{\infty}\int_{t=0}^{u} \pdf(u)\,dt\,du\\
+&= \int_{t=0}^{\infty}\int_{u=t}^{\infty} \pdf(u)\,du\,dt\\
+&= \int_{t=0}^{\infty}\P(T>t)\,dt\\
+&= \int_{t=0}^{\infty}\surv(t)\,dt.
+\ea
+$$
 
 :::
