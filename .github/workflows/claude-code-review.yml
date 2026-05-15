@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
+      pull-requests: write
+      issues: write
       id-token: write
 
     steps:
@@ -31,6 +31,47 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Stash and clear all review requests while Claude reviews
+        id: stash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          REVIEWERS_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers")
+          USERS=$(echo "$REVIEWERS_JSON" | jq -c '[.users[].login]')
+          TEAMS=$(echo "$REVIEWERS_JSON" | jq -c '[.teams[].slug]')
+          echo "users=$USERS" >> "$GITHUB_OUTPUT"
+          echo "teams=$TEAMS" >> "$GITHUB_OUTPUT"
+          echo "Stashed users: $USERS"
+          echo "Stashed teams: $TEAMS"
+          if [ "$USERS" != "[]" ] || [ "$TEAMS" != "[]" ]; then
+            jq -n --argjson users "$USERS" --argjson teams "$TEAMS" \
+              '{reviewers: $users, team_reviewers: $teams}' \
+              | gh api -X DELETE \
+                  "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
+                  --input - || true
+          fi
+
+      - name: Delete prior Claude sticky comment so the new one lands at the bottom
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # Mirrors how anthropics/claude-code-action locates its sticky comment to update.
+          # See create-initial.ts in:
+          # https://github.com/anthropics/claude-code-action/tree/main/src/github/operations/comments
+          CLAUDE_APP_BOT_ID: '209825114'
+        run: |
+          CID=$(gh api --paginate \
+            "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+            --jq ".[] | select(.user.id == $CLAUDE_APP_BOT_ID or (.user.type == \"Bot\" and (.user.login | ascii_downcase | contains(\"claude\")))) | .id" \
+            | head -n 1)
+          if [ -n "$CID" ]; then
+            echo "Deleting prior Claude comment $CID so the new sticky lands at the bottom."
+            gh api -X DELETE "repos/${{ github.repository }}/issues/comments/$CID" || true
+          else
+            echo "No prior Claude comment found; action will create a fresh sticky."
+          fi
 
       - name: Run Claude Code Review
         id: claude-review
@@ -40,5 +81,43 @@ jobs:
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
           prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          # Force tag mode (anthropics/claude-code-action src/modes/detector.ts).
+          # In the default agent mode for pull_request events, the action never
+          # posts any non-inline PR comment by itself (src/modes/agent/index.ts:
+          # "No tracking comment in agent mode", commentId: undefined). The
+          # code-review plugin will only post a top-level comment if it finds
+          # issues scoring >= 80, so silent runs are common on small/mechanical
+          # PRs. track_progress forces tag mode, which creates a tracking
+          # comment up front via createInitialComment() and updates it at the
+          # end — guaranteeing a PR comment regardless of plugin output.
+          track_progress: 'true'
+          # Bundle the tracking comment into a single sticky per PR rather than
+          # a new comment each run. (Only consulted in tag mode.) The previous
+          # sticky is deleted in the step above so the new one always lands at
+          # the bottom of the conversation rather than getting buried in place.
+          use_sticky_comment: 'true'
+          # Also archive the formatted report to the Actions step summary page
+          # (does not affect PR comments).
+          display_report: 'true'
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
+
+      - name: Restore review requests now that Claude is done
+        if: always() && steps.stash.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          USERS: ${{ steps.stash.outputs.users }}
+          TEAMS: ${{ steps.stash.outputs.teams }}
+        run: |
+          USERS=${USERS:-[]}
+          TEAMS=${TEAMS:-[]}
+          if [ "$USERS" = "[]" ] && [ "$TEAMS" = "[]" ]; then
+            echo "No reviewers were originally requested."
+            exit 0
+          fi
+          jq -n --argjson users "$USERS" --argjson teams "$TEAMS" \
+            '{reviewers: $users, team_reviewers: $teams}' \
+            | gh api -X POST \
+                "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
+                --input - || true
