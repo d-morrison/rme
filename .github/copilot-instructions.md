@@ -436,6 +436,13 @@ Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
 
+**Do not use `#| include: false` unless there is a specific reason** to hide the code from readers
+(for example, loading a package whose installation messages would be distracting,
+or a long data-munging chunk that is not the focus of the example).
+For most setup chunks in examples and exercises,
+leave the code visible or use `#| code-fold: true`
+so readers can see how the data or values were constructed.
+
 ## Quarto `df-print` behavior
 
 For this repository,
