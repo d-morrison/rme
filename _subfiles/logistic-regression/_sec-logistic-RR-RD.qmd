@@ -77,7 +77,7 @@ fit_wcgs <- glm(
 
 # G-computation: set everyone to Type A, then to Type B,
 # and average the predicted risks
-dibpat_levels <- levels(wcgs$dibpat)  # c("Type B", "Type A")
+dibpat_levels <- levels(wcgs$dibpat)
 
 newdata_A <- wcgs |> mutate(dibpat = factor("Type A", levels = dibpat_levels))
 newdata_B <- wcgs |> mutate(dibpat = factor("Type B", levels = dibpat_levels))
@@ -86,7 +86,10 @@ risk_A <- mean(predict(fit_wcgs, newdata = newdata_A, type = "response"))
 risk_B <- mean(predict(fit_wcgs, newdata = newdata_B, type = "response"))
 
 tibble::tibble(
-  measure   = c("Risk (Type A)", "Risk (Type B)", "Risk difference", "Risk ratio"),
+  measure   = c(
+    "Risk (Type A)", "Risk (Type B)",
+    "Risk difference", "Risk ratio"
+  ),
   estimate  = c(risk_A, risk_B, risk_A - risk_B, risk_A / risk_B)
 )
 ```
@@ -97,6 +100,7 @@ tibble::tibble(
 #| label: exm-boot-gcomp-ci
 #| code-fold: true
 library(boot)
+library(dplyr)
 
 boot_gcomp <- function(data, indices) {
   d <- data[indices, ]
