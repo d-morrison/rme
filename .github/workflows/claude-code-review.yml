@@ -10,6 +10,15 @@ on:
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
 
+# Serialize runs per PR. The stash/restore reviewer dance below assumes
+# only one run is mutating the PR's reviewer list at a time; without
+# this, an overlapping second run reads an already-cleared list, stashes
+# [], and on restore wipes the original reviewers permanently. Cancel
+# the in-flight run on a new push so the freshest diff wins.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   claude-review:
     if: ${{ github.event.pull_request.user.type != 'Bot' && github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]') }}
@@ -32,13 +41,20 @@ jobs:
         with:
           fetch-depth: 1
 
+      # The reviewer stash/restore is a serialization signal: we clear the
+      # human reviewers before Claude runs so they aren't notified mid-run,
+      # then re-add them when Claude finishes so the re-add fires a fresh
+      # GitHub notification — letting the human see Claude's review before
+      # they start their own. The restore is load-bearing for that signal,
+      # so it must NOT silently swallow errors (see restore step below).
       - name: Stash and clear all review requests while Claude reviews
         id: stash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          REVIEWERS_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers")
+          REVIEWERS_JSON=$(gh api "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers")
           USERS=$(echo "$REVIEWERS_JSON" | jq -c '[.users[].login]')
           TEAMS=$(echo "$REVIEWERS_JSON" | jq -c '[.teams[].slug]')
           echo "users=$USERS" >> "$GITHUB_OUTPUT"
@@ -49,29 +65,30 @@ jobs:
             jq -n --argjson users "$USERS" --argjson teams "$TEAMS" \
               '{reviewers: $users, team_reviewers: $teams}' \
               | gh api -X DELETE \
-                  "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
+                  "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers" \
                   --input - || true
           fi
 
-      - name: Delete prior Claude sticky comment so the new one lands at the bottom
+      - name: Delete prior Claude sticky comments so the new one lands at the bottom
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           # Mirrors how anthropics/claude-code-action locates its sticky comment to update.
           # See create-initial.ts in:
           # https://github.com/anthropics/claude-code-action/tree/main/src/github/operations/comments
           CLAUDE_APP_BOT_ID: '209825114'
         run: |
-          CID=$(gh api --paginate \
-            "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" \
+          # Delete every Claude-authored top-level comment, not just the most
+          # recent one — PRs predating use_sticky_comment may have multiple.
+          gh api --paginate \
+            "repos/$REPO/issues/$PR_NUMBER/comments" \
             --jq ".[] | select(.user.id == $CLAUDE_APP_BOT_ID or (.user.type == \"Bot\" and (.user.login | ascii_downcase | contains(\"claude\")))) | .id" \
-            | head -n 1)
-          if [ -n "$CID" ]; then
-            echo "Deleting prior Claude comment $CID so the new sticky lands at the bottom."
-            gh api -X DELETE "repos/${{ github.repository }}/issues/comments/$CID" || true
-          else
-            echo "No prior Claude comment found; action will create a fresh sticky."
-          fi
+            | while read -r CID; do
+                [ -z "$CID" ] && continue
+                echo "Deleting prior Claude comment $CID."
+                gh api -X DELETE "repos/$REPO/issues/comments/$CID" || true
+              done
 
       - name: Run Claude Code Review
         id: claude-review
@@ -106,18 +123,21 @@ jobs:
         if: always() && steps.stash.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           USERS: ${{ steps.stash.outputs.users }}
           TEAMS: ${{ steps.stash.outputs.teams }}
         run: |
-          USERS=${USERS:-[]}
-          TEAMS=${TEAMS:-[]}
           if [ "$USERS" = "[]" ] && [ "$TEAMS" = "[]" ]; then
             echo "No reviewers were originally requested."
             exit 0
           fi
+          # Do NOT add `|| true` here. A failed restore means the human
+          # reviewer was silently dropped from the PR and never gets the
+          # post-Claude notification — fail loudly so it can be re-added
+          # manually instead of vanishing.
           jq -n --argjson users "$USERS" --argjson teams "$TEAMS" \
             '{reviewers: $users, team_reviewers: $teams}' \
             | gh api -X POST \
-                "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
-                --input - || true
+                "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers" \
+                --input -
