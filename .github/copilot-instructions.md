@@ -42,6 +42,25 @@
 - **Verify output**: Check that expected files are created with correct content
 - **Never claim success without evidence**: Only report that something works after you've confirmed it yourself
 
+## Scoped Instructions
+
+Use the matching file-scoped instructions in `.github/instructions/`
+in addition to this global policy file:
+
+- `quarto-content.instructions.md` for `.qmd` and `.Rmd` authoring work
+- `r-and-config.instructions.md` for R, Quarto YAML, and workflow/config changes
+- `latex-macros.instructions.md` when editing the `latex-macros/` submodule
+
+Keep this file as the repo-wide policy anchor.
+Prefer the scoped files for task-specific details,
+links to source documentation,
+and reminders that would otherwise add noise to every task.
+
+Related reusable customizations live under `.github/skills/`
+and `.github/prompts/`.
+Use them for repeated repo-specific workflows
+instead of re-deriving the same steps in every chat.
+
 ## Narrative Flow
 
 When writing or editing chapter content,
