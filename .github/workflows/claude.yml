@@ -83,6 +83,16 @@ jobs:
         with:
           cache-version: 1
 
+      - name: Capture PR head SHA before Claude
+        id: head_before
+        if: github.event.pull_request.number || github.event.issue.pull_request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
+          SHA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
@@ -101,12 +111,20 @@ jobs:
           # or https://code.claude.com/docs/en/cli-reference for available options
           # claude_args: '--allowed-tools Bash(gh pr *)'
 
-      - name: Re-request review from d-morrison
-        if: always() && (github.event.pull_request.number || github.event.issue.pull_request)
+      - name: Re-request review from d-morrison if Claude pushed commits
+        if: always() && (github.event.pull_request.number || github.event.issue.pull_request) && steps.head_before.outputs.sha != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA_BEFORE: ${{ steps.head_before.outputs.sha }}
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
-          gh api -X POST \
-            "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
-            -f "reviewers[]=d-morrison" || true
+          SHA_AFTER=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
+          echo "before=$SHA_BEFORE  after=$SHA_AFTER"
+          if [ "$SHA_AFTER" != "$SHA_BEFORE" ]; then
+            echo "Claude pushed new commits; re-requesting review."
+            gh api -X POST \
+              "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
+              -f "reviewers[]=d-morrison" || true
+          else
+            echo "No new commits on PR head; skipping re-request."
+          fi
