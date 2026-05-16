@@ -1,0 +1,123 @@
+:::{#def-antiderivative}
+#### Antiderivative
+
+A function $F$ is an **antiderivative** of $f$ on an interval $I$ if:
+
+$$\deriv{x} F(x) = f(x), \quad \forall x \in I$$
+
+The family of all antiderivatives of $f$ is written as the **indefinite integral**:
+
+$$\int f(x)\,dx = F(x) + C$$
+
+where $C$ is an arbitrary constant of integration.
+
+:::
+
+---
+
+:::{#exm-antiderivative-power}
+#### Antiderivative of a power function
+
+For $f(x) = x^2$, an antiderivative is $F(x) = \frac{x^3}{3}$,
+since $\deriv{x}\frac{x^3}{3} = x^2 = f(x)$.
+
+Adding any constant $C$ gives another antiderivative: $F(x) = \frac{x^3}{3} + 7$,
+since adding a constant does not change the derivative.
+
+:::
+
+---
+
+:::{#thm-integral-rules}
+#### Basic integration rules
+
+| Function $f(x)$ | Antiderivative $F(x)$ | Condition |
+|---|---|---|
+| $c$ | $cx$ | — |
+| $x^n$ | $\dfrac{x^{n+1}}{n+1}$ | $n \ne -1$ |
+| $\dfrac{1}{x}$ | $\ln\abs{x}$ | $x \ne 0$ |
+| $\ef{x}$ | $\ef{x}$ | — |
+| $\ef{cx}$ | $\dfrac{1}{c}\ef{cx}$ | $c \ne 0$ |
+| $c \cdot f(x)$ | $c \cdot F(x)$ | — |
+| $f(x) + g(x)$ | $F(x) + G(x)$ | — |
+
+:::
+
+---
+
+:::{#thm-ftc}
+#### Fundamental Theorem of Calculus
+
+Let $f$ be a continuous function on a closed interval $[a, b]$.
+
+**Part 1 (Derivative of an integral).**
+Define $F(x) = \int_a^x f(t)\,dt$ for $x \in [a, b]$.
+Then $F$ is differentiable and:
+
+$$\deriv{x}\int_a^x f(t)\,dt = f(x)$$
+
+**Part 2 (Evaluation theorem).**
+If $F$ is an antiderivative of $f$ on $[a, b]$
+(i.e., $\deriv{x} F(x) = f(x)$ for all $x \in [a, b]$), then:
+
+$$\int_a^b f(x)\,dx = F(b) - F(a)$$
+
+[@calclifesaver, Chapter 18]
+
+:::
+
+---
+
+:::{.notes}
+
+The two parts of the FTC together express that **differentiation and integration are inverse operations**:
+
+- Part 1: differentiating the integral of $f$ recovers $f$.
+- Part 2: integrating the derivative of $F$ recovers the net change in $F$.
+
+:::
+
+---
+
+:::{#exm-ftc-cdf-pdf}
+#### CDF and PDF of the exponential distribution
+
+For the exponential distribution with rate parameter $\haz > 0$,
+the probability density function (PDF) is:
+
+$$f(t) = \haz \ef{-\haz t}, \quad t \ge 0$$
+
+**FTC Part 2** gives the cumulative distribution function (CDF) from the PDF:
+
+$$
+\ba
+F(t)
+&= \int_{u=0}^t \haz \ef{-\haz u}\,du \\
+&= \haz \cd \frac{1}{-\haz}\ef{-\haz u} \bigg|_{u=0}^{u=t} \\
+&= \left(-\ef{-\haz u}\right)\bigg|_{u=0}^{u=t} \\
+&= -\ef{-\haz t} - \left(-\ef{0}\right) \\
+&= 1 - \ef{-\haz t}
+\ea
+$$
+
+**FTC Part 1** recovers the PDF from the CDF:
+
+$$
+\ba
+\deriv{t} F(t)
+&= \deriv{t}\left(1 - \ef{-\haz t}\right) \\
+&= \haz\ef{-\haz t} \\
+&= f(t)
+\ea
+$$
+
+For a concrete instance: with $\haz = 1$ (standard exponential),
+the probability that $T \le 2$ is:
+
+$$
+F(2) = 1 - \ef{-1 \cd 2} = 1 - \ef{-2} \approx 1 - 0.135 = 0.865
+$$
+
+:::
+
+---
