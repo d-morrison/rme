@@ -152,7 +152,7 @@ jobs:
           # WebFetch for every host in the shared stats-allowlist.
           claude_args: '--allowed-tools "${{ steps.tools.outputs.allowed }}"'
 
-      - name: Re-request review from d-morrison if Claude pushed commits
+      - name: Re-request review and dispatch code review if Claude pushed commits
         if: always() && (github.event.pull_request.number || github.event.issue.pull_request) && steps.head_before.outputs.sha != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -162,10 +162,17 @@ jobs:
           SHA_AFTER=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
           echo "before=$SHA_BEFORE  after=$SHA_AFTER"
           if [ "$SHA_AFTER" != "$SHA_BEFORE" ]; then
-            echo "Claude pushed new commits; re-requesting review."
+            echo "Claude pushed new commits; re-requesting review and dispatching code review."
             gh api -X POST \
               "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
               -f "reviewers[]=d-morrison" || true
+            # Fire claude-code-review.yml via workflow_dispatch. The default
+            # GITHUB_TOKEN is permitted to trigger workflow_dispatch (unlike
+            # push, which is blocked to avoid recursion), and the review
+            # workflow's own `concurrency` group will cancel any in-flight
+            # review for this PR so the freshest diff wins.
+            gh workflow run claude-code-review.yml -f pr_number="$PR_NUMBER" || \
+              echo "::warning::Could not dispatch claude-code-review.yml; review will not auto-run."
           else
-            echo "No new commits on PR head; skipping re-request."
+            echo "No new commits on PR head; skipping re-request and review dispatch."
           fi
