@@ -10,6 +10,15 @@ on:
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
 
+# Serialize runs per PR. The stash/restore reviewer dance below assumes
+# only one run is mutating the PR's reviewer list at a time; without
+# this, an overlapping second run reads an already-cleared list, stashes
+# [], and on restore wipes the original reviewers permanently. Cancel
+# the in-flight run on a new push so the freshest diff wins.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   claude-review:
     if: ${{ github.event.pull_request.user.type != 'Bot' && github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]') }}
@@ -22,8 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
+      pull-requests: write
+      issues: write
       id-token: write
 
     steps:
@@ -31,6 +40,55 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      # The reviewer stash/restore is a serialization signal: we clear the
+      # human reviewers before Claude runs so they aren't notified mid-run,
+      # then re-add them when Claude finishes so the re-add fires a fresh
+      # GitHub notification — letting the human see Claude's review before
+      # they start their own. The restore is load-bearing for that signal,
+      # so it must NOT silently swallow errors (see restore step below).
+      - name: Stash and clear all review requests while Claude reviews
+        id: stash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          REVIEWERS_JSON=$(gh api "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers")
+          USERS=$(echo "$REVIEWERS_JSON" | jq -c '[.users[].login]')
+          TEAMS=$(echo "$REVIEWERS_JSON" | jq -c '[.teams[].slug]')
+          echo "users=$USERS" >> "$GITHUB_OUTPUT"
+          echo "teams=$TEAMS" >> "$GITHUB_OUTPUT"
+          echo "Stashed users: $USERS"
+          echo "Stashed teams: $TEAMS"
+          if [ "$USERS" != "[]" ] || [ "$TEAMS" != "[]" ]; then
+            jq -n --argjson users "$USERS" --argjson teams "$TEAMS" \
+              '{reviewers: $users, team_reviewers: $teams}' \
+              | gh api -X DELETE \
+                  "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers" \
+                  --input - || true
+          fi
+
+      - name: Delete prior Claude sticky comments so the new one lands at the bottom
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # Mirrors how anthropics/claude-code-action locates its sticky comment to update.
+          # See create-initial.ts in:
+          # https://github.com/anthropics/claude-code-action/tree/main/src/github/operations/comments
+          CLAUDE_APP_BOT_ID: '209825114'
+        run: |
+          # Delete every Claude-authored top-level comment, not just the most
+          # recent one — PRs predating use_sticky_comment may have multiple.
+          gh api --paginate \
+            "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq ".[] | select(.user.id == $CLAUDE_APP_BOT_ID or (.user.type == \"Bot\" and (.user.login | ascii_downcase | contains(\"claude\")))) | .id" \
+            | while read -r CID; do
+                [ -z "$CID" ] && continue
+                echo "Deleting prior Claude comment $CID."
+                gh api -X DELETE "repos/$REPO/issues/comments/$CID" || true
+              done
 
       - name: Run Claude Code Review
         id: claude-review
@@ -40,5 +98,46 @@ jobs:
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
           prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          # Force tag mode (anthropics/claude-code-action src/modes/detector.ts).
+          # In the default agent mode for pull_request events, the action never
+          # posts any non-inline PR comment by itself (src/modes/agent/index.ts:
+          # "No tracking comment in agent mode", commentId: undefined). The
+          # code-review plugin will only post a top-level comment if it finds
+          # issues scoring >= 80, so silent runs are common on small/mechanical
+          # PRs. track_progress forces tag mode, which creates a tracking
+          # comment up front via createInitialComment() and updates it at the
+          # end — guaranteeing a PR comment regardless of plugin output.
+          track_progress: 'true'
+          # Bundle the tracking comment into a single sticky per PR rather than
+          # a new comment each run. (Only consulted in tag mode.) The previous
+          # sticky is deleted in the step above so the new one always lands at
+          # the bottom of the conversation rather than getting buried in place.
+          use_sticky_comment: 'true'
+          # Also archive the formatted report to the Actions step summary page
+          # (does not affect PR comments).
+          display_report: 'true'
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
+
+      - name: Restore review requests now that Claude is done
+        if: always() && steps.stash.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          USERS: ${{ steps.stash.outputs.users }}
+          TEAMS: ${{ steps.stash.outputs.teams }}
+        run: |
+          if [ "$USERS" = "[]" ] && [ "$TEAMS" = "[]" ]; then
+            echo "No reviewers were originally requested."
+            exit 0
+          fi
+          # Do NOT add `|| true` here. A failed restore means the human
+          # reviewer was silently dropped from the PR and never gets the
+          # post-Claude notification — fail loudly so it can be re-added
+          # manually instead of vanishing.
+          jq -n --argjson users "$USERS" --argjson teams "$TEAMS" \
+            '{reviewers: $users, team_reviewers: $teams}' \
+            | gh api -X POST \
+                "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers" \
+                --input -
