@@ -1,4 +1,4 @@
-:::{#exr-km-curve-by-hand}
+::::{#exm-km-curve-by-hand}
 
 @tbl-surv1 lists some simulated survival data, where:
 
@@ -20,27 +20,22 @@ data1 <- tibble(
 )
 knitr::kable(data1)
 ```
-Simulated survival data for @exr-km-curve-by-hand.
+Simulated survival data for @exm-km-curve-by-hand.
 :::
 
-Compute the Kaplan-Meier (KM) estimated survival curve by hand.
-
-:::
-
-::::{#sol-km-curve-by-hand .solution}
-
-Let:
+We compute the Kaplan-Meier (KM) estimated survival curve by hand. Let:
 
 - $n$: total sample size
 - $y$: study exit time;
-- $d(y)$: number of events at $y$;
-- $c(y)$: number exiting without events ("censored") at $y$
-- $e(y) = d(y) + c(y)$: total exiting at $y$;
+- $\red{d(y)}$: number of events at $y$;
+- $\orange{c(y)}$: number exiting without events ("censored") at $y$
+- $e(y) = \red{d(y)} + \orange{c(y)}$: total exiting at $y$;
 - $E(y)$: cumulative exits prior to $y$;
-- $r(y) = n - E(y)$: number at risk at $y$;
-- $r^*(y) = r(y) - e(y)$: number at risk after $y$;
-- $\hat{\kappa}(y) = \hat{\Pr}(T > y \mid T \geq y) = [r(y) - d(y)]/r(y)$: conditional survival factor;
-- $\hat{\haz}(y) = \hat{\Pr}(T = y \mid T \geq y) = \frac{d(y)}{r(y)} = 1 - \hat{\kappa}(y)$: estimated discrete hazard;
+- $\blue{r(y)} = n - E(y)$: number at risk at $y$;
+- $\teal{d^*(y)} \eqdef \blue{r(y)} - \red{d(y)}$: number at risk who did not have the event at $y$;
+- $r^*(y) = \blue{r(y)} - e(y)$: number at risk after $y$;
+- $\hat{\kappa}(y) = \hat{\Pr}(T > y \mid T \geq y) = \frac{\teal{d^*(y)}}{\blue{r(y)}}$: conditional survival factor;
+- $\hat{\haz}(y) = \hat{\Pr}(T = y \mid T \geq y) = \frac{\red{d(y)}}{\blue{r(y)}} = 1 - \hat{\kappa}(y)$: estimated discrete hazard;
 - $\hsurv_{KM}(y) = \prod_{k:\, y_k \leq y} \hat{\kappa}(y_k)$: Kaplan-Meier survival estimate.
 
 :::{#tbl-km-curve}
@@ -65,6 +60,7 @@ km_curve <-
     exiting = events + censored,
     exited = cumsum(exiting) |> dplyr::lag(default = 0),
     at_risk = study_size - exited,
+    d_star = at_risk - events,
     r_star = at_risk - exiting,
     hazard = events / at_risk,
     km_factor = 1 - hazard,
@@ -75,7 +71,7 @@ km_curve <-
 km_curve |>
   mutate(
     hazard_math = paste0("\\frac{", events, "}{", at_risk, "}"),
-    km_factor_math = paste0("\\frac{", at_risk - events, "}{", at_risk, "}"),
+    km_factor_math = paste0("\\frac{", d_star, "}{", at_risk, "}"),
     km_surv_curve = paste0(
       "$",
       purrr::map_chr(
@@ -103,6 +99,7 @@ km_curve |>
     `$e(y)$`                     = exiting,
     `$E(y)$`                     = exited,
     `$r(y)$`                     = at_risk,
+    `$d^*(y)$`                   = d_star,
     `$r^*(y)$`                   = r_star,
     `$\\hat{\\kappa}(y)$`         = km_factor,
     `$\\hat{\\haz}(y)$`          = hazard,
