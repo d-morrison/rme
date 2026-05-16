@@ -15,9 +15,9 @@ Let:
 - $r(y) = n - E(y)$: number at risk at $y$;
 - $r^*(y) = r(y) - e(y)$: number at risk after $y$;
 - $\hat{\haz}(y) = \frac{d(y)}{r(y)}$: Nelson-Aalen hazard increment;
-- $\hat{\kappa}(y) = \expf{-\hat{\haz}(y)}$: Nelson-Aalen conditional survival factor;
+- $\hat{\cs}(y) = \expf{-\hat{\haz}(y)}$: Nelson-Aalen conditional survival factor;
 - $\hat{\cuhaz}_{NA}(y) = \sum_{k:\, y_k \leq y} \hat{\haz}(y_k)$: Nelson-Aalen cumulative hazard estimate;
-- $\hsurv_{NA}(y) = \expf{-\hat{\cuhaz}_{NA}(y)} = \prod_{k:\, y_k \leq y} \hat{\kappa}(y_k)$: Nelson-Aalen survival estimate.
+- $\hsurv_{NA}(y) = \expf{-\hat{\cuhaz}_{NA}(y)} = \prod_{k:\, y_k \leq y} \hat{\cs}(y_k)$: Nelson-Aalen survival estimate.
 
 :::{#tbl-na-curve}
 ```{r}
@@ -35,42 +35,42 @@ na_curve <-
     exited = cumsum(exiting) |> dplyr::lag(default = 0),
     at_risk = study_size - exited,
     r_star = at_risk - exiting,
-    hazard_hat = events / at_risk,
-    kappa = exp(-hazard_hat),
-    cusum_hazard_hat = cumsum(hazard_hat),
-    na_surv_curve = exp(-cusum_hazard_hat)
+    hazard = events / at_risk,
+    kappa = exp(-hazard),
+    cusum_hazard = cumsum(hazard),
+    na_surv_curve = exp(-cusum_hazard)
   ) |>
   select(-study_size)
 na_curve |>
   mutate(
     hazard_math = paste0("\\frac{", events, "}{", at_risk, "}"),
-    cusum_hazard_hat_round = round(cusum_hazard_hat, 4),
+    cusum_hazard_round = round(cusum_hazard, 4),
     na_surv_curve = paste0(
-      "$\\expf{-", cusum_hazard_hat_round, "}",
+      "$\\expf{-", cusum_hazard_round, "}",
       " = ",
       round(na_surv_curve, 4),
       "$"
     ),
-    cusum_hazard_hat = paste0(
+    cusum_hazard = paste0(
       "$",
       purrr::map_chr(
         row_number(),
         \(i) paste(hazard_math[seq_len(i)], collapse = " + ")
       ),
       " = ",
-      cusum_hazard_hat_round,
+      cusum_hazard_round,
       "$"
     ),
     kappa = paste0(
       "$\\expf{-", hazard_math, "} = ",
       round(kappa, 4), "$"
     ),
-    hazard_hat = paste0(
+    hazard = paste0(
       "$", hazard_math, " = ",
-      round(hazard_hat, 4), "$"
+      round(hazard, 4), "$"
     )
   ) |>
-  select(-hazard_math, -cusum_hazard_hat_round) |>
+  select(-hazard_math, -cusum_hazard_round) |>
   rename(
     `$y$`                                  = Y,
     `$d(y)$`                               = events,
@@ -79,12 +79,12 @@ na_curve |>
     `$E(y)$`                               = exited,
     `$r(y)$`                               = at_risk,
     `$r^*(y)$`                             = r_star,
-    `$\\hat{\\haz}(y)$`                    = hazard_hat,
-    `$\\hat{\\kappa}(y)$`                  = kappa,
-    `$\\hat{\\cuhaz}_{NA}(y)$`             = cusum_hazard_hat,
+    `$\\hat{\\haz}(y)$`                    = hazard,
+    `$\\hat{\\cs}(y)$`                     = kappa,
+    `$\\hat{\\cuhaz}_{NA}(y)$`             = cusum_hazard,
     `$\\hsurv_{NA}(y)$`                    = na_surv_curve
   ) |>
-  pander::pander()
+  pander()
 ```
 
 Nelson-Aalen survival curve calculations
@@ -102,11 +102,10 @@ Check the output of your implementation against the version in the `survival` pa
 
 ```{r}
 #| label: NA-survfit
-NA_model <- survival::survfit(
-  formula = S ~ 1,
-  data = data1,
-  type = "fleming-harrington"
-)
+NA_model <-
+  data1 |>
+  survfit(formula = surv ~ 1,
+          type = "fleming-harrington")
 
 NA_model |> summary()
 ```
@@ -121,31 +120,16 @@ Add the NA estimated survival curve to the graph from @exr-km-graph-1.
 
 ```{r}
 #| label: km-na-fig
-KM_model_local <- survival::survfit(formula = S ~ 1, data = data1)
-NA_model_local <- survival::survfit(
-  formula = S ~ 1,
-  data = data1,
-  type = "fleming-harrington"
-)
-
 km_and_na <-
   bind_rows(
-    tibble(
-      model = "Kaplan-Meier",
-      time = summary(KM_model_local)$time,
-      surv = summary(KM_model_local)$surv
-    ),
-    tibble(
-      model = "Nelson-Aalen",
-      time = summary(NA_model_local)$time,
-      surv = summary(NA_model_local)$surv
-    )
+    .id = "model",
+    "Kaplan-Meier" = KM_model |> fortify(surv.connect = FALSE),
+    "Nelson-Aalen" = NA_model |> fortify(surv.connect = FALSE)
   ) |>
   as_tibble()
 
 km_and_na |>
-  ggplot() +
-  aes(x = time, y = surv, col = model) +
+  ggplot(aes(x = time, y = surv, col = model)) +
   geom_step() +
   theme_bw() +
   ylab("S(t) = P(T>t)") +
