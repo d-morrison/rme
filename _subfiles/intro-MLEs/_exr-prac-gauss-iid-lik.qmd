@@ -1,0 +1,94 @@
+{{< include latex-macros/macros.qmd >}}
+
+::: {#exr-prac-gauss-iid-lik}
+#### Gaussian log-likelihood (adapted from @kleinbaum2014applied, Chapter 5)
+
+Let $X_1, \ldots, X_n \siid \Normal(\mu, \sigma^2)$.
+
+**(a)** Write the likelihood $\Lik(\mu, \sigma^2; \vx)$
+for the observed data $\vx = (x_1, \ldots, x_n)$.
+
+**(b)** Write the log-likelihood $\ell(\mu, \sigma^2; \vx)$.
+Show that it can be written as
+
+$$
+\ell(\mu, \sigma^2; \vx)
+= -\frac{n}{2}\logf{2\pi\sigma^2}
+  - \frac{1}{2\sigma^2}\sum_{i=1}^n (x_i - \mu)^2.
+$$
+
+**(c)** Derive the MLE $\hat\mu_{ML}$ and $\hat\sigma^2_{ML}$.
+:::
+
+::: {.solution}
+
+**(a)**
+
+$$
+\Lik(\mu, \sigma^2; \vx)
+= \prod_{i=1}^n (2\pi\sigma^2)^{-1/2}
+  \expf{-\frac{(x_i - \mu)^2}{2\sigma^2}}
+= (2\pi\sigma^2)^{-n/2}
+  \expf{-\frac{1}{2\sigma^2}\sum_{i=1}^n (x_i-\mu)^2}
+$$
+
+**(b)**
+
+$$
+\ba
+\ell(\mu, \sigma^2; \vx)
+&= \logf{\Lik(\mu, \sigma^2; \vx)}
+\\
+&= -\frac{n}{2}\logf{2\pi\sigma^2}
+   - \frac{1}{2\sigma^2}\sum_{i=1}^n (x_i - \mu)^2
+\ea
+$$
+
+**(c)**
+
+**Deriving $\hat\mu_{ML}$:**
+
+$$
+\ba
+\deriv{\mu}\ell
+&= \deriv{\mu}\sb{-\frac{1}{2\sigma^2}\sum_{i=1}^n (x_i - \mu)^2}
+\\
+&= \frac{1}{\sigma^2}\sum_{i=1}^n (x_i - \mu)
+\\
+&= \frac{1}{\sigma^2}\paren{\sum_{i=1}^n x_i - n\mu}
+\ea
+$$
+
+Setting this to zero: $\hat\mu_{ML} = \bar{x} \eqdef \frac{1}{n}\sum_{i=1}^n x_i$.
+
+**Deriving $\hat\sigma^2_{ML}$:**
+
+$$
+\ba
+\deriv{\sigma^2}\ell
+&= -\frac{n}{2\sigma^2} + \frac{1}{2(\sigma^2)^2}\sum_{i=1}^n (x_i - \mu)^2
+\ea
+$$
+
+Setting this to zero and solving:
+
+$$
+\ba
+\frac{n}{2\sigma^2}
+&= \frac{1}{2(\sigma^2)^2}\sum_{i=1}^n (x_i - \mu)^2
+\\
+\sigma^2
+&= \frac{1}{n}\sum_{i=1}^n (x_i - \mu)^2
+\ea
+$$
+
+Substituting $\hat\mu_{ML} = \bar{x}$:
+
+$$
+\hat\sigma^2_{ML} = \frac{1}{n}\sum_{i=1}^n (x_i - \bar{x})^2
+$$
+
+Note: this is a biased estimator of $\sigma^2$;
+the unbiased sample variance divides by $n-1$.
+
+:::

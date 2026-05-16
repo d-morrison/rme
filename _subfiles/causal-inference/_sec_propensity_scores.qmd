@@ -1,0 +1,186 @@
+{{< include latex-macros/macros.qmd >}}
+
+**Propensity score methods** are an alternative approach
+to confounding adjustment in observational studies.
+They replace adjustment for a high-dimensional confounder set $\vec{L}$
+with adjustment for a single scalar summary:
+the propensity score.
+
+:::{#def-propensity-score}
+#### Propensity score
+
+The **propensity score** is the conditional probability of treatment
+given the observed covariates:
+$$e(\vec{L}) = \P{A = 1 \mid \vec{L}}$$
+
+@rosenbaum1983central showed that
+if $A \perp\!\!\!\perp (Y(0), Y(1)) \mid \vec{L}$
+(conditional exchangeability given $\vec{L}$),
+then also:
+$$A \perp\!\!\!\perp (Y(0), Y(1)) \mid e(\vec{L})$$
+
+That is, the propensity score is a **balancing score**:
+conditioning on the propensity score is sufficient
+to remove confounding.
+
+:::
+
+## Propensity score estimation {#sec-ps-estimation}
+
+The propensity score is estimated by fitting a model
+for the probability of treatment given covariates,
+typically using logistic regression:
+
+$$\text{logit}(\hat{e}(\vec{L}_i)) =
+\hat{\beta}_0 + \hat{\beta}_1 L_{i1} + \cdots + \hat{\beta}_p L_{ip}$$
+
+The estimated propensity score $\hat{e}(\vec{L}_i)$
+is the predicted probability of treatment for each individual.
+
+## Propensity score methods {#sec-ps-methods}
+
+There are four main ways to use the propensity score:
+
+1. **Matching**: Match each treated individual to one or more
+   untreated individuals with similar propensity scores.
+   The matched dataset is then analyzed as a simple comparison.
+
+2. **Stratification (subclassification)**: Divide individuals
+   into strata based on propensity score quantiles.
+   Estimate the causal effect within each stratum,
+   then combine across strata.
+
+3. **Inverse probability weighting (IPW)**:
+   Weight each individual by the inverse of their probability
+   of receiving the treatment they actually received.
+   See @def-ipw below.
+
+4. **Covariate adjustment using the propensity score**:
+   Include the estimated propensity score as a covariate
+   in a regression model for the outcome.
+
+:::{#def-ipw}
+#### Inverse probability weighting (IPW)
+
+The **inverse probability weighted (IPW)** estimator
+of the ATE uses weights:
+$$w_i = \frac{A_i}{\hat{e}(\vec{L}_i)} +
+\frac{1 - A_i}{1 - \hat{e}(\vec{L}_i)}$$
+
+The IPW estimator of $\E{Y(a)}$ is:
+$$\widehat{\E{Y(a)}}_{\text{IPW}} =
+\frac{\sum_{i: A_i = a} w_i Y_i}{\sum_{i: A_i = a} w_i}$$
+
+Reweighting by $w_i$ creates a **pseudo-population**
+in which treatment is independent of covariates,
+effectively removing confounding.
+
+:::
+
+## Propensity score example: WCGS {#sec-ps-wcgs}
+
+In the WCGS study,
+we can use propensity score methods
+to estimate the causal effect of Type A behavior on CHD.
+We first fit a logistic regression model
+predicting Type A behavior from the confounders
+identified by the DAG (@sec-pred-sel-wcgs-dag):
+
+```{r}
+#| label: ps-wcgs-setup
+#| code-fold: true
+
+library(dplyr)
+
+here::here() |>
+  fs::path("Data/wcgs.rda") |>
+  load()
+
+wcgs_ps <-
+  wcgs |>
+  mutate(
+    dibpat_A = as.integer(dibpat == "Type A"),
+    chd69_yn = as.integer(chd69 == "Yes")
+  ) |>
+  filter(
+    !is.na(age), !is.na(dibpat), !is.na(chd69),
+    !is.na(bmi), !is.na(sbp), !is.na(chol), !is.na(smoke)
+  )
+```
+
+```{r}
+#| label: ps-wcgs-model
+#| code-fold: true
+
+ps_model <- glm(
+  dibpat_A ~ age + bmi + sbp + chol + smoke,
+  data = wcgs_ps,
+  family = binomial()
+)
+
+wcgs_ps <- wcgs_ps |>
+  mutate(
+    ps = predict(ps_model, type = "response"),
+    ipw = dibpat_A / ps + (1 - dibpat_A) / (1 - ps)
+  )
+```
+
+::: {#fig-ps-wcgs}
+
+```{r}
+#| code-fold: true
+
+library(ggplot2)
+
+ggplot(wcgs_ps, aes(x = ps, fill = factor(dibpat_A))) +
+  geom_histogram(alpha = 0.6, bins = 30, position = "identity") +
+  scale_fill_manual(
+    values = c("steelblue", "tomato"),
+    labels = c("Type B", "Type A"),
+    name = "Personality type"
+  ) +
+  labs(
+    x = "Estimated propensity score",
+    y = "Count",
+    title = "Propensity score distributions by personality type (WCGS)"
+  ) +
+  theme_bw()
+```
+
+Distribution of estimated propensity scores
+by personality type in the WCGS study.
+Good overlap between the two groups
+(the **overlap** or **common support** assumption)
+supports positivity.
+
+:::
+
+```{r}
+#| label: ps-wcgs-ipw
+#| code-fold: true
+
+library(gtsummary)
+
+outcome_ipw <- glm(
+  chd69_yn ~ dibpat_A,
+  data = wcgs_ps,
+  weights = ipw,
+  family = quasibinomial()
+)
+
+outcome_ipw |>
+  tbl_regression(exponentiate = TRUE) |>
+  bold_labels()
+```
+
+::: notes
+
+The IPW-weighted odds ratio for Type A vs. Type B behavior
+estimates the causal odds ratio for CHD,
+adjusting for confounding by age, BMI, SBP, cholesterol, and smoking.
+
+Compare this to the unadjusted estimate:
+the difference reflects the degree of confounding
+in the WCGS data.
+
+:::

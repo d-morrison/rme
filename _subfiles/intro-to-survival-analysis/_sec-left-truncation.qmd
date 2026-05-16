@@ -1,0 +1,277 @@
+{{< include latex-macros/macros.qmd >}}
+
+This section is adapted from [@vittinghoff2e, Chapter 6].
+
+### Choosing the Time Origin
+
+Survival times are measured from some initial time,
+with more than one possible choice of origin.
+
+::: {#exm-pbc-time-origin}
+
+#### Time origin choice in the PBC study
+
+In the @dickson1989prognosis Primary Biliary Cholangitis (PBC) study,
+survival time could be measured from:
+
+- **Cohort enrollment**:
+  time from when the patient entered the study
+- **Diagnosis**:
+  time from PBC diagnosis (more biologically meaningful)
+
+When using time-since-diagnosis as the timescale,
+patients who had already survived some time since diagnosis
+before enrolling introduce **left-truncation**.
+
+:::
+
+### What is Left-Truncation?
+
+**Left-truncation** occurs when some survival times are not observed
+because the sampling scheme tends to miss short survival times.
+
+::: {#def-left-truncation}
+
+#### Left-Truncation
+
+**Left-truncated** data arise when
+individuals can only enter the study
+if they survive beyond a certain time point.
+Those who experience the event
+before that time point are never observed.
+
+:::
+
+**Key feature:**
+There must be a time delay between:
+
+1. The event that defines the time origin (e.g., diagnosis)
+2. Entry into the study cohort (e.g., enrollment)
+
+### Left-Truncation vs. Staggered Entry
+
+**Important distinction:**
+
+- **Staggered entry**: Participants enroll at different calendar times
+  - Does NOT necessarily imply left-truncation
+  - Example: enrolling patients at the time of diagnosis
+    (truncation times = 0)
+
+- **Left-truncation**: Participants must survive some period
+  before they can be enrolled
+  - Example: recruiting from a referral center
+    where months/years elapse between diagnosis and enrollment
+
+### Why Left-Truncation Matters
+
+Patients with rapid disease progression
+are less likely to be enrolled because they may:
+
+- Die before referral to the study center
+- Die before recruitment into the study
+
+This leads to:
+
+- **Undercounting** of short survival times
+- **Selection bias** toward longer survivors
+- **Overestimation** of survival probabilities if ignored
+
+### Truncated vs. Censored Data
+
+**Censored data:**
+
+- Event time falls outside the follow-up period
+- Data are **incomplete** but the individual is observed
+
+**Truncated data:**
+
+- Individual is not observed at all
+  if they would have had an event outside the observation window
+- Truncated individuals leave no trace
+  - Called "ghosts" in the survival analysis literature
+
+### Independent Truncation Assumption
+
+Analysis under left-truncation
+requires the **independent truncation assumption**:
+
+The time of delayed entry and subsequent survival are independent.
+
+This is satisfied when:
+
+- Disease incidence and post-diagnosis survival are independent
+
+### Implementation
+
+Denote:
+
+- $V$: truncation time (delay between origin and study entry)
+- $X$: follow-up time relative to the time origin
+- $\delta$: censoring indicator
+
+**In R:**
+
+Use the `Surv()` function with entry time:
+
+```r
+Surv(time  = entry_time,
+     time2 = exit_time,
+     event = status)
+```
+
+**In Stata:**
+
+```stata
+stset years_since_diag, failure(status) entry(disease_dur)
+```
+
+### Numerical Example: PBC Study
+
+The `pbc` dataset from the `rmb` package
+contains data from a clinical trial
+of D-penicillamine treatment in primary biliary cholangitis (PBC)
+[@dickson1989prognosis].
+
+Here we demonstrate the effect of left-truncation
+by comparing analyses using two different time scales:
+
+1. Time from enrollment (standard approach, no truncation)
+2. Age as the time scale (introduces left-truncation,
+   since patients are observed from their current age, not from birth)
+
+::: {#fig-pbc-km-truncation}
+
+```{r}
+#| code-fold: true
+library(rmb)
+library(survival)
+library(ggplot2)
+library(dplyr)
+
+pbc_data <- rmb::pbc
+
+# Analysis 1: time from enrollment (no truncation)
+km_enroll <- survfit(
+  Surv(years, as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Analysis 2: age as time scale (left-truncated)
+km_age <- survfit(
+  Surv(time = age, time2 = age + years, event = as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Extract KM estimates at specific times for each analysis
+km1_summary <- summary(km_enroll, times = seq(0, 12, by = 0.5))
+km2_summary <- summary(km_age, times = seq(26, 78, by = 0.5))
+
+km1_df <- tibble(
+  time = km1_summary$time,
+  surv = km1_summary$surv,
+  analysis = "Time from enrollment"
+)
+
+km2_df <- tibble(
+  time = km2_summary$time - median(pbc_data$age),
+  surv = km2_summary$surv,
+  analysis = paste0(
+    "Age as time scale\n",
+    "(left-truncated; centered at median enrollment age)"
+  )
+)
+
+km_combined <- bind_rows(km1_df, km2_df)
+
+ggplot(km_combined) +
+  aes(x = time, y = surv, color = analysis) +
+  geom_step() +
+  labs(
+    x = "Time (years)",
+    y = "Estimated survival probability",
+    color = "Analysis",
+    caption = "Data: rmb::pbc (PBC clinical trial, Dickson et al. 1989)"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+Kaplan-Meier survival curves for the PBC study
+using two different time scales:
+time from enrollment (no truncation)
+vs. age centered at the median enrollment age (left-truncated).
+
+:::
+
+::: {.notes}
+The curve using age as the time scale
+accounts for the fact that participants
+were only observed from their age at enrollment.
+When centered at the median enrollment age,
+the two analyses can be compared on a common scale.
+Note that ignoring this truncation
+would lead to overestimated survival:
+participants who died at younger ages ---
+before reaching their enrollment age ---
+were never observed and are excluded from the data,
+leading to a risk set that over-represents longer survivors.
+:::
+
+### Effect of Ignoring Left-Truncation
+
+When left-truncation is ignored:
+
+- Survival probabilities are **overestimated**
+  (especially at early time points)
+- The analysis fails to account
+  for undersampling of short survival times
+- Hazard ratios in Cox models may be attenuated
+  (effect is less predictable)
+
+The following example illustrates the bias using the PBC data.
+The naive analysis treats all participants as entering the risk set
+at the earliest observed age,
+whereas the proper analysis uses counting-process notation
+to enter each participant at their actual enrollment age.
+
+```{r}
+#| label: pbc-truncation-bias-setup
+#| code-fold: true
+# Naive analysis: ignoring delayed entry
+# (treats all subjects as if they entered the risk set at age 0)
+km_naive_age <- survfit(
+  Surv(age + years, as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Extract estimates at age 60 for comparison
+surv_naive_at_sixty  <- summary(km_naive_age, times = 60)$surv
+surv_proper_at_sixty <- summary(km_age, times = 60)$surv
+```
+
+At age 60,
+the naive analysis (ignoring delayed entry)
+estimates survival at
+`r scales::percent(surv_naive_at_sixty, accuracy = 0.1)`,
+compared to
+`r scales::percent(surv_proper_at_sixty, accuracy = 0.1)`
+with the proper left-truncation correction.
+
+The naive estimate is inflated
+because the risk set at each age incorrectly includes
+participants who had not yet been enrolled
+(and thus had not actually been observed to be at risk).
+
+### Right-Truncation
+
+**Right-truncation** can also occur if:
+
+- Study recruits based on an endpoint
+- People with large event times (or who never had the event)
+  are not recruited
+
+**Example:**
+A fecundability study that excludes couples
+who never conceive
+exhibits right-truncation.

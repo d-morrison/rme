@@ -1,0 +1,68 @@
+
+:::{#def-predicted-value}
+#### Predicted value
+
+In a regression model $\p(y|\vx)$, 
+the **predicted value** of $y$ given $\vx$ is the estimated mean of $Y$ given $\vX=\vx$:
+
+$$\hat y \eqdef \hExpf{Y|\vX=\vx}$$
+:::
+
+---
+
+For linear models, 
+the predicted value can be straightforwardly calculated 
+by multiplying each predictor value $x_j$ by its corresponding coefficient $\beta_j$ 
+and adding up the results:
+
+$$
+\begin{aligned}
+\hat y &= \hExpf{Y|\vX=\vx} \\
+&= \tp{\vx}\hat\beta \\
+&= \hat\beta_0\cdot 1 + \hat\beta_1 x_1 + ... + \hat\beta_p x_p
+\end{aligned}
+$$
+
+---
+
+:::{#def-fitted-value}
+#### Fitted value
+
+For a given dataset $(\vY, \mX)$ and corresponding fitted model $\p_{\hb}(\vy|\mx)$, 
+the **fitted value** of $y_i$ is 
+the predicted value (see @def-predicted-value) of $y$ when $\vX=\vx_i$ using the estimated parameters $\hb$:
+
+$$\hat y_i \eqdef \hExpf{Y_i|\vX=\vx_i} = \tp{\vxi}\hb$$
+:::
+
+---
+
+#### Example: prediction for the `birthweight` data
+
+```{r}
+x <- c(1, 1, 40)
+sum(x * coef(bw_lm1))
+```
+
+R has built-in functions for prediction:
+
+```{r}
+x <- tibble(age = 40, sex = "male")
+bw_lm1 |> predict(newdata = x)
+```
+
+If you don't provide `newdata`, 
+R will use the covariate values from the original dataset:
+
+```{r}
+predict(bw_lm1)
+```
+
+These special predictions are called the **fitted values** of the dataset
+(see @def-fitted-value).
+
+R has an extra function to get these values:
+
+```{r}
+fitted(bw_lm1)
+```

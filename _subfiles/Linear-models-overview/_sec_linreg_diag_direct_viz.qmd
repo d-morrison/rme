@@ -1,0 +1,166 @@
+
+::: notes
+The most direct way to examine the fit of a model is 
+to compare it to the raw observed data.
+:::
+
+```{r}
+#| label: fig-bw-interaction2
+#| fig-cap: "Birthweight model with interaction term"
+bw <-
+  bw |>
+  mutate(
+    predlm2 = predict(bw_lm2)
+  ) |>
+  arrange(sex, age)
+
+plot1_interact <-
+  plot1 %+% bw +
+  geom_line(aes(y = predlm2))
+
+print(plot1_interact)
+```
+
+::: notes
+It's not easy to assess these assumptions from this model.
+If there are multiple continuous covariates, 
+it becomes even harder to visualize the raw data.
+:::
+
+---
+
+#### Fitted model for `hers` data {.smaller}
+
+::: notes
+Consider the `hers` data from @vittinghoff2e.
+
+{{< include _subfiles/shared/_sec_hers_intro.qmd >}}
+
+:::
+
+::: {.landscape}
+
+:::{#tbl-hers-data}
+
+```{r}
+hers <- rmb::hers |> haven::zap_labels()
+hers
+```
+
+`hers` data
+:::
+
+:::
+
+---
+
+::: notes
+Suppose we consider models with and without intercept terms (i.e.,
+possibly forcing the intercept to go through 0):
+:::
+
+```{r}
+hers_lm_with_int <- lm(
+  na.action = na.exclude,
+  LDL ~ smoking * age, data = hers
+)
+
+
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_with_int)
+```
+
+```{r}
+hers_lm_no_int <- lm(
+  na.action = na.exclude,
+  LDL ~ age + smoking:age - 1, data = hers
+)
+
+library(equatiomatic)
+equatiomatic::extract_eq(hers_lm_no_int)
+```
+
+
+::: {.landscape}
+
+:::{#tbl-hers-maybe-int layout-ncol=2}
+
+:::{#tbl-hers-with-int}
+
+
+```{r}
+library(gtsummary)
+hers_lm_with_int |> 
+  tbl_regression(intercept = TRUE)
+```
+With intercept
+:::
+
+:::{#tbl-hers-no-int}
+
+```{r}
+hers_lm_no_int |> 
+  tbl_regression(intercept = TRUE)
+```
+
+No intercept
+:::
+
+`hers` data models with and without intercepts
+
+:::
+
+:::
+
+---
+
+:::{#fig-hers-maybe-int layout-ncol=2}
+
+
+:::{#fig-hers-no-int}
+
+```{r}
+library(sjPlot)
+
+hers_plot1 <- hers_lm_no_int |>
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "smoking"),
+    show.data = TRUE
+  ) +
+  facet_wrap(~group_col, ncol = 1) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
+
+hers_plot1
+```
+
+No intercept
+
+:::
+
+:::{#fig-hers-with-intercept}
+
+```{r}
+library(sjPlot)
+
+hers_plot2 <- hers_lm_with_int |>
+  sjPlot::plot_model(
+    type = "pred",
+    terms = c("age", "smoking"),
+    show.data = TRUE
+  ) +
+  facet_wrap(~group_col, ncol = 1) +
+  expand_limits(y = 0) +
+  theme(legend.position = "bottom")
+
+hers_plot2
+```
+
+With intercept
+:::
+
+`hers` data models with and without intercepts
+
+:::
+

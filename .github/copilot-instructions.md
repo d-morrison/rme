@@ -2,24 +2,34 @@
 
 > [!IMPORTANT]
 > **MANDATORY TESTING BEFORE EVERY COMMIT:**
-> 
+>
 > Before committing ANY changes to `.qmd`, `.R`, or config files:
-> 
-> 1. **Run `quarto render` on the FULL repository** (not individual files)
+>
+> 1. **Run `quarto render <chapter.qmd> --to html` on each chapter whose subfiles were edited** (not individual subfiles; not the full book; HTML format only unless you are specifically fixing a non-HTML format issue)
 > 2. **Verify it completes successfully** (exit code 0, no errors)
-> 3. **Run linter on changed files**:
->    - For R files: `lintr::lint("path/to/file.R")`  
+> 3. **Address ALL rendering warnings**:
+>    - Review output for `[WARNING]` or `Warning:` messages
+>    - Fix warnings related to:
+>      - Math rendering (TeX/LaTeX errors, undefined commands like `\atop`)
+>      - Missing resources (images, files)
+>      - Broken links or references
+>      - Deprecated syntax or constructs
+>    - **Fix all warnings you can address** - document any that cannot be fixed
+> 4. **Run linter on changed files**:
+>    - For R files: `lintr::lint("path/to/file.R")`
 >    - For .qmd files with R code: Extract and lint R code chunks
 >    - **Fix lint issues in code you wrote or modified** - ignore pre-existing issues in unchanged code
-> 4. **Run spellcheck**: `spelling::spell_check_package()`
+> 5. **Run spellcheck**: `spelling::spell_check_package()`
 >    - **Fix spelling errors you introduced** - ignore pre-existing errors
 >    - Add technical terms to `inst/WORDLIST` if needed (create file if it doesn't exist, one word per line)
-> 5. Only then commit your changes
+> 6. Only then commit your changes
 >
 > **CRITICAL RULES:**
 > - **CI is NOT the test** - you must test locally BEFORE pushing
 > - **NEVER rely on CI to discover rendering, lint, or spelling errors** - that's your job
-> - **ALWAYS run full `quarto render`** - testing individual files is insufficient
+> - **ALWAYS address rendering warnings** - they indicate problems that will cause issues in different output formats
+> - **Only render HTML format** (`--to html`) unless specifically fixing a non-HTML format issue
+> - **Only render edited chapters** — run `quarto render <chapter.qmd> --to html` on the parent `.qmd` that includes each edited subfile; do not render the full book
 > - **Only fix lint/spell issues in code YOU changed** - don't fix unrelated pre-existing issues
 > - **This is a hard requirement - no exceptions, no excuses**
 
@@ -28,18 +38,73 @@
 **CRITICAL**: Do not make assumptions about what code will do - always test it yourself.
 
 - **Test your changes**: Run the actual commands to verify functionality
-- **Run `quarto render` on FULL repository**: Testing individual files misses cross-file issues
+- **Run `quarto render <chapter.qmd> --to html` on each edited chapter**: Only render chapters whose subfiles were edited, in HTML format (not the full book, not all formats)
 - **Verify output**: Check that expected files are created with correct content
 - **Never claim success without evidence**: Only report that something works after you've confirmed it yourself
 
+## Scoped Instructions
+
+Use the matching file-scoped instructions in `.github/instructions/`
+in addition to this global policy file:
+
+- `quarto-content.instructions.md` for `.qmd` and `.Rmd` authoring work
+- `r-and-config.instructions.md` for R, Quarto YAML, and workflow/config changes
+- `latex-macros.instructions.md` when editing the `latex-macros/` submodule
+
+Keep this file as the repo-wide policy anchor.
+Prefer the scoped files for task-specific details,
+links to source documentation,
+and reminders that would otherwise add noise to every task.
+
+Related reusable customizations live under `.github/skills/`
+and `.github/prompts/`.
+Use them for repeated repo-specific workflows
+instead of re-deriving the same steps in every chat.
+
+## Narrative Flow
+
+When writing or editing chapter content,
+strive for **straightforward narrative flow**:
+
+- Introduce concepts before they are used.
+  Never reference a section, definition, or term
+  that has not yet been introduced at that point in the document.
+- Avoid forward references within a chapter
+  (e.g., "See @sec-later-section for details")
+  when those concepts are needed to understand the current content.
+  Reorder sections so that foundational material precedes applied material.
+- If two sections are closely related
+  (e.g., an "Observational Studies" section that relies on DAG concepts),
+  place the foundational section first.
+- **After every definition or concept, include a concrete example** —
+  preferably numerical — to illustrate the abstract idea.
+  Use a `{#exm-...}` div immediately following the `{#def-...}` div.
+  The example should show specific numbers or a small dataset,
+  not just repeat the definition in different words.
+
+## Code Review Scope
+
+The `_extensions/` directory contains Quarto extensions installed from external repositories
+(e.g., via `quarto add`).
+These files are third-party code managed upstream.
+**Do not review or suggest changes to files under `_extensions/`.**
+Treat them as vendored dependencies — read them for context if needed,
+but do not flag issues or request modifications in those files.
+
 ## Pull Request Guidelines
 
+- **When you start working on a PR, immediately remove any existing review requests.**
+  This signals to reviewers that the PR is not yet ready for review
+  and prevents premature reviews of incomplete work.
 - Always ensure that PR branch is up to date with main branch before requesting PR review
 - **ALWAYS verify all changed hyperlinks are correct before requesting PR review**:
   - Check that internal links point to existing files/sections
   - Verify external URLs are accessible and correct
   - Test cross-references and anchor links
   - Ensure relative paths are correct
+- **If ANY subfiles (`_subfiles/`) were edited in the PR, add the "clear freezer" label to the PR.**
+  Quarto's freeze cache does not detect changes in subfiles (see [quarto-dev/quarto-cli#6793](https://github.com/quarto-dev/quarto-cli/issues/6793)),
+  so the frozen output must be cleared manually to pick up those changes.
 
 ## Linking Within the Quarto Website
 
@@ -58,13 +123,98 @@ This follows the [Quarto website linking guidelines](https://quarto.org/docs/web
 
 This ensures links work correctly across all output formats and during local development.
 
+## Attribution for Adapted Content
+
+When content is adapted from published sources (textbooks, papers, websites),
+**always provide explicit attribution** in the document.
+Use `@citekey` Pandoc citation syntax and include a prose note explaining what was adapted.
+
+Examples of acceptable attribution:
+
+- "Adapted from @vittinghoff2e [Chapter 10]."
+- "The following example is based on @kleinbaum2010logistic [Chapter 8]."
+- "This approach follows @hulley1998hers."
+
+Attribution should appear:
+
+- At the top of the chapter or section (in the Acknowledgements or Introduction),
+  *or*
+- Adjacent to the specific content being adapted (as a prose sentence or in a `::: notes` div).
+
+**Always include chapter and/or page numbers** in inline citations where applicable,
+so that readers can locate the source material.
+Use Pandoc's citation locator syntax: `[@citekey, Chapter 8]` or `[@citekey, p. 194]`.
+Include both chapter and page when both are known.
+Do **not** invent page numbers.
+Only cite a page after opening the source PDF
+and confirming the exact page.
+If you have not verified a page directly from the source PDF,
+cite chapter-level location only.
+
+Examples of attribution with page numbers
+(formatting examples):
+
+- "Adapted from [@vittinghoff2e, Chapter 10, p. 194]."
+- "The following example is based on [@kleinbaum2010logistic, Chapter 8, p. 230]."
+
+Do **not** reproduce verbatim text from copyrighted sources without clear quotation marks and attribution.
+Paraphrase and summarize with a citation instead.
+
 ## Decomposing content into subfiles
 
-When splitting a chapter or formula sheet into include subfiles,
-keep the top-level section headers in the main `.qmd` file.
-Move only the section body content into the subfile.
-This keeps document structure visible in the parent file
-and makes partial includes easier to compose consistently.
+Quarto subfiles (files under `_subfiles/`) should **not** begin with a section heading.
+The heading for a subfile's content should be placed in the **parent** file that includes the subfile,
+immediately before the `{{< include ... >}}` shortcode.
+
+**Correct** — heading in the parent file:
+```markdown
+## My Section Title {#sec-my-section}
+
+{{< include _subfiles/chapter/_sec_my_content.qmd >}}
+```
+
+**Incorrect** — heading inside the subfile:
+```markdown
+<!-- inside _subfiles/chapter/_sec_my_content.qmd -->
+## My Section Title {#sec-my-section}
+
+Content starts here...
+```
+
+This keeps the document hierarchy centralized in the parent file,
+makes heading levels easy to audit,
+and avoids nesting errors when the same subfile might be included at different depths.
+
+### One subtopic per subfile
+
+Each subfile should cover exactly one subtopic or section.
+Do **not** combine multiple independent subtopics in a single subfile.
+If a topic naturally splits into distinct subtopics,
+create one subfile per subtopic and include each separately in the parent file.
+
+**Correct** — separate subfiles per subtopic:
+```markdown
+## Interval Censoring {#sec-interval-censoring}
+
+{{< include _subfiles/chapter/_sec_interval_censoring.qmd >}}
+
+## Left-Truncation {#sec-left-truncation}
+
+{{< include _subfiles/chapter/_sec_left_truncation.qmd >}}
+```
+
+**Incorrect** — both subtopics in one subfile:
+```markdown
+## Interval Censoring and Left-Truncation
+
+{{< include _subfiles/chapter/_sec_interval_censoring_and_left_truncation.qmd >}}
+```
+
+### No references section in subfiles
+
+Subfiles must **not** include a `## References` section.
+References sections belong only in parent `.qmd` files (chapters, index pages, etc.).
+Do **not** add `## References {.unnumbered}` or `:::{#refs}:::` to any file under `_subfiles/`.
 
 ## Citation Grammar Conventions
 
@@ -78,16 +228,61 @@ This applies whether the citation refers to one author or multiple authors (e.g.
 Pandoc renders `@dobson4e` as a noun phrase (e.g., "Dobson and Barnett (2018)"),
 but grammatically the citation key itself is treated as a singular pronoun/name.
 
-## Attribution for Adapted Content
+## DAG Naming for Categorical Variables
+
+In DAGs,
+use node names that represent the full categorical variable,
+not a specific level of that variable.
+
+Example:
+use `personality_type`,
+not `TypeA`.
+
+## Evidence and Source Citation Requirements
+
+For factual claims that are not directly proved in the text,
+always include a specific source citation.
+Do not leave factual statements uncited.
+
+Always cite papers and books using
+BibTeX entries in `references.bib`
+and Quarto/Pandoc citation syntax
+(for example `[@MickeyGreenland1989]`),
+rather than plaintext author-date references.
 
 When adapting any content from another source,
 always include specific attribution in the chapter text.
+Always state the exact adapted exercise(s) or example(s),
+not just a broad chapter citation.
+When the source provides numbered exercises/examples,
+cite the exact number
+and the exact page number.
+When specific numbers are not available in the source,
+use chapter/section locators instead of inventing numbers.
 Use a BibTeX-backed citation key
 with a chapter or page locator
 (for example, `[@dobson4e, Chapter 7]` or `[@vittinghoff2e, p. 194]`).
 Do not use generic acknowledgements without locators
 or plaintext author-title references
 when a BibTeX citation is available.
+
+## Variable Definitions in Exercises
+
+When introducing model variables in exercises,
+list variable definitions as bullet points
+and/or a table.
+Do not define multiple variables inline in prose.
+Include symbol,
+plain-language meaning,
+and dataset column mapping.
+
+## Solution Wording
+
+In solution blocks,
+state the correct conclusions directly.
+Do not phrase final answers conditionally
+when the provided figure or context
+supports a specific conclusion.
 
 ## Code Formatting Guidelines
 
@@ -96,6 +291,44 @@ When adding or editing text in source code (such as comments, documentation stri
 - Each phrase should be on its own line in the source code
 - A phrase is typically a complete thought, clause, or sentence
 - This improves readability and makes diffs clearer
+
+## ggplot2 Layer Style
+
+Always put `ggplot()` and `aes()` calls in **separate layers**.
+Never pass `aes()` as an argument to `ggplot()`.
+
+**Correct:**
+```r
+ggplot(my_data) +
+  aes(x = time, y = value, color = group) +
+  geom_line()
+```
+
+**Incorrect:**
+```r
+ggplot(my_data, aes(x = time, y = value, color = group)) +
+  geom_line()
+```
+
+## No Hard-Coded Results in Narrative Text
+
+Do not hard-code numerical results (percentages, means, counts, etc.)
+in Quarto narrative text.
+Use inline R expressions instead,
+so that the numbers update automatically if the data or code changes.
+
+**Correct:**
+```markdown
+At 5 years, `r round(surv_5yr * 100, 1)`% of participants had experienced the event.
+```
+
+**Incorrect:**
+```markdown
+At 5 years, 8% of participants had experienced the event.
+```
+
+Compute the values in a code chunk (using `#| include: false` if needed),
+then reference them with inline `` `r expr` `` expressions.
 
 ## Parentheticals and Asides in Quarto
 
@@ -128,7 +361,66 @@ Example:
 # First, check if the input is valid. Then, process the data. Finally, return the result.
 ```
 
+## Definition Formatting
+
+When introducing or editing formal statistical definitions in `.qmd` files:
+
+- Use a definition div with an id beginning `#def-`
+- Put the definition title in a heading inside the div
+  and choose the heading level to match the surrounding section depth
+  (for example, `####` or `#####`)
+- If a definition uses other statistical terms
+  (for example, empirical CDF),
+  ensure those terms also have formal `#def-` div definitions
+  in the relevant scope before relying on them
+
+## Div Titles vs. Markdown Headings
+
+**CRITICAL**: Div titles (headings inside divs like `:::{#def-...}`, `:::{#thm-...}`, `:::{#exm-...}`, etc.) are NOT the same as regular markdown headings.
+
+**Rules for div titles:**
+- Div titles must remain inside their divs
+- Div titles use heading syntax (`####`, `###`, etc.) but serve as titles for the div content
+- **NEVER move a div title outside of its div or change its heading level when fixing heading level jumps**
+- Div titles should match the nesting level of their surrounding context, but this is different from regular heading hierarchy
+
+**How to identify div titles:**
+- They appear immediately after a div opener like `:::{#def-something}`, `:::{#thm-something}`, `:::{#exm-something}`, etc.
+- They are inside the div block (between `:::` markers)
+
+**Example of correct div title:**
+```qmd
+:::{#def-confounder}
+#### Confounder
+
+A **confounder** is a variable...
+:::
+```
+
+**Wrong - do NOT do this:**
+```qmd
+#### Confounder
+
+:::{#def-confounder}
+A **confounder** is a variable...
+:::
+```
+
+**When fixing heading level jumps:**
+- Only fix regular markdown headings (those NOT inside divs)
+- Leave div titles at their original heading levels
+- Div titles may appear to "jump" levels, but this is correct because they serve a different purpose
+
 ## Quarto Code Chunk Options
+
+Default to
+`#| code-fold: true`
+for chunks that create figures or tables.
+Only set
+`#| code-fold: false`
+for those chunks
+if reviewers explicitly request it
+or if the surrounding narrative requires visible code to follow the argument.
 
 When the code **and** its console output are both needed for the surrounding narrative to make sense, use `#| code-fold: false` so that neither is hidden:
 
@@ -143,6 +435,34 @@ sum(residuals(my_model)^2)
 Use `code-fold: false` whenever:
 - The output value is referenced or explained in the surrounding text
 - The reader needs to see both the code and the result to follow the argument
+
+**Do not use `#| include: false` unless there is a specific reason** to hide the code from readers
+(for example, loading a package whose installation messages would be distracting,
+or a long data-munging chunk that is not the focus of the example).
+For most setup chunks in examples and exercises,
+leave the code visible or use `#| code-fold: true`
+so readers can see how the data or values were constructed.
+
+## Quarto `df-print` behavior
+
+For this repository,
+configure Quarto YAML settings
+so data-frame printing is:
+- paged in HTML and RevealJS outputs
+- tibble-style in PDF and DOCX outputs
+
+When this configuration is in place,
+full dataset prints in exercises are expected behavior,
+not automatically a readability problem.
+Feedback that asks to trim dataset prints
+without checking these format settings
+can be incorrect.
+
+If a maintainer claim
+(or any other claim)
+appears to conflict with the repository configuration or rendered output,
+verify it against the code and outputs
+and politely correct it with evidence.
 
 ## Landscape Tables in PDF
 
@@ -164,6 +484,90 @@ Use this pattern:
 Apply this only where needed,
 so HTML and RevealJS output stay unchanged.
 
+## Figures and Tables: Use Div Format
+
+Prefer the **Quarto div format** for new figures and tables
+rather than chunk-option `fig-cap`/`tbl-cap`.
+The div format makes it easier to write and format multi-sentence captions.
+Existing chunk-option captions in older files are acceptable
+unless you are already refactoring that content.
+
+**Correct** (div format):
+````qmd
+::: {#fig-my-figure}
+
+```{r}
+plot(x, y)
+```
+
+Caption text here.
+This can span multiple lines and include *markdown*.
+
+:::
+````
+
+**Correct** (div format for tables):
+````qmd
+::: {#tbl-my-table}
+
+```{r}
+my_table
+```
+
+Caption text here.
+
+:::
+````
+
+**Incorrect** (chunk option format):
+````qmd
+```{r}
+#| label: fig-my-figure
+#| fig-cap: "Caption text here."
+plot(x, y)
+```
+````
+
+Use this for newly added or substantially revised figures and tables in `.qmd` files.
+
+## Chunk Label Prefixes (`fig-` and `tbl-`)
+
+Only use `fig-` or `tbl-` chunk/div label prefixes when the chunk or div **actually renders a cross-referenceable figure or table**.
+Do **not** use these prefixes for setup, computation-only, or helper chunks that produce no visible output.
+
+**Correct** — `fig-` label on a div that produces a cross-referenceable figure:
+````qmd
+::: {#fig-my-plot}
+
+```{r}
+plot(x, y)
+```
+
+Caption text here.
+
+:::
+````
+
+**Correct** — setup chunk that only computes values (no figure/table produced):
+````qmd
+```{r}
+#| label: my-setup-chunk
+#| include: false
+my_value <- compute_something()
+```
+````
+
+**Incorrect** — `tbl-` label on a chunk that only computes values:
+````qmd
+```{r}
+#| label: tbl-my-values   # wrong: no table is rendered
+my_value <- compute_something()
+```
+````
+
+Using the wrong prefix can cause Quarto cross-reference errors or mislead readers about what the chunk produces.
+
+
 ## Math Notation
 
 This repository uses custom LaTeX macros defined in `latex-macros/macros.qmd` (a git submodule).
@@ -174,17 +578,20 @@ Key macros to use:
 - **Aligned equations**: Use `\ba` / `\ea` for `\begin{aligned}` / `\end{aligned}`
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
+- **Deviation/error notation**: Use `\erf{...}` for deviations of estimates/estimators from their estimands; use `\devn(...)` for all other deviations (e.g., observations from population means)
 
 matrix-product helper macros:
 
+- `\dprod{u}{v}` for dot products
 - `\iprod{u}{v}` for inner products (`\tp{u} v`)
+- For vector:vector inner products in chapter/exam formulas, prefer `\dprod{u}{v}` over transpose form unless dimensions are the focus.
 - `\oprod{u}{v}` for outer products (`u \tp{v}`)
 - `\siprod{u}` for self-inner products (`\tp{u} u`)
 - `\soprod{u}` for self-outer products (`u \tp{u}`)
 
 Residual and deviation helper macros include:
 
-- `\err` for generic error or residual terms
+- `\err` is deprecated; prefer `\devn(...)` for new non-estimation deviations while legacy uses are being phased out
 - `\erf{\theta}` for estimate/estimand deviations
 - `\devn(...)` for other deviations
 - `\resid` for residual symbols (`r`)
@@ -197,7 +604,35 @@ Residual and deviation helper macros include:
   use `\tp{(\vxs)}` not `\tp{\vxs}`.
   This avoids LaTeX "Double superscript" errors.
 
+**Vector–scalar product ordering** (for dimensional clarity):
+
+- When multiplying a **column vector** `\vb` by a scalar `s`, write the **vector on the left**:
+  use `\vb s` not `s \vb`.
+- When multiplying a **row vector** (or a transpose) by a scalar, write the **vector on the right**:
+  use `s \tp{\vb}` not `\tp{\vb} s`.
+
+This ordering makes the matrix dimensions of expressions immediately readable
+and is consistent with the convention that column vectors are always written first
+in scalar multiples (e.g., a gradient $\nabla f = \vb \pi(1-\pi)$,
+not $\pi(1-\pi) \vb$).
+
 Always check `latex-macros/macros.qmd` for available macros before writing raw LaTeX.
+
+When a repeatedly used expression needs a new macro,
+add it to `latex-macros/macros.qmd`
+in the `latex-macros` submodule
+and push that submodule update.
+
+To push changes to the `latex-macros` submodule (`https://github.com/d-morrison/macros`),
+use the `SUBMODULES_TOKEN` environment variable for authentication:
+
+```bash
+cd latex-macros
+git remote set-url origin "https://x-access-token:${SUBMODULES_TOKEN}@github.com/d-morrison/macros.git"
+# make changes, commit, then push to a branch (main is protected; PRs required):
+git push origin main:copilot/your-branch-name
+# then open and merge a PR via the GitHub API or UI
+```
 
 ## Color Coding Strategy for Math Expressions
 
@@ -293,6 +728,27 @@ This repository uses JAGS (Just Another Gibbs Sampler) for Bayesian analysis:
 - R packages `rjags` and `runjags` depend on JAGS being installed
 - The lint workflow also needs these packages installed to avoid false positives
 
+## Quarto Slide Breaks
+
+Use `{{< slidebreak >}}` instead of raw `---` to insert slide breaks in `.qmd` files.
+The `{{< slidebreak >}}` shortcode produces a slide break only in `revealjs` output,
+and produces no output in other formats (HTML, PDF, etc.).
+This allows the same source file to render correctly across multiple output formats.
+
+Example:
+
+```markdown
+## Slide 1
+
+Content here.
+
+{{< slidebreak >}}
+
+## Slide 2
+
+More content.
+```
+
 ## Computer Algebra Systems (CAS)
 
 The Copilot environment includes two computer algebra systems for symbolic mathematics.
@@ -354,7 +810,7 @@ maxima --very-quiet --batch=/tmp/cas_check.mac
 
 **CRITICAL REQUIREMENTS** before requesting code review:
 
-1. **Run `quarto render` yourself locally** on the full repository and ensure it passes
+1. **Run `quarto render <chapter.qmd> --to html`** on each chapter whose subfiles you edited — do NOT render the full book, and do NOT render all formats unless you are specifically fixing a non-HTML format issue
 2. **Verify it completes successfully** (exit code 0, no errors)
 3. **Do NOT rely solely on CI workflows** to catch rendering issues
 4. **Test the actual command and wait for completion** - do not assume success
@@ -368,7 +824,8 @@ maxima --very-quiet --batch=/tmp/cas_check.mac
 - All documents render correctly (check for missing images, broken math, etc.)
 
 **Common mistakes to avoid**:
-- Testing individual files only (use `quarto render` for full repository)
+- Rendering all chapters when only a few subfiles changed (only render chapters with edited subfiles)
+- Rendering all output formats when only HTML is needed (use `--to html` unless fixing a specific format issue)
 - Not waiting for the command to complete
 - Assuming success without checking the exit code
 - Claiming "it works" without actually running the command
