@@ -125,9 +125,9 @@ jobs:
             | sed 's#.*#WebFetch(domain:&)#' \
             | paste -sd, -)
           if [ -n "$WEBFETCH" ]; then
-            echo "allowed=Bash(Rscript *),Bash(quarto *),${WEBFETCH}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
-            echo "allowed=Bash(Rscript *),Bash(quarto *)" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *)" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -147,7 +147,8 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
           # Allow the pre-commit checklist tools from CLAUDE.md (Rscript for
-          # lint/spell-check, quarto render for chapter previews) plus
+          # lint/spell-check, quarto render for chapter previews), curl for
+          # downloading source PDFs too large for WebFetch (issue #740), plus
           # WebFetch for every host in the shared stats-allowlist.
           claude_args: '--allowed-tools "${{ steps.tools.outputs.allowed }}"'
 
