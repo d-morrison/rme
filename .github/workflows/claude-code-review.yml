@@ -9,6 +9,16 @@ on:
     #   - "src/**/*.tsx"
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
+  # Allow claude.yml to dispatch a fresh review after the @claude run
+  # pushes commits. GITHUB_TOKEN-driven pushes don't fire `synchronize`,
+  # and even when they do the bot-actor filter below would skip the run,
+  # so we need an explicit dispatch path.
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to review'
+        required: true
+        type: number
 
 # Serialize runs per PR. The stash/restore reviewer dance below assumes
 # only one run is mutating the PR's reviewer list at a time; without
@@ -16,12 +26,17 @@ on:
 # [], and on restore wipes the original reviewers permanently. Cancel
 # the in-flight run on a new push so the freshest diff wins.
 concurrency:
-  group: claude-review-${{ github.event.pull_request.number }}
+  group: claude-review-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: true
 
 jobs:
   claude-review:
-    if: ${{ github.event.pull_request.user.type != 'Bot' && github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]') }}
+    # workflow_dispatch is only fired by claude.yml after it pushed commits,
+    # so we always want to run in that case; otherwise apply the usual
+    # bot-actor filter to skip Dependabot/Copilot/etc. PRs.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.user.type != 'Bot' && github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]'))
     # Optional: Filter by PR author
     # if: |
     #   github.event.pull_request.user.login == 'external-contributor' ||
@@ -29,6 +44,11 @@ jobs:
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
 
     runs-on: ubuntu-latest
+    env:
+      # Resolve PR number once per job — populated by the pull_request event
+      # in the normal flow, or by the workflow_dispatch input when claude.yml
+      # triggered us after pushing commits.
+      PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
     permissions:
       contents: read
       pull-requests: write
@@ -52,7 +72,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           REVIEWERS_JSON=$(gh api "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers")
           USERS=$(echo "$REVIEWERS_JSON" | jq -c '[.users[].login]')
@@ -73,7 +92,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
           # Mirrors how anthropics/claude-code-action locates its sticky comment to update.
           # See create-initial.ts in:
           # https://github.com/anthropics/claude-code-action/tree/main/src/github/operations/comments
@@ -97,7 +115,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ env.PR_NUMBER }}'
           # Force tag mode (anthropics/claude-code-action src/modes/detector.ts).
           # In the default agent mode for pull_request events, the action never
           # posts any non-inline PR comment by itself (src/modes/agent/index.ts:
@@ -124,7 +142,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
           USERS: ${{ steps.stash.outputs.users }}
           TEAMS: ${{ steps.stash.outputs.teams }}
         run: |
