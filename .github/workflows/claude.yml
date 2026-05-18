@@ -24,6 +24,13 @@ jobs:
       issues: write
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
+    # Expose the ucdavis/epi202 fine-grained PAT to every step in this job,
+    # including the Claude action's subprocess. See .github/copilot-instructions.md
+    # ("Accessing the private ucdavis/epi202 repository") for usage. Empty if
+    # the secret isn't set, in which case the variable is simply unavailable
+    # to Claude — no error.
+    env:
+      EPI202_TOKEN: ${{ secrets.EPI202_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -35,29 +42,6 @@ jobs:
         run: |
           git config --global url."https://x-access-token:${{ secrets.SUBMODULES_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive --depth 1
-
-      # Give Claude on-demand access to the private ucdavis/epi202 repo
-      # (Epi 202 course materials). With this in place, in-session calls
-      # like `git clone https://github.com/ucdavis/epi202`,
-      # `GH_TOKEN=$EPI202_TOKEN gh api repos/ucdavis/epi202/...`, or
-      # `curl -H "Authorization: token $EPI202_TOKEN" https://api.github.com/repos/ucdavis/epi202/...`
-      # all just work without Claude needing to re-supply credentials.
-      # No-ops gracefully if EPI202_TOKEN is not configured.
-      - name: Configure access to ucdavis/epi202
-        env:
-          EPI202_TOKEN: ${{ secrets.EPI202_TOKEN }}
-        run: |
-          if [ -z "${EPI202_TOKEN}" ]; then
-            echo "::warning::EPI202_TOKEN not set; ucdavis/epi202 will not be accessible."
-            exit 0
-          fi
-          # Scope the credential to ucdavis/epi202 specifically so unrelated
-          # github.com URLs continue using the default GITHUB_TOKEN-backed auth.
-          git config --global \
-            "url.https://x-access-token:${EPI202_TOKEN}@github.com/ucdavis/epi202.insteadOf" \
-            "https://github.com/ucdavis/epi202"
-          # Surface to subsequent steps so Claude can use it for gh/curl too.
-          echo "EPI202_TOKEN=${EPI202_TOKEN}" >> "$GITHUB_ENV"
 
       # Install system dependencies required for R packages and tools
       - name: Install system dependencies

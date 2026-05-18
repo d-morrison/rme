@@ -634,6 +634,31 @@ git push origin main:copilot/your-branch-name
 # then open and merge a PR via the GitHub API or UI
 ```
 
+## Accessing the private `ucdavis/epi202` repository
+
+The `EPI202_TOKEN` environment variable holds a fine-grained PAT with
+read access to `https://github.com/ucdavis/epi202` (Epi 202 course
+materials, taught alongside this Epi 204 course). Use it on demand
+when you need to look up course content from that repo. If
+`EPI202_TOKEN` is empty in your environment, the repo is not
+available for this session — say so rather than guessing.
+
+```bash
+# Clone the whole repo:
+git clone "https://x-access-token:${EPI202_TOKEN}@github.com/ucdavis/epi202.git" /tmp/epi202
+
+# Fetch a specific file via the API:
+curl -fsSL -H "Authorization: token ${EPI202_TOKEN}" \
+  https://raw.githubusercontent.com/ucdavis/epi202/main/path/to/file.qmd
+
+# Hit the GitHub REST API:
+GH_TOKEN="${EPI202_TOKEN}" gh api repos/ucdavis/epi202/contents/path/to/file.qmd
+```
+
+The token is loaded automatically for the Copilot coding agent (via the
+`copilot` deployment environment) and for `@claude` PR sessions (via a
+job-level `env:` mapping in `.github/workflows/claude.yml`).
+
 ## Color Coding Strategy for Math Expressions
 
 Use `\red{...}` and `\blue{...}` purposefully and consistently to help readers:

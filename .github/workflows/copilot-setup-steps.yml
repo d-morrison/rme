@@ -51,28 +51,7 @@ jobs:
         run: |
           git config --global url."https://x-access-token:${{ secrets.SUBMODULES_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive --depth 1
-
-      # Give the Copilot coding agent on-demand access to the private
-      # ucdavis/epi202 repo (Epi 202 course materials). With this in place,
-      # the agent's later `git clone https://github.com/ucdavis/epi202` or
-      # `GH_TOKEN=$EPI202_TOKEN gh api repos/ucdavis/epi202/...` calls just
-      # work. The Copilot firewall must also allow github.com/ucdavis/epi202
-      # and api.github.com/repos/ucdavis/epi202 (see
-      # COPILOT_AGENT_FIREWALL_ALLOW_LIST_ADDITIONS). No-ops gracefully if
-      # EPI202_TOKEN is not configured.
-      - name: Configure access to ucdavis/epi202
-        env:
-          EPI202_TOKEN: ${{ secrets.EPI202_TOKEN }}
-        run: |
-          if [ -z "${EPI202_TOKEN}" ]; then
-            echo "::warning::EPI202_TOKEN not set; ucdavis/epi202 will not be accessible."
-            exit 0
-          fi
-          git config --global \
-            "url.https://x-access-token:${EPI202_TOKEN}@github.com/ucdavis/epi202.insteadOf" \
-            "https://github.com/ucdavis/epi202"
-          echo "EPI202_TOKEN=${EPI202_TOKEN}" >> "$GITHUB_ENV"
-
+      
       # Install system dependencies required for R packages
       # See .github/copilot-instructions.md "System Dependencies" and "JAGS Dependencies" sections
       - name: Install system dependencies
