@@ -23,8 +23,11 @@ since $\deriv{x}\frac{x^3}{3} = x^2 = f(x)$.
 
 Adding any constant $C$ gives another antiderivative: $F(x) = \frac{x^3}{3} + 7$,
 since adding a constant does not change the derivative.
+See @fig-antiderivatives.
 
 :::
+
+{{< slidebreak >}}
 
 :::{#fig-antiderivatives}
 
@@ -152,6 +155,59 @@ the probability that $T \le 2$ is:
 $$
 F(2) = 1 - \ef{-1 \cd 2} = 1 - \ef{-2} \approx 1 - 0.1353 = 0.8647
 $$
+
+See @fig-exp-pdf-cdf.
+
+:::
+
+{{< slidebreak >}}
+
+:::{#fig-exp-pdf-cdf}
+
+```{r}
+#| code-fold: true
+#| layout-ncol: 2
+#| fig-subcap:
+#|   - "PDF $f(t) = e^{-t}$; shaded area = $F(2) \\approx 0.865$"
+#|   - "CDF $F(t) = 1 - e^{-t}$; point marks $F(2)$"
+library(ggplot2)
+lam <- 1
+t_max <- 5
+
+ggplot() +
+  geom_area(
+    data = data.frame(t = seq(0, 2, length.out = 300)),
+    aes(x = t, y = lam * exp(-lam * t)),
+    fill = "steelblue", alpha = 0.4
+  ) +
+  geom_function(
+    fun = \(t) lam * exp(-lam * t),
+    xlim = c(0, t_max), linewidth = 1
+  ) +
+  labs(x = "t", y = "f(t)") +
+  theme_minimal()
+
+ggplot() +
+  geom_function(
+    fun = \(t) 1 - exp(-lam * t),
+    xlim = c(0, t_max), linewidth = 1
+  ) +
+  geom_point(aes(x = 2, y = 1 - exp(-2)), size = 3, color = "steelblue") +
+  geom_segment(
+    aes(x = 2, xend = 2, y = 0, yend = 1 - exp(-2)),
+    linetype = "dashed", color = "steelblue"
+  ) +
+  geom_segment(
+    aes(x = 0, xend = 2, y = 1 - exp(-2), yend = 1 - exp(-2)),
+    linetype = "dashed", color = "steelblue"
+  ) +
+  labs(x = "t", y = "F(t)") +
+  theme_minimal()
+```
+
+Exponential distribution with $\haz = 1$.
+Left: the PDF $f(t) = \ef{-t}$; the shaded area under the curve from $0$ to $2$ equals $F(2) \approx 0.865$.
+Right: the CDF $F(t) = 1 - \ef{-t}$; the dashed lines mark the value $F(2)$ computed via FTC Part 2.
 
 :::
 
