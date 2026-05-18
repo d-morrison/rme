@@ -61,6 +61,23 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Mirror the access setup from claude.yml so PR reviews that need to
+      # cross-reference ucdavis/epi202 (private Epi 202 course materials)
+      # can clone/api against it without re-supplying credentials. No-ops
+      # gracefully if EPI202_TOKEN is not configured.
+      - name: Configure access to ucdavis/epi202
+        env:
+          EPI202_TOKEN: ${{ secrets.EPI202_TOKEN }}
+        run: |
+          if [ -z "${EPI202_TOKEN}" ]; then
+            echo "::warning::EPI202_TOKEN not set; ucdavis/epi202 will not be accessible."
+            exit 0
+          fi
+          git config --global \
+            "url.https://x-access-token:${EPI202_TOKEN}@github.com/ucdavis/epi202.insteadOf" \
+            "https://github.com/ucdavis/epi202"
+          echo "EPI202_TOKEN=${EPI202_TOKEN}" >> "$GITHUB_ENV"
+
       # The reviewer stash/restore is a serialization signal: we clear the
       # human reviewers before Claude runs so they aren't notified mid-run,
       # then re-add them when Claude finishes so the re-add fires a fresh
