@@ -13,7 +13,7 @@ where $C$ is an arbitrary constant of integration.
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#exm-antiderivative-power}
 #### Antiderivative of a power function
@@ -26,7 +26,41 @@ since adding a constant does not change the derivative.
 
 :::
 
----
+:::{#fig-antiderivatives}
+
+```{r}
+#| code-fold: true
+#| layout-ncol: 2
+#| fig-subcap:
+#|   - "The derivative $f(x) = x^2$"
+#|   - "Family of antiderivatives $F(x) = x^3/3 + C$"
+library(ggplot2)
+
+ggplot() +
+  geom_function(fun = \(x) x^2, xlim = c(-2, 2), linewidth = 1) +
+  labs(x = "x", y = expression(f(x))) +
+  theme_minimal()
+
+C_vals <- c(-2, -1, 0, 1, 2)
+x_seq <- seq(-2, 2, length.out = 200)
+df <- do.call(rbind, lapply(C_vals, \(C) data.frame(
+  x = x_seq,
+  y = x_seq^3 / 3 + C,
+  C = factor(C)
+)))
+
+ggplot(df, aes(x = x, y = y, color = C)) +
+  geom_line(linewidth = 0.8) +
+  labs(x = "x", y = expression(F(x)), color = "C") +
+  theme_minimal()
+```
+
+The function $f(x) = x^2$ and five antiderivatives $F(x) = x^3/3 + C$ for $C \in \{-2,-1,0,1,2\}$.
+Each antiderivative has the same derivative $f$; they differ only by a vertical shift.
+
+:::
+
+{{< slidebreak >}}
 
 :::{#thm-integral-rules}
 #### Basic integration rules
@@ -43,7 +77,7 @@ since adding a constant does not change the derivative.
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#thm-ftc}
 #### Fundamental Theorem of Calculus
@@ -66,7 +100,7 @@ $$\int_a^b f(x)\,dx = F(b) - F(a)$$
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{.notes}
 
@@ -77,7 +111,7 @@ The two parts of the FTC together express that **differentiation and integration
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#exm-ftc-cdf-pdf}
 #### CDF and PDF of the exponential distribution
@@ -106,6 +140,7 @@ $$
 \ba
 \deriv{t} F(t)
 &= \deriv{t}\left(1 - \ef{-\haz t}\right) \\
+&= 0 - (-\haz)\ef{-\haz t} \\
 &= \haz\ef{-\haz t} \\
 &= f(t)
 \ea
@@ -115,9 +150,9 @@ For a concrete instance: with $\haz = 1$ (standard exponential),
 the probability that $T \le 2$ is:
 
 $$
-F(2) = 1 - \ef{-1 \cd 2} = 1 - \ef{-2} \approx 1 - 0.135 = 0.865
+F(2) = 1 - \ef{-1 \cd 2} = 1 - \ef{-2} \approx 1 - 0.1353 = 0.8647
 $$
 
 :::
 
----
+{{< slidebreak >}}
