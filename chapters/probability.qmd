@@ -563,41 +563,6 @@ $\E{Y \mid X} = g(X)$ where $g(x) \eqdef \E{Y \mid X = x}$.
 
 ---
 
-:::{#thm-fubini}
-
-### Fubini-Tonelli theorem
-
-Let $A, B \subseteq \mathbb{R}$ be (possibly unbounded) intervals,
-and let $f : A \times B \to \mathbb{R}$ be a measurable function.
-If either
-
-(a) $f(x, y) \ge 0$ for all $(x, y) \in A \times B$ (**Tonelli's theorem**), or
-
-(b) $\iint_{A \times B} \abs{f(x, y)}\,dx\,dy < \infty$ (**Fubini's theorem**),
-
-then both iterated integrals are equal to the double integral:
-
-$$\int_A \paren{\int_B f(x, y)\,dy}\,dx
-= \int_B \paren{\int_A f(x, y)\,dx}\,dy
-= \iint_{A \times B} f(x, y)\,dx\,dy.$$
-
-In particular, suppose $D \subseteq \mathbb{R}^2$ can be written as both
-$D = \{(x, y) : a \le x \le b,\; g_1(x) \le y \le g_2(x)\}$
-and $D = \{(x, y) : c \le y \le d,\; h_1(y) \le x \le h_2(y)\}$
-(with $a, b, c, d$ possibly infinite).
-Extend $f$ by zero outside $D$ to the enclosing rectangle $[a, b] \times [c, d]$,
-so the main statement applies on a product domain.
-Then, under either hypothesis above applied to $f$ on $D$:
-
-$$\int_{a}^{b}\int_{g_1(x)}^{g_2(x)} f(x, y)\,dy\,dx
-= \int_{c}^{d}\int_{h_1(y)}^{h_2(y)} f(x, y)\,dx\,dy.$$
-
-[@fubini1907; @billingsley1995probability, Theorem 18.3; @gut2013, Theorem 9.1, p. 65; @wp:fubini]
-
-:::
-
----
-
 :::{#cor-fubini-prob}
 
 ### Corollary for probability measures
@@ -625,6 +590,135 @@ $$
 \E{h(X, Y)}
 = \int_{\rangef{X}} \paren{\int_{\rangef{Y}} h(x, y)\,d\P_Y(y)}\,d\P_X(x)
 = \int_{\rangef{Y}} \paren{\int_{\rangef{X}} h(x, y)\,d\P_X(x)}\,d\P_Y(y).
+$$
+
+:::
+
+---
+
+:::{#exm-fubini-prob}
+
+#### Expectation of a product of independent variables
+
+Let $X \sim \mathrm{Uniform}(0, 1)$ and $Y \sim \mathrm{Uniform}(0, 2)$,
+independently distributed.
+Compute $\E{XY}$.
+
+By @cor-fubini-prob with $h(x, y) = xy$,
+integrating against the marginal densities
+$f_X(x) = 1$ for $x \in [0, 1]$ and $f_Y(y) = \tfrac{1}{2}$ for $y \in [0, 2]$:
+
+$$
+\ba
+\E{XY}
+&= \int_0^1 \paren{\int_0^2 xy \cd \tfrac{1}{2}\,dy}\,dx
+\\&= \int_0^1 x\paren{\frac{1}{2}\int_0^2 y\,dy}\,dx
+\\&= \int_0^1 x \cd \frac{1}{2} \cd \sb{\frac{y^2}{2}}_0^2\,dx
+\\&= \int_0^1 x \cd \frac{1}{2} \cd 2\,dx
+\\&= \int_0^1 x\,dx
+\\&= \frac{1}{2}
+\ea
+$$
+
+As a check: $\E{X} = \tfrac{1}{2}$, $\E{Y} = 1$, and $\E{X}\E{Y} = \tfrac{1}{2}$.
+
+:::
+
+---
+
+:::{#exm-fubini-prob-fail}
+
+#### When independence fails: a counterexample
+
+The independence condition in @cor-fubini-prob is essential.
+Without it, applying the product-measure formula gives the wrong answer.
+
+Let $X \sim \mathrm{Uniform}(0, 1)$ and set $Y = X$
+(so $X$ and $Y$ are perfectly correlated and **not** independent).
+
+**True expectation:**
+
+$$
+\E{XY} = \E{X \cd X} = \E{X^2} = \int_0^1 x^2\,dx = \frac{1}{3}
+$$
+
+**Incorrectly applying the product-measure formula:**
+
+Pretending $X$ and $Y$ are independent, with marginals
+both $\mathrm{Uniform}(0, 1)$:
+
+$$
+\ba
+\int_0^1\!\int_0^1 xy \cd 1 \cd 1\,dy\,dx
+&= \int_0^1 x\paren{\int_0^1 y\,dy}\,dx
+\\&= \int_0^1 x \cd \frac{1}{2}\,dx
+\\&= \frac{1}{4}
+\ea
+$$
+
+Since $\tfrac{1}{4} \neq \tfrac{1}{3}$,
+applying the independence formula when $X$ and $Y$ are dependent
+gives the wrong answer.
+The correct approach for dependent $(X, Y)$ uses the joint density
+(see @cor-fubini-joint).
+
+:::
+
+---
+
+:::{#cor-fubini-joint}
+
+### Corollary for joint probability measures (without independence)
+
+Let $(X, Y)$ be jointly distributed continuous random variables
+with joint density $f_{X,Y}$ on $\rangef{X} \times \rangef{Y}$,
+and let $h : \rangef{X} \times \rangef{Y} \to \mathbb{R}$ be measurable.
+If either
+
+(a) $h(X, Y) \ge 0$ almost surely, or
+
+(b) $\E{\abs{h(X, Y)}} < \infty$,
+
+then the expectation of $h(X, Y)$ can be written as a double integral
+against the joint density, with the order of integration exchangeable:
+
+$$
+\E{h(X, Y)}
+= \int_{\rangef{X}}\paren{\int_{\rangef{Y}} h(x, y)\,f_{X,Y}(x, y)\,dy}\,dx
+= \int_{\rangef{Y}}\paren{\int_{\rangef{X}} h(x, y)\,f_{X,Y}(x, y)\,dx}\,dy.
+$$
+
+This follows from applying @thm-fubini to the integrand $h(x,y)\,f_{X,Y}(x,y)$.
+Independence is not required.
+When $X$ and $Y$ are independent, $f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$,
+recovering @cor-fubini-prob.
+
+:::
+
+---
+
+:::{#exm-fubini-joint}
+
+#### Expectation using a joint density (dependent variables)
+
+Let $(X, Y)$ have joint density
+$f_{X,Y}(x, y) = 2$ for $0 \le x \le y \le 1$
+(and $0$ otherwise).
+Compute $\E{X + Y}$.
+
+By @cor-fubini-joint:
+
+$$
+\ba
+\E{X + Y}
+&= \int_0^1\!\int_0^y (x + y) \cd 2\,dx\,dy
+\\&= 2\int_0^1 \sb{\frac{x^2}{2} + xy}_{x=0}^{x=y}\,dy
+\\&= 2\int_0^1 \paren{\frac{y^2}{2} + y^2}\,dy
+\\&= 2\int_0^1 \frac{3y^2}{2}\,dy
+\\&= 3\int_0^1 y^2\,dy
+\\&= 3 \cd \frac{1}{3}
+\\&= 1
+\ea
 $$
 
 :::
