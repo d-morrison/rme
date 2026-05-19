@@ -1,0 +1,249 @@
+:::{#thm-ftc}
+#### Fundamental Theorem of Calculus
+
+Let $f$ be a continuous function on a closed interval $[a, b]$.
+
+**Part 1 (Derivative of an integral).**
+Define $F(x) = \int_a^x f(t)\,dt$ for $x \in [a, b]$.
+Then $F$ is differentiable and:
+
+$$\deriv{x}\int_a^x f(t)\,dt = f(x)$$ {#eq-ftc-deriv-of-integral}
+
+::: {.callout-note}
+Continuity on all of $[a, b]$ is a sufficient condition.
+More generally, Part 1 holds at any individual point $x$ where $f$ is
+integrable on $[a, b]$ (see @def-integrable) and continuous at $x$
+(see @def-continuous), even if $f$ has jump discontinuities elsewhere.
+:::
+
+[@larsonCalc11e, Theorem 4.11, p. 288]
+
+**Part 2 (Evaluation theorem).**
+The $F$ here may be *any* antiderivative of $f$ — not just the
+accumulation function from Part 1.
+If $F$ is an antiderivative of $f$ on $[a, b]$
+(i.e., $\deriv{x} F(x) = f(x)$ for all $x \in [a, b]$), then:
+
+$$\int_a^b f(x)\,dx = F(b) - F(a)$$ {#eq-ftc-part2}
+
+Equivalently, with $b$ replaced by a variable upper limit $x$,
+integrating the derivative of $F$ recovers the net change in $F$:
+
+$$\int_a^x F'(t)\,dt = F(x) - F(a)$$ {#eq-ftc-integral-of-deriv}
+
+or equivalently in Leibniz notation:
+
+$$\int_a^x \derivf{t}{F}\,dt = F(x) - F(a)$$
+
+[@calclifesaver, Chapter 18; @larsonCalc11e, Theorem 4.9, p. 282]
+
+:::
+
+{{< slidebreak >}}
+
+The two parts of the FTC together express that **differentiation and
+integration are inverse operations**:
+
+- Part 1: differentiating the integral of $f$ recovers $f$
+  (@eq-ftc-deriv-of-integral).
+- Part 2: the integral of $f$ over $[a, b]$ equals the difference of
+  any antiderivative's values at the endpoints
+  (@eq-ftc-part2),
+  which rearranges to "integrating the derivative of $F$ recovers the
+  net change in $F$" (@eq-ftc-integral-of-deriv).
+
+The FTC requires $f$ to be continuous, so by the chain established by
+@thm-diff-implies-cont and @thm-cont-implies-int, the FTC applies
+whenever $f$ is differentiable.
+
+{{< slidebreak >}}
+
+::::{#exm-ftc-part1-accumulation}
+#### FTC Part 1 visualized: accumulation function for $f(t) = 2t$
+
+Take $f(t) = 2t$ on $[0, 2]$. The accumulation function from $0$ is
+
+$$F(x) \;\eqdef\; \int_0^x 2t\,dt \;=\; \sb{t^2}_0^x \;=\; x^2,$$
+
+so $F(x) = x^2$, and indeed $F'(x) = 2x = f(x)$, as @thm-ftc Part 1
+predicts.
+@fig-ftc-part1 shows the integrand on the left
+(shaded area equals $F(x)$ at each $x$)
+and the accumulation function $F(x) = x^2$ on the right
+(its slope at $x$ equals $f(x) = 2x$).
+
+{{< slidebreak >}}
+
+:::{#fig-ftc-part1}
+
+```{r}
+#| label: fig-ftc-part1-code
+#| code-fold: true
+#| layout-ncol: 2
+#| fig-subcap:
+#|   - "$f(t) = 2t$; area equals $F(1.5) = 2.25$; marked $x \\in \\{1,1.5,2\\}$"
+#|   - "$F(x) = x^2$; tangent slope at $x$ is $f(x) = 2x$"
+x_marks <- c(1, 1.5, 2)
+x_focus <- 1.5
+stopifnot(identical(x_marks, c(1, 1.5, 2)))  # fig-subcap hardcodes set
+stopifnot(x_focus == 1.5)  # fig-subcap hardcodes F(1.5) = 2.25
+
+ggplot() +
+  geom_area(
+    data = data.frame(t = seq(0, x_focus, length.out = 200)),
+    aes(x = t, y = 2 * t),
+    fill = "steelblue", alpha = 0.4
+  ) +
+  geom_function(fun = \(t) 2 * t, xlim = c(0, 2.2), linewidth = 1) +
+  geom_vline(
+    data = data.frame(x = x_marks),
+    aes(xintercept = x, color = factor(x)),
+    linetype = "dashed", linewidth = 0.6
+  ) +
+  labs(x = "t", y = "f(t) = 2t", color = "x") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+slope_df <- data.frame(
+  x = x_marks,
+  Fx = x_marks^2,
+  slope = 2 * x_marks
+)
+
+ggplot() +
+  geom_function(fun = \(x) x^2, xlim = c(0, 2.2), linewidth = 1) +
+  geom_point(
+    data = slope_df,
+    aes(x = x, y = Fx, color = factor(x)),
+    size = 3
+  ) +
+  geom_segment(
+    data = slope_df,
+    aes(
+      x = x - 0.3, xend = x + 0.3,
+      y = Fx - 0.3 * slope, yend = Fx + 0.3 * slope,
+      color = factor(x)
+    ),
+    linewidth = 0.8
+  ) +
+  labs(x = "x", y = expression(F(x) == x^2), color = "x") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+Left: $f(t) = 2t$; the shaded area $\int_0^{1.5} 2t\,dt = F(1.5) = 2.25$; vertical lines mark $x \in \{1, 1.5, 2\}$.
+Right: $F(x) = x^2$; for each marked $x$, the tangent slope equals $f(x) = 2x$.
+
+:::
+
+::::
+
+{{< slidebreak >}}
+
+::::{#exm-ftc-cdf-pdf}
+#### CDF and PDF of the exponential distribution
+
+In what follows, $f$ denotes the PDF and $F$ the CDF — the same letters
+as the antiderivative pair in @def-antiderivative, because the FTC will
+show $F$ is exactly an antiderivative of $f$.
+
+For the exponential distribution with rate parameter $\lambda > 0$,
+the probability density function (PDF) is
+[@kleinbaum2012survival, Section II, p. 295, "Survival and Hazard
+Functions for Selected Distributions"]:
+
+$$f(t) = \lambda \ef{-\lambda t}, \quad t \ge 0$$
+
+**FTC Part 2** gives the cumulative distribution function (CDF) from the PDF.
+Apply the $\ef{cx}$ rule from @def-integral-rules with $c = -\lambda$ to
+antidifferentiate the integrand:
+
+$$
+\ba
+F(t)
+&= \int_0^t \lambda \ef{-\lambda u}\,du \\
+&= \sb{\lambda \cd \frac{1}{-\lambda}\ef{-\lambda u}}_{u=0}^{u=t} \\
+&= \sb{(-1)\ef{-\lambda u}}_{u=0}^{u=t} \\
+&= \sb{-\ef{-\lambda u}}_{u=0}^{u=t} \\
+&= -\ef{-\lambda t} - \paren{-\ef{0}} \\
+&= -\ef{-\lambda t} - (-1) \\
+&= 1 - \ef{-\lambda t}
+\ea
+$$
+
+**FTC Part 1** recovers the PDF from the CDF:
+
+$$
+\ba
+\deriv{t} F(t)
+&= \deriv{t}\paren{1 - \ef{-\lambda t}} \\
+&= 0 - (-\lambda)\ef{-\lambda t} \\
+&= \lambda\ef{-\lambda t} \\
+&= f(t)
+\ea
+$$
+
+For a concrete instance: with $\lambda = 1$ (standard exponential),
+the probability that $T \le 2$ is:
+
+$$
+F(2) = 1 - \ef{-1 \cd 2} = 1 - \ef{-2} \approx 1 - 0.135 = 0.865
+$$
+
+See @fig-exp-pdf-cdf.
+
+{{< slidebreak >}}
+
+:::{#fig-exp-pdf-cdf}
+
+```{r}
+#| label: fig-exp-pdf-cdf-code
+#| code-fold: true
+#| layout-ncol: 2
+#| fig-subcap:
+#|   - "PDF with $\\lambda = 1$; shaded area equals $F(2) \\approx 0.865$"
+#|   - "CDF with $\\lambda = 1$; point marks $F(2)$"
+lambda <- 1
+t_max <- 5
+
+ggplot() +
+  geom_area(
+    data = data.frame(t = seq(0, 2, length.out = 300)),
+    aes(x = t, y = lambda * exp(-lambda * t)),
+    fill = "steelblue", alpha = 0.4
+  ) +
+  geom_function(
+    fun = \(t) lambda * exp(-lambda * t),
+    xlim = c(0, t_max), linewidth = 1
+  ) +
+  labs(x = "t", y = "f(t)") +
+  theme_minimal()
+
+ggplot() +
+  geom_function(
+    fun = \(t) 1 - exp(-lambda * t),
+    xlim = c(0, t_max), linewidth = 1
+  ) +
+  geom_point(
+    aes(x = 2, y = 1 - exp(-lambda * 2)),
+    size = 3, color = "steelblue"
+  ) +
+  geom_segment(
+    aes(x = 2, xend = 2, y = 0, yend = 1 - exp(-lambda * 2)),
+    linetype = "dashed", color = "steelblue"
+  ) +
+  geom_segment(
+    aes(x = 0, xend = 2, y = 1 - exp(-lambda * 2), yend = 1 - exp(-lambda * 2)),
+    linetype = "dashed", color = "steelblue"
+  ) +
+  labs(x = "t", y = "F(t)") +
+  theme_minimal()
+```
+
+Exponential distribution with $\lambda = 1$.
+Left: the PDF $f(t) = \ef{-t}$; the shaded area under the curve from $0$ to $2$ equals $F(2) \approx 0.865$.
+Right: the CDF $F(t) = 1 - \ef{-t}$; the dashed lines mark the value $F(2)$ computed via FTC Part 2.
+
+:::
+
+::::
