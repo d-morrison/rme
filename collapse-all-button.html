@@ -1,0 +1,185 @@
+<button
+  id="collapse-all-btn"
+  class="btn btn-sm btn-outline-secondary"
+  title="Collapse all expandable boxes"
+  aria-label="Collapse all expandable boxes"
+>
+  <svg
+    id="collapse-all-icon"
+    xmlns="http://www.w3.org/2000/svg"
+    width="12"
+    height="12"
+    fill="currentColor"
+    viewBox="0 0 16 16"
+    aria-hidden="true"
+  >
+    <!-- arrows-collapse icon (default) -->
+    <path
+      fill-rule="evenodd"
+      d="M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8m7-8a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 4.293V.5A.5.5 0 0 1 8 0m-.5 11.707-1.146 1.147a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 11.707V15.5a.5.5 0 0 1-1 0z"
+    />
+  </svg>
+  <span id="collapse-all-label"> Collapse all</span>
+</button>
+
+<style>
+#collapse-all-btn {
+  position: fixed;
+  bottom: 4rem;
+  right: 1rem;
+  z-index: 1030;
+  opacity: 0.75;
+  font-size: 0.75rem;
+  transition: opacity 0.15s ease-in-out;
+  white-space: nowrap;
+  display: none; /* hidden until JS confirms collapsibles exist */
+}
+
+#collapse-all-btn:hover {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  #collapse-all-btn {
+    bottom: 1rem;
+  }
+}
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  var COLLAPSE_ICON_PATH =
+    "M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8m7-8a.5.5 0 0 1 " +
+    ".5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 " +
+    "0 0 1 .708-.708L7.5 4.293V.5A.5.5 0 0 1 8 0m-.5 11.707-1.146 1.147a.5.5 0 0 " +
+    "1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 11.707V15.5a.5.5 " +
+    "0 0 1-1 0z";
+
+  var EXPAND_ICON_PATH =
+    "M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8M7.646.146a.5.5 0 " +
+    "0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 " +
+    "2.854a.5.5 0 1 1-.708-.708zm-1.292 13l-1.146-1.146a.5.5 0 0 0-.708.708l2 2a.5.5 " +
+    "0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 14.293V10.5a.5.5 0 0 0-1 0v3.793z";
+
+  function getCalloutCollapsibles() {
+    return Array.from(
+      document.querySelectorAll(".callout-collapse.collapse")
+    ).filter(function (el) {
+      return !el.classList.contains("navbar-collapse");
+    });
+  }
+
+  function getDetailsElements() {
+    return Array.from(document.querySelectorAll("details"));
+  }
+
+  function hasAnyCollapsibles() {
+    return getCalloutCollapsibles().length > 0 || getDetailsElements().length > 0;
+  }
+
+  function anyExpanded() {
+    var bsAny = getCalloutCollapsibles().some(function (el) {
+      return el.classList.contains("show");
+    });
+    var detailsAny = getDetailsElements().some(function (el) {
+      return el.open;
+    });
+    return bsAny || detailsAny;
+  }
+
+  function updateButtonState() {
+    var btn = document.getElementById("collapse-all-btn");
+    var iconPath = document.querySelector("#collapse-all-icon path");
+    var label = document.getElementById("collapse-all-label");
+    if (!btn) {
+      return;
+    }
+
+    if (!hasAnyCollapsibles()) {
+      btn.style.display = "none";
+      return;
+    }
+    btn.style.display = "";
+
+    if (anyExpanded()) {
+      if (iconPath) {
+        iconPath.setAttribute("d", COLLAPSE_ICON_PATH);
+      }
+      label.textContent = " Collapse all";
+      btn.title = "Collapse all expandable boxes";
+      btn.setAttribute("aria-label", "Collapse all expandable boxes");
+    } else {
+      if (iconPath) {
+        iconPath.setAttribute("d", EXPAND_ICON_PATH);
+      }
+      label.textContent = " Expand all";
+      btn.title = "Expand all collapsible boxes";
+      btn.setAttribute("aria-label", "Expand all collapsible boxes");
+    }
+  }
+
+  function collapseAll() {
+    getCalloutCollapsibles().forEach(function (el) {
+      if (el.classList.contains("show")) {
+        if (window.bootstrap && window.bootstrap.Collapse) {
+          window.bootstrap.Collapse.getOrCreateInstance(el, {
+            toggle: false,
+          }).hide();
+        } else {
+          el.classList.remove("show");
+        }
+      }
+    });
+    getDetailsElements().forEach(function (el) {
+      el.open = false;
+    });
+    updateButtonState();
+  }
+
+  function expandAll() {
+    getCalloutCollapsibles().forEach(function (el) {
+      if (!el.classList.contains("show")) {
+        if (window.bootstrap && window.bootstrap.Collapse) {
+          window.bootstrap.Collapse.getOrCreateInstance(el, {
+            toggle: false,
+          }).show();
+        } else {
+          el.classList.add("show");
+        }
+      }
+    });
+    getDetailsElements().forEach(function (el) {
+      el.open = true;
+    });
+    updateButtonState();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var btn = document.getElementById("collapse-all-btn");
+    if (!btn) {
+      return;
+    }
+
+    btn.addEventListener("click", function () {
+      if (anyExpanded()) {
+        collapseAll();
+      } else {
+        expandAll();
+      }
+    });
+
+    updateButtonState();
+
+    var observer = new MutationObserver(function () {
+      updateButtonState();
+    });
+    observer.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "open"],
+    });
+  });
+})();
+</script>
