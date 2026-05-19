@@ -14,48 +14,40 @@ that follow are sufficient for the course material.
 
 :::{#thm-fubini}
 
-### Fubini–Tonelli theorem
+### Fubini's theorem (Riemann version)
 
-**General form (σ-finite measure spaces).**
-Let $(\mathcal{X}, \mathcal{A}, \mu)$ and $(\mathcal{Y}, \mathcal{B}, \nu)$ be
-σ-finite measure spaces,
-and let $f : \mathcal{X} \times \mathcal{Y} \to \mathbb{R}$ be measurable
-with respect to the product σ-algebra $\mathcal{A} \otimes \mathcal{B}$.
-If either
+Let $f$ be **continuous** on a plane region $R \subseteq \mathbb{R}^2$.
 
-(a) $f(x, y) \ge 0$ for $\mu \otimes \nu$-almost all $(x, y)$
-(**Tonelli's theorem**), or
+1. **Vertically simple region.**
+   If $R$ is defined by $a \le x \le b$ and $g_1(x) \le y \le g_2(x)$,
+   where $g_1$ and $g_2$ are continuous on $[a, b]$, then
 
-(b) $\int_{\mathcal{X} \times \mathcal{Y}} \abs{f}\,d(\mu \otimes \nu) < \infty$
-(**Fubini's theorem**),
+   $$\iint_R f(x, y)\,dA
+   \;=\; \int_a^b \int_{g_1(x)}^{g_2(x)} f(x, y)\,dy\,dx.$$
 
-then:
+2. **Horizontally simple region.**
+   If $R$ is defined by $c \le y \le d$ and $h_1(y) \le x \le h_2(y)$,
+   where $h_1$ and $h_2$ are continuous on $[c, d]$, then
 
-$$\int_{\mathcal{X}}\paren{\int_{\mathcal{Y}} f(x,y)\,d\nu(y)}\,d\mu(x)
-= \int_{\mathcal{Y}}\paren{\int_{\mathcal{X}} f(x,y)\,d\mu(x)}\,d\nu(y)
-= \int_{\mathcal{X} \times \mathcal{Y}} f\,d(\mu \otimes \nu).$$
+   $$\iint_R f(x, y)\,dA
+   \;=\; \int_c^d \int_{h_1(y)}^{h_2(y)} f(x, y)\,dx\,dy.$$
 
-[@fubini1907; @billingsley1995probability, Theorem 18.3; @gut2013, Theorem 9.1, p. 65; @wp:fubini]
+When $R$ can be described both ways, the two iterated integrals are
+equal — so the order of integration can be exchanged.
 
-**Lebesgue special case.**
-Let $A, B \subseteq \mathbb{R}$ be (possibly unbounded) intervals,
-and take $\mu$ and $\nu$ both equal to Lebesgue measure.
-If either condition above holds, then:
+[@larsonCalc11e, Theorem 14.2, p. 982]
 
-$$\int_A \paren{\int_B f(x, y)\,dy}\,dx
-= \int_B \paren{\int_A f(x, y)\,dx}\,dy
-= \iint_{A \times B} f(x, y)\,dx\,dy.$$
+:::
 
-In particular, suppose $D \subseteq \mathbb{R}^2$ can be written as both
-$D = \{(x, y) : a \le x \le b,\; g_1(x) \le y \le g_2(x)\}$
-and $D = \{(x, y) : c \le y \le d,\; h_1(y) \le x \le h_2(y)\}$
-(with $a, b, c, d$ possibly infinite).
-Extend $f$ by zero outside $D$ to the enclosing rectangle $[a, b] \times [c, d]$.
-Then, under either hypothesis above:
-
-$$\int_{a}^{b}\int_{g_1(x)}^{g_2(x)} f(x, y)\,dy\,dx
-= \int_{c}^{d}\int_{h_1(y)}^{h_2(y)} f(x, y)\,dx\,dy.$$
-
+::: notes
+The measure-theoretic Fubini–Tonelli theorem generalizes this to
+σ-finite measure spaces with a measurability-and-nonnegativity *or*
+absolute-integrability condition; see
+[@billingsley1995probability, Theorem 18.3; @gut2013, Theorem 9.1, p. 65;
+@fubini1907; @wp:fubini].
+That generalization is not required for Epi 204, but it is what
+justifies the probability-measure corollaries (`@cor-fubini-prob`,
+`@cor-fubini-joint`) used later in the probability chapter.
 :::
 
 {{< slidebreak >}}
@@ -77,10 +69,11 @@ $$\int_a^b \paren{\int_c^d f(x, y)\,dy}\,dx
 
 ::: proof
 
-A continuous function on a closed bounded rectangle is bounded and
-Riemann integrable, hence absolutely integrable with respect to
-Lebesgue measure.
-Condition (b) of @thm-fubini is therefore satisfied, giving the result.
+A closed bounded rectangle $[a, b] \times [c, d]$ is both vertically
+simple (with $g_1 \equiv c$, $g_2 \equiv d$) and horizontally simple
+(with $h_1 \equiv a$, $h_2 \equiv b$).
+Applying both parts of @thm-fubini to $f$ on this rectangle gives the
+two iterated forms shown.
 
 :::
 
@@ -149,8 +142,9 @@ $$\int_y^1 \ef{-x^2}\,dx,$$
 
 which has no elementary antiderivative.
 
-**Order $dy\,dx$ works.** Applying @thm-fubini (condition (a) holds since
-$\ef{-x^2} > 0$):
+**Order $dy\,dx$ works.** Applying @thm-fubini Part 1
+($\ef{-x^2}$ is continuous and $D$ is the vertically simple region
+$0 \le x \le 1$, $0 \le y \le x$):
 
 $$
 \ba
@@ -214,14 +208,16 @@ $$
 so the two iterated integrals are unequal.
 Neither @thm-fubini nor @cor-fubini-rect applies here.
 
-**Why the conditions fail:**
-$f$ changes sign on $R$ (it is positive where $|x| > |y|$ and negative
-where $|y| > |x|$), so condition (a) fails.
-Moreover, $\iint_R |f|\,dA = \infty$, so condition (b) also fails.
-To verify divergence, switch to polar coordinates $(r, \theta)$ near
-the origin.
-On the quarter-disk $\{(x, y) : x \ge 0,\, y \ge 0,\, x^2 + y^2 \le \epsilon^2\}$,
-the integrand satisfies
+**Why the hypotheses fail:**
+@thm-fubini requires $f$ to be **continuous** on $R$.
+The denominator $(x^2 + y^2)^2$ vanishes at the origin $(0, 0) \in R$,
+so $f$ is *not even defined* there — let alone continuous — and the
+theorem does not apply.
+
+For the measure-theoretic version (`@thm-fubini`, notes), the failure
+shows up as $\iint_R |f|\,dA = \infty$.
+Switching to polar coordinates $(r, \theta)$ near the origin, the
+integrand satisfies
 $|f(x, y)| = \abs{x^2 - y^2}/(x^2 + y^2)^2 = \abs{\cos 2\theta}/r^2$,
 so
 
