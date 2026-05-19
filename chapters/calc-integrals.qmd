@@ -191,7 +191,7 @@ closed interval $[a, b]$.
 
 {{< slidebreak >}}
 
-:::{#exm-int-not-cont}
+::::{#exm-int-not-cont}
 #### Integrable but not continuous: a step function
 
 Let $f(x) = 0$ for $x < \tfrac{1}{2}$ and $f(x) = 1$ for $x \ge \tfrac{1}{2}$.
@@ -207,8 +207,46 @@ $$
 
 This shows that the converse of @thm-cont-implies-int fails:
 integrability does not imply continuity.
+See @fig-step.
+
+{{< slidebreak >}}
+
+:::{#fig-step}
+
+```{r}
+#| label: fig-step-code
+#| code-fold: true
+step_df <- data.frame(
+  x = c(0, 0.5, 0.5, 1),
+  y = c(0, 0, 1, 1),
+  segment = c("left", "left", "right", "right")
+)
+
+ggplot() +
+  geom_rect(
+    aes(xmin = 0.5, xmax = 1, ymin = 0, ymax = 1),
+    fill = "steelblue", alpha = 0.3
+  ) +
+  geom_line(
+    data = step_df,
+    aes(x = x, y = y, group = segment),
+    linewidth = 1
+  ) +
+  geom_point(aes(x = 0.5, y = 0), shape = 1, size = 3) +
+  geom_point(aes(x = 0.5, y = 1), shape = 16, size = 3) +
+  scale_y_continuous(limits = c(-0.1, 1.2)) +
+  labs(x = "x", y = "f(x)") +
+  theme_minimal()
+```
+
+Step function: $f(x) = 0$ on $[0, \tfrac{1}{2})$ (open circle at the jump)
+and $f(x) = 1$ on $[\tfrac{1}{2}, 1]$ (filled circle).
+The shaded rectangle has area $\tfrac{1}{2}$, matching the integral
+computed above.
 
 :::
+
+::::
 
 {{< slidebreak >}}
 
@@ -291,21 +329,24 @@ and the accumulation function $F(x) = x^2$ on the right
 #| code-fold: true
 #| layout-ncol: 2
 #| fig-subcap:
-#|   - "$f(t) = 2t$; shaded areas equal $F(x)$ at $x \\in \\{1, 1.5, 2\\}$"
+#|   - "$f(t) = 2t$; shaded area $= F(1.5) = 2.25$; vlines at $x = 1, 1.5, 2$"
 #|   - "$F(x) = x^2$; tangent slope at $x$ is $f(x) = 2x$"
 x_marks <- c(1, 1.5, 2)
-shade_df <- do.call(rbind, lapply(x_marks, \(xv) {
-  data.frame(t = seq(0, xv, length.out = 100), x_upper = xv)
-}))
+x_focus <- 1.5
 
 ggplot() +
   geom_area(
-    data = shade_df,
-    aes(x = t, y = 2 * t, group = factor(x_upper), fill = factor(x_upper)),
-    alpha = 0.3, position = "identity"
+    data = data.frame(t = seq(0, x_focus, length.out = 200)),
+    aes(x = t, y = 2 * t),
+    fill = "steelblue", alpha = 0.4
   ) +
   geom_function(fun = \(t) 2 * t, xlim = c(0, 2.2), linewidth = 1) +
-  labs(x = "t", y = "f(t) = 2t", fill = "x") +
+  geom_vline(
+    data = data.frame(x = x_marks),
+    aes(xintercept = x, color = factor(x)),
+    linetype = "dashed", linewidth = 0.6
+  ) +
+  labs(x = "t", y = "f(t) = 2t", color = "x") +
   theme_minimal() +
   theme(legend.position = "bottom")
 
@@ -353,26 +394,26 @@ In what follows, $f$ denotes the PDF and $F$ the CDF — the same letters
 as the antiderivative pair in @def-antiderivative, because the FTC will
 show $F$ is exactly an antiderivative of $f$.
 
-For the exponential distribution with rate parameter $\haz > 0$,
+For the exponential distribution with rate parameter $\lambda > 0$,
 the probability density function (PDF) is
 [@kleinbaum2012survival, Section II, p. 295, "Survival and Hazard
 Functions for Selected Distributions"]:
 
-$$f(t) = \haz \ef{-\haz t}, \quad t \ge 0$$
+$$f(t) = \lambda \ef{-\lambda t}, \quad t \ge 0$$
 
 **FTC Part 2** gives the cumulative distribution function (CDF) from the PDF.
-Apply the $\ef{cx}$ rule from @thm-integral-rules with $c = -\haz$ to
+Apply the $\ef{cx}$ rule from @thm-integral-rules with $c = -\lambda$ to
 antidifferentiate the integrand:
 
 $$
 \ba
 F(t)
-&= \int_0^t \haz \ef{-\haz u}\,du \\
-&= \sb{\haz \cd \frac{1}{-\haz}\ef{-\haz u}}_{u=0}^{u=t} \\
-&= \sb{-\ef{-\haz u}}_{u=0}^{u=t} \\
-&= -\ef{-\haz t} - \left(-\ef{0}\right) \\
-&= -\ef{-\haz t} - (-1) \\
-&= 1 - \ef{-\haz t}
+&= \int_0^t \lambda \ef{-\lambda u}\,du \\
+&= \sb{\lambda \cd \frac{1}{-\lambda}\ef{-\lambda u}}_{u=0}^{u=t} \\
+&= \sb{-\ef{-\lambda u}}_{u=0}^{u=t} \\
+&= -\ef{-\lambda t} - \left(-\ef{0}\right) \\
+&= -\ef{-\lambda t} - (-1) \\
+&= 1 - \ef{-\lambda t}
 \ea
 $$
 
@@ -381,14 +422,14 @@ $$
 $$
 \ba
 \deriv{t} F(t)
-&= \deriv{t}\left(1 - \ef{-\haz t}\right) \\
-&= 0 - (-\haz)\ef{-\haz t} \\
-&= \haz\ef{-\haz t} \\
+&= \deriv{t}\left(1 - \ef{-\lambda t}\right) \\
+&= 0 - (-\lambda)\ef{-\lambda t} \\
+&= \lambda\ef{-\lambda t} \\
 &= f(t)
 \ea
 $$
 
-For a concrete instance: with $\haz = 1$ (standard exponential),
+For a concrete instance: with $\lambda = 1$ (standard exponential),
 the probability that $T \le 2$ is:
 
 $$
@@ -406,8 +447,8 @@ See @fig-exp-pdf-cdf.
 #| code-fold: true
 #| layout-ncol: 2
 #| fig-subcap:
-#|   - "PDF with $\\haz = 1$; shaded area $= F(2) \\approx 0.865$"
-#|   - "CDF with $\\haz = 1$; point marks $F(2)$"
+#|   - "PDF with $\\lambda = 1$; shaded area equals $F(2) \\approx 0.865$"
+#|   - "CDF with $\\lambda = 1$; point marks $F(2)$"
 lam <- 1
 t_max <- 5
 
@@ -442,7 +483,7 @@ ggplot() +
   theme_minimal()
 ```
 
-Exponential distribution with $\haz = 1$.
+Exponential distribution with $\lambda = 1$.
 Left: the PDF $f(t) = \ef{-t}$; the shaded area under the curve from $0$ to $2$ equals $F(2) \approx 0.865$.
 Right: the CDF $F(t) = 1 - \ef{-t}$; the dashed lines mark the value $F(2)$ computed via FTC Part 2.
 
