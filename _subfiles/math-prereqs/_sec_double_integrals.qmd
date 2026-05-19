@@ -67,42 +67,40 @@ Condition (b) of @thm-fubini is therefore satisfied, giving the result.
 
 :::{#exm-fubini-rect}
 
-#### Computing a double integral by switching order
+#### Evaluating a double integral on a rectangle
 
-For more examples in this style, see
-[@larsonCalc11e, Section 14.2, pp. 978--982].
+Adapted from [@larsonCalc11e, Section 14.2, Example 2, pp. 982--983].
 
-Compute $\displaystyle\int_0^1\!\int_0^2 xy^2\,dy\,dx$.
+Evaluate $\displaystyle\iint_R \paren{1 - \frac{1}{2}x^2 - \frac{1}{2}y^2}\,dA$
+on the unit square $R = \{(x, y) : 0 \le x \le 1,\; 0 \le y \le 1\}$.
 
-**Integrating $y$ first, then $x$:**
+The integrand is continuous on $R$, so @cor-fubini-rect applies and
+either order of integration yields the same value.
+
+**Integrating $y$ first, then $x$** (the order Larson chooses):
 
 $$
 \ba
-\int_0^1\!\int_0^2 xy^2\,dy\,dx
-&= \int_0^1 x\paren{\int_0^2 y^2\,dy}\,dx
-\\&= \int_0^1 x \cd \sb{\frac{y^3}{3}}_0^2\,dx
-\\&= \int_0^1 x \cd \frac{8}{3}\,dx
-\\&= \frac{8}{3} \cd \sb{\frac{x^2}{2}}_0^1
-\\&= \frac{8}{3} \cd \frac{1}{2}
-\\&= \frac{4}{3}
+\iint_R \paren{1 - \frac{1}{2}x^2 - \frac{1}{2}y^2}\,dA
+&= \int_0^1\!\int_0^1 \paren{1 - \frac{1}{2}x^2 - \frac{1}{2}y^2}\,dy\,dx
+\\&= \int_0^1 \sb{\paren{1 - \frac{1}{2}x^2}y - \frac{y^3}{6}}_0^1\,dx
+\\&= \int_0^1 \paren{\frac{5}{6} - \frac{1}{2}x^2}\,dx
+\\&= \sb{\frac{5}{6}x - \frac{x^3}{6}}_0^1
+\\&= \frac{2}{3}
 \ea
 $$
 
 **Integrating $x$ first, then $y$** (verifying the order can be swapped):
 
+The integrand is symmetric in $x$ and $y$, so the same arithmetic with
+the roles swapped gives:
+
 $$
-\ba
-\int_0^2\!\int_0^1 xy^2\,dx\,dy
-&= \int_0^2 y^2\paren{\int_0^1 x\,dx}\,dy
-\\&= \int_0^2 y^2 \cd \frac{1}{2}\,dy
-\\&= \frac{1}{2} \cd \sb{\frac{y^3}{3}}_0^2
-\\&= \frac{1}{2} \cd \frac{8}{3}
-\\&= \frac{4}{3}
-\ea
+\int_0^1\!\int_0^1 \paren{1 - \frac{1}{2}x^2 - \frac{1}{2}y^2}\,dx\,dy
+= \frac{2}{3}
 $$
 
-Both orders give $\frac{4}{3}$, as @cor-fubini-rect guarantees since
-$f(x, y) = xy^2$ is continuous on $[0,1]\times[0,2]$.
+Both orders give $\frac{2}{3}$, as @cor-fubini-rect guarantees.
 
 :::
 
@@ -112,34 +110,37 @@ $f(x, y) = xy^2$ is continuous on $[0,1]\times[0,2]$.
 
 #### Changing the order of integration for a non-rectangular region
 
-For more change-of-order examples on non-rectangular regions, see
-[@larsonCalc11e, Section 14.1, pp. 970--977];
-the analogous "non-elementary inner antiderivative" twist with
-$\sin(y^2)$ in place of $e^{y^2}$ appears in
-[@larsonCalc11e, Section 14.6, p. 1016].
+Adapted from [@larsonCalc11e, Section 14.2, Example 4, pp. 984--985].
 
-Compute $\displaystyle\int_0^1\!\int_x^1 e^{y^2}\,dy\,dx$
-by switching the order of integration.
+Find the volume of the solid bounded by the surface $z = \ef{-x^2}$
+and the planes $z = 0$, $y = 0$, $y = x$, and $x = 1$.
 
-The inner integral $\int_x^1 e^{y^2}\,dy$ has no elementary antiderivative
-in terms of $x$, so evaluating $y$ first is intractable.
+The base of the solid in the $xy$-plane is the triangular region
+$D = \{(x, y) : 0 \le x \le 1,\; 0 \le y \le x\}$,
+so the volume is
 
-The region of integration is
-$D = \{(x, y) : 0 \le x \le 1,\; x \le y \le 1\}$.
-Re-describing $D$ with $y$ as the outer variable:
-for each fixed $y \in [0, 1]$, $x$ ranges from $0$ to $y$, so
-$D = \{(x, y) : 0 \le y \le 1,\; 0 \le x \le y\}$.
+$$\iint_D \ef{-x^2}\,dA.$$
 
-Applying @thm-fubini (condition (a) holds since $e^{y^2} > 0$):
+**Order $dx\,dy$ is intractable.** Re-describing $D$ as
+$D = \{(x, y) : 0 \le y \le 1,\; y \le x \le 1\}$, the inner integral is
+
+$$\int_y^1 \ef{-x^2}\,dx,$$
+
+which has no elementary antiderivative.
+
+**Order $dy\,dx$ works.** Applying @thm-fubini (condition (a) holds since
+$\ef{-x^2} > 0$):
 
 $$
 \ba
-\int_0^1\!\int_x^1 e^{y^2}\,dy\,dx
-&= \int_0^1\!\int_0^y e^{y^2}\,dx\,dy
-\\&= \int_0^1 e^{y^2}\paren{\int_0^y \,dx}\,dy
-\\&= \int_0^1 e^{y^2} \cd y\,dy
-\\&= \sb{\frac{1}{2}e^{y^2}}_0^1
-\\&= \frac{e - 1}{2}
+\iint_D \ef{-x^2}\,dA
+&= \int_0^1\!\int_0^x \ef{-x^2}\,dy\,dx
+\\&= \int_0^1 \ef{-x^2}\paren{\int_0^x dy}\,dx
+\\&= \int_0^1 x\,\ef{-x^2}\,dx
+\\&= \sb{-\frac{1}{2}\,\ef{-x^2}}_0^1
+\\&= -\frac{1}{2}\paren{\ef{-1} - 1}
+\\&= \frac{e - 1}{2e}
+\\&\approx 0.316
 \ea
 $$
 
