@@ -10,6 +10,17 @@ on:
   pull_request_review:
     types: [submitted]
 
+# Serialize @claude sessions per issue/PR. Multiple rapid @claude
+# comments used to fire concurrent runs that all tried to push to the
+# same branch; the action's git-push.sh refuses non-fast-forward
+# pushes, so the loser-on-the-race silently lost its work (see PR #706
+# 2026-05-19 18:31–18:39 window, where 2 of 4 races were blocked).
+# `cancel-in-progress: false` means each new comment QUEUES behind the
+# running session rather than starting a competing one.
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number || github.event.review.pull_request_url }}
+  cancel-in-progress: false
+
 jobs:
   claude:
     if: |
@@ -131,10 +142,16 @@ jobs:
             | sort -u \
             | sed 's#.*#WebFetch(domain:&)#' \
             | paste -sd, -)
+          # `Bash(gh api:*)`, `Bash(gh pr view:*)`, `Bash(gh issue view:*)`
+          # are needed by the polling-for-new-comments prompt below: the
+          # session checks for late-arriving @claude comments before
+          # declaring done, so multi-comment bursts get handled in a
+          # single session instead of racing parallel runs.
+          GH_TOOLS='Bash(gh api:*),Bash(gh pr view:*),Bash(gh issue view:*)'
           if [ -n "$WEBFETCH" ]; then
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${WEBFETCH}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *)" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -147,16 +164,53 @@ jobs:
           additional_permissions: |
             actions: read
 
-          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
+          # Pick up late-arriving @claude comments before declaring done.
+          # Background: until the workflow's `concurrency:` block was added,
+          # rapid @claude comments fired concurrent runs that raced to push
+          # to the same branch; the action's git-push.sh refuses non-
+          # fast-forward pushes, so the losers silently lost their work
+          # (PR #706 2026-05-19 18:31–18:39). The concurrency block now
+          # serializes runs, but a long-running session can still miss a
+          # comment posted while it's working. This prompt has Claude
+          # explicitly poll for newer @claude mentions and address them
+          # in the same session before finishing.
+          prompt: |
+            You were triggered by an @claude mention in
+            ${{ github.event_name }}. Address the request in that
+            comment/issue/review.
+
+            **Before declaring the task complete, check for additional
+            @claude requests that arrived after the triggering event:**
+
+            1. Fetch the latest issue/PR comments:
+               `gh api 'repos/${{ github.repository }}/issues/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate`
+               (PR review comments also live at this endpoint; the
+               separate `/pulls/N/comments` endpoint is only for inline
+               review-thread replies.)
+
+            2. From the response, identify comments where ALL of:
+               - `created_at` is strictly greater than the triggering
+                 comment's timestamp
+                 (`${{ github.event.comment.created_at || github.event.review.submitted_at || github.event.issue.updated_at }}`)
+               - body contains `@claude`
+               - user.login is neither `claude[bot]` nor `github-actions[bot]`
+
+            3. If any matching comments exist, address each one in this
+               same session (in chronological order), then repeat from
+               step 1. Stop when no new @claude comments remain.
+
+            4. Push all commits before finishing. The concurrency group
+               guarantees no parallel session is racing yours, so
+               git-push.sh should succeed unless someone pushed by hand.
 
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
           # Allow the pre-commit checklist tools from CLAUDE.md (Rscript for
           # lint/spell-check, quarto render for chapter previews), curl for
-          # downloading source PDFs too large for WebFetch (issue #740), plus
-          # WebFetch for every host in the shared stats-allowlist.
+          # downloading source PDFs too large for WebFetch (issue #740), the
+          # gh CLI for the polling step in the prompt above, plus WebFetch
+          # for every host in the shared stats-allowlist.
           claude_args: '--allowed-tools "${{ steps.tools.outputs.allowed }}"'
 
       - name: Re-request review and dispatch code review if Claude pushed commits
