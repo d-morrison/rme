@@ -153,7 +153,13 @@ local function calloutify(el, is_proof)
   if override_title then
     callout_tbl.title = spawn_callout_title(my_types[typ].title, el.name)
   end
-  callout_tbl.content = my_Theorem(el)
+  if override_title and not is_proof then
+    -- Use raw body content to avoid duplicating the auto-generated theorem heading.
+    -- Preserve el.identifier so cross-reference links resolve to the right anchor.
+    callout_tbl.content = pandoc.Div(el.content, pandoc.Attr(el.identifier))
+  else
+    callout_tbl.content = my_Theorem(el)
+  end
   local callout = quarto.Callout(callout_tbl)
   return callout
 end
