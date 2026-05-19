@@ -3,6 +3,7 @@
   class="btn btn-sm btn-outline-secondary"
   title="Collapse all expandable boxes"
   aria-label="Collapse all expandable boxes"
+  aria-expanded="true"
 >
   <svg
     id="collapse-all-icon"
@@ -72,7 +73,8 @@
   }
 
   function getDetailsElements() {
-    return Array.from(document.querySelectorAll("details"));
+    var root = document.querySelector("main") || document.body;
+    return Array.from(root.querySelectorAll("details"));
   }
 
   function hasAnyCollapsibles() {
@@ -107,6 +109,7 @@
       if (iconPath) {
         iconPath.setAttribute("d", COLLAPSE_ICON_PATH);
       }
+      btn.setAttribute("aria-expanded", "true");
       label.textContent = " Collapse all";
       btn.title = "Collapse all expandable boxes";
       btn.setAttribute("aria-label", "Collapse all expandable boxes");
@@ -114,6 +117,7 @@
       if (iconPath) {
         iconPath.setAttribute("d", EXPAND_ICON_PATH);
       }
+      btn.setAttribute("aria-expanded", "false");
       label.textContent = " Expand all";
       btn.title = "Expand all collapsible boxes";
       btn.setAttribute("aria-label", "Expand all collapsible boxes");
@@ -172,8 +176,13 @@
 
     updateButtonState();
 
+    var rafId = null;
     var observer = new MutationObserver(function () {
-      updateButtonState();
+      if (rafId) return;
+      rafId = requestAnimationFrame(function () {
+        rafId = null;
+        updateButtonState();
+      });
     });
     observer.observe(document.body, {
       subtree: true,
