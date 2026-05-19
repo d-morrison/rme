@@ -1,0 +1,134 @@
+
+The `pbc` dataset from the `rmb` package
+contains data from a clinical trial
+of D-penicillamine treatment in primary biliary cholangitis (PBC)
+[@dickson1989prognosis].
+
+Here we demonstrate the effect of left-truncation
+by comparing analyses using two different time scales:
+
+1. Time from enrollment (standard approach, no truncation)
+2. Age as the time scale (introduces left-truncation,
+   since patients are observed from their current age, not from birth)
+
+::: {#fig-pbc-km-truncation}
+
+```{r}
+#| code-fold: true
+library(rmb)
+library(survival)
+library(ggplot2)
+library(dplyr)
+
+pbc_data <- rmb::pbc
+
+# Analysis 1: time from enrollment (no truncation)
+km_enroll <- survfit(
+  Surv(years, as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Analysis 2: age as time scale (left-truncated)
+km_age <- survfit(
+  Surv(time = age, time2 = age + years, event = as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Extract KM estimates at specific times for each analysis
+km1_summary <- summary(km_enroll, times = seq(0, 12, by = 0.5))
+km2_summary <- summary(km_age, times = seq(26, 78, by = 0.5))
+
+km1_df <- tibble(
+  time = km1_summary$time,
+  surv = km1_summary$surv,
+  analysis = "Time from enrollment"
+)
+
+km2_df <- tibble(
+  time = km2_summary$time - median(pbc_data$age),
+  surv = km2_summary$surv,
+  analysis = paste0(
+    "Age as time scale\n",
+    "(left-truncated; centered at median enrollment age)"
+  )
+)
+
+km_combined <- bind_rows(km1_df, km2_df)
+
+ggplot(km_combined) +
+  aes(x = time, y = surv, color = analysis) +
+  geom_step() +
+  labs(
+    x = "Time (years)",
+    y = "Estimated survival probability",
+    color = "Analysis",
+    caption = "Data: rmb::pbc (PBC clinical trial, Dickson et al. 1989)"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+Kaplan-Meier survival curves for the PBC study
+using two different time scales:
+time from enrollment (no truncation)
+vs. age centered at the median enrollment age (left-truncated).
+
+:::
+
+::: {.notes}
+The curve using age as the time scale
+accounts for the fact that participants
+were only observed from their age at enrollment.
+When centered at the median enrollment age,
+the two analyses can be compared on a common scale.
+Note that ignoring this truncation
+would lead to overestimated survival:
+participants who died at younger ages ---
+before reaching their enrollment age ---
+were never observed and are excluded from the data,
+leading to a risk set that over-represents longer survivors.
+:::
+
+## Effect of Ignoring Left-Truncation
+
+When left-truncation is ignored:
+
+- Survival probabilities are **overestimated**
+  (especially at early time points)
+- The analysis fails to account
+  for undersampling of short survival times
+- Hazard ratios in Cox models may be attenuated
+  (effect is less predictable)
+
+The following example illustrates the bias using the PBC data.
+The naive analysis treats all participants as entering the risk set
+at the earliest observed age,
+whereas the proper analysis uses counting-process notation
+to enter each participant at their actual enrollment age.
+
+```{r}
+#| label: pbc-truncation-bias-setup
+#| code-fold: true
+km_naive_age <- survfit(
+  Surv(age + years, as.numeric(status) == 1) ~ 1,
+  data = pbc_data
+)
+
+# Extract estimates at age 60 for comparison
+surv_naive_at_sixty  <- summary(km_naive_age, times = 60)$surv
+surv_proper_at_sixty <- summary(km_age, times = 60)$surv
+```
+
+At age 60,
+the naive analysis (ignoring delayed entry)
+estimates survival at
+`r scales::percent(surv_naive_at_sixty, accuracy = 0.1)`,
+compared to
+`r scales::percent(surv_proper_at_sixty, accuracy = 0.1)`
+with the proper left-truncation correction.
+
+The naive estimate is inflated
+because the risk set at each age incorrectly includes
+participants who had not yet been enrolled
+(and thus had not actually been observed to be at risk).
