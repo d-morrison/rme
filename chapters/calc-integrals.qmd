@@ -1,3 +1,9 @@
+```{r}
+#| label: setup-calc-integrals
+#| include: false
+library(ggplot2)
+```
+
 Integration is the inverse operation of differentiation: it recovers a
 function from its derivative and accumulates quantities such as areas,
 totals, and probabilities. We begin with antiderivatives, then state
@@ -44,7 +50,6 @@ See @fig-antiderivatives.
 #| fig-subcap:
 #|   - "The function $f(x) = x^2$"
 #|   - "Family of antiderivatives $F(x) = x^3/3 + C$"
-library(ggplot2)
 
 ggplot() +
   geom_function(fun = \(x) x^2, xlim = c(-2, 2), linewidth = 1) +
@@ -80,7 +85,7 @@ Each antiderivative has the same derivative $f$; they differ only by a vertical 
 #### Basic integration rules
 
 | Function $f(x)$ | Antiderivative $F(x)$ | Condition |
-|:---:|:---:|:---:|
+|:---:|:---:|:---|
 | $c$ | $cx$ | — |
 | $x^n$ | $\dfrac{x^{n+1}}{n+1}$ | $n \ne -1$ |
 | $\dfrac{1}{x}$ | $\ln\abs{x}$ | $x \ne 0$ |
@@ -259,6 +264,83 @@ integration are inverse operations**:
 The FTC requires $f$ to be continuous, so by the chain established by
 @thm-diff-implies-cont and @thm-cont-implies-int, the FTC applies
 whenever $f$ is differentiable.
+
+{{< slidebreak >}}
+
+::::{#exm-ftc-part1-accumulation}
+#### FTC Part 1 visualized: accumulation function for $f(t) = 2t$
+
+Take $f(t) = 2t$ on $[0, 2]$. The accumulation function from $0$ is
+
+$$F(x) \;\eqdef\; \int_0^x 2t\,dt \;=\; \sb{t^2}_0^x \;=\; x^2,$$
+
+so $F(x) = x^2$, and indeed $F'(x) = 2x = f(x)$, as @thm-ftc Part 1
+predicts.
+@fig-ftc-part1 shows the integrand on the left
+(shaded area equals $F(x)$ at each $x$)
+and the accumulation function $F(x) = x^2$ on the right
+(its slope at $x$ equals $f(x) = 2x$).
+
+{{< slidebreak >}}
+
+:::{#fig-ftc-part1}
+
+```{r}
+#| code-fold: true
+#| layout-ncol: 2
+#| fig-subcap:
+#|   - "$f(t) = 2t$; shaded areas equal $F(x)$ at $x \\in \\{1, 1.5, 2\\}$"
+#|   - "$F(x) = x^2$; tangent slope at $x$ is $f(x) = 2x$"
+x_marks <- c(1, 1.5, 2)
+shade_df <- do.call(rbind, lapply(x_marks, \(xv) {
+  data.frame(t = seq(0, xv, length.out = 100), x_upper = xv)
+}))
+
+ggplot() +
+  geom_area(
+    data = shade_df,
+    aes(x = t, y = 2 * t, group = factor(x_upper), fill = factor(x_upper)),
+    alpha = 0.3, position = "identity"
+  ) +
+  geom_function(fun = \(t) 2 * t, xlim = c(0, 2.2), linewidth = 1) +
+  labs(x = "t", y = "f(t) = 2t", fill = "x") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+slope_df <- data.frame(
+  x = x_marks,
+  Fx = x_marks^2,
+  slope = 2 * x_marks
+)
+
+ggplot() +
+  geom_function(fun = \(x) x^2, xlim = c(0, 2.2), linewidth = 1) +
+  geom_point(
+    data = slope_df,
+    aes(x = x, y = Fx, color = factor(x)),
+    size = 3
+  ) +
+  geom_segment(
+    data = slope_df,
+    aes(
+      x = x - 0.3, xend = x + 0.3,
+      y = Fx - 0.3 * slope, yend = Fx + 0.3 * slope,
+      color = factor(x)
+    ),
+    linewidth = 0.8
+  ) +
+  labs(x = "x", y = expression(F(x) == x^2), color = "x") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+For each marked $x \in \{1, 1.5, 2\}$:
+the shaded area on the left equals $F(x) = x^2$,
+and the tangent slope at that $x$ on the right equals $f(x) = 2x$.
+
+:::
+
+::::
 
 {{< slidebreak >}}
 
