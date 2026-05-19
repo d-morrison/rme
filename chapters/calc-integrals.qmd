@@ -46,11 +46,13 @@ ggplot() +
 
 C_vals <- c(-2, -1, 0, 1, 2)
 x_seq <- seq(-2, 2, length.out = 200)
-df <- do.call(rbind, lapply(C_vals, \(C) data.frame(
-  x = x_seq,
-  y = x_seq^3 / 3 + C,
-  C = factor(C)
-)))
+df <- do.call(rbind, lapply(C_vals, \(C) {
+  data.frame(
+    x = x_seq,
+    y = x_seq^3 / 3 + C,
+    C = factor(C)
+  )
+}))
 
 ggplot(df, aes(x = x, y = y, color = C)) +
   geom_line(linewidth = 0.8) +
@@ -82,6 +84,45 @@ Each antiderivative has the same derivative $f$; they differ only by a vertical 
 
 {{< slidebreak >}}
 
+:::{#thm-diff-implies-cont}
+#### Differentiability implies continuity
+
+If $f$ is differentiable at $x = c$, then $f$ is continuous at $x = c$.
+
+[@larsonCalc11e, Theorem 2.1, p. 106]
+
+:::
+
+{{< slidebreak >}}
+
+:::{#thm-cont-implies-int}
+#### Continuity implies integrability
+
+If $f$ is continuous on the closed interval $[a, b]$,
+then $f$ is integrable on $[a, b]$;
+that is, $\int_a^b f(x)\,dx$ exists.
+
+[@larsonCalc11e, Theorem 4.4, p. 272]
+
+:::
+
+{{< slidebreak >}}
+
+:::{.notes}
+
+Differentiability is the strongest of the three conditions
+and integrability is the weakest:
+
+$$\text{differentiable} \;\Rightarrow\; \text{continuous} \;\Rightarrow\; \text{integrable}$$
+
+Neither implication reverses in general
+(e.g., $f(x) = \abs{x}$ is continuous but not differentiable at $0$;
+a step function is integrable but not continuous).
+
+:::
+
+{{< slidebreak >}}
+
 :::{#thm-ftc}
 #### Fundamental Theorem of Calculus
 
@@ -91,7 +132,13 @@ Let $f$ be a continuous function on a closed interval $[a, b]$.
 Define $F(x) = \int_a^x f(t)\,dt$ for $x \in [a, b]$.
 Then $F$ is differentiable and:
 
-$$\deriv{x}\int_a^x f(t)\,dt = f(x)$$
+$$\deriv{x}\int_a^x f(t)\,dt = f(x)$$ {#eq-ftc-deriv-of-integral}
+
+[@larsonCalc11e, Theorem 4.11, p. 288]
+
+Equivalently, integrating the derivative of $F$ recovers the net change in $F$:
+
+$$\int_a^x \deriv{t} F(t)\,dt = F(x) - F(a)$$ {#eq-ftc-integral-of-deriv}
 
 **Part 2 (Evaluation theorem).**
 If $F$ is an antiderivative of $f$ on $[a, b]$
@@ -99,7 +146,7 @@ If $F$ is an antiderivative of $f$ on $[a, b]$
 
 $$\int_a^b f(x)\,dx = F(b) - F(a)$$
 
-[@calclifesaver, Chapter 18]
+[@calclifesaver, Chapter 18; @larsonCalc11e, Theorem 4.9, p. 282]
 
 :::
 
@@ -109,8 +156,10 @@ $$\int_a^b f(x)\,dx = F(b) - F(a)$$
 
 The two parts of the FTC together express that **differentiation and integration are inverse operations**:
 
-- Part 1: differentiating the integral of $f$ recovers $f$.
-- Part 2: integrating the derivative of $F$ recovers the net change in $F$.
+- Part 1: differentiating the integral of $f$ recovers $f$
+  (@eq-ftc-deriv-of-integral).
+- Part 2: integrating the derivative of $F$ recovers the net change in $F$
+  (@eq-ftc-integral-of-deriv).
 
 :::
 
