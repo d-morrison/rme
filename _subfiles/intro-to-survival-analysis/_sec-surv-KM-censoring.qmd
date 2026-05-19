@@ -1,0 +1,123 @@
+
+## Estimating survival in datasets with censoring
+
+-   For the 6-MP patients, we cannot ignore the censored data because we
+know that the time to relapse is greater than the censoring time.
+
+-   For any time $t$ in months, we know that 6-MP patients with times
+greater than $t$ have not relapsed, and those with relapse time less
+than $t$ have relapsed, but we don't know if patients with censored
+time less than $t$ have relapsed or not.
+
+-   The procedure we usually use is the Kaplan-Meier product-limit
+estimator of the survival function.
+
+-   The Kaplan-Meier estimator is a step function (like the empirical
+cdf), which changes value only at the event times, not at the
+censoring times.
+
+-   At each event time $t_i$, we compute the at-risk set, which
+includes all observations whose event time or censoring time is at
+least $t_i$.
+    Its size is $r_i$.
+
+-   If $d_i$ of the observations have an event time (not a censoring time)
+of $t_i$, then the group of survivors immediately following time $t_i$
+is reduced by the fraction $$\frac{r_i-d_i}{r_i}=1-\frac{d_i}{r_i}$$
+
+:::{#fig-risk-set-dropout-cartoon}
+
+```{r}
+#| code-fold: true
+#| echo: false
+
+risk_cartoon <- tibble::tibble(
+  person = paste("Person", 1:8),
+  exit_time = c(2, 3, 4, 5, 6, 6, 7, 8),
+  status = c(
+    "Event",
+    "Censored",
+    "Event",
+    "Censored",
+    "Event",
+    "Censored",
+    "Event",
+    "Censored"
+  )
+) |>
+  dplyr::mutate(person_id = dplyr::row_number())
+
+risk_counts <- tibble::tibble(time = c(0, 2, 4, 6, 8)) |>
+  dplyr::mutate(
+    at_risk = purrr::map_int(
+      time,
+      \(current_time) sum(risk_cartoon$exit_time >= current_time)
+    ),
+    label = paste0("At risk at ", time, ": ", at_risk)
+  )
+
+ggplot2::ggplot(risk_cartoon) +
+  ggplot2::aes(y = person_id) +
+  ggplot2::geom_segment(
+    ggplot2::aes(
+      x = 0,
+      xend = exit_time,
+      yend = person_id
+    ),
+    linewidth = 1,
+    color = "grey50"
+  ) +
+  ggplot2::geom_point(
+    ggplot2::aes(
+      x = exit_time,
+      shape = status,
+      fill = status
+    ),
+    size = 3,
+    color = "black"
+  ) +
+  ggplot2::geom_vline(
+    data = dplyr::filter(risk_counts, time > 0),
+    ggplot2::aes(xintercept = time),
+    linetype = "dashed",
+    color = "grey85"
+  ) +
+  ggplot2::geom_text(
+    data = risk_counts,
+    ggplot2::aes(
+      x = time,
+      y = max(risk_cartoon$person_id) + 0.8,
+      label = label
+    ),
+    size = 3.4,
+    vjust = 0
+  ) +
+  ggplot2::scale_shape_manual(values = c(Event = 21, Censored = 22)) +
+  ggplot2::scale_fill_manual(
+    values = c(Event = "#F8766D", Censored = "#00BFC4")
+  ) +
+  ggplot2::scale_y_continuous(
+    breaks = risk_cartoon$person_id,
+    labels = risk_cartoon$person
+  ) +
+  ggplot2::coord_cartesian(ylim = c(0.5, max(risk_cartoon$person_id) + 1.6)) +
+  ggplot2::labs(
+    x = "Time",
+    y = NULL,
+    shape = NULL,
+    fill = NULL
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "bottom",
+    panel.grid.minor = ggplot2::element_blank()
+  )
+```
+
+Cartoon risk-set view showing individual follow-up lines.
+Filled circles indicate events,
+filled squares indicate censoring times,
+and dashed lines mark selected times.
+Labels above show the number at risk at each marked time.
+
+:::

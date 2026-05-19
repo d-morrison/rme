@@ -1,0 +1,37 @@
+
+:::::{#exm-KM-drug6mp}
+#### Kaplan-Meier curve for `drug6mp` data
+
+Here is the Kaplan-Meier estimated survival curve for the patients who
+received 6-MP in the `drug6mp` dataset (we will see code to produce
+figures like this one shortly):
+
+:::{#fig-KM-mp6}
+```{r}
+#| echo: false
+
+require(KMsurv)
+data(drug6mp)
+library(dplyr)
+library(survival)
+
+km_model1 <-
+  drug6mp |>
+  mutate(surv = Surv(t2, relapse)) |>
+  survfit(formula = surv ~ 1, data = _)
+
+library(ggfortify)
+km_model1 |>
+  autoplot(
+    mark.time = TRUE,
+    conf.int = FALSE
+  ) +
+  expand_limits(y = 0) +
+  xlab("Time since diagnosis (months)") +
+  ylab("KM Survival Curve")
+```
+
+Kaplan-Meier Survival Curve for 6-MP Patients
+:::
+
+:::::
