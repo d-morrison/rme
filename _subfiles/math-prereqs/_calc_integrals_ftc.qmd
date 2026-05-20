@@ -53,9 +53,10 @@ integration are inverse operations**:
   which rearranges to "integrating the derivative of $F$ recovers the
   net change in $F$" (@eq-ftc-integral-of-deriv).
 
-The FTC requires $f$ to be continuous, so by the chain established by
-@thm-diff-implies-cont and @thm-cont-implies-int, the FTC applies
-whenever $f$ is differentiable.
+The FTC requires $f$ to be continuous.
+Since differentiability implies continuity (@thm-diff-implies-cont),
+the FTC applies in particular whenever $f$ is differentiable —
+a common situation in Epi 204.
 
 {{< slidebreak >}}
 
@@ -75,23 +76,15 @@ and the accumulation function $F(x) = x^2$ on the right
 
 {{< slidebreak >}}
 
-:::{#fig-ftc-part1}
+:::{#fig-ftc-part1 layout-ncol="2"}
+
+:::{#fig-ftc-part1-left}
 
 ```{r}
-#| label: fig-ftc-part1-code
+#| label: fig-ftc-part1-left-code
 #| code-fold: true
-#| layout-ncol: 2
-#| fig-subcap:
-#|   - "$f(t) = 2t$; area equals $F(1.5) = 2.25$; marked $x \\in \\{1,1.5,2\\}$"
-#|   - "$F(x) = x^2$; tangent slope at $x$ is $f(x) = 2x$"
 x_marks <- c(1, 1.5, 2)
 x_focus <- 1.5
-# The fig-subcap above hardcodes these values:
-#   "marked $x \in \{1,1.5,2\}$"  →  x_marks
-#   "area equals $F(1.5) = 2.25$" →  x_focus  (since F(1.5) = 1.5^2 = 2.25)
-# Guard against silent drift if either is edited without updating the subcap.
-stopifnot(identical(x_marks, c(1, 1.5, 2)))
-stopifnot(x_focus == 1.5)
 
 ggplot() +
   geom_area(
@@ -108,7 +101,16 @@ ggplot() +
   labs(x = "t", y = "f(t) = 2t", color = "x") +
   theme_minimal() +
   theme(legend.position = "bottom")
+```
 
+$f(t) = 2t$; shaded area equals $F(`r x_focus`) = `r x_focus^2`$; vertical lines mark $x \in \{`r paste(x_marks, collapse = ",")`\}$.
+:::
+
+:::{#fig-ftc-part1-right}
+
+```{r}
+#| label: fig-ftc-part1-right-code
+#| code-fold: true
 slope_df <- data.frame(
   x = x_marks,
   Fx = x_marks^2,
@@ -136,7 +138,10 @@ ggplot() +
   theme(legend.position = "bottom")
 ```
 
-Left: $f(t) = 2t$; the shaded area $\int_0^{1.5} 2t\,dt = F(1.5) = 2.25$; vertical lines mark $x \in \{1, 1.5, 2\}$.
+$F(x) = x^2$; tangent slope at each marked $x$ equals $f(x) = 2x$.
+:::
+
+Left: $f(t) = 2t$; the shaded area $\int_0^{`r x_focus`} 2t\,dt = F(`r x_focus`) = `r x_focus^2`$; vertical lines mark $x \in \{`r paste(x_marks, collapse = ", ")`\}$.
 Right: $F(x) = x^2$; for each marked $x$, the tangent slope equals $f(x) = 2x$.
 
 :::
