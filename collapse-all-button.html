@@ -3,7 +3,7 @@
   class="btn btn-sm btn-outline-secondary"
   title="Collapse all expandable boxes"
   aria-label="Collapse all expandable boxes"
-  aria-expanded="false"
+  aria-expanded="true"
 >
   <svg
     id="collapse-all-icon"
@@ -55,12 +55,20 @@
 (function () {
   "use strict";
 
-  var COLLAPSE_ICON_PATH =
-    "M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8m7-8a.5.5 0 0 1 " +
-    ".5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 " +
-    "0 0 1 .708-.708L7.5 4.293V.5A.5.5 0 0 1 8 0m-.5 11.707-1.146 1.147a.5.5 0 0 " +
-    "1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 11.707V15.5a.5.5 " +
-    "0 0 1-1 0z";
+  // Lazy: read the initial collapse-icon path from the DOM on first use
+  // instead of duplicating the path string in JS. This keeps the icon
+  // definition in one place (the inline <svg> above) — if the SVG ever
+  // changes, the JS picks up the new path automatically. The expand-icon
+  // path doesn't appear in the static HTML (it's only swapped in by JS),
+  // so it stays inline below.
+  var COLLAPSE_ICON_PATH = null;
+  function getCollapseIconPath() {
+    if (COLLAPSE_ICON_PATH === null) {
+      var pathEl = document.querySelector("#collapse-all-icon path");
+      COLLAPSE_ICON_PATH = (pathEl && pathEl.getAttribute("d")) || "";
+    }
+    return COLLAPSE_ICON_PATH;
+  }
 
   var EXPAND_ICON_PATH =
     "M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8M7.646.146a.5.5 0 " +
@@ -68,17 +76,23 @@
     "2.854a.5.5 0 1 1-.708-.708zm-1.292 13l-1.146-1.146a.5.5 0 0 0-.708.708l2 2a.5.5 " +
     "0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 14.293V10.5a.5.5 0 0 0-1 0v3.793z";
 
+  // Both collapsibles and <details> are scoped to `<main>` so we never
+  // accidentally toggle a `.navbar-collapse` (Bootstrap's mobile-menu
+  // pattern) or a sidebar `<details>`. Falling back to `document.body`
+  // for pages without a `<main>` keeps the button working on landing
+  // pages too.
+  function getRoot() {
+    return document.querySelector("main") || document.body;
+  }
+
   function getCalloutCollapsibles() {
     return Array.from(
-      document.querySelectorAll(".callout-collapse.collapse")
-    ).filter(function (el) {
-      return !el.classList.contains("navbar-collapse");
-    });
+      getRoot().querySelectorAll(".callout-collapse.collapse")
+    );
   }
 
   function getDetailsElements() {
-    var root = document.querySelector("main") || document.body;
-    return Array.from(root.querySelectorAll("details"));
+    return Array.from(getRoot().querySelectorAll("details"));
   }
 
   function hasAnyCollapsibles() {
@@ -123,7 +137,7 @@
 
     if (isExpanded) {
       if (iconPath) {
-        iconPath.setAttribute("d", COLLAPSE_ICON_PATH);
+        iconPath.setAttribute("d", getCollapseIconPath());
       }
       btn.setAttribute("aria-expanded", "true");
       label.textContent = "Collapse all";
@@ -200,8 +214,7 @@
         updateButtonState();
       });
     });
-    var observeRoot = document.querySelector("main") || document.body;
-    observer.observe(observeRoot, {
+    observer.observe(getRoot(), {
       subtree: true,
       attributes: true,
       attributeFilter: ["class", "open"],
