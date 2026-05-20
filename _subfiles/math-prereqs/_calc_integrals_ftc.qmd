@@ -65,7 +65,7 @@ a common situation in Epi 204.
 
 Take $f(t) = 2t$ on $[0, 2]$. The accumulation function from $0$ is
 
-$$F(x) \;\eqdef\; \int_0^x 2t\,dt \;=\; \sb{t^2}_0^x \;=\; x^2,$$
+$$F(x) \;\eqdef\; \int_0^x 2t\,dt \;=\; \sb{t^2}_{t=0}^{t=x} \;=\; x^2,$$
 
 so $F(x) = x^2$, and indeed $F'(x) = 2x = f(x)$, as @thm-ftc Part 1
 predicts.
@@ -202,23 +202,27 @@ $$
 
 See @fig-exp-pdf-cdf.
 
+```{r}
+#| label: fig-exp-pdf-cdf-setup
+#| include: false
+lambda <- 1
+t_focus <- 2
+t_max <- 5
+F_at_focus <- 1 - exp(-lambda * t_focus)
+```
+
 {{< slidebreak >}}
 
-:::{#fig-exp-pdf-cdf}
+:::{#fig-exp-pdf-cdf layout-ncol="2"}
+
+:::{#fig-exp-pdf-cdf-pdf}
 
 ```{r}
-#| label: fig-exp-pdf-cdf-code
+#| label: fig-exp-pdf-cdf-pdf-code
 #| code-fold: true
-#| layout-ncol: 2
-#| fig-subcap:
-#|   - "PDF with $\\lambda = 1$; shaded area equals $F(2) \\approx 0.865$"
-#|   - "CDF with $\\lambda = 1$; point marks $F(2)$"
-lambda <- 1
-t_max <- 5
-
 ggplot() +
   geom_area(
-    data = data.frame(t = seq(0, 2, length.out = 300)),
+    data = data.frame(t = seq(0, t_focus, length.out = 300)),
     aes(x = t, y = lambda * exp(-lambda * t)),
     fill = "steelblue", alpha = 0.4
   ) +
@@ -228,31 +232,43 @@ ggplot() +
   ) +
   labs(x = "t", y = "f(t)") +
   theme_minimal()
+```
 
+PDF with $\lambda = `r lambda`$; shaded area equals $F(`r t_focus`) \approx `r round(F_at_focus, 3)`$.
+:::
+
+:::{#fig-exp-pdf-cdf-cdf}
+
+```{r}
+#| label: fig-exp-pdf-cdf-cdf-code
+#| code-fold: true
 ggplot() +
   geom_function(
     fun = \(t) 1 - exp(-lambda * t),
     xlim = c(0, t_max), linewidth = 1
   ) +
   geom_point(
-    aes(x = 2, y = 1 - exp(-lambda * 2)),
+    aes(x = t_focus, y = F_at_focus),
     size = 3, color = "steelblue"
   ) +
   geom_segment(
-    aes(x = 2, xend = 2, y = 0, yend = 1 - exp(-lambda * 2)),
+    aes(x = t_focus, xend = t_focus, y = 0, yend = F_at_focus),
     linetype = "dashed", color = "steelblue"
   ) +
   geom_segment(
-    aes(x = 0, xend = 2, y = 1 - exp(-lambda * 2), yend = 1 - exp(-lambda * 2)),
+    aes(x = 0, xend = t_focus, y = F_at_focus, yend = F_at_focus),
     linetype = "dashed", color = "steelblue"
   ) +
   labs(x = "t", y = "F(t)") +
   theme_minimal()
 ```
 
-Exponential distribution with $\lambda = 1$.
-Left: the PDF $f(t) = \ef{-t}$; the shaded area under the curve from $0$ to $2$ equals $F(2) \approx 0.865$.
-Right: the CDF $F(t) = 1 - \ef{-t}$; the dashed lines mark the value $F(2)$ computed via FTC Part 2.
+CDF with $\lambda = `r lambda`$; point marks $F(`r t_focus`) \approx `r round(F_at_focus, 3)`$.
+:::
+
+Exponential distribution with $\lambda = `r lambda`$.
+Left: the PDF $f(t) = \ef{-t}$; the shaded area under the curve from $0$ to $`r t_focus`$ equals $F(`r t_focus`) \approx `r round(F_at_focus, 3)`$.
+Right: the CDF $F(t) = 1 - \ef{-t}$; the dashed lines mark the value $F(`r t_focus`)$ computed via FTC Part 2.
 
 :::
 
