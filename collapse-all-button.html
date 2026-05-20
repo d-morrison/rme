@@ -3,7 +3,7 @@
   class="btn btn-sm btn-outline-secondary"
   title="Collapse all expandable boxes"
   aria-label="Collapse all expandable boxes"
-  aria-expanded="true"
+  aria-expanded="false"
 >
   <svg
     id="collapse-all-icon"
@@ -20,7 +20,7 @@
       d="M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8m7-8a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 4.293V.5A.5.5 0 0 1 8 0m-.5 11.707-1.146 1.147a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 11.707V15.5a.5.5 0 0 1-1 0z"
     />
   </svg>
-  <span id="collapse-all-label"> Collapse all</span>
+  <span id="collapse-all-label">Collapse all</span>
 </button>
 
 <style>
@@ -34,6 +34,10 @@
   transition: opacity 0.15s ease-in-out;
   white-space: nowrap;
   display: none; /* hidden until JS confirms collapsibles exist */
+}
+
+#collapse-all-btn #collapse-all-label {
+  margin-left: 0.25rem;
 }
 
 #collapse-all-btn:hover {
@@ -110,7 +114,7 @@
         iconPath.setAttribute("d", COLLAPSE_ICON_PATH);
       }
       btn.setAttribute("aria-expanded", "true");
-      label.textContent = " Collapse all";
+      label.textContent = "Collapse all";
       btn.title = "Collapse all expandable boxes";
       btn.setAttribute("aria-label", "Collapse all expandable boxes");
     } else {
@@ -118,7 +122,7 @@
         iconPath.setAttribute("d", EXPAND_ICON_PATH);
       }
       btn.setAttribute("aria-expanded", "false");
-      label.textContent = " Expand all";
+      label.textContent = "Expand all";
       btn.title = "Expand all collapsible boxes";
       btn.setAttribute("aria-label", "Expand all collapsible boxes");
     }
@@ -184,7 +188,8 @@
         updateButtonState();
       });
     });
-    observer.observe(document.body, {
+    var observeRoot = document.querySelector("main") || document.body;
+    observer.observe(observeRoot, {
       subtree: true,
       attributes: true,
       attributeFilter: ["class", "open"],
