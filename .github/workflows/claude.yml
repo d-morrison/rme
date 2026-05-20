@@ -154,13 +154,12 @@ jobs:
             | sort -u \
             | sed 's#.*#WebFetch(domain:&)#' \
             | paste -sd, -)
-          # `Bash(gh api:*)`, `Bash(gh pr view:*)`, `Bash(gh issue view:*)`
-          # are needed by the polling-for-new-comments prompt below: the
-          # session checks for late-arriving @claude comments before
-          # declaring done, so multi-comment bursts get handled in a
-          # single session instead of racing parallel runs.
+          # `Bash(gh api:*)` is needed by the polling-for-new-comments
+          # prompt below: the session checks for late-arriving @claude
+          # comments before declaring done, so multi-comment bursts get
+          # handled in a single session instead of racing parallel runs.
           #
-          # `Bash(gh api:*)` is intentionally broad: the polling step
+          # The permission is intentionally broad. The polling step
           # only needs GET on a few endpoints, but Claude often uses
           # `gh api` for other read-only inspection during a session
           # (e.g. fetching file SHAs, reading raw PR metadata). The
@@ -169,8 +168,11 @@ jobs:
           # so we accept the broader surface. The ultimate bound on
           # what's possible is still `GITHUB_TOKEN`'s scopes
           # (`contents: write`, `pull-requests: write`, `issues: write`),
-          # not this allowlist.
-          GH_TOOLS='Bash(gh api:*),Bash(gh pr view:*),Bash(gh issue view:*)'
+          # not this allowlist. `Bash(gh pr view:*)` and
+          # `Bash(gh issue view:*)` are strict subsets of
+          # `Bash(gh api:*)` (the CLI commands hit the same API
+          # internally), so they're omitted.
+          GH_TOOLS='Bash(gh api:*)'
           if [ -n "$WEBFETCH" ]; then
             echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
@@ -217,7 +219,6 @@ jobs:
               `body` field here is where `@claude` lives for a
               `pull_request_review` trigger.
 
-            Treat N = `${{ github.event.issue.number || github.event.pull_request.number }}`.
             This run was triggered by a `${{ github.event_name }}`
             event; the `/pulls/...` endpoints below only apply when the
             triggering event was on a PR — i.e. when `github.event_name`
@@ -227,18 +228,25 @@ jobs:
             anyway).
 
             1. Fetch each endpoint (skip the `/pulls/...` ones for
-               `issues` triggers):
+               `issues` triggers — the GitHub-Actions expression
+               `${{ github.event.issue.number || github.event.pull_request.number }}`
+               is already substituted in below):
                ```
-               gh api 'repos/${{ github.repository }}/issues/N/comments' --paginate
-               gh api 'repos/${{ github.repository }}/pulls/N/comments' --paginate   # PRs only
-               gh api 'repos/${{ github.repository }}/pulls/N/reviews'  --paginate   # PRs only
+               gh api 'repos/${{ github.repository }}/issues/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate
+               gh api 'repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate   # PRs only
+               gh api 'repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/reviews'  --paginate   # PRs only
                ```
 
             2. From the combined response, identify entries where ALL of:
                - the relevant timestamp (`created_at` for comments,
                  `submitted_at` for reviews) is strictly greater than
-                 the triggering event's timestamp
-                 (`${{ github.event.comment.created_at || github.event.review.submitted_at || github.event.issue.updated_at }}`)
+                 the triggering event's timestamp. The fallback chain
+                 prefers exact creation/submission timestamps and only
+                 falls back to `issue.updated_at` for `issues` events
+                 with type `assigned` (the only trigger where
+                 `created_at` is not the right signal, since the issue
+                 itself wasn't created by this event):
+                 (`${{ github.event.comment.created_at || github.event.review.submitted_at || (github.event_name == 'issues' && github.event.action == 'opened' && github.event.issue.created_at) || github.event.issue.updated_at }}`)
                - the relevant text field (`body` for comments and
                  reviews) contains `@claude`
                - `user.type` is not `"Bot"` — this generically excludes
@@ -257,7 +265,14 @@ jobs:
 
             3. If any matching entries exist, address each one in this
                same session (in chronological order), then repeat from
-               step 1. Stop when no new @claude requests remain.
+               step 1. Stop when no new @claude requests remain, or
+               after **at most 5 polling rounds total** — whichever
+               comes first. The cap prevents a pathological ping-pong
+               between a user (or two bots) and this session from
+               keeping the run alive indefinitely; if you hit the cap
+               with new comments still arriving, post a comment saying
+               so and exit, and the next workflow run will pick up
+               from there via the serialize-per-PR concurrency group.
 
             4. Push all commits before finishing. The concurrency group
                guarantees no parallel session is racing yours, so
