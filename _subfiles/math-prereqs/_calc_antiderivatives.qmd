@@ -30,23 +30,35 @@ See @fig-antiderivatives.
 
 {{< slidebreak >}}
 
-:::{#fig-antiderivatives}
+```{r}
+#| label: fig-antiderivatives-setup
+#| include: false
+C_vals <- c(-2, -1, 0, 1, 2)
+x_lim <- c(-2, 2)
+```
+
+:::{#fig-antiderivatives layout-ncol="2"}
+
+:::{#fig-antiderivatives-f}
 
 ```{r}
-#| label: fig-antiderivatives-code
+#| label: fig-antiderivatives-f-code
 #| code-fold: true
-#| layout-ncol: 2
-#| fig-subcap:
-#|   - "The function $f(x) = x^2$"
-#|   - "Family of antiderivatives $F(x) = x^3/3 + C$"
-
 ggplot() +
-  geom_function(fun = \(x) x^2, xlim = c(-2, 2), linewidth = 1) +
+  geom_function(fun = \(x) x^2, xlim = x_lim, linewidth = 1) +
   labs(x = "x", y = expression(f(x))) +
   theme_minimal()
+```
 
-C_vals <- c(-2, -1, 0, 1, 2)
-x_seq <- seq(-2, 2, length.out = 200)
+The function $f(x) = x^2$.
+:::
+
+:::{#fig-antiderivatives-F}
+
+```{r}
+#| label: fig-antiderivatives-F-code
+#| code-fold: true
+x_seq <- seq(x_lim[1], x_lim[2], length.out = 200)
 df <- do.call(rbind, lapply(C_vals, \(C) {
   data.frame(
     x = x_seq,
@@ -61,7 +73,10 @@ ggplot(df, aes(x = x, y = y, color = C)) +
   theme_minimal()
 ```
 
-The function $f(x) = x^2$ and five antiderivatives $F(x) = x^3/3 + C$ for $C \in \{-2,-1,0,1,2\}$.
+Family of antiderivatives $F(x) = x^3/3 + C$.
+:::
+
+The function $f(x) = x^2$ and five antiderivatives $F(x) = x^3/3 + C$ for $C \in \{`r paste(C_vals, collapse = ", ")`\}$.
 Each antiderivative has the same derivative $f$; they differ only by a vertical shift.
 
 :::
