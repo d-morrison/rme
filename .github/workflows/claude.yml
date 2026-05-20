@@ -121,6 +121,12 @@ jobs:
 
       - name: Install R dependencies via renv
         uses: r-lib/actions/setup-renv@v2
+        env:
+          # Without GITHUB_PAT, renv can't hit the GitHub API to resolve
+          # GitHub-sourced packages (e.g. `ddsjoberg/gtsummary`) and
+          # `renv::restore()` aborts with "GitHub authentication
+          # credentials are not available." Matches publish.yml.
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         with:
           cache-version: 1
 
