@@ -18,7 +18,14 @@ on:
 # `cancel-in-progress: false` means each new comment QUEUES behind the
 # running session rather than starting a competing one.
 concurrency:
-  group: claude-${{ github.event.issue.number || github.event.pull_request.number || github.event.review.pull_request_url }}
+  # `github.event.pull_request.number` is already populated for
+  # `pull_request_review` and `pull_request_review_comment` events, so
+  # the two fallbacks below cover all four trigger types — no third
+  # clause needed. A stray `github.event.review.pull_request_url`
+  # fallback would also be wrong: it's a full API URL string, not a
+  # number, so it would produce a different group than the `claude-N`
+  # used by `issue_comment` events on the same PR.
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
@@ -147,6 +154,17 @@ jobs:
           # session checks for late-arriving @claude comments before
           # declaring done, so multi-comment bursts get handled in a
           # single session instead of racing parallel runs.
+          #
+          # `Bash(gh api:*)` is intentionally broad: the polling step
+          # only needs GET on a few endpoints, but Claude often uses
+          # `gh api` for other read-only inspection during a session
+          # (e.g. fetching file SHAs, reading raw PR metadata). The
+          # allowed-tools pattern doesn't currently support a clean way
+          # to restrict to GET-only or to a specific endpoint path,
+          # so we accept the broader surface. The ultimate bound on
+          # what's possible is still `GITHUB_TOKEN`'s scopes
+          # (`contents: write`, `pull-requests: write`, `issues: write`),
+          # not this allowlist.
           GH_TOOLS='Bash(gh api:*),Bash(gh pr view:*),Bash(gh issue view:*)'
           if [ -n "$WEBFETCH" ]; then
             echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
@@ -180,24 +198,49 @@ jobs:
             comment/issue/review.
 
             **Before declaring the task complete, check for additional
-            @claude requests that arrived after the triggering event:**
+            @claude requests that arrived after the triggering event.**
 
-            1. Fetch the latest issue/PR comments:
-               `gh api 'repos/${{ github.repository }}/issues/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate`
-               (PR review comments also live at this endpoint; the
-               separate `/pulls/N/comments` endpoint is only for inline
-               review-thread replies.)
+            The three event types that trigger this workflow each live at
+            a different GitHub API endpoint, and `@claude` can appear in
+            any of them. Poll all three before finishing:
 
-            2. From the response, identify comments where ALL of:
-               - `created_at` is strictly greater than the triggering
-                 comment's timestamp
+            - `/issues/N/comments` — PR/issue **timeline** comments
+              (covers `issue_comment` and the issue body on `issues`).
+            - `/pulls/N/comments` — **inline review-thread** comments
+              on a PR (covers `pull_request_review_comment`).
+            - `/pulls/N/reviews` — PR **review submissions**; the
+              `body` field here is where `@claude` lives for a
+              `pull_request_review` trigger.
+
+            Treat N = `${{ github.event.issue.number || github.event.pull_request.number }}`.
+
+            1. Fetch each endpoint (skip the `/pulls/...` ones if N is
+               an issue rather than a PR):
+               ```
+               gh api 'repos/${{ github.repository }}/issues/N/comments' --paginate
+               gh api 'repos/${{ github.repository }}/pulls/N/comments' --paginate   # PRs only
+               gh api 'repos/${{ github.repository }}/pulls/N/reviews'  --paginate   # PRs only
+               ```
+
+            2. From the combined response, identify entries where ALL of:
+               - the relevant timestamp (`created_at` for comments,
+                 `submitted_at` for reviews) is strictly greater than
+                 the triggering event's timestamp
                  (`${{ github.event.comment.created_at || github.event.review.submitted_at || github.event.issue.updated_at }}`)
-               - body contains `@claude`
-               - user.login is neither `claude[bot]` nor `github-actions[bot]`
+               - the relevant text field (`body` for comments and
+                 reviews) contains `@claude`
+               - `user.login` is neither `claude[bot]` nor
+                 `github-actions[bot]`
 
-            3. If any matching comments exist, address each one in this
+               Note: for `issues` events the triggering timestamp falls
+               back to `issue.updated_at`, which is a coarse signal
+               (any update — assignment, label change, etc. — bumps it).
+               Comments posted in the same second as another issue
+               update could be missed; this is rare but not impossible.
+
+            3. If any matching entries exist, address each one in this
                same session (in chronological order), then repeat from
-               step 1. Stop when no new @claude comments remain.
+               step 1. Stop when no new @claude requests remain.
 
             4. Push all commits before finishing. The concurrency group
                guarantees no parallel session is racing yours, so
