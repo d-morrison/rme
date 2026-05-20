@@ -95,7 +95,15 @@
     return bsAny || detailsAny;
   }
 
-  function updateButtonState() {
+  // `forceExpanded` (optional boolean) overrides the anyExpanded() probe
+  // for the button's expanded/collapsed UI. Callers that just *triggered*
+  // a state change (collapseAll/expandAll) pass the new state directly so
+  // the button label flips synchronously, instead of waiting one rAF for
+  // Bootstrap's hide()/show() transition to remove/add `.show` and the
+  // MutationObserver to react. Without `forceExpanded`, this falls back
+  // to anyExpanded() — the right behavior for page-load init and for
+  // manual user toggles on individual callouts that bypass our buttons.
+  function updateButtonState(forceExpanded) {
     var btn = document.getElementById("collapse-all-btn");
     var iconPath = document.querySelector("#collapse-all-icon path");
     var label = document.getElementById("collapse-all-label");
@@ -109,7 +117,11 @@
     }
     btn.style.display = "block";
 
-    if (anyExpanded()) {
+    var isExpanded = (forceExpanded !== undefined)
+      ? forceExpanded
+      : anyExpanded();
+
+    if (isExpanded) {
       if (iconPath) {
         iconPath.setAttribute("d", COLLAPSE_ICON_PATH);
       }
@@ -143,7 +155,7 @@
     getDetailsElements().forEach(function (el) {
       el.open = false;
     });
-    updateButtonState();
+    updateButtonState(false);
   }
 
   function expandAll() {
@@ -161,7 +173,7 @@
     getDetailsElements().forEach(function (el) {
       el.open = true;
     });
-    updateButtonState();
+    updateButtonState(true);
   }
 
   document.addEventListener("DOMContentLoaded", function () {
