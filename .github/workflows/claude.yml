@@ -322,12 +322,14 @@ jobs:
                so and exit, and the next workflow run will pick up
                from there via the serialize-per-PR concurrency group.
 
-            4. Commit all changes before finishing — the
-               `claude-code-action` runs `git-push.sh` after your
-               session ends, so you don't (and can't, given the
-               `--allowed-tools` list) push directly. The concurrency
-               group guarantees no parallel session is racing yours,
-               so that push should succeed unless someone pushed by
+            4. Commit all changes before finishing. `git add`,
+               `git commit`, and `git rm` are auto-injected into the
+               allowed-tools list by the action and are available to
+               you; `git push` is NOT — the action runs its own
+               `git-push.sh` wrapper after your session ends, which
+               is what pushes to the remote. The concurrency group
+               guarantees no parallel session is racing yours, so
+               that push should succeed unless someone pushed by
                hand.
 
           # Optional: Add claude_args to customize behavior and configuration
