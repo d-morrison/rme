@@ -154,9 +154,22 @@ local function calloutify(el, is_proof)
     callout_tbl.title = spawn_callout_title(my_types[typ].title, el.name)
   end
   if override_title and not is_proof then
-    -- Use raw body content to avoid duplicating the auto-generated theorem heading.
-    -- Preserve el.identifier so cross-reference links resolve to the right anchor.
-    callout_tbl.content = pandoc.Div(el.content, pandoc.Attr(el.identifier))
+    -- Use raw body content to avoid duplicating the auto-generated theorem
+    -- heading. Quarto's Theorem element wraps the original pandoc Div as
+    -- `el.div`; the body blocks live at `el.div.content`, consistent with
+    -- the `el.div.attr` access already used above. `el.content` itself is
+    -- nil on the custom Theorem AST node.
+    --
+    -- We pass the blocks directly rather than re-wrapping in another
+    -- pandoc.Div with the identifier — a nested Div with its own id
+    -- triggered an internal error in Quarto's jog.lua walker. Instead we
+    -- prepend a Span carrying `el.identifier` so cross-references like
+    -- `@exm-foo` still resolve to a real anchor inside the callout body.
+    local body = (el.div and el.div.content) or pandoc.Blocks({})
+    if el.identifier and el.identifier ~= "" then
+      body:insert(1, pandoc.Plain({pandoc.Span({}, pandoc.Attr(el.identifier))}))
+    end
+    callout_tbl.content = body
   else
     callout_tbl.content = my_Theorem(el)
   end
