@@ -17,6 +17,17 @@ on:
 # 2026-05-19 18:31–18:39 window, where 2 of 4 races were blocked).
 # `cancel-in-progress: false` means each new comment QUEUES behind the
 # running session rather than starting a competing one.
+#
+# Known limitation — queued runs may re-handle absorbed comments:
+# if comment 2 arrives while run A (triggered by comment 1) is
+# active, run A's polling step (see `prompt:` below) addresses
+# comment 2 in-session — but run B is also queued and will still
+# start once A finishes, re-addressing comment 2 as its triggering
+# event. In practice this costs at most an extra commit or a
+# no-op session; the tasks `@claude` performs here are idempotent
+# enough that the cost is acceptable. The alternative
+# (`cancel-in-progress: true`) would throw away in-flight work,
+# which is worse than the occasional duplicate.
 concurrency:
   # `github.event.pull_request.number` is already populated for
   # `pull_request_review` and `pull_request_review_comment` events, so
@@ -209,7 +220,21 @@ jobs:
 
             The three event types that trigger this workflow each live at
             a different GitHub API endpoint, and `@claude` can appear in
-            any of them. Poll all three before finishing:
+            any of them. Poll the endpoints that apply to your trigger
+            type before finishing.
+
+            This run was triggered by a `${{ github.event_name }}` event:
+
+            - **PR triggers** (`issue_comment` on a PR,
+              `pull_request_review`, `pull_request_review_comment`):
+              poll all three endpoints listed below.
+            - **Issue triggers** (`issue_comment` on an issue,
+              `issues`): poll **only** `/issues/N/comments`; the
+              `/pulls/...` endpoints don't apply, and the issue body
+              itself doesn't admit late-arriving `@claude` content
+              (there's typically nothing else to poll anyway).
+
+            Endpoints:
 
             - `/issues/N/comments` — PR/issue **timeline** comments
               (covers `issue_comment` and the issue body on `issues`).
@@ -218,14 +243,6 @@ jobs:
             - `/pulls/N/reviews` — PR **review submissions**; the
               `body` field here is where `@claude` lives for a
               `pull_request_review` trigger.
-
-            This run was triggered by a `${{ github.event_name }}`
-            event; the `/pulls/...` endpoints below only apply when the
-            triggering event was on a PR — i.e. when the event type is
-            **not** `issues`. Skip those two endpoints for `issues`
-            triggers (the issue body itself doesn't admit late-arriving
-            `@claude` content, so there's typically nothing to poll
-            anyway).
 
             1. Fetch each endpoint (skip the `/pulls/...` ones for
                `issues` triggers — the GitHub-Actions expression
