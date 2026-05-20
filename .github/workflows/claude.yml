@@ -221,8 +221,8 @@ jobs:
 
             This run was triggered by a `${{ github.event_name }}`
             event; the `/pulls/...` endpoints below only apply when the
-            triggering event was on a PR — i.e. when `github.event_name`
-            is **not** `issues`. Skip those two endpoints for `issues`
+            triggering event was on a PR — i.e. when the event type is
+            **not** `issues`. Skip those two endpoints for `issues`
             triggers (the issue body itself doesn't admit late-arriving
             `@claude` content, so there's typically nothing to poll
             anyway).
@@ -274,9 +274,13 @@ jobs:
                so and exit, and the next workflow run will pick up
                from there via the serialize-per-PR concurrency group.
 
-            4. Push all commits before finishing. The concurrency group
-               guarantees no parallel session is racing yours, so
-               git-push.sh should succeed unless someone pushed by hand.
+            4. Commit all changes before finishing — the
+               `claude-code-action` runs `git-push.sh` after your
+               session ends, so you don't (and can't, given the
+               `--allowed-tools` list) push directly. The concurrency
+               group guarantees no parallel session is racing yours,
+               so that push should succeed unless someone pushed by
+               hand.
 
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
