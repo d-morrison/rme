@@ -189,7 +189,7 @@ jobs:
           # allowlist. `Bash(gh pr view:*)` and `Bash(gh issue view:*)`
           # are strict subsets (the CLI commands hit the same API
           # internally), so they're omitted.
-          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/:*)"
+          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*)"
           if [ -n "$WEBFETCH" ]; then
             echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
@@ -242,7 +242,12 @@ jobs:
             any of them. Poll the endpoints that apply to your trigger
             type before finishing.
 
-            This run was triggered by a `${{ github.event_name }}` event:
+            This run was triggered by a `${{ github.event_name }}` event.
+            Pre-resolved context (you don't need to figure these out yourself):
+            - PR context? `${{ (github.event.pull_request.number || github.event.issue.pull_request) && 'yes' || 'no' }}`
+              (`issue_comment` fires for both issues and PRs; this
+              flag disambiguates without you guessing.)
+            - Entity number: `${{ github.event.issue.number || github.event.pull_request.number }}`
 
             - **PR triggers** (`issue_comment` on a PR,
               `pull_request_review`, `pull_request_review_comment`):
