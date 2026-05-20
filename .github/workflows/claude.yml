@@ -165,25 +165,31 @@ jobs:
             | sort -u \
             | sed 's#.*#WebFetch(domain:&)#' \
             | paste -sd, -)
-          # `Bash(gh api:*)` is needed by the polling-for-new-comments
-          # prompt below: the session checks for late-arriving @claude
-          # comments before declaring done, so multi-comment bursts get
-          # handled in a single session instead of racing parallel runs.
+          # `Bash(gh api repos/<this-repo>/*)` is needed by the
+          # polling-for-new-comments prompt below: the session checks
+          # for late-arriving @claude comments before declaring done,
+          # so multi-comment bursts get handled in a single session
+          # instead of racing parallel runs.
           #
-          # The permission is intentionally broad. The polling step
-          # only needs GET on a few endpoints, but Claude often uses
-          # `gh api` for other read-only inspection during a session
-          # (e.g. fetching file SHAs, reading raw PR metadata). The
-          # allowed-tools pattern doesn't currently support a clean way
-          # to restrict to GET-only or to a specific endpoint path,
-          # so we accept the broader surface. The ultimate bound on
-          # what's possible is still `GITHUB_TOKEN`'s scopes
-          # (`contents: write`, `pull-requests: write`, `issues: write`),
-          # not this allowlist. `Bash(gh pr view:*)` and
-          # `Bash(gh issue view:*)` are strict subsets of
-          # `Bash(gh api:*)` (the CLI commands hit the same API
+          # The pattern is scoped to the current repository's API
+          # surface, which covers the polling step's endpoints
+          # (`repos/<repo>/issues/N/comments`, `repos/<repo>/pulls/N/comments`,
+          # `repos/<repo>/pulls/N/reviews`) and the routine read-only
+          # session uses (fetching file SHAs, reading PR metadata,
+          # checking branch contents). It excludes cross-repo and
+          # cross-org `gh api` calls (`/user`, `/orgs/...`, `/repos/OTHER/...`)
+          # that the session doesn't need.
+          #
+          # Within the repo scope the pattern still matches write
+          # endpoints (`gh api -X POST/PATCH/DELETE repos/<repo>/...`),
+          # not just reads, because allowed-tools doesn't support
+          # HTTP-method filtering. The ultimate bound on what's
+          # possible is `GITHUB_TOKEN`'s scopes (`contents: write`,
+          # `pull-requests: write`, `issues: write`), not this
+          # allowlist. `Bash(gh pr view:*)` and `Bash(gh issue view:*)`
+          # are strict subsets (the CLI commands hit the same API
           # internally), so they're omitted.
-          GH_TOOLS='Bash(gh api:*)'
+          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/:*)"
           if [ -n "$WEBFETCH" ]; then
             echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
@@ -210,6 +216,19 @@ jobs:
           # comment posted while it's working. This prompt has Claude
           # explicitly poll for newer @claude mentions and address them
           # in the same session before finishing.
+          #
+          # claude-code-action behaviour note: when `prompt:` is set, the
+          # action APPENDS it (wrapped in `<custom_instructions>`) to the
+          # default tag-mode prompt — it does NOT replace the default.
+          # The default prompt already provides the triggering content via
+          # `<trigger_comment>` (or `<pr_or_issue_body>` for `issues`
+          # events) plus the formatted PR/issue body, comments, review
+          # comments, and changed files. The instructions below therefore
+          # only need to describe the polling behaviour; the request
+          # itself is already visible to Claude.
+          # (verified against
+          #  https://github.com/anthropics/claude-code-action/blob/main/src/create-prompt/index.ts —
+          #  see `generatePrompt`'s `if (context.githubContext?.inputs?.prompt)` branch.)
           prompt: |
             You were triggered by an @claude mention in
             ${{ github.event_name }}. Address the request in that
@@ -258,12 +277,19 @@ jobs:
                - the relevant timestamp (`created_at` for comments,
                  `submitted_at` for reviews) is strictly greater than
                  the triggering event's timestamp. The fallback chain
-                 prefers exact creation/submission timestamps and only
-                 falls back to `issue.updated_at` for `issues` events
-                 with type `assigned` (the only trigger where
-                 `created_at` is not the right signal, since the issue
-                 itself wasn't created by this event):
+                 below picks the most-specific signal available for
+                 each event type:
                  (`${{ github.event.comment.created_at || github.event.review.submitted_at || (github.event_name == 'issues' && github.event.action == 'opened' && github.event.issue.created_at) || github.event.issue.updated_at }}`)
+                 Per the current `on:` triggers, that resolves to:
+                 `comment.created_at` for `issue_comment` and
+                 `pull_request_review_comment`; `review.submitted_at`
+                 for `pull_request_review`; `issue.created_at` for
+                 `issues:opened`; and the final `issue.updated_at`
+                 fallback for `issues:assigned`. The chain is a
+                 `||`-cascade, so any future event type added to
+                 `on:` without matching logic will also land on
+                 `issue.updated_at` — reassess this expression when
+                 changing the trigger list.
                - the relevant text field (`body` for comments and
                  reviews) contains `@claude`
                - `user.type` is not `"Bot"` — this generically excludes
