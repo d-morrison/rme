@@ -67,6 +67,26 @@ jobs:
       EPI202_TOKEN: ${{ secrets.EPI202_TOKEN }}
 
     steps:
+      # Post a visible acknowledgment on the triggering PR/issue BEFORE the
+      # multi-minute apt/R/Quarto/renv setup chain begins. Without this, a
+      # failure during setup (see the renv auth issue fixed in #777) leaves
+      # the user with no signal that the @claude mention was even received.
+      # `continue-on-error: true` keeps a transient comment-API hiccup from
+      # killing the whole workflow. The late-comment polling step in the
+      # `Run Claude Code` prompt below filters comments where
+      # `user.type == "Bot"`, so this ack — posted by github-actions[bot]
+      # via GITHUB_TOKEN — does not register as a new @claude request and
+      # cannot trigger a self-loop.
+      - name: Acknowledge @claude mention
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUM: ${{ github.event.issue.number || github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$NUM" --repo "${{ github.repository }}" \
+            --body ":eyes: Picked up by [workflow run #${{ github.run_id }}]($RUN_URL). R/Quarto/renv setup runs first (~3-5 min); Claude itself responds after that."
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
