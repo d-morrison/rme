@@ -20,12 +20,17 @@ on:
 concurrency:
   # `github.event.pull_request.number` is already populated for
   # `pull_request_review` and `pull_request_review_comment` events, so
-  # the two fallbacks below cover all four trigger types — no third
-  # clause needed. A stray `github.event.review.pull_request_url`
-  # fallback would also be wrong: it's a full API URL string, not a
-  # number, so it would produce a different group than the `claude-N`
-  # used by `issue_comment` events on the same PR.
-  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  # the two issue/PR-number expressions below cover all four trigger
+  # types. The `|| github.run_id` tail is a defensive fallback: if
+  # both numbers are ever undefined (shouldn't happen with the four
+  # `on:` triggers above), the group would otherwise collapse to
+  # `claude-`, serializing every session globally. Falling back to
+  # `run_id` keeps the unknown case from blocking unrelated PRs.
+  # A stray `github.event.review.pull_request_url` fallback that lived
+  # here previously was dropped: it's a full API URL string, not a
+  # number, so it would have produced a different group than the
+  # `claude-N` used by `issue_comment` events on the same PR.
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
   cancel-in-progress: false
 
 jobs:
@@ -213,9 +218,16 @@ jobs:
               `pull_request_review` trigger.
 
             Treat N = `${{ github.event.issue.number || github.event.pull_request.number }}`.
+            This run was triggered by a `${{ github.event_name }}`
+            event; the `/pulls/...` endpoints below only apply when the
+            triggering event was on a PR — i.e. when `github.event_name`
+            is **not** `issues`. Skip those two endpoints for `issues`
+            triggers (the issue body itself doesn't admit late-arriving
+            `@claude` content, so there's typically nothing to poll
+            anyway).
 
-            1. Fetch each endpoint (skip the `/pulls/...` ones if N is
-               an issue rather than a PR):
+            1. Fetch each endpoint (skip the `/pulls/...` ones for
+               `issues` triggers):
                ```
                gh api 'repos/${{ github.repository }}/issues/N/comments' --paginate
                gh api 'repos/${{ github.repository }}/pulls/N/comments' --paginate   # PRs only
@@ -229,8 +241,13 @@ jobs:
                  (`${{ github.event.comment.created_at || github.event.review.submitted_at || github.event.issue.updated_at }}`)
                - the relevant text field (`body` for comments and
                  reviews) contains `@claude`
-               - `user.login` is neither `claude[bot]` nor
-                 `github-actions[bot]`
+               - `user.type` is not `"Bot"` — this generically excludes
+                 GitHub App accounts (claude[bot], github-actions[bot],
+                 dependabot[bot], etc.) and prevents the polling loop
+                 from being driven by an arbitrary bot that learns to
+                 say `@claude`. A human who has somehow set their
+                 `user.type` to `Bot` would also be excluded, but that
+                 isn't a real scenario.
 
                Note: for `issues` events the triggering timestamp falls
                back to `issue.updated_at`, which is a coarse signal
