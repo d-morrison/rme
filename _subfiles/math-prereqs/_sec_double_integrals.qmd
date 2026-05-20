@@ -1,10 +1,13 @@
 
 The **Fubini–Tonelli theorem** states conditions under which the order
 of integration in a double integral can be exchanged.
-The Riemann version (`@thm-fubini`) is what Epi 204 actually uses;
-the σ-finite measure-theoretic generalization mentioned in the notes
-below is included only for completeness and to support the
-probability-measure corollaries later in the probability chapter.
+We state two versions:
+the Riemann version (@thm-fubini) is what Epi 204 directly uses
+for double integrals of continuous functions on simple regions;
+the σ-finite measure-theoretic version (@thm-fubini-tonelli) is
+included to make the probability-measure corollaries
+(@cor-fubini-prob, @cor-fubini-joint) in the probability chapter
+follow from a stated theorem rather than from an aside.
 
 {{< slidebreak >}}
 
@@ -35,15 +38,44 @@ equal — so the order of integration can be exchanged.
 
 :::
 
-::: notes
-The measure-theoretic Fubini–Tonelli theorem generalizes this to
-σ-finite measure spaces with a measurability-and-nonnegativity *or*
-absolute-integrability condition; see
+{{< slidebreak >}}
+
+:::{#thm-fubini-tonelli}
+
+### Fubini–Tonelli theorem (measure-theoretic form)
+
+Let $(\Omega_1, \mathcal F_1, \mu_1)$ and $(\Omega_2, \mathcal F_2, \mu_2)$
+be **σ-finite** measure spaces,
+and let $f : \Omega_1 \times \Omega_2 \to \mathbb{R}$ be measurable
+with respect to the product σ-algebra
+$\mathcal F_1 \otimes \mathcal F_2$.
+If either
+
+(a) $f \ge 0$ everywhere (**Tonelli's theorem**), or
+
+(b) $\int_{\Omega_1 \times \Omega_2} \abs{f}\,d(\mu_1 \otimes \mu_2) < \infty$
+(**Fubini's theorem**),
+
+then both iterated integrals exist, agree with the double integral,
+and equal each other:
+
+$$
+\int_{\Omega_1 \times \Omega_2} f\,d(\mu_1 \otimes \mu_2)
+= \int_{\Omega_1} \paren{\int_{\Omega_2} f(\omega_1, \omega_2)\,d\mu_2(\omega_2)}\,d\mu_1(\omega_1)
+= \int_{\Omega_2} \paren{\int_{\Omega_1} f(\omega_1, \omega_2)\,d\mu_1(\omega_1)}\,d\mu_2(\omega_2).
+$$
+
 [@billingsley1995probability, Theorem 18.3; @gut2013, Theorem 9.1, p. 65;
-@fubini1907; @wp:fubini].
-That generalization is not required for Epi 204, but it is what
-justifies the probability-measure corollaries (`@cor-fubini-prob`,
-`@cor-fubini-joint`) used later in the probability chapter.
+@fubini1907; @wp:fubini]
+
+:::
+
+::: notes
+This generalization is not required for Epi 204 itself, but it is
+what justifies the probability-measure corollaries
+(@cor-fubini-prob, @cor-fubini-joint) used later in the probability
+chapter: probability measures are finite (hence σ-finite), so the
+hypotheses are automatic.
 :::
 
 {{< slidebreak >}}
@@ -210,8 +242,9 @@ The denominator $(x^2 + y^2)^2$ vanishes at the origin $(0, 0) \in R$,
 so $f$ is *not even defined* there — let alone continuous — and the
 theorem does not apply.
 
-For the measure-theoretic version (`@thm-fubini`, notes), the failure
-shows up as $\iint_R |f|\,dA = \infty$.
+For @thm-fubini-tonelli, the failure shows up as
+$\iint_R |f|\,dA = \infty$, which violates the absolute-integrability
+hypothesis (b).
 Switching to polar coordinates $(r, \theta)$ near the origin, the
 integrand satisfies
 $|f(x, y)| = \abs{x^2 - y^2}/(x^2 + y^2)^2 = \abs{\cos 2\theta}/r^2$,

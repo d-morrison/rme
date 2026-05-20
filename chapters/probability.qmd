@@ -566,18 +566,18 @@ $\E{Y \mid X} = g(X)$ where $g(x) \eqdef \E{Y \mid X = x}$.
 The Riemann version of Fubini's theorem (@thm-fubini, stated in the
 math-prereqs chapter) lets us switch the order of integration for
 continuous integrands on simple regions.
-For expectations against probability measures we need its
-measure-theoretic generalization (mentioned in the notes following
-@thm-fubini), which holds on any σ-finite measure space.
+For expectations against probability measures we use its
+measure-theoretic form (@thm-fubini-tonelli),
+which holds on any σ-finite measure space.
 The σ-finiteness hypothesis is automatic for probability measures
 (every probability measure is finite, hence σ-finite),
-so the generalization yields the corollaries below directly.
+so @thm-fubini-tonelli yields the corollaries below directly.
 
 {{< slidebreak >}}
 
 :::{#cor-fubini-prob}
 
-### Probability-measure form (independent variables; corollary of @thm-fubini)
+### Probability-measure form (independent variables; corollary of @thm-fubini-tonelli)
 
 Let $X$ and $Y$ be independent random variables
 with probability measures $\P_X$ and $\P_Y$,
@@ -606,10 +606,10 @@ $$
 By independence, the joint distribution of $(X, Y)$ is the product measure
 $\P_X \otimes \P_Y$, so
 $\E{h(X, Y)} = \int_{\rangef{X} \times \rangef{Y}} h(x, y)\,d(\P_X \otimes \P_Y)$.
-Since probability measures are finite (hence σ-finite),
-the measure-theoretic generalization of @thm-fubini
-(see the notes below @thm-fubini) applies and gives both iterated
-forms.
+Probability measures are finite (hence σ-finite),
+so the σ-finiteness hypothesis of @thm-fubini-tonelli is automatic;
+under either (a) or (b) above the theorem applies and yields both
+iterated forms.
 
 :::
 
@@ -661,18 +661,29 @@ $$
 \E{XY} = \E{X \cd X} = \E{X^2} = \int_0^1 x^2\,dx = \frac{1}{3}
 $$
 
-**Incorrectly applying the product-measure formula:**
+**Erroneously applying the product-measure formula:**
 
 Note that Fubini–Tonelli's own conditions still hold here ($h(x,y) = xy$
 is nonnegative and integrable), so the error is not a failure of
-@thm-fubini.
-Rather, the error is using the *wrong measure*: treating the joint
-distribution as $\P_X \otimes \P_Y$ when in fact $X$ and $Y$ are
-perfectly correlated, so the actual joint distribution lies on the
-diagonal $\{(x, x) : x \in [0, 1]\}$ and is not a product measure.
+@thm-fubini-tonelli.
+Rather, the error is using the *wrong measure*: the joint distribution
+of $(X, X)$ is concentrated on the diagonal
+$\{(x, x) : x \in [0, 1]\} \subset [0, 1]^2$,
+which has Lebesgue measure zero in $\mathbb{R}^2$.
+The joint distribution is therefore **not** absolutely continuous with
+respect to two-dimensional Lebesgue measure, so **no joint density
+$f_{X,Y}$ on $[0, 1]^2$ exists**, and in particular the joint
+distribution is **not** the product measure $\P_X \otimes \P_Y$
+that @cor-fubini-prob assumes.
 
-Pretending $X$ and $Y$ are independent, with marginals
-both $\mathrm{Uniform}(0, 1)$ (densities $f_X = f_Y = 1$):
+The calculation below is what someone would *erroneously* write if
+they assumed independence and used $f_X(x)\,f_Y(y)$ as a "joint
+density" — a function that does not in fact correspond to the joint
+distribution of $(X, X)$. The marginals
+$X \sim \mathrm{Uniform}(0,1)$ and $Y \sim \mathrm{Uniform}(0,1)$
+do have densities $f_X = f_Y = 1$, but the *product*
+$f_X(x)\,f_Y(y) = 1$ on $[0, 1]^2$ is the density of an *independent*
+pair, not of $(X, X)$:
 
 $$
 \ba
@@ -684,11 +695,13 @@ $$
 \ea
 $$
 
-Since $\tfrac{1}{4} \neq \tfrac{1}{3}$,
-applying the independence formula when $X$ and $Y$ are dependent
-gives the wrong answer.
-The correct approach for dependent $(X, Y)$ uses the joint density
-(see @cor-fubini-joint).
+This recovers $\E{XY}$ for *independent* uniforms ($\tfrac{1}{4}$),
+not $\E{XX}$ for the perfectly correlated pair ($\tfrac{1}{3}$).
+The lesson is that the independence hypothesis of @cor-fubini-prob is
+*structural*, not just notational: without it, there is no joint
+density to integrate against in the first place.
+The correct approach for *dependent* $(X, Y)$ that *do* admit a joint
+density uses @cor-fubini-joint.
 
 :::
 
@@ -724,14 +737,15 @@ $$
 {{< slidebreak >}}
 
 ::: proof
-Apply the measure-theoretic generalization of @thm-fubini
-(see the notes below @thm-fubini)
-to the integrand $h(x,y)\,f_{X,Y}(x,y)$, integrated against
-Lebesgue measure.
+Apply @thm-fubini-tonelli (with $\mu_1 = \mu_2 = $ Lebesgue measure)
+to the integrand $h(x,y)\,f_{X,Y}(x,y)$ on
+$\rangef{X} \times \rangef{Y}$;
+the relevant hypothesis is (a) when $h \ge 0$
+and (b) when $\E{\abs{h(X, Y)}} < \infty$.
 If the joint density's support is not a rectangle, extend $f_{X,Y}$ by
-zero outside its support to an enclosing simple region;
-@thm-fubini Part 1 then expresses the integral as the iterated form
-above.
+zero outside its support to the enclosing simple region;
+@thm-fubini-tonelli then expresses the integral as either iterated
+form above.
 Independence is not required.
 When $X$ and $Y$ are independent, $f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$,
 and this corollary reduces to @cor-fubini-prob.
@@ -769,7 +783,7 @@ $$
 
 :::{#cor-fubini-survfn}
 
-### Survival-function mean (corollary of @thm-fubini)
+### Survival-function mean (corollary of @thm-fubini-tonelli)
 
 Let $T \ge 0$ be a continuous nonneg random variable with
 density $\pdf$ and survival function $\surv(t) = \P(T > t)$.
@@ -783,10 +797,9 @@ $$\E{T} = \int_{t=0}^{\infty} \surv(t)\,dt.$$
 
 ::: proof
 
-Since $\pdf(u) \ge 0$, Tonelli's theorem
-(the nonnegativity case of the measure-theoretic generalization of
-@thm-fubini, see the notes below @thm-fubini)
-allows exchanging the order of integration over the unbounded triangular
+Since $\pdf(u) \ge 0$, hypothesis (a) of @thm-fubini-tonelli
+(the nonnegative case, **Tonelli's theorem**) applies, and we may
+exchange the order of integration over the unbounded triangular
 region $D = \{(t, u) : 0 \le t \le u < \infty\}$:
 
 $$
@@ -886,10 +899,10 @@ $$
 \ea
 $$
 
-where the third equality exchanges the order of integration by Fubini's theorem
-(the absolute-integrability case of the measure-theoretic generalization
-of @thm-fubini; this requires $\E{\abs{Y}} < \infty$,
-which is implicit in $\E{Y}$ being defined),
+where the third equality exchanges the order of integration by
+hypothesis (b) of @thm-fubini-tonelli (the absolute-integrability
+case, **Fubini's theorem**); this requires $\E{\abs{Y}} < \infty$,
+which is implicit in $\E{Y}$ being defined,
 and the fourth equality uses
 $\int_{x} \p(Y=y \mid X=x) \cd \p(X=x)\, dx = \int_{x} \p(X=x, Y=y)\, dx = \p(Y=y)$
 (marginalization of the joint density).
