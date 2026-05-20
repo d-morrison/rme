@@ -135,23 +135,30 @@
       ? forceExpanded
       : anyExpanded();
 
-    if (isExpanded) {
-      if (iconPath) {
-        iconPath.setAttribute("d", getCollapseIconPath());
-      }
-      btn.setAttribute("aria-expanded", "true");
-      label.textContent = "Collapse all";
-      btn.title = "Collapse all expandable boxes";
-      btn.setAttribute("aria-label", "Collapse all expandable boxes");
-    } else {
-      if (iconPath) {
-        iconPath.setAttribute("d", EXPAND_ICON_PATH);
-      }
-      btn.setAttribute("aria-expanded", "false");
-      label.textContent = "Expand all";
-      btn.title = "Expand all collapsible boxes";
-      btn.setAttribute("aria-label", "Expand all collapsible boxes");
+    // Single source of truth for the two UI states. Keeps `title` and
+    // `aria-label` aligned — a previous version kept them in sync via
+    // four hand-edited string literals, two per branch.
+    var ui = isExpanded
+      ? {
+          iconPath: getCollapseIconPath(),
+          ariaExpanded: "true",
+          label: "Collapse all",
+          phrase: "Collapse all expandable boxes",
+        }
+      : {
+          iconPath: EXPAND_ICON_PATH,
+          ariaExpanded: "false",
+          label: "Expand all",
+          phrase: "Expand all collapsible boxes",
+        };
+
+    if (iconPath) {
+      iconPath.setAttribute("d", ui.iconPath);
     }
+    btn.setAttribute("aria-expanded", ui.ariaExpanded);
+    label.textContent = ui.label;
+    btn.title = ui.phrase;
+    btn.setAttribute("aria-label", ui.phrase);
   }
 
   function collapseAll() {
