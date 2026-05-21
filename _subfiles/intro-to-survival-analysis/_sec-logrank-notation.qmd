@@ -1,0 +1,49 @@
+
+Suppose we are comparing $G \ge 2$ groups, indexed by $g = 1, \ldots, G$.
+Pool the failure times across all groups and let
+
+- $t_1 < t_2 < \cdots < t_k$ be the **distinct ordered failure times**
+in the pooled data ($i = 1, \ldots, k$ indexes these times).
+
+For each ordered failure time $t_i$ and each group $g$, define:
+
+| Symbol | Meaning |
+|---|---|
+| $d_{gi}$ | number of failures in group $g$ at time $t_i$ |
+| $r_{gi}$ | number at risk in group $g$ just before time $t_i$ |
+| $d_i = \sum_{g=1}^{G} d_{gi}$ | total failures at $t_i$ (pooled across groups) |
+| $r_i = \sum_{g=1}^{G} r_{gi}$ | total at risk at $t_i$ (pooled across groups) |
+
+This matches the $(d_i, r_i)$ notation used for the Kaplan-Meier estimator
+elsewhere in this chapter; here we additionally split each count by group.
+
+Kleinbaum [-@kleinbaum2012survival, pp. 67--69] uses $m_{if}$ and
+$n_{if}$ in place of $d_{gi}$ and $r_{gi}$; we changed letters here
+to stay consistent with the $(d_i, r_i)$ already used throughout this
+chapter.
+
+## Expected counts under the null
+
+The null hypothesis is
+
+$$H_0:\; \text{all $G$ groups have the same survival function.}$$
+
+Under $H_0$, the pooled marginal hazard estimate at time $t_i$ is
+
+$$\hat{\haz}_i = \frac{d_i}{r_i}.$$
+
+The **expected** number of failures in group $g$ at time $t_i$ under
+$H_0$ is the pooled hazard applied to that group's risk set
+[@kleinbaum2012survival, p. 68, "expected-cell-counts" box]:
+
+$$
+e_{gi}
+\;=\; r_{gi}\,\hat{\haz}_i
+\;=\; \underbrace{\frac{r_{gi}}{r_i}}_{\text{fraction at risk}}\;\cdot\;
+      \underbrace{d_i}_{\text{total failures}}
+$$ {#eq-logrank-expected}
+
+The **summed observed minus expected score** for group $g$ over all
+failure times is:
+
+$$O_g - E_g \;\eqdef\; \sum_{i=1}^{k} \paren{d_{gi} - e_{gi}}.$$
