@@ -1,0 +1,47 @@
+
+:::::{#exm-survdiff-drug6mp}
+#### `survdiff()` with `drug6mp` data
+
+Now we are going to compare the placebo and 6-MP data. We need to
+reshape the data to make it usable with the standard `survival`
+workflow:
+
+```{r}
+library(survival)
+library(tidyr)
+data_v4 <-
+  data_v3 |>
+  select(pair, remstat, t1, t2, outcome) |>
+  # here we are going to change the data from a wide format to long:
+  pivot_longer(
+    cols = c(t1, t2),
+    names_to = "treatment",
+    values_to = "exit_time"
+  ) |>
+  mutate(
+    treatment = treatment |>
+      case_match(
+        "t1" ~ "placebo",
+        "t2" ~ "6-MP"
+      ),
+    outcome = if_else(
+      treatment == "placebo",
+      "relapsed",
+      outcome
+    ),
+    surv = Surv(
+      time = exit_time,
+      event = (outcome == "relapsed")
+    )
+  )
+```
+
+{{< slidebreak >}}
+
+{{< include _subfiles/intro-to-survival-analysis/_exm-survdiff-drug6mp-km.qmd >}}
+
+{{< slidebreak >}}
+
+{{< include _subfiles/intro-to-survival-analysis/_exm-survdiff-drug6mp-logrank.qmd >}}
+
+:::::
