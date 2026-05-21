@@ -10,6 +10,40 @@ on:
   pull_request_review:
     types: [submitted]
 
+# Serialize @claude sessions per issue/PR. Multiple rapid @claude
+# comments used to fire concurrent runs that all tried to push to the
+# same branch; the action's git-push.sh refuses non-fast-forward
+# pushes, so the loser-on-the-race silently lost its work (see PR #706
+# 2026-05-19 18:31–18:39 window, where 2 of 4 races were blocked).
+# `cancel-in-progress: false` means each new comment QUEUES behind the
+# running session rather than starting a competing one.
+#
+# Known limitation — queued runs may re-handle absorbed comments:
+# if comment 2 arrives while run A (triggered by comment 1) is
+# active, run A's polling step (see `prompt:` below) addresses
+# comment 2 in-session — but run B is also queued and will still
+# start once A finishes, re-addressing comment 2 as its triggering
+# event. In practice this costs at most an extra commit or a
+# no-op session; the tasks `@claude` performs here are idempotent
+# enough that the cost is acceptable. The alternative
+# (`cancel-in-progress: true`) would throw away in-flight work,
+# which is worse than the occasional duplicate.
+concurrency:
+  # `github.event.pull_request.number` is already populated for
+  # `pull_request_review` and `pull_request_review_comment` events, so
+  # the two issue/PR-number expressions below cover all four trigger
+  # types. The `|| github.run_id` tail is a defensive fallback: if
+  # both numbers are ever undefined (shouldn't happen with the four
+  # `on:` triggers above), the group would otherwise collapse to
+  # `claude-`, serializing every session globally. Falling back to
+  # `run_id` keeps the unknown case from blocking unrelated PRs.
+  # A stray `github.event.review.pull_request_url` fallback that lived
+  # here previously was dropped: it's a full API URL string, not a
+  # number, so it would have produced a different group than the
+  # `claude-N` used by `issue_comment` events on the same PR.
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
 jobs:
   claude:
     if: |
@@ -33,6 +67,26 @@ jobs:
       EPI202_TOKEN: ${{ secrets.EPI202_TOKEN }}
 
     steps:
+      # Post a visible acknowledgment on the triggering PR/issue BEFORE the
+      # multi-minute apt/R/Quarto/renv setup chain begins. Without this, a
+      # failure during setup (see the renv auth issue fixed in #777) leaves
+      # the user with no signal that the @claude mention was even received.
+      # `continue-on-error: true` keeps a transient comment-API hiccup from
+      # killing the whole workflow. The late-comment polling step in the
+      # `Run Claude Code` prompt below filters comments where
+      # `user.type == "Bot"`, so this ack — posted by github-actions[bot]
+      # via GITHUB_TOKEN — does not register as a new @claude request and
+      # cannot trigger a self-loop.
+      - name: Acknowledge @claude mention
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUM: ${{ github.event.issue.number || github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$NUM" --repo "${{ github.repository }}" \
+            --body ":eyes: Picked up by [workflow run #${{ github.run_id }}]($RUN_URL). R/Quarto/renv setup runs first (~3-5 min); Claude itself responds after that."
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -87,6 +141,12 @@ jobs:
 
       - name: Install R dependencies via renv
         uses: r-lib/actions/setup-renv@v2
+        env:
+          # Without GITHUB_PAT, renv can't hit the GitHub API to resolve
+          # GitHub-sourced packages (e.g. `ddsjoberg/gtsummary`) and
+          # `renv::restore()` aborts with "GitHub authentication
+          # credentials are not available." Matches publish.yml.
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         with:
           cache-version: 1
 
@@ -131,10 +191,35 @@ jobs:
             | sort -u \
             | sed 's#.*#WebFetch(domain:&)#' \
             | paste -sd, -)
+          # `Bash(gh api repos/<this-repo>/*)` is needed by the
+          # polling-for-new-comments prompt below: the session checks
+          # for late-arriving @claude comments before declaring done,
+          # so multi-comment bursts get handled in a single session
+          # instead of racing parallel runs.
+          #
+          # The pattern is scoped to the current repository's API
+          # surface, which covers the polling step's endpoints
+          # (`repos/<repo>/issues/N/comments`, `repos/<repo>/pulls/N/comments`,
+          # `repos/<repo>/pulls/N/reviews`) and the routine read-only
+          # session uses (fetching file SHAs, reading PR metadata,
+          # checking branch contents). It excludes cross-repo and
+          # cross-org `gh api` calls (`/user`, `/orgs/...`, `/repos/OTHER/...`)
+          # that the session doesn't need.
+          #
+          # Within the repo scope the pattern still matches write
+          # endpoints (`gh api -X POST/PATCH/DELETE repos/<repo>/...`),
+          # not just reads, because allowed-tools doesn't support
+          # HTTP-method filtering. The ultimate bound on what's
+          # possible is `GITHUB_TOKEN`'s scopes (`contents: write`,
+          # `pull-requests: write`, `issues: write`), not this
+          # allowlist. `Bash(gh pr view:*)` and `Bash(gh issue view:*)`
+          # are strict subsets (the CLI commands hit the same API
+          # internally), so they're omitted.
+          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*)"
           if [ -n "$WEBFETCH" ]; then
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${WEBFETCH}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *)" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -147,16 +232,145 @@ jobs:
           additional_permissions: |
             actions: read
 
-          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
+          # Pick up late-arriving @claude comments before declaring done.
+          # Background: until the workflow's `concurrency:` block was added,
+          # rapid @claude comments fired concurrent runs that raced to push
+          # to the same branch; the action's git-push.sh refuses non-
+          # fast-forward pushes, so the losers silently lost their work
+          # (PR #706 2026-05-19 18:31–18:39). The concurrency block now
+          # serializes runs, but a long-running session can still miss a
+          # comment posted while it's working. This prompt has Claude
+          # explicitly poll for newer @claude mentions and address them
+          # in the same session before finishing.
+          #
+          # claude-code-action behaviour note: when `prompt:` is set, the
+          # action APPENDS it (wrapped in `<custom_instructions>`) to the
+          # default tag-mode prompt — it does NOT replace the default.
+          # The default prompt already provides the triggering content via
+          # `<trigger_comment>` (or `<pr_or_issue_body>` for `issues`
+          # events) plus the formatted PR/issue body, comments, review
+          # comments, and changed files. The instructions below therefore
+          # only need to describe the polling behaviour; the request
+          # itself is already visible to Claude.
+          # (verified against
+          #  https://github.com/anthropics/claude-code-action/blob/main/src/create-prompt/index.ts —
+          #  see `generatePrompt`'s `if (context.githubContext?.inputs?.prompt)` branch.)
+          prompt: |
+            You were triggered by an @claude mention in
+            ${{ github.event_name }}. Address the request in that
+            comment/issue/review.
+
+            **Before declaring the task complete, check for additional
+            @claude requests that arrived after the triggering event.**
+
+            The three event types that trigger this workflow each live at
+            a different GitHub API endpoint, and `@claude` can appear in
+            any of them. Poll the endpoints that apply to your trigger
+            type before finishing.
+
+            This run was triggered by a `${{ github.event_name }}` event.
+            Pre-resolved context (you don't need to figure these out yourself):
+            - PR context? `${{ (github.event.pull_request.number || github.event.issue.pull_request) && 'yes' || 'no' }}`
+              (`issue_comment` fires for both issues and PRs; this
+              flag disambiguates without you guessing.)
+            - Entity number: `${{ github.event.issue.number || github.event.pull_request.number }}`
+
+            - **PR triggers** (`issue_comment` on a PR,
+              `pull_request_review`, `pull_request_review_comment`):
+              poll all three endpoints listed below.
+            - **Issue triggers** (`issue_comment` on an issue,
+              `issues`): poll **only** `/issues/N/comments`; the
+              `/pulls/...` endpoints don't apply, and the issue body
+              itself doesn't admit late-arriving `@claude` content
+              (there's typically nothing else to poll anyway).
+
+            Endpoints:
+
+            - `/issues/N/comments` — PR/issue **timeline** comments
+              (covers `issue_comment` events; this endpoint does NOT
+              contain the issue body itself, which lives at
+              `/issues/N` and is already supplied to you by the
+              action's default prompt — no need to re-fetch).
+            - `/pulls/N/comments` — **inline review-thread** comments
+              on a PR (covers `pull_request_review_comment`).
+            - `/pulls/N/reviews` — PR **review submissions**; the
+              `body` field here is where `@claude` lives for a
+              `pull_request_review` trigger.
+
+            1. Fetch each endpoint (skip the `/pulls/...` ones for
+               `issues` triggers — the GitHub-Actions expression
+               `${{ github.event.issue.number || github.event.pull_request.number }}`
+               is already substituted in below):
+               ```
+               gh api 'repos/${{ github.repository }}/issues/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate
+               gh api 'repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate   # PRs only
+               gh api 'repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/reviews'  --paginate   # PRs only
+               ```
+
+            2. From the combined response, identify entries where ALL of:
+               - the relevant timestamp (`created_at` for comments,
+                 `submitted_at` for reviews) is strictly greater than
+                 the triggering event's timestamp. The fallback chain
+                 below picks the most-specific signal available for
+                 each event type:
+                 (`${{ github.event.comment.created_at || github.event.review.submitted_at || (github.event_name == 'issues' && github.event.action == 'opened' && github.event.issue.created_at) || github.event.issue.updated_at }}`)
+                 Per the current `on:` triggers, that resolves to:
+                 `comment.created_at` for `issue_comment` and
+                 `pull_request_review_comment`; `review.submitted_at`
+                 for `pull_request_review`; `issue.created_at` for
+                 `issues:opened`; and the final `issue.updated_at`
+                 fallback for `issues:assigned`. The chain is a
+                 `||`-cascade, so any future event type added to
+                 `on:` without matching logic will also land on
+                 `issue.updated_at` — reassess this expression when
+                 changing the trigger list.
+               - the relevant text field (`body` for comments and
+                 reviews) contains `@claude`
+               - `user.type` is not `"Bot"` — this generically excludes
+                 GitHub App accounts (claude[bot], github-actions[bot],
+                 dependabot[bot], etc.) and prevents the polling loop
+                 from being driven by an arbitrary bot that learns to
+                 say `@claude`. A human who has somehow set their
+                 `user.type` to `Bot` would also be excluded, but that
+                 isn't a real scenario.
+
+               Note: for `issues` events the triggering timestamp falls
+               back to `issue.updated_at`, which is a coarse signal
+               (any update — assignment, label change, etc. — bumps it).
+               Comments posted in the same second as another issue
+               update could be missed; this is rare but not impossible.
+
+            3. If any matching entries exist, address each one in this
+               same session (in chronological order), then repeat from
+               step 1. Stop when no new @claude requests remain, or
+               after **at most 5 additional iterations of steps 1–3**
+               (i.e. the cap applies to the polling loop, not to the
+               initial task you were triggered for) — whichever comes
+               first. The cap prevents a pathological ping-pong
+               between a user (or two bots) and this session from
+               keeping the run alive indefinitely; if you hit the cap
+               with new comments still arriving, post a comment saying
+               so and exit, and the next workflow run will pick up
+               from there via the serialize-per-PR concurrency group.
+
+            4. Commit all changes before finishing. `git add`,
+               `git commit`, and `git rm` are auto-injected into the
+               allowed-tools list by the action and are available to
+               you; `git push` is NOT — the action runs its own
+               `git-push.sh` wrapper after your session ends, which
+               is what pushes to the remote. The concurrency group
+               guarantees no parallel session is racing yours, so
+               that push should succeed unless someone pushed by
+               hand.
 
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
           # Allow the pre-commit checklist tools from CLAUDE.md (Rscript for
           # lint/spell-check, quarto render for chapter previews), curl for
-          # downloading source PDFs too large for WebFetch (issue #740), plus
-          # WebFetch for every host in the shared stats-allowlist.
+          # downloading source PDFs too large for WebFetch (issue #740), the
+          # gh CLI for the polling step in the prompt above, plus WebFetch
+          # for every host in the shared stats-allowlist.
           claude_args: '--allowed-tools "${{ steps.tools.outputs.allowed }}"'
 
       - name: Re-request review and dispatch code review if Claude pushed commits

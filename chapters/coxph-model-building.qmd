@@ -31,57 +31,47 @@
 library(dplyr)
 library(survival)
 data(hodg, package = "KMsurv")
-hodg2 = hodg |> 
-  as_tibble() |> 
+hodg2 <- hodg |>
+  as_tibble() |>
   mutate(
     # We add factor labels to the categorical variables:
-    gtype = gtype |> 
+    gtype = gtype |>
       case_match(
         1 ~ "Allogenic",
-        2 ~ "Autologous"),
-    dtype = dtype |> 
+        2 ~ "Autologous"
+      ),
+    dtype = dtype |>
       case_match(
         1 ~ "Non-Hodgkins",
-        2 ~ "Hodgkins") |> 
-      factor() |> 
-      relevel(ref = "Non-Hodgkins"), 
-    delta = delta |> 
+        2 ~ "Hodgkins"
+      ) |>
+      factor() |>
+      relevel(ref = "Non-Hodgkins"),
+    delta = delta |>
       case_match(
         1 ~ "dead",
-        0 ~ "alive"),
+        0 ~ "alive"
+      ),
     surv = Surv(
-      time = time, 
-      event = delta == "dead")
+      time = time,
+      event = delta == "dead"
+    )
   )
 hodg2 |> print()
-
 ```
 
 ## Proportional hazards model
 
 ```{r}
-#| label: tbl-summary-hodg.cox1
+#| label: tbl-summary-hodg_cox1
 #| tbl-cap: "Summary of Proportional Hazards model for Hodgkins Lymphoma data"
-hodg.cox1 = coxph(
-  formula = surv ~ gtype * dtype + score + wtime, 
-  data = hodg2)
+hodg_cox1 <- coxph(
+  formula = surv ~ gtype * dtype + score + wtime,
+  data = hodg2
+)
 
-summary(hodg.cox1)
+summary(hodg_cox1)
 ```
-
-::: content-hidden
-```{r}
-### fancier alternatives:
-# library(parameters)
-# hodg.cox1 |>  
-#   parameters() |> 
-#   print_md()
-# library(gtsummary)
-# hodg.cox1 |> 
-#   tbl_regression() |> 
-#   as_hux_table()
-```
-:::
 
 ## Diagnostic graphs for proportional hazards assumption
 
@@ -98,24 +88,24 @@ summary(hodg.cox1)
 ```{r}
 #| fig-cap: "Kaplan-Meier Survival Curves for HOD/NHL and Allo/Auto Grafts"
 #| label: fig-km-hodg2
-km_model = survfit(
+km_model <- survfit(
   formula = surv ~ dtype + gtype,
-  data = hodg2)
+  data = hodg2
+)
 
 library(ggplot2)
-km_model |> 
+library(ggfortify) # registers autoplot.survfit
+km_model |>
   autoplot(conf.int = FALSE) +
   theme_bw() +
   theme(
-    legend.position="bottom",
+    legend.position = "bottom",
     legend.title = element_blank(),
     legend.text = element_text(size = legend_text_size)
   ) +
-  guides(col=guide_legend(ncol=2)) +
-  ylab('Survival probability, S(t)') +
+  guides(col = guide_legend(ncol = 2)) +
+  ylab("Survival probability, S(t)") +
   xlab("Time since transplant (days)")
-
-
 ```
 
 ### Observed and expected survival curves
@@ -125,145 +115,160 @@ km_model |>
 #| label: fig-obs-exp-hodg
 # we need to create a tibble of covariate patterns;
 # we will set score and wtime to mean values for disease and graft types:
-means = hodg2 |> 
+means <- hodg2 |>
   summarize(
-    .by = c(dtype, gtype), 
-    score = mean(score), 
-    wtime = mean(wtime)) |> 
-  arrange(dtype, gtype) |> 
-  mutate(strata = paste(dtype, gtype, sep = ",")) |> 
-  as.data.frame() 
+    .by = c(dtype, gtype),
+    score = mean(score),
+    wtime = mean(wtime)
+  ) |>
+  arrange(dtype, gtype) |>
+  mutate(strata = paste(dtype, gtype, sep = ",")) |>
+  as.data.frame()
 
 # survfit.coxph() will use the rownames of its `newdata`
 # argument to label its output:
-rownames(means) = means$strata
+rownames(means) <- means$strata
 
-cox_model = 
-  hodg.cox1 |> 
+cox_model <-
+  hodg_cox1 |>
   survfit(
     data = hodg2, # ggsurvplot() will need this
-    newdata = means)
-
+    newdata = means
+  )
 ```
 
 ```{r}
-# I couldn't find a good function to reformat `cox_model` for ggplot, 
+# I couldn't find a good function to reformat `cox_model` for ggplot,
 # so I made my own:
-stack_surv_ph = function(cox_model)
-{
-  cox_model$surv |> 
-    as_tibble() |> 
-    mutate(time = cox_model$time) |> 
-    pivot_longer(
+stack_surv_ph <- function(cox_model) {
+  cox_model$surv |>
+    as_tibble() |>
+    mutate(time = cox_model$time) |>
+    tidyr::pivot_longer(
       cols = -time,
       names_to = "strata",
-      values_to = "surv") |> 
+      values_to = "surv"
+    ) |>
     mutate(
-      cumhaz = -log(surv),
-      model = "Cox PH")
+      cumhaz = -log(.data$surv),
+      model = "Cox PH"
+    )
 }
 
-km_and_cph =
-  km_model |> 
-  fortify(surv.connect = TRUE) |> 
+km_and_cph <-
+  km_model |>
+  fortify(surv.connect = TRUE) |>
   mutate(
     strata = trimws(strata),
     model = "Kaplan-Meier",
-    cumhaz = -log(surv)) |>
+    cumhaz = -log(surv)
+  ) |>
   bind_rows(stack_surv_ph(cox_model))
-
 ```
 
 ```{r}
 #| fig-cap: "Observed and expected survival curves for `bmt` data"
-km_and_cph |> 
+km_and_cph |>
   ggplot(aes(x = time, y = surv, col = model)) +
   geom_step() +
   facet_wrap(~strata) +
-  theme_bw() + 
+  theme_bw() +
   ylab("S(t) = P(T>=t)") +
   xlab("Survival time (t, days)") +
   theme(legend.position = "bottom")
-
 ```
 
 ::: content-hidden
 ```{r}
-# these are some old-style R plots inherited from Prof. Rocke's notes; 
+# these are some old-style R plots inherited from Prof. Rocke's notes;
 # they should be updated to ggplot2-style plots eventually:
 
-par(mfrow = c(2,2), mai = rep(0.5, 4)) # set up a multipanel panel
-plot(km_model[1],xlim=c(0,600),col=1:4,lwd=2, conf.int = FALSE,
-     main = "NHL Allogeneic", lty = 1)
-lines(cox_model[1],lwd= 2,lty=2, col = 2, conf.int = FALSE)
-legend("bottomleft",c("K-M", "Cox PH"),col=1:2,lwd=1:2)
-plot(km_model[2],xlim=c(0,600),col=1:4,lwd=2, conf.int = FALSE,
-     main = "NHL Autologous", lty = 1)
-lines(cox_model[2],lwd= 2,lty=2, col = 2, conf.int = FALSE)
-plot(km_model[3],xlim=c(0,600),col=1:4,lwd=2, conf.int = FALSE,
-     main = "HL Allogeneic", lty = 1)
-lines(cox_model[3],lwd= 2,lty=2, col = 2, conf.int = FALSE)
+par(mfrow = c(2, 2), mai = rep(0.5, 4)) # set up a multipanel panel
+plot(km_model[1],
+  xlim = c(0, 600), col = 1:4, lwd = 2, conf.int = FALSE,
+  main = "NHL Allogeneic", lty = 1
+)
+lines(cox_model[1], lwd = 2, lty = 2, col = 2, conf.int = FALSE)
+legend("bottomleft", c("K-M", "Cox PH"), col = 1:2, lwd = 1:2)
+plot(km_model[2],
+  xlim = c(0, 600), col = 1:4, lwd = 2, conf.int = FALSE,
+  main = "NHL Autologous", lty = 1
+)
+lines(cox_model[2], lwd = 2, lty = 2, col = 2, conf.int = FALSE)
+plot(km_model[3],
+  xlim = c(0, 600), col = 1:4, lwd = 2, conf.int = FALSE,
+  main = "HL Allogeneic", lty = 1
+)
+lines(cox_model[3], lwd = 2, lty = 2, col = 2, conf.int = FALSE)
 
 plot(
   km_model[4],
-  xlim=c(0,600),
-  col=1:4,
-  lwd=2, 
+  xlim = c(0, 600),
+  col = 1:4,
+  lwd = 2,
   conf.int = FALSE,
-  main = "HL Autologous", 
-  lty = 1)
+  main = "HL Autologous",
+  lty = 1
+)
 
 lines(
   cox_model[4],
-  lwd= 2,
-  lty=2, 
-  col = 2, 
-  conf.int = FALSE)
-par(mfrow = c(1,1)) # reset the paneling
+  lwd = 2,
+  lty = 2,
+  col = 2,
+  conf.int = FALSE
+)
+par(mfrow = c(1, 1)) # reset the paneling
 ```
 
 ```{r}
 #| label: survminer-1
-temp1 = 
+temp1 <-
   km_model |>
   survminer::ggsurvplot(
-    legend = "bottom", 
+    legend = "bottom",
     legend.title = "",
-    combine = TRUE, 
-    fun = 'pct', 
+    combine = TRUE,
+    fun = "pct",
     size = .5,
-    ggtheme = theme_bw(), 
-    conf.int = FALSE, 
-    censor = FALSE) |> 
-  suppressWarnings() # ggsurvplot() throws some warnings that aren't too worrying
-
-temp2 = 
-  cox_model |>
-  survminer::ggsurvplot(
-    legend = "bottom", 
-    legend.title = "",
-    combine = TRUE, 
-    fun = 'pct', 
-    size = .5,
-    ggtheme = theme_bw(), 
-    conf.int = FALSE, 
-    censor = FALSE) |> 
+    ggtheme = theme_bw(),
+    conf.int = FALSE,
+    censor = FALSE
+  ) |>
+  # ggsurvplot() throws some warnings that aren't too worrying
   suppressWarnings()
 
-temp = 
-  list(KM = km_model,
-       Cox = cox_model) |>
+temp2 <-
+  cox_model |>
   survminer::ggsurvplot(
-    # facet.by = gtype,
-    legend = "bottom", 
+    legend = "bottom",
     legend.title = "",
-    combine = TRUE, 
-    fun = 'pct', 
+    combine = TRUE,
+    fun = "pct",
     size = .5,
-    ggtheme = theme_bw(), 
-    conf.int = FALSE, 
-    censor = FALSE) |> 
-  suppressWarnings() # ggsurvplot() throws some warnings that aren't too worrying
+    ggtheme = theme_bw(),
+    conf.int = FALSE,
+    censor = FALSE
+  ) |>
+  suppressWarnings()
+
+temp <-
+  list(
+    KM = km_model,
+    Cox = cox_model
+  ) |>
+  survminer::ggsurvplot(
+    legend = "bottom",
+    legend.title = "",
+    combine = TRUE,
+    fun = "pct",
+    size = .5,
+    ggtheme = theme_bw(),
+    conf.int = FALSE,
+    censor = FALSE
+  ) |>
+  # ggsurvplot() throws some warnings that aren't too worrying
+  suppressWarnings()
 ```
 :::
 
@@ -275,32 +280,32 @@ Also known as "complementary log-log (clog-log) survival curves".
 #| label: fig-cloglog-na
 #| fig-cap: "Complementary log-log survival curves - Nelson-Aalen estimates"
 
-na_model = survfit(
+na_model <- survfit(
   formula = surv ~ dtype + gtype,
   data = hodg2,
-  type = "fleming")
+  type = "fleming"
+)
 
-na_model |> 
+na_model |>
   survminer::ggsurvplot(
-  legend = "bottom", 
-  legend.title = "",
-  ylab = "log(Cumulative Hazard)",
-  xlab = "Time since transplant (days, log-scale)",
-  fun = 'cloglog', 
-  size = .5,
-  ggtheme = theme_bw(),
-  conf.int = FALSE, 
-  censor = TRUE) |>  
+    legend = "bottom",
+    legend.title = "",
+    ylab = "log(Cumulative Hazard)",
+    xlab = "Time since transplant (days, log-scale)",
+    fun = "cloglog",
+    size = .5,
+    ggtheme = theme_bw(),
+    conf.int = FALSE,
+    censor = TRUE
+  ) |>
   magrittr::extract2("plot") +
   guides(
-    col = 
+    col =
       guide_legend(
         ncol = 2,
-        label.theme = 
-          element_text(
-            size = legend_text_size)))
-
-
+        label.theme = element_text(size = legend_text_size)
+      )
+  )
 ```
 
 Let's compare these empirical (i.e., non-parametric) curves with the
@@ -310,61 +315,68 @@ fitted curves from our `coxph()` model:
 #| label: fig-cloglog-ph
 #| fig-cap: "Complementary log-log survival curves - PH estimates"
 
-cox_model |> 
+cox_model |>
   survminer::ggsurvplot(
     facet_by = "",
-    legend = "bottom", 
+    legend = "bottom",
     legend.title = "",
     ylab = "log(Cumulative Hazard)",
     xlab = "Time since transplant (days, log-scale)",
-    fun = 'cloglog', 
+    fun = "cloglog",
     size = .5,
     ggtheme = theme_bw(),
     censor = FALSE, # doesn't make sense for cox model
-    conf.int = FALSE) |>  
+    conf.int = FALSE
+  ) |>
   magrittr::extract2("plot") +
   guides(
-    col = 
+    col =
       guide_legend(
         ncol = 2,
-        label.theme = 
-          element_text(
-            size = legend_text_size)))
-
+        label.theme = element_text(size = legend_text_size)
+      )
+  )
 ```
 
 Now let's overlay these cumulative hazard curves:
 
 ```{r}
 #| label: fig-bmt-cumhaz
-#| fig-cap: "Observed and expected cumulative hazard curves for `bmt` data (cloglog format)"
+#| fig-cap: >
+#|   Observed and expected cumulative hazard curves for `bmt` data
+#|   (cloglog format)
 
-na_and_cph = 
-  na_model |> 
-  fortify(fun = "cumhaz") |> 
+na_and_cph <-
+  na_model |>
+  fortify(fun = "cumhaz") |>
   # `fortify.survfit()` doesn't name cumhaz correctly:
-  rename(cumhaz = surv) |>  
+  rename(cumhaz = surv) |>
   mutate(
     surv = exp(-cumhaz),
-    strata = trimws(strata)) |> 
-  mutate(model = "Nelson-Aalen") |> 
+    strata = trimws(strata)
+  ) |>
+  mutate(model = "Nelson-Aalen") |>
   bind_rows(stack_surv_ph(cox_model))
 
-na_and_cph |> 
+na_and_cph |>
   ggplot(
     aes(
-      x = time, 
-      y = cumhaz, 
-      col = model)) +
+      x = time,
+      y = cumhaz,
+      col = model
+    )
+  ) +
   geom_step() +
   facet_wrap(~strata) +
-  theme_bw() + 
+  theme_bw() +
   scale_y_continuous(
     trans = "log10",
-    name = "Cumulative hazard, H(t) (log-scale)") +
+    name = "Cumulative hazard, H(t) (log-scale)"
+  ) +
   scale_x_continuous(
     trans = "log10",
-    name = "Survival time (t, days, log-scale)") +
+    name = "Survival time (t, days, log-scale)"
+  ) +
   theme(legend.position = "bottom")
 ```
 
@@ -504,39 +516,38 @@ the rank but deals better with censoring.
 The `cox.zph()` function implements a score test proposed in  @grambsch1994proportional.
 
 ```{r}
-
-hodg.zph = cox.zph(hodg.cox1)
-print(hodg.zph)
+hodg_zph <- cox.zph(hodg_cox1)
+print(hodg_zph)
 ```
 
 #### `gtype`
 
 ```{r}
-ggcoxzph(hodg.zph, var = "gtype")
+ggcoxzph(hodg_zph, var = "gtype")
 ```
 
 #### `dtype`
 
 ```{r}
-ggcoxzph(hodg.zph, var = "dtype")
+ggcoxzph(hodg_zph, var = "dtype")
 ```
 
 #### `score`
 
 ```{r}
-ggcoxzph(hodg.zph, var = "score")
+ggcoxzph(hodg_zph, var = "score")
 ```
 
 #### `wtime`
 
 ```{r}
-ggcoxzph(hodg.zph, var = "wtime")
+ggcoxzph(hodg_zph, var = "wtime")
 ```
 
 #### `gtype:dtype`
 
 ```{r}
-ggcoxzph(hodg.zph, var = "gtype:dtype")
+ggcoxzph(hodg_zph, var = "gtype:dtype")
 ```
 
 #### Conclusions
@@ -621,19 +632,18 @@ should look like a censored sample from this exponential distribution.
 ```{r}
 #| fig-cap: "Cumulative Hazard of Cox-Snell Residuals"
 #| label: fig-cox-snell-cuhaz-hodg2
-hodg2 = hodg2 |> 
-  mutate(cs = predict(hodg.cox1, type = "expected"))
+hodg2 <- hodg2 |>
+  mutate(cs = predict(hodg_cox1, type = "expected"))
 
-surv.csr = survfit(
+surv_csr <- survfit(
   data = hodg2,
   formula = Surv(time = cs, event = delta == "dead") ~ 1,
-  type = "fleming-harrington")
+  type = "fleming-harrington"
+)
 
-autoplot(surv.csr, fun = "cumhaz") + 
+autoplot(surv_csr, fun = "cumhaz") +
   geom_abline(aes(intercept = 0, slope = 1), col = "red") +
   theme_bw()
-
-
 ```
 
 The line with slope 1 and intercept 0 fits the curve relatively well, so
@@ -691,23 +701,22 @@ Let's use this to examine the `score` and `wtime` variables in the
 ```{r}
 #| fig-cap: "Martingale Residuals vs. Karnofsky Score"
 
-hodg2 = hodg2 |> 
+hodg2 <- hodg2 |>
   mutate(
-    mres = 
-      hodg.cox1 |> 
-      update(. ~ . - score) |> 
-      residuals(type="martingale"))
+    mres = hodg_cox1 |>
+      update(. ~ . - score) |>
+      residuals(type = "martingale")
+  )
 
-hodg2 |> 
+hodg2 |>
   ggplot(aes(x = score, y = mres)) +
   geom_point() +
   geom_smooth(method = "loess", aes(col = "loess")) +
-  geom_smooth(method = 'lm', aes(col = "lm")) +
+  geom_smooth(method = "lm", aes(col = "lm")) +
   theme_classic() +
   xlab("Karnofsky Score") +
   ylab("Martingale Residuals") +
-  guides(col=guide_legend(title = ""))
-
+  guides(col = guide_legend(title = ""))
 ```
 
 The line is almost straight. It could be some modest transformation of
@@ -718,21 +727,20 @@ the Karnofsky score would help, but it might not make much difference.
 ```{r}
 #| fig-cap: "Martingale Residuals vs. Waiting Time"
 
-hodg2$mres = 
-  hodg.cox1 |> 
-  update(. ~ . - wtime) |> 
-  residuals(type="martingale")
+hodg2$mres <-
+  hodg_cox1 |>
+  update(. ~ . - wtime) |>
+  residuals(type = "martingale")
 
-hodg2 |> 
+hodg2 |>
   ggplot(aes(x = wtime, y = mres)) +
   geom_point() +
   geom_smooth(method = "loess", aes(col = "loess")) +
-  geom_smooth(method = 'lm', aes(col = "lm")) +
+  geom_smooth(method = "lm", aes(col = "lm")) +
   theme_classic() +
   xlab("Waiting Time") +
   ylab("Martingale Residuals") +
-  guides(col=guide_legend(title = ""))
-
+  guides(col = guide_legend(title = ""))
 ```
 
 The line could suggest a step function. To see where the drop is, we can
@@ -747,29 +755,31 @@ for the next smallest value. A reasonable cut-point is 80 days.
 Let's reformulate the model with dichotomized `wtime`.
 
 ```{r}
-hodg2 = 
-  hodg2 |> 
+hodg2 <-
+  hodg2 |>
   mutate(
     wt2 = cut(
-      wtime,c(0, 80, 200),
-      labels=c("short","long")))
+      wtime, c(0, 80, 200),
+      labels = c("short", "long")
+    )
+  )
 
-hodg.cox2 =
+hodg_cox2 <-
   coxph(
-    formula = 
-      Surv(time, event = delta == "dead") ~ 
-      gtype*dtype + score + wt2,
-    data = hodg2)
+    formula = Surv(time, event = delta == "dead") ~
+      gtype * dtype + score + wt2,
+    data = hodg2
+  )
 ```
 
 ```{r}
 #| tbl-cap: "Model summary table with waiting time on continuous scale"
-hodg.cox1 |> drop1(test="Chisq")
+hodg_cox1 |> drop1(test = "Chisq")
 ```
 
 ```{r}
 #| tbl-cap: "Model summary table with dichotomized waiting time"
-hodg.cox2 |> drop1(test="Chisq")
+hodg_cox2 |> drop1(test = "Chisq")
 ```
 
 The new model has better (lower) AIC.
@@ -798,20 +808,19 @@ Roughly centered on 0 with approximate standard deviation 1.
 ### 
 
 ```{r}
-hodg.mart = residuals(hodg.cox2,type="martingale")
-hodg.dev = residuals(hodg.cox2,type="deviance")
-hodg.dfb = residuals(hodg.cox2,type="dfbeta")
-hodg.preds = predict(hodg.cox2)                   #linear predictor
-
+hodg_mart <- residuals(hodg_cox2, type = "martingale")
+hodg_dev <- residuals(hodg_cox2, type = "deviance")
+hodg_dfb <- residuals(hodg_cox2, type = "dfbeta")
+hodg_preds <- predict(hodg_cox2) # linear predictor
 ```
 
 ```{r}
 #| fig-cap: "Martingale Residuals vs. Linear Predictor"
-plot(hodg.preds,
-     hodg.mart,
-     xlab="Linear Predictor",
-     ylab="Martingale Residual")
-
+plot(hodg_preds,
+  hodg_mart,
+  xlab = "Linear Predictor",
+  ylab = "Martingale Residual"
+)
 ```
 
 The smallest three martingale residuals in order are observations 1, 29,
@@ -819,8 +828,11 @@ and 18.
 
 ```{r}
 #| fig-cap: "Deviance Residuals vs. Linear Predictor"
-plot(hodg.preds,hodg.dev,xlab="Linear Predictor",ylab="Deviance Residual")
-
+plot(
+  hodg_preds, hodg_dev,
+  xlab = "Linear Predictor",
+  ylab = "Deviance Residual"
+)
 ```
 
 The two largest deviance residuals are observations 1 and 29. Worth
@@ -838,8 +850,7 @@ examining.
 
 ```{r}
 #| fig-cap: "dfbeta Values by Observation Order for Graft Type"
-plot(hodg.dfb[,1],xlab="Observation Order",ylab="dfbeta for Graft Type")
-
+plot(hodg_dfb[, 1], xlab = "Observation Order", ylab = "dfbeta for Graft Type")
 ```
 
 The smallest dfbeta for graft type is observation 1.
@@ -848,10 +859,10 @@ The smallest dfbeta for graft type is observation 1.
 
 ```{r}
 #| fig-cap: "dfbeta Values by Observation Order for Disease Type"
-plot(hodg.dfb[,2],
-     xlab="Observation Order",
-     ylab="dfbeta for Disease Type")
-
+plot(hodg_dfb[, 2],
+  xlab = "Observation Order",
+  ylab = "dfbeta for Disease Type"
+)
 ```
 
 The smallest two dfbeta values for disease type are observations 1 and
@@ -861,11 +872,10 @@ The smallest two dfbeta values for disease type are observations 1 and
 
 ```{r}
 #| fig-cap: "dfbeta Values by Observation Order for Karnofsky Score"
-plot(hodg.dfb[,3],
-     xlab="Observation Order",
-     ylab="dfbeta for Karnofsky Score")
-
-
+plot(hodg_dfb[, 3],
+  xlab = "Observation Order",
+  ylab = "dfbeta for Karnofsky Score"
+)
 ```
 
 The two highest dfbeta values for score are observations 1 and 18. The
@@ -877,11 +887,10 @@ observation 2.
 ```{r}
 #| fig-cap: "dfbeta Values by Observation Order for Waiting Time (dichotomized)"
 plot(
-  hodg.dfb[,4],
-  xlab="Observation Order",
-  ylab="dfbeta for `Waiting Time < 80`")
-
-
+  hodg_dfb[, 4],
+  xlab = "Observation Order",
+  ylab = "dfbeta for `Waiting Time < 80`"
+)
 ```
 
 The two large values of dfbeta for dichotomized waiting time are
@@ -892,10 +901,10 @@ waiting time.
 
 ```{r}
 #| fig-cap: "dfbeta Values by Observation Order for dtype:gtype"
-plot(hodg.dfb[,5],
-     xlab="Observation Order",
-     ylab="dfbeta for dtype:gtype")
-
+plot(hodg_dfb[, 5],
+  xlab = "Observation Order",
+  ylab = "dfbeta for dtype:gtype"
+)
 ```
 
 The two largest values are observations 1 and 16. The smallest value is observation 35.
@@ -919,33 +928,34 @@ The most important observations to examine seem to be 1, 15, 16, 18, and
 ### 
 
 ```{r}
-with(hodg,summary(time[delta==1]))
+with(hodg, summary(time[delta == 1]))
 ```
 
 ```{r}
-with(hodg,summary(wtime))
+with(hodg, summary(wtime))
 ```
 
 ```{r}
-with(hodg,summary(score))
+with(hodg, summary(score))
 ```
 
 ```{r}
-hodg.cox2
+hodg_cox2
 ```
 
 ```{r}
-hodg2[c(1,15,16,18,29),] |> 
-  select(gtype, dtype, time, delta, score, wtime) |> 
+hodg2[c(1, 15, 16, 18, 29), ] |>
+  select(gtype, dtype, time, delta, score, wtime) |>
   mutate(
-    comment = 
+    comment =
       c(
         "early death, good score, low risk",
         "high risk grp, long wait, poor score",
         "high risk grp, short wait, poor score",
         "early death, good score, med risk grp",
         "early death, good score, med risk grp"
-      ))
+      )
+  )
 ```
 
 ### Action Items
@@ -965,17 +975,18 @@ hodg2[c(1,15,16,18,29),] |>
 
 ```{r}
 #| tbl-cap: "Linear Risk Predictors for Lymphoma"
-hodg.cox2 |> 
+hodg_cox2 |>
   predict(
     reference = "zero",
-    newdata = means |> 
+    newdata = means |>
       mutate(
-        wt2 = "short", 
-        score = 0), 
-    type = "lp") |> 
-  data.frame('linear predictor' = _) |> 
+        wt2 = "short",
+        score = 0
+      ),
+    type = "lp"
+  ) |>
+  data.frame("linear predictor" = _) |>
   pander()
-
 ```
 
 For Non-Hodgkin's, the allogenic graft is better. For Hodgkin's, the
@@ -996,35 +1007,35 @@ This version comes from @kleinbaum2012survival (e.g., p281):
 
 
 ```{r,include = FALSE}
-anderson = 
+anderson <-
   fs::path_package(
-    "rme", "extdata/anderson.dta") |> 
-  haven::read_dta() |> 
+    "rme", "extdata/anderson.dta"
+  ) |>
+  haven::read_dta() |>
   mutate(
-    status = status |> 
+    status = status |>
       case_match(
         1 ~ "relapse",
         0 ~ "censored"
       ),
-    
-    sex = sex |> 
+    sex = sex |>
       case_match(
         0 ~ "female",
         1 ~ "male"
-      ) |> 
-      factor() |> 
+      ) |>
+      factor() |>
       relevel(ref = "female"),
-    
-    rx = rx |> 
+    rx = rx |>
       case_match(
         0 ~ "new",
         1 ~ "standard"
-      ) |> 
-      factor() |> relevel(ref = "standard"),
-    
+      ) |>
+      factor() |>
+      relevel(ref = "standard"),
     surv = Surv(
-      time = survt, 
-      event = (status == "relapse"))
+      time = survt,
+      event = (status == "relapse")
+    )
   )
 
 print(anderson)
@@ -1032,37 +1043,36 @@ print(anderson)
 
 
 ```{r, eval = FALSE}
-
-anderson = 
+anderson <-
   paste0(
     "http://web1.sph.emory.edu/dkleinb/allDatasets/",
-    "surv2datasets/anderson.dta") |> 
-  haven::read_dta() |> 
+    "surv2datasets/anderson.dta"
+  ) |>
+  haven::read_dta() |>
   dplyr::mutate(
-    status = status |> 
+    status = status |>
       case_match(
         1 ~ "relapse",
         0 ~ "censored"
       ),
-    
-    sex = sex |> 
+    sex = sex |>
       case_match(
         0 ~ "female",
         1 ~ "male"
-      ) |> 
-      factor() |> 
+      ) |>
+      factor() |>
       relevel(ref = "female"),
-    
-    rx = rx |> 
+    rx = rx |>
       case_match(
         0 ~ "new",
         1 ~ "standard"
-      ) |> 
-      factor() |> relevel(ref = "standard"),
-    
+      ) |>
+      factor() |>
+      relevel(ref = "standard"),
     surv = Surv(
-      time = survt, 
-      event = (status == "relapse"))
+      time = survt,
+      event = (status == "relapse")
+    )
   )
 
 print(anderson)
@@ -1071,33 +1081,32 @@ print(anderson)
 ### Cox semi-parametric proportional hazards model
 
 ```{r}
-
-anderson.cox1 = coxph(
+anderson_cox1 <- coxph(
   formula = surv ~ rx + sex + logwbc,
-  data = anderson)
+  data = anderson
+)
 
-summary(anderson.cox1)
-
+summary(anderson_cox1)
 ```
 
 #### Test the proportional hazards assumption
 
 ```{r}
-cox.zph(anderson.cox1)
+cox.zph(anderson_cox1)
 ```
 
 #### Graph the K-M survival curves
 
 ```{r}
-
-anderson_km_model = survfit(
+anderson_km_model <- survfit(
   formula = surv ~ sex,
-  data = anderson)
+  data = anderson
+)
 
-anderson_km_model |> 
+anderson_km_model |>
   autoplot(conf.int = FALSE) +
   theme_bw() +
-  theme(legend.position="bottom")
+  theme(legend.position = "bottom")
 ```
 
 The survival curves cross, which indicates a problem in the
@@ -1110,26 +1119,28 @@ We can also look at the log-hazard ("cloglog survival") plots:
 ```{r}
 #| fig-cap: "Cumulative hazard (cloglog scale) for `anderson` data"
 #| label: fig-cuhaz-anderson
-anderson_na_model = survfit(
+anderson_na_model <- survfit(
   formula = surv ~ sex,
   data = anderson,
-  type = "fleming")
+  type = "fleming"
+)
 
-anderson_na_model |> 
+anderson_na_model |>
   autoplot(
     fun = "cumhaz",
-    conf.int = FALSE) +
+    conf.int = FALSE
+  ) +
   theme_classic() +
-  theme(legend.position="bottom") +
+  theme(legend.position = "bottom") +
   ylab("log(Cumulative Hazard)") +
   scale_y_continuous(
     trans = "log10",
-    name = "Cumulative hazard (H(t), log scale)") +
+    name = "Cumulative hazard (H(t), log scale)"
+  ) +
   scale_x_continuous(
-    breaks = c(1,2,5,10,20,50),
+    breaks = c(1, 2, 5, 10, 20, 50),
     trans = "log"
   )
-
 ```
 
 This can be fixed by using strata or possibly by other model
@@ -1148,59 +1159,57 @@ alterations.
     stratifying on `sex`.
 
 ```{r}
-
-anderson.coxph.strat = 
+anderson_coxph_strat <-
   coxph(
-    formula = 
-      surv ~ rx + logwbc + strata(sex),
-    data = anderson)
+    formula = surv ~ rx + logwbc + strata(sex),
+    data = anderson
+  )
 
-summary(anderson.coxph.strat)
+summary(anderson_coxph_strat)
 ```
 
 Let's compare this to a model fit only on the subset of males:
 
 ```{r}
-
-anderson.coxph.male = 
+anderson_coxph_male <-
   coxph(
     formula = surv ~ rx + logwbc,
     subset = sex == "male",
-    data = anderson)
+    data = anderson
+  )
 
-summary(anderson.coxph.male)
-
+summary(anderson_coxph_male)
 ```
 
 ```{r}
-anderson.coxph.female = 
+anderson_coxph_female <-
   coxph(
-    formula = 
-      surv ~ rx + logwbc,
+    formula = surv ~ rx + logwbc,
     subset = sex == "female",
-    data = anderson)
+    data = anderson
+  )
 
-summary(anderson.coxph.female)
+summary(anderson_coxph_female)
 ```
 
 The coefficients of treatment look different. Are they statistically
 different?
 
 ```{r}
-
-anderson.coxph.strat.intxn = 
+anderson_coxph_strat_intxn <-
   coxph(
     formula = surv ~ strata(sex) * (rx + logwbc),
-    data = anderson)
+    data = anderson
+  )
 
-anderson.coxph.strat.intxn |> summary()
-
+anderson_coxph_strat_intxn |> summary()
 ```
 
 ```{r}
 anova(
-  anderson.coxph.strat.intxn,
-  anderson.coxph.strat)
+  anderson_coxph_strat_intxn,
+  anderson_coxph_strat
+)
 ```
 
 We don't have enough evidence to tell the difference between these two
@@ -1225,17 +1234,17 @@ models.
 -   Either approach may work.
 
 ```{r}
-
-anderson.coxph.intxn = 
+anderson_coxph_intxn <-
   coxph(
     formula = surv ~ (rx + logwbc) * sex,
-    data = anderson)
+    data = anderson
+  )
 
-anderson.coxph.intxn |> summary()
+anderson_coxph_intxn |> summary()
 ```
 
 ```{r}
-cox.zph(anderson.coxph.intxn)
+cox.zph(anderson_coxph_intxn)
 ```
 
 ## Time-varying covariates
@@ -1247,8 +1256,10 @@ cox.zph(anderson.coxph.intxn)
 ```{r}
 #| code-fold: false
 # load the data:
-data(bmt, package = 'KMsurv')
-bmt |> as_tibble() |> print(n = 5)
+data(bmt, package = "KMsurv")
+bmt |>
+  as_tibble() |>
+  print(n = 5)
 ```
 
 This dataset comes from the @copelan1991treatment study of allogenic
@@ -1285,68 +1296,65 @@ We reformat the data before analysis:
 
 ```{r}
 # reformat the data:
-bmt1 = 
-  bmt |> 
-  as_tibble() |> 
+bmt1 <-
+  bmt |>
+  as_tibble() |>
   mutate(
-    id = 1:n(), # will be used to connect multiple records for the same individual
-    
-    group =  group |> 
+    # `id` will be used to connect multiple records for the same individual:
+    id = dplyr::row_number(),
+
+    group = group |>
       case_match(
         1 ~ "ALL",
         2 ~ "Low Risk AML",
-        3 ~ "High Risk AML") |> 
+        3 ~ "High Risk AML"
+      ) |>
       factor(levels = c("ALL", "Low Risk AML", "High Risk AML")),
-    
     `patient age` = z1,
-    
     `donor age` = z2,
-    
-    `patient sex` = z3 |> 
+    `patient sex` = z3 |>
       case_match(
         0 ~ "Female",
-        1 ~ "Male"),
-    
-    `donor sex` = z4 |> 
+        1 ~ "Male"
+      ),
+    `donor sex` = z4 |>
       case_match(
         0 ~ "Female",
-        1 ~ "Male"),
-    
-    `Patient CMV Status` = z5 |> 
+        1 ~ "Male"
+      ),
+    `Patient CMV Status` = z5 |>
       case_match(
         0 ~ "CMV Negative",
-        1 ~ "CMV Positive"),
-    
-    `Donor CMV Status` = z6 |> 
+        1 ~ "CMV Positive"
+      ),
+    `Donor CMV Status` = z6 |>
       case_match(
         0 ~ "CMV Negative",
-        1 ~ "CMV Positive"),
-    
+        1 ~ "CMV Positive"
+      ),
     `Waiting Time to Transplant` = z7,
-    
-    FAB = z8 |> 
+    FAB = z8 |>
       case_match(
         1 ~ "Grade 4 Or 5 (AML only)",
-        0 ~ "Other") |> 
-      factor() |> 
+        0 ~ "Other"
+      ) |>
+      factor() |>
       relevel(ref = "Other"),
-    
-    hospital = z9 |>  # `z9` is hospital
+    hospital = z9 |> # `z9` is hospital
       case_match(
         1 ~ "Ohio State University",
         2 ~ "Alferd",
         3 ~ "St. Vincent",
-        4 ~ "Hahnemann") |> 
-      factor() |> 
+        4 ~ "Hahnemann"
+      ) |>
+      factor() |>
       relevel(ref = "Ohio State University"),
-    
     MTX = (z10 == 1) # a prophylatic treatment for GVHD
-    
-  ) |> 
+  ) |>
   select(-(z1:z10)) # don't need these anymore
 
-bmt1 |> 
-  select(group, id:MTX) |> 
+bmt1 |>
+  select(group, id:MTX) |>
   print(n = 10)
 ```
 
@@ -1377,33 +1385,29 @@ results of adding or removing variables.
 -   For each record, the covariates are constant.
 
 ```{r}
-
-bmt2 = bmt1 |> 
-  #set up new long-format data set:
-  tmerge(bmt1, id = id, tstop = t2) |> 
-  
-  # the following three steps can be in any order, 
+bmt2 <- bmt1 |>
+  # set up new long-format data set:
+  tmerge(bmt1, id = id, tstop = t2) |>
+  # the following three steps can be in any order,
   # and will still produce the same result:
-  #add aghvd as tdc:
-  tmerge(bmt1, id = id, agvhd = tdc(ta)) |> 
-  #add cghvd as tdc:
-  tmerge(bmt1, id = id, cgvhd = tdc(tc)) |> 
-  #add platelet recovery as tdc:
-  tmerge(bmt1, id = id, precovery = tdc(tp))   
+  # add aghvd as tdc:
+  tmerge(bmt1, id = id, agvhd = tdc(ta)) |>
+  # add cghvd as tdc:
+  tmerge(bmt1, id = id, cgvhd = tdc(tc)) |>
+  # add platelet recovery as tdc:
+  tmerge(bmt1, id = id, precovery = tdc(tp))
 
-bmt2 = bmt2 |> 
-  as_tibble() |> 
+bmt2 <- bmt2 |>
+  as_tibble() |>
   mutate(status = as.numeric((tstop == t2) & d3))
 # status only = 1 if at end of t2 and not censored
-
 ```
 
 Let's see how we've rearranged the first row of the data:
 
 ```{r}
-
-bmt1 |> 
-  dplyr::filter(id == 1) |> 
+bmt1 |>
+  dplyr::filter(id == 1) |>
   dplyr::select(id, t1, d1, t2, d2, d3, ta, da, tc, dc, tp, dp)
 ```
 
@@ -1418,7 +1422,7 @@ The event times for this individual are:
 After converting the data to long-format, we have:
 
 ```{r}
-bmt2 |> 
+bmt2 |>
   select(
     id,
     tstart,
@@ -1427,7 +1431,7 @@ bmt2 |>
     cgvhd,
     precovery,
     status
-  ) |> 
+  ) |>
   dplyr::filter(id == 1)
 ```
 
@@ -1469,33 +1473,34 @@ with P or not-P occurs in this data set.
 ### Model with Time-Fixed Covariates
 
 ```{r}
-bmt1 = 
-  bmt1 |> 
-  mutate(surv = Surv(t2,d3))
+bmt1 <-
+  bmt1 |>
+  mutate(surv = Surv(t2, d3))
 
-bmt_coxph_TF = coxph(
-  formula = surv ~ group + `patient age`*`donor age` + FAB,
-  data = bmt1)
+bmt_coxph_TF <- coxph(
+  formula = surv ~ group + `patient age` * `donor age` + FAB,
+  data = bmt1
+)
 summary(bmt_coxph_TF)
 drop1(bmt_coxph_TF, test = "Chisq")
 ```
 
 ```{r}
 #| fig-cap: "Martingale residuals for `Donor age`"
-bmt1$mres = 
-  bmt_coxph_TF |> 
-  update(. ~ . - `donor age`) |> 
-  residuals(type="martingale")
+bmt1$mres <-
+  bmt_coxph_TF |>
+  update(. ~ . - `donor age`) |>
+  residuals(type = "martingale")
 
-bmt1 |> 
+bmt1 |>
   ggplot(aes(x = `donor age`, y = mres)) +
   geom_point() +
   geom_smooth(method = "loess", aes(col = "loess")) +
-  geom_smooth(method = 'lm', aes(col = "lm")) +
+  geom_smooth(method = "lm", aes(col = "lm")) +
   theme_classic() +
   xlab("Donor age") +
   ylab("Martingale Residuals") +
-  guides(col=guide_legend(title = ""))
+  guides(col = guide_legend(title = ""))
 ```
 
 A more complex functional form for `donor age` seems warranted; left as
@@ -1504,38 +1509,39 @@ an exercise for the reader.
 Now we will add the time-varying covariates:
 
 ```{r}
-
 # add counting process formulation of Surv():
-bmt2 = 
-  bmt2 |> 
+bmt2 <-
+  bmt2 |>
   mutate(
-    surv = 
-      Surv(
-        time = tstart,
-        time2 = tstop,
-        event = status,
-        type = "counting"))
-
-
-
+    surv = Surv(
+      time = tstart,
+      time2 = tstop,
+      event = status,
+      type = "counting"
+    )
+  )
 ```
 
 Let's see how the data looks for patient 15:
 
 ```{r}
-bmt1 |> dplyr::filter(id == 15) |> dplyr::select(tp, dp, tc,dc, ta, da, FAB, surv, t1, d1, t2, d2, d3)
-bmt2 |> dplyr::filter(id == 15) |> dplyr::select(id, agvhd, cgvhd, precovery, surv)
+bmt1 |>
+  dplyr::filter(id == 15) |>
+  dplyr::select(tp, dp, tc, dc, ta, da, FAB, surv, t1, d1, t2, d2, d3)
+bmt2 |>
+  dplyr::filter(id == 15) |>
+  dplyr::select(id, agvhd, cgvhd, precovery, surv)
 ```
 
 
 ### Model with Time-Dependent Covariates
 
 ```{r}
-bmt_coxph_TV = coxph(
-  formula = 
-    surv ~ 
-    group + `patient age`*`donor age` + FAB + agvhd + cgvhd + precovery,
-  data = bmt2)
+bmt_coxph_TV <- coxph(
+  formula = surv ~
+    group + `patient age` * `donor age` + FAB + agvhd + cgvhd + precovery,
+  data = bmt2
+)
 
 summary(bmt_coxph_TV)
 ```
@@ -1547,15 +1553,14 @@ statistically significant effect here, nor are they significant in
 models with the other one removed.
 
 ```{r}
-
-update(bmt_coxph_TV, .~.-agvhd) |> summary()
-update(bmt_coxph_TV, .~.-cgvhd) |> summary()
+update(bmt_coxph_TV, . ~ . - agvhd) |> summary()
+update(bmt_coxph_TV, . ~ . - cgvhd) |> summary()
 ```
 
 Let's drop them both:
 
 ```{r}
-bmt_coxph_TV2 = update(bmt_coxph_TV, . ~ . - agvhd -cgvhd)
+bmt_coxph_TV2 <- update(bmt_coxph_TV, . ~ . - agvhd - cgvhd)
 bmt_coxph_TV2 |> summary()
 ```
 
@@ -1623,48 +1628,50 @@ related to cow tuberculosis.
 
 ```{r}
 #| eval: false
-bladder = 
+bladder <-
   paste0(
     "http://web1.sph.emory.edu/dkleinb/allDatasets",
-    "/surv2datasets/bladder.dta") |> 
-  read_dta() |> 
+    "/surv2datasets/bladder.dta"
+  ) |>
+  read_dta() |>
   as_tibble()
 
-bladder = bladder[-1,]  #remove subject with 0 observation time
+bladder <- bladder[-1, ] # remove subject with 0 observation time
 print(bladder)
 ```
 
 ```{r}
 #| include: false
-bladder = 
+bladder <-
   fs::path_package(
-    "rme", "extdata/bladder.dta") |> 
-  read_dta() |> 
+    "rme", "extdata/bladder.dta"
+  ) |>
+  read_dta() |>
   as_tibble()
 
-bladder = bladder[-1,]  #remove subject with 0 observation time
+bladder <- bladder[-1, ] # remove subject with 0 observation time
 print(bladder)
 ```
 
 ```{r}
-
-bladder = 
-  bladder |> 
+bladder <-
+  bladder |>
   mutate(
-    surv = 
-      Surv(
-        time = start,
-        time2 = stop,
-        event = event,
-        type = "counting"))
+    surv = Surv(
+      time = start,
+      time2 = stop,
+      event = event,
+      type = "counting"
+    )
+  )
 
-bladder.cox1 = coxph(
-  formula = surv~tx+num+size,
-  data = bladder)
+bladder_cox1 <- coxph(
+  formula = surv ~ tx + num + size,
+  data = bladder
+)
 
-#results with biased variance-covariance matrix:
-summary(bladder.cox1)
-
+# results with biased variance-covariance matrix:
+summary(bladder_cox1)
 ```
 
 ::: callout-note
@@ -1679,37 +1686,36 @@ estimates don't change, but we get an additional column in the
 `summary()` output: `robust se`:
 
 ```{r}
-
-bladder.cox2 = coxph(
+bladder_cox2 <- coxph(
   formula = surv ~ tx + num + size,
   cluster = id,
-  data = bladder)
+  data = bladder
+)
 
-#unbiased though this reduces power:
-summary(bladder.cox2)
-
+# unbiased though this reduces power:
+summary(bladder_cox2)
 ```
 
 `robust se` is larger than `se`, and accounts for the repeated
 observations from the same individuals:
 
 ```{r}
-round(bladder.cox2$naive.var, 4)
-round(bladder.cox2$var, 4)
+round(bladder_cox2$naive.var, 4)
+round(bladder_cox2$var, 4)
 ```
 
 These are the ratios of correct confidence intervals to naive ones:
 
 ```{r}
-with(bladder.cox2, diag(var)/diag(naive.var)) |> sqrt()
+with(bladder_cox2, diag(var) / diag(naive.var)) |> sqrt()
 ```
 
 We might try dropping the non-significant `size` variable:
 
 ```{r}
-#remove non-significant size variable:
-bladder.cox3 = bladder.cox2 |> update(. ~ . - size)
-summary(bladder.cox3)
+# remove non-significant size variable:
+bladder_cox3 <- bladder_cox2 |> update(. ~ . - size)
+summary(bladder_cox3)
 ```
 
 ::: hidden
