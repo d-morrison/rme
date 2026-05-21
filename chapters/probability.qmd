@@ -563,21 +563,23 @@ $\E{Y \mid X} = g(X)$ where $g(x) \eqdef \E{Y \mid X = x}$.
 
 ## Fubini–Tonelli for expectations
 
-The Riemann version of Fubini's theorem (@thm-fubini, stated in the
-math-prereqs chapter) lets us switch the order of integration for
+The [Riemann version of Fubini's theorem](math-prereqs.qmd#thm-fubini),
+stated in the math-prereqs chapter,
+lets us switch the order of integration for
 continuous integrands on simple regions.
 For expectations against probability measures we use its
-measure-theoretic form (@thm-fubini-tonelli),
+[measure-theoretic form](math-prereqs.qmd#thm-fubini-tonelli),
 which holds on any σ-finite measure space.
 The σ-finiteness hypothesis is automatic for probability measures
 (every probability measure is finite, hence σ-finite),
-so @thm-fubini-tonelli yields the corollaries below directly.
+so [Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli)
+yields the corollaries below directly.
 
 {{< slidebreak >}}
 
 :::{#cor-fubini-prob}
 
-### Probability-measure form (independent variables; corollary of @thm-fubini-tonelli)
+### Probability-measure form (independent variables; corollary of Fubini–Tonelli)
 
 Let $X$ and $Y$ be independent random variables
 with probability measures $\P_X$ and $\P_Y$,
@@ -607,7 +609,8 @@ By independence, the joint distribution of $(X, Y)$ is the product measure
 $\P_X \otimes \P_Y$, so
 $\E{h(X, Y)} = \int_{\rangef{X} \times \rangef{Y}} h(x, y)\,d(\P_X \otimes \P_Y)$.
 Probability measures are finite (hence σ-finite),
-so the σ-finiteness hypothesis of @thm-fubini-tonelli is automatic;
+so the σ-finiteness hypothesis of
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) is automatic;
 under either (a) or (b) above the theorem applies and yields both
 iterated forms.
 
@@ -645,7 +648,7 @@ As a check: $\E{X} = \tfrac{1}{2}$, $\E{Y} = 1$, and $\E{X}\E{Y} = \tfrac{1}{2}$
 
 {{< slidebreak >}}
 
-:::{#exm-fubini-prob-fail}
+::::{#exm-fubini-prob-fail}
 
 #### When independence fails: a counterexample
 
@@ -665,7 +668,7 @@ $$
 
 Note that Fubini–Tonelli's own conditions still hold here ($h(x,y) = xy$
 is nonnegative and integrable), so the error is not a failure of
-@thm-fubini-tonelli.
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli).
 Rather, the error is using the *wrong measure*: the joint distribution
 of $(X, X)$ is concentrated on the diagonal
 $\{(x, x) : x \in [0, 1]\} \subset [0, 1]^2$,
@@ -703,13 +706,55 @@ density to integrate against in the first place.
 The correct approach for *dependent* $(X, Y)$ that *do* admit a joint
 density uses @cor-fubini-joint.
 
+:::{#fig-fubini-prob-fail}
+
+```{r}
+#| code-fold: true
+#| message: false
+set.seed(204)
+n <- 400
+x_dep <- runif(n)
+y_dep <- x_dep
+x_ind <- runif(n)
+y_ind <- runif(n)
+
+plotly::plot_ly() |>
+  plotly::add_trace(
+    type = "scatter", mode = "markers",
+    x = x_ind, y = y_ind,
+    name = "Assumed independent (X<sub>1</sub>, X<sub>2</sub>)",
+    marker = list(size = 5, color = "#999999", opacity = 0.5)
+  ) |>
+  plotly::add_trace(
+    type = "scatter", mode = "markers",
+    x = x_dep, y = y_dep,
+    name = "Actual (X, X) on diagonal",
+    marker = list(size = 6, color = "#b40426")
+  ) |>
+  plotly::layout(
+    xaxis = list(title = "x", range = c(0, 1), scaleanchor = "y"),
+    yaxis = list(title = "y", range = c(0, 1)),
+    legend = list(orientation = "h", y = -0.2)
+  )
+```
+
+Samples from the joint distribution of $(X, X)$ (red, on the diagonal)
+versus an independent pair $(X_1, X_2)$ with the same marginals (grey,
+scattered over $[0, 1]^2$). The actual joint mass for $(X, X)$ is
+concentrated on a 1-dimensional diagonal — a set of Lebesgue measure
+zero in $\mathbb{R}^2$ — so no joint density on $[0, 1]^2$ exists, and
+the "$f_X(x)\,f_Y(y) = 1$" calculation integrates against the wrong
+measure (the grey distribution).
+
 :::
+
+::::
 
 {{< slidebreak >}}
 
 :::{#cor-fubini-joint}
 
-### Joint-density form (without independence; corollary of @thm-fubini-tonelli)
+### Joint-density form (without independence; corollary of Fubini–Tonelli)
 
 Let $(X, Y)$ be jointly distributed continuous random variables
 with joint density $f_{X,Y}$
@@ -739,7 +784,7 @@ $$
 ::: proof
 Take both $\mu_1$ and $\mu_2$ to be Lebesgue measure on
 $\rangef{X}$ and $\rangef{Y}$ respectively, and apply
-@thm-fubini-tonelli to the integrand $h(x,y)\,f_{X,Y}(x,y)$ on
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) to the integrand $h(x,y)\,f_{X,Y}(x,y)$ on
 $\rangef{X} \times \rangef{Y}$.
 The relevant hypothesis is (a) when $h \ge 0$
 and (b) when $\E{\abs{h(X, Y)}} < \infty$.
@@ -748,7 +793,7 @@ $\rangef{X} \times \rangef{Y}$, the convention that $f_{X,Y}$ is
 extended by zero outside its support means the integrand
 $h(x,y)\,f_{X,Y}(x,y)$ vanishes there, so the integral over the full
 product domain agrees with the integral over the support;
-@thm-fubini-tonelli then expresses it as either iterated form above.
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) then expresses it as either iterated form above.
 Independence is not required.
 When $X$ and $Y$ are independent, $f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$,
 and this corollary reduces to @cor-fubini-prob.
@@ -756,7 +801,7 @@ and this corollary reduces to @cor-fubini-prob.
 
 {{< slidebreak >}}
 
-:::{#exm-fubini-joint}
+::::{#exm-fubini-joint}
 
 #### Expectation using a joint density (dependent variables)
 
@@ -780,7 +825,38 @@ $$
 \ea
 $$
 
+:::{#fig-fubini-joint}
+
+```{r}
+#| code-fold: true
+#| message: false
+n_grid <- 51
+x_seq <- seq(0, 1, length.out = n_grid)
+y_seq <- seq(0, 1, length.out = n_grid)
+
+z_mat <- outer(x_seq, y_seq, function(x, y) {
+  z <- rep(2, length(x))
+  z[x > y] <- NA
+  z
+})
+
+plotly::plot_ly(x = ~x_seq, y = ~y_seq, z = ~t(z_mat)) |>
+  plotly::add_surface(showscale = FALSE) |>
+  plotly::layout(scene = list(
+    xaxis = list(title = "x"),
+    yaxis = list(title = "y"),
+    zaxis = list(title = "f(x, y)", range = c(0, 2.5)),
+    camera = list(eye = list(x = 1.6, y = -1.6, z = 0.8))
+  ))
+```
+
+Joint density $f_{X,Y}(x, y) = 2$ on the triangular support
+$\{(x, y) : 0 \le x \le y \le 1\}$, and zero elsewhere. The total
+"volume" under the density is $2 \cdot \tfrac{1}{2} = 1$, as required.
+
 :::
+
+::::
 
 {{< slidebreak >}}
 
@@ -789,7 +865,8 @@ $$
 @thm-surv-mean states that for any nonnegative random variable $T$,
 $\E{T} = \int_0^\infty \surv(t)\,dt$.
 When $T$ has a density $\pdf$, this follows from applying Tonelli's
-theorem (hypothesis (a) of @thm-fubini-tonelli) to the function
+theorem (hypothesis (a) of
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli)) to the function
 $g(t, u) = \pdf(u) \cdot \indicp{0 \le t \le u}$ on the product space
 $[0, \infty) \times [0, \infty)$: $g$ is nonnegative everywhere and
 vanishes outside the (unbounded) triangular region
@@ -798,7 +875,8 @@ over $D$ are exchangeable.
 
 ::: proof
 
-Since $\pdf(u) \ge 0$, hypothesis (a) of @thm-fubini-tonelli
+Since $\pdf(u) \ge 0$, hypothesis (a) of
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli)
 (the nonnegative case, **Tonelli's theorem**) applies, and we may
 exchange the order of integration over $D$:
 
@@ -900,7 +978,8 @@ $$
 $$
 
 where the third equality exchanges the order of integration by
-hypothesis (b) of @thm-fubini-tonelli (the absolute-integrability
+hypothesis (b) of
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) (the absolute-integrability
 case, **Fubini's theorem**); this requires $\E{\abs{Y}} < \infty$,
 which is implicit in $\E{Y}$ being defined,
 and the fourth equality uses
