@@ -1,0 +1,96 @@
+
+Let's compute these estimates and build the chart by hand:
+
+```{r}
+#| code-fold: true
+library(KMsurv)
+library(dplyr)
+data(drug6mp)
+
+data_v2 <-
+  drug6mp |>
+  as_tibble() |>
+  mutate(
+    remstat = remstat |>
+      case_match(
+        1 ~ "partial",
+        2 ~ "complete"
+      ),
+    # renaming to "outcome" while relabeling is just a style choice:
+    outcome = relapse |>
+      case_match(
+        0 ~ "censored",
+        1 ~ "relapsed"
+      )
+  )
+
+km_table <-
+  data_v2 |>
+  summarize(
+    .by = t2,
+    Relapses = sum(outcome == "relapsed"),
+    Censored = sum(outcome == "censored")
+  ) |>
+  # here we add a start time row, so the graph starts at time 0:
+  bind_rows(
+    tibble(
+      t2 = 0,
+      Relapses = 0,
+      Censored = 0
+    )
+  ) |>
+  # sort in time order:
+  arrange(t2) |>
+  mutate(
+    Exiting = Relapses + Censored,
+    `Study Size` = sum(Exiting),
+    Exited = cumsum(Exiting) |> dplyr::lag(default = 0),
+    `At Risk` = `Study Size` - Exited,
+    Hazard = Relapses / `At Risk`,
+    `KM Factor` = 1 - Hazard,
+    `Cumulative Hazard` = cumsum(`Hazard`),
+    `KM Survival Curve` = cumprod(`KM Factor`)
+  )
+
+library(pander)
+pander(km_table)
+```
+
+{{< slidebreak >}}
+
+### Summary
+
+For the 6-MP patients at time 6 months, there are 21 patients at risk.
+At $t=6$ there are 3 relapses and 1 censored observations.
+
+The Kaplan-Meier factor is $(21-3)/21 = 0.857$. The number at risk for
+the next time ($t=7$) is $21-3-1=17$.
+
+At time 7 months, there are 17 patients at risk. At $t=7$ there is 1
+relapse and 0 censored observations. The Kaplan-Meier factor is
+$(17-1)/17 = 0.941$. The Kaplan Meier estimate is
+$0.857\times0.941=0.807$. The number at risk for the next time ($t=9$)
+is $17-1=16$.
+
+{{< slidebreak >}}
+
+Now, let's graph this estimated survival curve using `ggplot()`:
+
+```{r}
+#| label: fig-km-by-hand
+#| fig-cap: "KM curve for 6MP patients, calculated by hand"
+library(ggplot2)
+conflicts_prefer(dplyr::filter)
+km_table |>
+  ggplot(aes(x = t2, y = `KM Survival Curve`)) +
+  geom_step() +
+  geom_point(data = km_table |> filter(Censored > 0), shape = 3) +
+  expand_limits(y = c(0, 1), x = 0) +
+  xlab("Time since diagnosis (months)") +
+  ylab("KM Survival Curve") +
+  scale_y_continuous(labels = scales::percent)
+```
+
+{{< slidebreak >}}
+
+{{< include _subfiles/intro-to-survival-analysis/_exr_survival_prediction_intervals.qmd >}}

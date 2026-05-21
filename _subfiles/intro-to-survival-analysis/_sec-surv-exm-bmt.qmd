@@ -47,10 +47,6 @@ and test for differences.
 
 ##### Kaplan-Meier survival curves
 
-We apply the Kaplan-Meier estimator $\hsurv(t)$ and its
-Greenwood-formula variance (see @thm-greenwood) to the
-BMT data:
-
 ```{r}
 #| code-summary: "code to preprocess and model `bmt` data"
 library(KMsurv)
@@ -95,51 +91,18 @@ Here we compute a chi-square test for assocation between disease group
 (`group`) and disease-free survival:
 
 ```{r}
+#| code-fold: show
 survdiff(surv ~ group, data = bmt)
 ```
 
-##### Cumulative Hazard
-
-$$
-\begin{aligned}
-\haz(t)
-&\eqdef   \p(T=t|T\ge t)\\
-&= \frac{\p(T=t)}{\P(T\ge t)}\\
-&= -\deriv{t}\logf{\surv(t)}
-\end{aligned}
-$$
-
-The **cumulative hazard** (or **integrated hazard**) function is
-
-$$\cuhaz(t)\eqdef  \int_0^t \haz(t) dt$$
-
-Since
-$\haz(t) = -\deriv{t}\logf{\surv(t)}$ as shown above,
-we have:
-
-$$
-\cuhaz(t)=-\logf{\surv(t)}
-$$
-
-{{< slidebreak >}}
-
-So we can estimate $\cuhaz(t)$ as:
-
-$$
-\begin{aligned}
-\hat \cuhaz(t)
-&= -\logf{\hsurv(t)}\\
-&= -\logf{\prod_{t_i \le t}\sb{1-\frac{d_i}{Y_i}}}\\
-&= -\sum_{t_i \le t}\logf{1-\frac{d_i}{Y_i}}
-\end{aligned}
-$$
-
-This is the **Kaplan-Meier (product-limit) estimate of cumulative
-hazard**.
-
-{{< slidebreak >}}
-
 ##### Cumulative Hazard Curves for Bone-Marrow Transplant (`bmt`) data {#exm-bmt-cuhaz}
+
+The cumulative hazard $\cuhaz(t)$ is defined in @def-cuhaz, and the
+Kaplan-Meier (product-limit) estimator $\hat\cuhaz(t) = -\logf{\hsurv(t)}$
+is discussed in @sec-nelson-aalen alongside the Nelson-Aalen estimator.
+
+{{< slidebreak >}}
+
 
 ```{r}
 #| fig-cap: "Disease-Free Cumulative Hazard by Disease Group"

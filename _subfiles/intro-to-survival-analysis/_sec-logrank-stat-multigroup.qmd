@@ -1,0 +1,43 @@
+
+For $G \ge 2$ groups, the log-rank statistic still uses the
+observed-minus-expected scores $O_g - E_g$, but the variance--covariance
+matrix of the vector
+$\mathbf{O} - \mathbf{E} \eqdef (O_1 - E_1, \ldots, O_G - E_G)'$
+is nontrivial because the scores are linearly dependent
+($\sum_g (O_g - E_g) = 0$). The statistic takes the matrix-quadratic
+form
+
+$$
+\chi^2_{\text{LR}}
+\;=\; (\mathbf{O} - \mathbf{E})'\,\widehat{\Sigma}^{-}\,(\mathbf{O} - \mathbf{E})
+\;\stackrel{H_0}{\sim}\; \chi^2_{G - 1}
+$$
+
+where $\widehat\Sigma$ is the estimated variance--covariance matrix of
+$\mathbf{O} - \mathbf{E}$ and $\widehat\Sigma^{-}$ is a generalized
+inverse (any $G - 1$ of the rows/columns suffice, since the scores sum
+to zero).
+
+[@kleinbaum2012survival, pp. 71--72 and Chapter 2 Appendix for the matrix
+formula]
+
+::: notes
+In practice we don't compute this by hand — every standard survival
+package (`survival::survdiff` in R, `sts test` in Stata, `LIFETEST` in
+SAS) returns the exact log-rank statistic.
+:::
+
+{{< slidebreak >}}
+
+## Approximate (Pearson-style) statistic
+
+When only $(O_g, E_g)$ are available — e.g., from a printed summary —
+the variance--covariance matrix can be replaced by the diagonal $E_g$
+entries to yield the classic Pearson-style approximation:
+
+$$X^2 \;\approx\; \sum_{g=1}^{G} \frac{(O_g - E_g)^2}{E_g}.$$
+
+This is what some textbooks call "the log-rank test"; it is
+approximately equal to the exact statistic.
+
+[@kleinbaum2012survival, p. 70 (approximate formula)]
