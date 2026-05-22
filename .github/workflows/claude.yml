@@ -540,7 +540,15 @@ jobs:
               --title "$PR_TITLE" \
               --body "$PR_BODY")
             echo "Opened draft PR: $PR_URL"
-            PR_NUMBER=$(gh pr view "$PR_URL" --json number --jq '.number')
+            # `gh pr create` returns a URL of the form `.../pull/N`, so
+            # parameter expansion is cheaper and more reliable than
+            # round-tripping through `gh pr view`: a transient `gh pr
+            # view` failure here would leave PR_NUMBER empty, which
+            # then silently breaks the reviewer-request and dispatch
+            # calls below (both have `|| echo "::warning::"` fallbacks
+            # for unrelated reasons, so the empty-PR_NUMBER 404s would
+            # go unnoticed).
+            PR_NUMBER="${PR_URL##*/}"
             gh api -X POST \
               "repos/${{ github.repository }}/pulls/${PR_NUMBER}/requested_reviewers" \
               -f "reviewers[]=d-morrison" \
