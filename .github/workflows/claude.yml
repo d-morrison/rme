@@ -533,8 +533,11 @@ jobs:
             else
               PR_TITLE="$ISSUE_TITLE"
             fi
+            # Use the repo's actual default branch instead of hard-
+            # coding "main", so this still works if the repo is ever
+            # restructured (rename, default-branch swap, fork).
             PR_URL=$(gh pr create \
-              --base main \
+              --base "${{ github.event.repository.default_branch }}" \
               --head "$BRANCH" \
               --draft \
               --title "$PR_TITLE" \
