@@ -257,11 +257,21 @@ jobs:
           # without them Claude's `git commit` calls get denied — that
           # was the root cause of the 24 `permission_denials_count` in
           # issue #786's runs (Claude believed it committed but every
-          # commit attempt was actually blocked). `git push` is
-          # deliberately omitted: the post-Claude step pushes, and
-          # keeping push out of Claude's hands avoids races with that
-          # step and prevents accidental pushes to weird branches.
-          GIT_TOOLS="Bash(git add *),Bash(git commit *),Bash(git rm *),Bash(git mv *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git show*),Bash(git restore *),Bash(git branch*),Bash(git checkout *)"
+          # commit attempt was actually blocked).
+          #
+          # Two operations are deliberately omitted from this list:
+          # - `git push`: the post-Claude step pushes, and keeping push
+          #   out of Claude's hands avoids races with that step and
+          #   prevents accidental pushes to weird branches.
+          # - `git checkout` for branch-switching: only the
+          #   file-restoration form (`git checkout -- <file>`) is
+          #   allowed. If Claude switched off the issue branch the
+          #   pre-step prepared, the post-step's `git rev-parse HEAD ==
+          #   STARTING_SHA` check would compare against the wrong tip
+          #   and silently skip the push, losing Claude's work without
+          #   warning. Pinning Claude to the branch we set up is
+          #   safer than trying to detect-and-recover after the fact.
+          GIT_TOOLS="Bash(git add *),Bash(git commit *),Bash(git rm *),Bash(git mv *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git show*),Bash(git restore *),Bash(git branch*),Bash(git checkout -- *)"
           if [ -n "$WEBFETCH" ]; then
             echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
@@ -486,17 +496,34 @@ jobs:
           if [ -n "$EXISTING" ]; then
             echo "PR already exists for $BRANCH: $EXISTING"
             PR_URL="$EXISTING"
+            # Note: we deliberately don't dispatch claude-code-review.yml
+            # in this branch. The only way EXISTING is non-empty is if a
+            # prior run of this same step already opened the PR (the
+            # branch name's timestamp makes collisions with a hand-
+            # opened PR essentially impossible). That prior run would
+            # have dispatched the review, so re-dispatching here would
+            # just queue a duplicate review on an unchanged diff.
           else
             # `printf` (not a HEREDOC) keeps the body free of the
             # leading YAML-block indentation that would otherwise show
             # up on every line of the rendered PR description.
             PR_BODY=$(printf 'Draft PR opened by `@claude` to address #%s.\n\nTriggered by [workflow run](%s).\n\nCloses #%s.\n' \
               "$ISSUE_NUMBER" "$RUN_URL" "$ISSUE_NUMBER")
+            # `gh pr create --title ""` returns HTTP 422; GitHub's API
+            # allows issues to have empty titles on some webhook paths,
+            # so fall back to a generic title rather than crashing the
+            # post-step (which would leave the branch pushed but no PR
+            # opened — confusing state).
+            if [ -z "$ISSUE_TITLE" ]; then
+              PR_TITLE="Claude response to issue #${ISSUE_NUMBER}"
+            else
+              PR_TITLE="$ISSUE_TITLE"
+            fi
             PR_URL=$(gh pr create \
               --base main \
               --head "$BRANCH" \
               --draft \
-              --title "$ISSUE_TITLE" \
+              --title "$PR_TITLE" \
               --body "$PR_BODY")
             echo "Opened draft PR: $PR_URL"
             PR_NUMBER=$(gh pr view "$PR_URL" --json number --jq '.number')
