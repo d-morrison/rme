@@ -160,6 +160,41 @@ jobs:
           SHA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
 
+      # Create a feature branch for issue triggers so Claude's commits
+      # land somewhere durable.
+      #
+      # Background: claude-code-action runs in `agent` mode here (any time
+      # `prompt:` is set, which we do below for the late-comment polling
+      # loop). Agent mode skips the action's built-in setup-branch step
+      # and its post-session `git-push.sh` wrapper — the machinery that
+      # tag mode uses to create `claude/issue-N-<timestamp>`, push, and
+      # link a PR back from the triggering issue. Without that machinery,
+      # an `@claude` mention on an issue leaves Claude editing files on
+      # the ephemeral `main` checkout; the commits are discarded at
+      # runner cleanup and no PR ever appears (see issue #786 history
+      # 2026-05-22: two consecutive @claude runs both produced zero
+      # branch and zero PR despite Claude believing it had pushed).
+      #
+      # The paired "Push branch and open draft PR for issue trigger"
+      # step below pushes this branch and opens the PR. PR-trigger runs
+      # already work today (Claude commits to the PR's own checkout
+      # branch and the existing post-step at the bottom of this file
+      # re-requests review when the head SHA changes), so this only
+      # fires for issue/issue-comment-on-issue events.
+      - name: Set up branch for issue trigger
+        id: issue_branch
+        if: |
+          github.event_name == 'issues' ||
+          (github.event_name == 'issue_comment' && !github.event.issue.pull_request)
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          BRANCH="claude/issue-${ISSUE_NUMBER}-$(date -u +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "starting_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "Created and switched to $BRANCH"
+
       # Build a WebFetch permission list from the shared stats-allowlist repo
       # so Claude can read pages from d-morrison.github.io and other approved
       # sites referenced in the book. Trust model: anyone with push access to
@@ -216,10 +251,21 @@ jobs:
           # are strict subsets (the CLI commands hit the same API
           # internally), so they're omitted.
           GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*)"
+          # Git commands Claude needs to commit work in agent mode.
+          # In tag mode the action auto-injects these; in agent mode
+          # (which we're in whenever `prompt:` is set) it doesn't, and
+          # without them Claude's `git commit` calls get denied — that
+          # was the root cause of the 24 `permission_denials_count` in
+          # issue #786's runs (Claude believed it committed but every
+          # commit attempt was actually blocked). `git push` is
+          # deliberately omitted: the post-Claude step pushes, and
+          # keeping push out of Claude's hands avoids races with that
+          # step and prevents accidental pushes to weird branches.
+          GIT_TOOLS="Bash(git add *),Bash(git commit *),Bash(git rm *),Bash(git mv *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git show*),Bash(git restore *),Bash(git branch*),Bash(git checkout *)"
           if [ -n "$WEBFETCH" ]; then
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -354,14 +400,22 @@ jobs:
                from there via the serialize-per-PR concurrency group.
 
             4. Commit all changes before finishing. `git add`,
-               `git commit`, and `git rm` are auto-injected into the
-               allowed-tools list by the action and are available to
-               you; `git push` is NOT — the action runs its own
-               `git-push.sh` wrapper after your session ends, which
-               is what pushes to the remote. The concurrency group
-               guarantees no parallel session is racing yours, so
-               that push should succeed unless someone pushed by
-               hand.
+               `git commit`, `git rm`, and read-only git inspection
+               commands are in your allowed-tools list; `git push`
+               is NOT. A post-Claude workflow step pushes:
+               - For PR triggers, your commits are already on the
+                 PR's head branch — the post-step re-requests review
+                 and dispatches code review when the head SHA moves.
+               - For issue triggers, the workflow pre-creates a
+                 `claude/issue-N-<timestamp>` branch and checks it
+                 out before your session starts; the post-step
+                 pushes that branch and opens a draft PR linking
+                 back to the issue. (Do not create a branch yourself
+                 — one is already checked out for you. Do not try to
+                 `gh pr create` yourself — the post-step does it.)
+               The concurrency group guarantees no parallel session
+               is racing yours, so the push should succeed unless
+               someone pushed by hand.
 
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
@@ -397,3 +451,65 @@ jobs:
           else
             echo "No new commits on PR head; skipping re-request and review dispatch."
           fi
+
+      # Pair to "Set up branch for issue trigger" above. Pushes the
+      # branch Claude was working on and opens a draft PR. Runs even
+      # on Claude failure (`always()`) so that any partial work is
+      # preserved on a branch rather than discarded with the runner —
+      # the user can then decide whether to keep it. The `branch !=
+      # ''` guard means this only fires when the pre-step actually
+      # created a branch (i.e. for issue triggers).
+      - name: Push branch and open draft PR for issue trigger
+        if: |
+          always() &&
+          steps.issue_branch.outputs.branch != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.issue_branch.outputs.branch }}
+          STARTING_SHA: ${{ steps.issue_branch.outputs.starting_sha }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          # Passed via env (not interpolated into the shell body) to
+          # keep arbitrary issue-title characters out of the shell.
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          CURRENT_SHA=$(git rev-parse HEAD)
+          if [ "$CURRENT_SHA" = "$STARTING_SHA" ]; then
+            echo "No new commits on $BRANCH — Claude produced no changes; skipping push/PR."
+            exit 0
+          fi
+          echo "Pushing $BRANCH ($STARTING_SHA -> $CURRENT_SHA)"
+          git push origin "$BRANCH"
+          # Reuse an existing open PR for this branch if one is somehow
+          # already present (idempotent re-run safety); otherwise open.
+          EXISTING=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "PR already exists for $BRANCH: $EXISTING"
+            PR_URL="$EXISTING"
+          else
+            # `printf` (not a HEREDOC) keeps the body free of the
+            # leading YAML-block indentation that would otherwise show
+            # up on every line of the rendered PR description.
+            PR_BODY=$(printf 'Draft PR opened by `@claude` to address #%s.\n\nTriggered by [workflow run](%s).\n\nCloses #%s.\n' \
+              "$ISSUE_NUMBER" "$RUN_URL" "$ISSUE_NUMBER")
+            PR_URL=$(gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --draft \
+              --title "$ISSUE_TITLE" \
+              --body "$PR_BODY")
+            echo "Opened draft PR: $PR_URL"
+            PR_NUMBER=$(gh pr view "$PR_URL" --json number --jq '.number')
+            gh api -X POST \
+              "repos/${{ github.repository }}/pulls/${PR_NUMBER}/requested_reviewers" \
+              -f "reviewers[]=d-morrison" \
+              || echo "::warning::Could not request d-morrison as reviewer."
+            # Fire claude-code-review.yml the same way the PR-trigger
+            # post-step above does — see that step's comment for why
+            # workflow_dispatch (not push) is the right trigger here.
+            gh workflow run claude-code-review.yml -f pr_number="$PR_NUMBER" \
+              || echo "::warning::Could not dispatch claude-code-review.yml."
+          fi
+          gh issue comment "$ISSUE_NUMBER" \
+            --body "Pushed Claude's commits to \`${BRANCH}\` and opened draft PR: ${PR_URL}" \
+            || echo "::warning::Could not post PR link as issue comment."
