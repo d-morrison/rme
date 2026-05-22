@@ -503,6 +503,7 @@ jobs:
           if [ -n "$EXISTING" ]; then
             echo "PR already exists for $BRANCH: $EXISTING"
             PR_URL="$EXISTING"
+            PR_VERB="pushed new commits to existing draft PR"
             # Note: we deliberately don't dispatch claude-code-review.yml
             # in this branch. The only way EXISTING is non-empty is if a
             # prior run of this same step already opened the PR (the
@@ -561,7 +562,8 @@ jobs:
             # workflow_dispatch (not push) is the right trigger here.
             gh workflow run claude-code-review.yml -f pr_number="$PR_NUMBER" \
               || echo "::warning::Could not dispatch claude-code-review.yml."
+            PR_VERB="opened draft PR"
           fi
           gh issue comment "$ISSUE_NUMBER" \
-            --body "Pushed Claude's commits to \`${BRANCH}\` and opened draft PR: ${PR_URL}" \
+            --body "Pushed Claude's commits to \`${BRANCH}\` and ${PR_VERB}: ${PR_URL}" \
             || echo "::warning::Could not post PR link as issue comment."
