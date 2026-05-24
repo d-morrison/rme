@@ -496,7 +496,21 @@ jobs:
             exit 0
           fi
           echo "Pushing $BRANCH ($STARTING_SHA -> $CURRENT_SHA)"
-          git push origin "$BRANCH"
+          # Push to an explicit token-bearing URL rather than `origin`.
+          # The "Checkout submodules" step earlier in this job sets a
+          # global `url.https://x-access-token:${SUBMODULES_TOKEN}@github.com/.insteadOf
+          # https://github.com/` rule so submodule clones authenticate
+          # with SUBMODULES_TOKEN (a fine-grained PAT scoped to the
+          # submodule repos, not this one). That rule also rewrites
+          # `git push origin`'s resolved URL — sending the main-repo
+          # push under SUBMODULES_TOKEN, which has no write access here
+          # and produces "Authentication failed" (see run #26313620971,
+          # the first real-world test of this post-step). The URL
+          # below starts with `https://x-access-token:...@github.com/`,
+          # which doesn't match the rewrite pattern (`https://github.com/`),
+          # so it passes through and reaches the remote under
+          # GITHUB_TOKEN — which has `contents: write` for this repo.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" "$BRANCH"
           # Reuse an existing open PR for this branch if one is somehow
           # already present (idempotent re-run safety); otherwise open.
           EXISTING=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // empty')
