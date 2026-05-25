@@ -249,10 +249,16 @@ jobs:
           # HTTP-method filtering. The ultimate bound on what's
           # possible is `GITHUB_TOKEN`'s scopes (`contents: write`,
           # `pull-requests: write`, `issues: write`), not this
-          # allowlist. `Bash(gh pr view:*)` and `Bash(gh issue view:*)`
-          # are strict subsets (the CLI commands hit the same API
-          # internally), so they're omitted.
-          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*)"
+          # allowlist.
+          #
+          # The `gh pr/issue/run` read-only CLI patterns below mirror
+          # the committed `.claude/settings.json` allowlist so the CI
+          # agent and local sessions grant the same inspection commands
+          # (these CLI subcommands hit the same API as `gh api` but
+          # under different command strings, so the `gh api repos/*`
+          # entry alone doesn't cover them). Kept to `view`/`list`
+          # (read-only) — no `gh pr merge`/`close`/`edit` etc.
+          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*),Bash(gh pr view *),Bash(gh pr list *),Bash(gh issue view *),Bash(gh issue list *),Bash(gh run view *),Bash(gh run list *)"
           # Git commands Claude needs to commit work in agent mode.
           # In tag mode the action auto-injects these; in agent mode
           # (which we're in whenever `prompt:` is set) it doesn't, and
@@ -594,14 +600,30 @@ jobs:
             exit 0
           fi
 
-          # The action streams one JSON event per line (NDJSON).
-          # First, sanity-check that the file actually contains
-          # `assistant`-typed events. If it doesn't, the most likely
-          # cause is an upstream schema change (the action renaming
-          # the event type), not a genuinely empty session — and the
-          # downstream jq below would silently yield "" and we'd post
-          # nothing with no clue why. Surface that case distinctly.
-          ASSISTANT_COUNT=$(jq -rs '[.[] | select(.type == "assistant")] | length' < "$FILE")
+          # Extract the assistant events from the execution-output JSON.
+          #
+          # Format robustness: the action's execution_file is a single
+          # JSON array of event objects (`[{...},{...}]`), NOT
+          # newline-delimited JSON as an earlier version of this step
+          # assumed. With `jq -s` (slurp), a single-array file becomes
+          # `[[...]]`, so a bare `.[] | select(.type==...)` indexes the
+          # inner *array* with `.type` and dies with "Cannot index array
+          # with string" (see run 26417479726, the first real run of
+          # this step after #805 merged). `flatten(1)` collapses that
+          # outer wrap so we iterate event objects either way — and it
+          # also tolerates true NDJSON (slurps to a flat array,
+          # flatten is a no-op) and a stray array element. The
+          # `type=="object"` guard then skips any non-object entry
+          # before `.type` is accessed (jq's `and` short-circuits).
+          # The same `flatten(1) | select(type=="object" ...)` prelude
+          # is repeated in the RESPONSE filter below — keep them in sync.
+
+          # Sanity-check that the file actually contains assistant-typed
+          # events. If it doesn't, the likely cause is an upstream
+          # schema change (the action renaming the event type), not a
+          # genuinely empty session — surface that distinctly rather
+          # than silently posting nothing.
+          ASSISTANT_COUNT=$(jq -rs 'flatten(1) | [.[] | select(type == "object" and .type == "assistant")] | length' < "$FILE")
           if [ "$ASSISTANT_COUNT" = "0" ]; then
             echo "::warning::No assistant-typed events in $FILE — the action's output schema may have changed (expected .type == \"assistant\"). Nothing to post."
             exit 0
@@ -611,7 +633,8 @@ jobs:
           # (a single message may interleave text and tool_use blocks;
           # we want only the prose).
           RESPONSE=$(jq -rs '
-            [.[] | select(.type == "assistant")]
+            flatten(1)
+            | [.[] | select(type == "object" and .type == "assistant")]
             | last
             | (.message.content // [])
             | map(select(.type == "text") | .text)
