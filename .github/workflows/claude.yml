@@ -484,18 +484,35 @@ jobs:
       # Claude's running text on top would be noise — skipped via
       # the COMMITTED check below.
       - name: Post Claude's response if no code was committed
-        # Skip on `@claude review` triggers — the dispatch step below
-        # will fire claude-code-review.yml, which posts its own
-        # sticky review comment. Posting Claude's agent-session prose
-        # on top would double-comment the PR (the agent's internal
-        # "I'll review this PR" monologue, then the real review).
-        # Predicate MUST stay in sync with the dispatch step's `if:`.
+        # Skip on `@claude review` triggers that have PR context — the
+        # dispatch step below will fire claude-code-review.yml, which
+        # posts its own sticky review comment. Posting Claude's
+        # agent-session prose on top would double-comment the PR
+        # (the agent's internal "I'll review this PR" monologue, then
+        # the real review).
+        #
+        # The PR-context guard (`pull_request.number || issue.pull_request`)
+        # is load-bearing: without it, `@claude review` on a plain
+        # *issue* would skip the prose-post AND skip the dispatch
+        # (which has its own PR-context guard), losing the response
+        # entirely — the exact bug this PR fixes, re-introduced for
+        # this one trigger pattern. With the guard, plain-issue
+        # triggers fall through to the prose-post regardless of body.
+        #
+        # The `@claude review` predicate MUST stay in sync with the
+        # dispatch step's `if:` predicate. Note: `contains()` is
+        # case-sensitive, so `@Claude review` would not match here
+        # (or in the dispatch step). Standard GitHub `@`-mentions
+        # are lowercase so this matches the common case.
         if: |
           always() &&
           steps.claude.outcome == 'success' &&
           !(
-            contains(github.event.comment.body, '@claude review') ||
-            contains(github.event.review.body, '@claude review')
+            (
+              contains(github.event.comment.body, '@claude review') ||
+              contains(github.event.review.body, '@claude review')
+            ) &&
+            (github.event.pull_request.number || github.event.issue.pull_request)
           )
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -565,19 +582,25 @@ jobs:
           # stored value, so truncate by bytes (not characters). 60k
           # leaves ~5.5k headroom for the footer.
           #
-          # Why `head -c` over bash `${var:0:N}`: bash substring
-          # expansion is character-based under UTF-8 locales, so 60000
-          # multibyte chars could exceed the 65,536-byte cap and the
-          # `gh issue comment` call would 422 with no truncation
-          # actually happening. `head -c` is strictly byte-based.
+          # Both the guard AND the truncation are byte-based:
+          # - Guard: `wc -c` counts bytes. Bash's `${#var}` counts
+          #   characters under UTF-8 locales (the default on GitHub
+          #   runners), so a response with 30k Chinese characters
+          #   (~90k bytes) would not trip a 60k character guard,
+          #   and the truncation below would never fire — but the
+          #   subsequent `gh issue comment` would 422 on the
+          #   oversized body. Counting bytes here closes that hole.
+          # - Truncation: `head -c` is strictly byte-based, so the
+          #   cut respects the 65,536-byte cap.
           # Caveat: a byte cut may slice the final character mid-
           # codepoint, producing a garbled trailing byte sequence
-          # right before the footer. That's acceptable for a corner
-          # case (responses >60k bytes are rare); the footer still
+          # right before the footer. Acceptable for a corner case
+          # (responses >60k bytes are rare); the footer still
           # renders and the full text is one click away in the
           # workflow run log.
           MAX_LEN=60000
-          if [ "${#RESPONSE}" -gt "$MAX_LEN" ]; then
+          BYTE_LEN=$(printf '%s' "$RESPONSE" | wc -c)
+          if [ "$BYTE_LEN" -gt "$MAX_LEN" ]; then
             RESPONSE="$(printf '%s' "$RESPONSE" | head -c "$MAX_LEN")
 
           … (response truncated at ${MAX_LEN} bytes; full text in the [workflow run](${RUN_URL}))"
