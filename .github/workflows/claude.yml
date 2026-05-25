@@ -566,6 +566,48 @@ jobs:
           gh issue comment "$ENTITY_NUMBER" --body "$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")" \
             || echo "::warning::Could not post Claude's response back to the source thread."
 
+      # Dispatch the dedicated reviewer workflow when the triggering
+      # comment looks like an explicit review request.
+      #
+      # Background: `claude-code-review.yml` is the dedicated reviewer
+      # (sticky-comment + delete-prior-sticky pattern, inline review
+      # threads, etc.) and only triggers on `pull_request` events
+      # (opened/synchronize/ready_for_review/reopened) and explicit
+      # `workflow_dispatch`. `issue_comment` is NOT in its trigger
+      # list. So when a user types "@claude review" on a PR, the
+      # event fires *this* workflow (an agent-mode run that emits
+      # prose via the post-step above) rather than the reviewer.
+      # See PR #802 comment 4530845824 (2026-05-25): "@claude review"
+      # produced a 125s agent session with no visible review output
+      # — nothing was dispatched, nothing was posted.
+      #
+      # The earlier `Re-request review and dispatch code review if
+      # Claude pushed commits` step below dispatches the reviewer
+      # only when Claude pushes new commits — useful for the
+      # iterate-on-the-diff loop, but it doesn't cover the case where
+      # the user just wants a fresh review without code changing
+      # hands. This step closes that gap by dispatching the reviewer
+      # whenever the triggering comment body literally contains
+      # `@claude review`. Both paths can fire on the same run if a
+      # `@claude review` comment also produces commits; the
+      # reviewer's own concurrency group cancels the duplicate so
+      # only the freshest diff is reviewed.
+      - name: Dispatch claude-code-review.yml on @claude review comment
+        if: |
+          always() &&
+          (github.event.pull_request.number || github.event.issue.pull_request) &&
+          (
+            contains(github.event.comment.body, '@claude review') ||
+            contains(github.event.review.body, '@claude review')
+          )
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
+          echo "Dispatching claude-code-review.yml for PR #$PR_NUMBER (@claude review comment)."
+          gh workflow run claude-code-review.yml -f pr_number="$PR_NUMBER" \
+            || echo "::warning::Could not dispatch claude-code-review.yml; review will not auto-run."
+
       - name: Re-request review and dispatch code review if Claude pushed commits
         if: always() && (github.event.pull_request.number || github.event.issue.pull_request) && steps.head_before.outputs.sha != ''
         env:
