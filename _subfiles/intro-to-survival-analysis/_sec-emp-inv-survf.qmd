@@ -1,0 +1,115 @@
+:::{#def-emp-inv-surv-fn}
+
+#### Empirical inverse survival function
+
+Given a time-to-event dataset,
+the **empirical inverse survival function**
+$\hsurv^{-1}(p)$
+replaces the population survival function $\surv(t)$
+with an estimated survival function $\hsurv(t)$:
+
+$$\hsurv^{-1}(p) \eqdef \inf\cb{t \ge 0 : \hsurv(t) \le p}, \quad 0 < p < 1.$$
+
+:::
+
+---
+
+Since $\hsurv(t)$ is a non-increasing step function,
+$\hsurv^{-1}(p)$ equals the smallest observed event time
+at which the estimated survival probability has dropped to or below $p$.
+
+**From the Kaplan-Meier estimator.**
+Substituting $\hsurv_{KM}(t)$ from @def-KM-estimator:
+
+$$
+\hsurv_{KM}^{-1}(p)
+= \inf\cb{t \ge 0 : \prod_{t_i \le t}\sb{1 - \frac{d_i}{r_i}} \le p}.
+$$
+
+**From the Nelson-Aalen estimator.**
+Substituting $\hsurv_{NA}(t) = \expf{-\hat{\cuhaz}_{NA}(t)}$
+from @def-na-cuhaz-est:
+
+$$
+\hsurv_{NA}^{-1}(p)
+= \inf\cb{t \ge 0 : \expf{-\sum_{t_i \le t}\frac{d_i}{r_i}} \le p}.
+$$
+
+In R, both estimators are computed from a `survfit()` object using `quantile()`.
+
+---
+
+:::{#exm-emp-isf-drug6mp}
+##### Empirical ISF for 6-MP patients
+
+Using the `drug6mp` dataset,
+we compute the empirical ISF for the 6-MP patients.
+The KM and Nelson-Aalen survival estimates at each event time are:
+
+```{r}
+#| code-fold: true
+library(KMsurv)
+library(dplyr)
+library(survival)
+data(drug6mp)
+
+km_fit <- drug6mp |>
+  mutate(surv = Surv(t2, relapse)) |>
+  survfit(formula = surv ~ 1, data = _)
+
+na_fit <- drug6mp |>
+  mutate(surv = Surv(t2, relapse)) |>
+  survfit(formula = surv ~ 1, type = "fleming-harrington", data = _)
+
+tbl <- tibble(
+  time = km_fit$time,
+  n.risk = km_fit$n.risk,
+  n.event = km_fit$n.event,
+  surv_km = km_fit$surv,
+  surv_na = na_fit$surv
+) |>
+  filter(n.event > 0)
+
+library(knitr)
+kable(
+  tbl,
+  digits = 3,
+  col.names = c(
+    "Time (months)",
+    "At risk $r_i$",
+    "Events $d_i$",
+    "$\\hat{S}_{KM}(t)$",
+    "$\\hat{S}_{NA}(t)$"
+  )
+)
+```
+
+The empirical median survival time is the smallest event time $t$
+at which the estimated survival probability falls to or below 0.5.
+
+From the table:
+
+- $\hsurv_{KM}(22) \approx 0.538 > 0.5$
+  and $\hsurv_{KM}(23) \approx 0.448 \le 0.5$,
+  so $\hsurv_{KM}^{-1}(0.5) = 23$ months.
+
+- $\hsurv_{NA}(22) \approx 0.557 > 0.5$
+  and $\hsurv_{NA}(23) \approx 0.471 \le 0.5$,
+  so $\hsurv_{NA}^{-1}(0.5) = 23$ months.
+
+In R:
+
+```{r}
+#| code-fold: show
+quantile(km_fit, probs = 0.5)
+```
+
+```{r}
+#| code-fold: show
+quantile(na_fit, probs = 0.5)
+```
+
+Both the KM and Nelson-Aalen estimators give an estimated median
+relapse-free survival time of **23 months** for the 6-MP patients.
+
+:::
