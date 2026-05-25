@@ -33,10 +33,14 @@ jobs:
   claude-review:
     # workflow_dispatch is only fired by claude.yml after it pushed commits,
     # so we always want to run in that case; otherwise apply the usual
-    # bot-actor filter to skip Dependabot/Copilot/etc. PRs.
+    # bot-actor filter — but only on the *push* side. A human pushing a
+    # commit to a bot-authored PR (Dependabot/Copilot/anthropic-code-agent
+    # etc.) should still get a review fired; without this, those PRs are
+    # stuck on whatever verdict was generated when they were first opened.
+    # See d-morrison/rme#801 for the original symptom report.
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event.pull_request.user.type != 'Bot' && github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]'))
+      (github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]'))
     # Optional: Filter by PR author
     # if: |
     #   github.event.pull_request.user.login == 'external-contributor' ||
