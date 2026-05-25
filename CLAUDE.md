@@ -38,15 +38,12 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Link to `.qmd` source files, not rendered `.html` files
 - `_extensions/` is vendored third-party code — do not review or modify it
 
-### Source Formatting
-- One source line per major phrase (sentence, clause, or logical unit) in `.qmd` prose and comments
-- This makes diffs cleaner and is consistent with the repo's line-per-phrase convention
-
 ### Quarto
 - Use `{{< slidebreak >}}` instead of `---` for slide breaks
 - Default to `#| code-fold: true` for figure/table chunks
 - Use div format (`:::{#fig-...}`) for figures and tables, not chunk-option `fig-cap`/`tbl-cap`
 - Do not indent `:::` fenced div markers inside lists
+- One source line per major phrase in prose — keeps git diffs readable and review easier
 
 ### Math Notation
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
