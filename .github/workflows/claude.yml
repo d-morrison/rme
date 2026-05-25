@@ -459,6 +459,23 @@ jobs:
           # for every host in the shared stats-allowlist.
           claude_args: '--allowed-tools "${{ steps.tools.outputs.allowed }}"'
 
+      # Fetch the PR's head SHA once, post-Claude, for the two
+      # downstream steps that both need it: the prose-post step's
+      # COMMITTED check and the "Re-request review" step's
+      # SHA_AFTER comparison. Without this shared step each would
+      # call `gh api pulls/$N` independently — two round-trips per
+      # PR-trigger run where one suffices. PR-context only (mirrors
+      # the "Capture PR head SHA before Claude" step above).
+      - name: Capture PR head SHA after Claude
+        id: head_after
+        if: always() && (github.event.pull_request.number || github.event.issue.pull_request)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
+          SHA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
       # Post Claude's final assistant message back to the source thread
       # when no code was committed.
       #
@@ -521,6 +538,7 @@ jobs:
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
           ISSUE_BRANCH_STARTING_SHA: ${{ steps.issue_branch.outputs.starting_sha }}
           PR_HEAD_BEFORE: ${{ steps.head_before.outputs.sha }}
+          PR_HEAD_AFTER: ${{ steps.head_after.outputs.sha }}
         run: |
           # Did Claude commit anything? Two cases:
           #   - Issue triggers: the pre-step put us on a fresh
@@ -528,11 +546,13 @@ jobs:
           #     ISSUE_BRANCH_STARTING_SHA. Local HEAD vs. that SHA
           #     tells us whether Claude committed.
           #   - PR triggers: PR_HEAD_BEFORE captured the PR's remote
-          #     head SHA pre-Claude. We re-fetch the remote head now;
-          #     if it moved, Claude pushed. (Local HEAD is `main` on
-          #     PR triggers — actions/checkout pulls the default
-          #     branch for `issue_comment` events — so the local-SHA
-          #     check from the issue branch doesn't apply here.)
+          #     head SHA pre-Claude; PR_HEAD_AFTER (from the shared
+          #     "Capture PR head SHA after Claude" step) is the head
+          #     now. If they differ, Claude pushed. (Local HEAD is
+          #     `main` on PR triggers — actions/checkout pulls the
+          #     default branch for `issue_comment` events — so the
+          #     local-SHA check from the issue branch doesn't apply
+          #     here.)
           COMMITTED=false
           if [ -n "$ISSUE_BRANCH_STARTING_SHA" ]; then
             CURRENT_LOCAL=$(git rev-parse HEAD)
@@ -540,12 +560,8 @@ jobs:
               COMMITTED=true
             fi
           fi
-          if [ -n "$PR_HEAD_BEFORE" ]; then
-            PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
-            CURRENT_REMOTE=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
-            if [ "$CURRENT_REMOTE" != "$PR_HEAD_BEFORE" ]; then
-              COMMITTED=true
-            fi
+          if [ -n "$PR_HEAD_BEFORE" ] && [ "$PR_HEAD_AFTER" != "$PR_HEAD_BEFORE" ]; then
+            COMMITTED=true
           fi
           if [ "$COMMITTED" = "true" ]; then
             echo "Claude committed code; commits are the deliverable, skipping response-text post."
@@ -562,6 +578,18 @@ jobs:
           fi
 
           # The action streams one JSON event per line (NDJSON).
+          # First, sanity-check that the file actually contains
+          # `assistant`-typed events. If it doesn't, the most likely
+          # cause is an upstream schema change (the action renaming
+          # the event type), not a genuinely empty session — and the
+          # downstream jq below would silently yield "" and we'd post
+          # nothing with no clue why. Surface that case distinctly.
+          ASSISTANT_COUNT=$(jq -rs '[.[] | select(.type == "assistant")] | length' < "$FILE")
+          if [ "$ASSISTANT_COUNT" = "0" ]; then
+            echo "::warning::No assistant-typed events in $FILE — the action's output schema may have changed (expected .type == \"assistant\"). Nothing to post."
+            exit 0
+          fi
+
           # Grab the LAST assistant message's text-typed content blocks
           # (a single message may interleave text and tool_use blocks;
           # we want only the prose).
@@ -574,7 +602,7 @@ jobs:
           ' < "$FILE")
 
           if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
-            echo "::warning::No assistant text in execution output; nothing to post."
+            echo "::warning::Assistant events present but no text content; nothing to post."
             exit 0
           fi
 
@@ -639,6 +667,21 @@ jobs:
       # `@claude review` comment also produces commits; the
       # reviewer's own concurrency group cancels the duplicate so
       # only the freshest diff is reviewed.
+      #
+      # `contains()` is a SUBSTRING match (not word-boundary): bodies
+      # like `@claude review again` or `@claude reviewer` also match.
+      # That's intentionally lenient — the cost of a spurious match is
+      # one extra reviewer run, which the reviewer's concurrency group
+      # cancels. Do NOT tighten this to `startsWith` or a word-boundary
+      # check without re-checking the paired skip-predicate on the
+      # prose-post step above, which must stay in sync.
+      #
+      # No `steps.claude.outcome == 'success'` guard here (unlike the
+      # prose-post step): a review dispatch doesn't depend on the
+      # agent session's output, so we want it to fire on `@claude
+      # review` even if the agent step was skipped or cancelled
+      # (e.g., a concurrency cancellation). The reviewer reviews the
+      # PR's current diff regardless of what the agent run did.
       - name: Dispatch claude-code-review.yml on @claude review comment
         if: |
           always() &&
@@ -660,9 +703,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SHA_BEFORE: ${{ steps.head_before.outputs.sha }}
+          # Reuse the SHA already fetched by "Capture PR head SHA after
+          # Claude" rather than calling `gh api pulls/$N` a second time.
+          SHA_AFTER: ${{ steps.head_after.outputs.sha }}
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
-          SHA_AFTER=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
           echo "before=$SHA_BEFORE  after=$SHA_AFTER"
           if [ "$SHA_AFTER" != "$SHA_BEFORE" ]; then
             echo "Claude pushed new commits; re-requesting review and dispatching code review."
