@@ -659,6 +659,31 @@ The token is loaded automatically for the Copilot coding agent (via the
 `copilot` deployment environment) and for `@claude` PR sessions (via a
 job-level `env:` mapping in `.github/workflows/claude.yml`).
 
+## Accessing the private `ucdavis/epi204` repository
+
+The `EPI204_TOKEN` environment variable holds a fine-grained PAT with
+read access to `https://github.com/ucdavis/epi204` (Epi 204 homework
+and solutions for this course). Use it on demand when you need to look
+up homework or solution content from that repo. If `EPI204_TOKEN` is
+empty in your environment, the repo is not available for this session —
+say so rather than guessing.
+
+```bash
+# Clone the whole repo:
+git clone "https://x-access-token:${EPI204_TOKEN}@github.com/ucdavis/epi204.git" /tmp/epi204
+
+# Fetch a specific file via the API:
+curl -fsSL -H "Authorization: token ${EPI204_TOKEN}" \
+  https://raw.githubusercontent.com/ucdavis/epi204/main/path/to/file.qmd
+
+# Hit the GitHub REST API:
+GH_TOKEN="${EPI204_TOKEN}" gh api repos/ucdavis/epi204/contents/path/to/file.qmd
+```
+
+The token is loaded automatically for the Copilot coding agent (via the
+`copilot` deployment environment) and for `@claude` PR sessions (via a
+job-level `env:` mapping in `.github/workflows/claude.yml`).
+
 ## Color Coding Strategy for Math Expressions
 
 Use `\red{...}` and `\blue{...}` purposefully and consistently to help readers:
