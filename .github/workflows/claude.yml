@@ -484,7 +484,19 @@ jobs:
       # Claude's running text on top would be noise — skipped via
       # the COMMITTED check below.
       - name: Post Claude's response if no code was committed
-        if: always() && steps.claude.outcome == 'success'
+        # Skip on `@claude review` triggers — the dispatch step below
+        # will fire claude-code-review.yml, which posts its own
+        # sticky review comment. Posting Claude's agent-session prose
+        # on top would double-comment the PR (the agent's internal
+        # "I'll review this PR" monologue, then the real review).
+        # Predicate MUST stay in sync with the dispatch step's `if:`.
+        if: |
+          always() &&
+          steps.claude.outcome == 'success' &&
+          !(
+            contains(github.event.comment.body, '@claude review') ||
+            contains(github.event.review.body, '@claude review')
+          )
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ENTITY_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
@@ -549,14 +561,26 @@ jobs:
             exit 0
           fi
 
-          # GitHub comment bodies are capped at 65,536 characters.
-          # Truncate with a link back to the full run output if we're
-          # over a safe ceiling (60k leaves headroom for the footer).
+          # GitHub comment bodies are capped at 65,536 *bytes* in the
+          # stored value, so truncate by bytes (not characters). 60k
+          # leaves ~5.5k headroom for the footer.
+          #
+          # Why `head -c` over bash `${var:0:N}`: bash substring
+          # expansion is character-based under UTF-8 locales, so 60000
+          # multibyte chars could exceed the 65,536-byte cap and the
+          # `gh issue comment` call would 422 with no truncation
+          # actually happening. `head -c` is strictly byte-based.
+          # Caveat: a byte cut may slice the final character mid-
+          # codepoint, producing a garbled trailing byte sequence
+          # right before the footer. That's acceptable for a corner
+          # case (responses >60k bytes are rare); the footer still
+          # renders and the full text is one click away in the
+          # workflow run log.
           MAX_LEN=60000
           if [ "${#RESPONSE}" -gt "$MAX_LEN" ]; then
-            RESPONSE="${RESPONSE:0:$MAX_LEN}
+            RESPONSE="$(printf '%s' "$RESPONSE" | head -c "$MAX_LEN")
 
-          … (response truncated at ${MAX_LEN} chars; full text in the [workflow run](${RUN_URL}))"
+          … (response truncated at ${MAX_LEN} bytes; full text in the [workflow run](${RUN_URL}))"
           fi
 
           # `gh issue comment` works for both issues and PRs (both
