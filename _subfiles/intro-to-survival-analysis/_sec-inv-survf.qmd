@@ -35,49 +35,39 @@ so the inverse survival function of the exponential distribution is:
 
 $$\surv^{-1}(p) = \frac{-\logf{p}}{\haz}.$$
 
-@fig-exp-isf-rates shows the ISF for several values of $\haz$.
+:::{#fig-isf-exp-rates}
 
-:::{#fig-exp-isf-rates}
 ```{r}
 #| code-fold: true
 library(ggplot2)
-ggplot() +
-  geom_function(
-    aes(col = "0.5"),
-    fun = qexp,
-    args = list(lower.tail = FALSE, rate = 0.5),
-    xlim = c(0.01, 0.99)
-  ) +
-  geom_function(
-    aes(col = "1"),
-    fun = qexp,
-    args = list(lower.tail = FALSE, rate = 1),
-    xlim = c(0.01, 0.99)
-  ) +
-  geom_function(
-    aes(col = "1.5"),
-    fun = qexp,
-    args = list(lower.tail = FALSE, rate = 1.5),
-    xlim = c(0.01, 0.99)
-  ) +
-  geom_function(
-    aes(col = "5"),
-    fun = qexp,
-    args = list(lower.tail = FALSE, rate = 5),
-    xlim = c(0.01, 0.99)
-  ) +
-  theme_bw() +
-  ylab(expression(S^{-1}(p))) +
-  xlab("p") +
-  guides(col = guide_legend(title = expr(lambda))) +
-  theme(
-    axis.title.x = element_text(angle = 0, vjust = 1, hjust = 1),
-    axis.title.y = element_text(angle = 0, vjust = 1, hjust = 1)
+
+p_seq <- seq(0.001, 0.999, length.out = 500)
+rates <- c(0.5, 1, 2, 4)
+
+df_isf <- do.call(rbind, lapply(rates, function(lam) {
+  data.frame(
+    p = p_seq,
+    isf = -log(p_seq) / lam,
+    lambda = factor(
+      paste0("lambda = ", lam),
+      levels = paste0("lambda = ", rates)
+    )
   )
+}))
+
+ggplot(df_isf, aes(x = p, y = isf, color = lambda)) +
+  geom_line() +
+  labs(
+    x = expression(p),
+    y = expression(S^{-1}*(p)),
+    color = NULL
+  ) +
+  theme_bw()
 ```
-Exponential inverse survival functions for various rate parameters $\haz$.
-Higher $\haz$ compresses survival toward earlier times, so the ISF is
-lower for any given $p$.
+
+Exponential inverse survival function $\surv^{-1}(p) = -\log(p)/\haz$
+for various rate parameters $\haz$.
+
 :::
 
 **Numerical example.**
@@ -96,91 +86,73 @@ $$
 \approx 0.347 \text{ years.}
 $$
 
+The figure below shows the survival function $\surv(t) = \ef{-2t}$
+and the inverse survival function $\surv^{-1}(p) = -\log(p)/2$,
+each with the median survival point highlighted.
+
+:::{#fig-isf-exp-median}
+
+```{r}
+#| code-fold: true
+library(ggplot2)
+library(gridExtra)
+
+lam <- 2
+t_med <- log(2) / lam
+
+t_seq <- seq(0, 2, length.out = 500)
+p_seq <- seq(0.001, 0.999, length.out = 500)
+
+p1 <- ggplot(
+  data.frame(t = t_seq, s = exp(-lam * t_seq)),
+  aes(x = t, y = s)
+) +
+  geom_line() +
+  geom_segment(
+    aes(x = 0, xend = t_med, y = 0.5, yend = 0.5),
+    linetype = "dashed", color = "red"
+  ) +
+  geom_segment(
+    aes(x = t_med, xend = t_med, y = 0, yend = 0.5),
+    linetype = "dashed", color = "red"
+  ) +
+  geom_point(aes(x = t_med, y = 0.5), color = "red", size = 3) +
+  labs(x = "t (years)", y = "S(t)") +
+  theme_bw()
+
+p2 <- ggplot(
+  data.frame(p = p_seq, isf = -log(p_seq) / lam),
+  aes(x = p, y = isf)
+) +
+  geom_line() +
+  geom_segment(
+    aes(x = 0.5, xend = 0.5, y = 0, yend = t_med),
+    linetype = "dashed", color = "red"
+  ) +
+  geom_segment(
+    aes(x = 0, xend = 0.5, y = t_med, yend = t_med),
+    linetype = "dashed", color = "red"
+  ) +
+  geom_point(aes(x = 0.5, y = t_med), color = "red", size = 3) +
+  labs(x = "p", y = expression(S^{-1}*(p))) +
+  theme_bw()
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+For $\haz = 2$, the survival function $\surv(t)$ (left) and
+inverse survival function $\surv^{-1}(p)$ (right),
+with the median survival time $\surv^{-1}(0.5) \approx 0.347$ years
+shown as a red point.
+
+:::
+
 In R:
 
 ```{r}
 #| code-fold: show
 qexp(p = 0.5, rate = 2)
 ```
-
-@fig-exp-isf-median shows this point in both the survival function and
-the inverse survival function.
-
-:::{#fig-exp-isf-median layout-ncol=2}
-
-```{r}
-#| label: fig-exp-survfn-with-median
-#| fig-cap: "Survival function $S(t) = e^{-2t}$."
-#| code-fold: true
-library(ggplot2)
-lambda_val <- 2
-t_med <- log(2) / lambda_val
-
-ggplot() +
-  geom_function(
-    fun = pexp,
-    args = list(lower.tail = FALSE, rate = lambda_val),
-    xlim = c(0, 1.5)
-  ) +
-  geom_segment(
-    aes(x = 0, xend = t_med, y = 0.5, yend = 0.5),
-    linetype = "dashed",
-    color = "red"
-  ) +
-  geom_segment(
-    aes(x = t_med, xend = t_med, y = 0, yend = 0.5),
-    linetype = "dashed",
-    color = "red"
-  ) +
-  geom_point(aes(x = t_med, y = 0.5), size = 3, color = "red") +
-  theme_bw() +
-  xlab("t (years)") +
-  ylab("S(t)") +
-  theme(
-    axis.title.x = element_text(angle = 0, vjust = 1, hjust = 1),
-    axis.title.y = element_text(angle = 0, vjust = 1, hjust = 1)
-  )
-```
-
-```{r}
-#| label: fig-exp-isf-with-median
-#| fig-cap: "Inverse survival function $S^{-1}(p) = -\\log(p)/2$."
-#| code-fold: true
-library(ggplot2)
-lambda_val <- 2
-t_med <- log(2) / lambda_val
-
-ggplot() +
-  geom_function(
-    fun = qexp,
-    args = list(lower.tail = FALSE, rate = lambda_val),
-    xlim = c(0.01, 0.99)
-  ) +
-  geom_segment(
-    aes(x = 0, xend = 0.5, y = t_med, yend = t_med),
-    linetype = "dashed",
-    color = "red"
-  ) +
-  geom_segment(
-    aes(x = 0.5, xend = 0.5, y = 0, yend = t_med),
-    linetype = "dashed",
-    color = "red"
-  ) +
-  geom_point(aes(x = 0.5, y = t_med), size = 3, color = "red") +
-  theme_bw() +
-  xlab("p") +
-  ylab(expression(S^{-1}(p))) +
-  theme(
-    axis.title.x = element_text(angle = 0, vjust = 1, hjust = 1),
-    axis.title.y = element_text(angle = 0, vjust = 1, hjust = 1)
-  )
-```
-
-The median survival time ($p = 0.5$, $t \approx 0.347$ years) shown in
-the survival function (left) and inverse survival function (right).
-The dashed red lines mark the coordinates of this point.
-
-:::
 
 :::
 
@@ -220,3 +192,6 @@ $$
 $$
 
 :::
+
+---
+
