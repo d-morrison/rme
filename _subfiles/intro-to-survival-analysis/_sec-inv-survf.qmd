@@ -1,0 +1,98 @@
+:::{#def-inv-surv-fn}
+
+#### Inverse survival function
+
+Given a random time-to-event variable $T$ with
+[survival function](#def-surv-fn) $\surv(t)$,
+the **inverse survival function**
+$\surv^{-1}(p)$
+is the earliest time $t$ at which the survival probability
+has fallen to or below $p$:
+
+$$\surv^{-1}(p) \eqdef \inf\{t \ge 0 : \surv(t) \le p\}, \quad 0 < p < 1.$$
+
+:::
+
+---
+
+:::{#thm-inv-surv-is-quantile}
+
+The inverse survival function equals the $(1-p)$th
+[population quantile](probability.qmd#def-quantile-function)
+of $T$:
+
+$$\surv^{-1}(p) = Q(1 - p),$$
+
+where $Q(u) = \inf\{t : \cdf(t) \ge u\}$ is the quantile function of $T$.
+
+:::
+
+::: proof
+
+Since $\surv(t) = 1 - \cdf(t)$,
+
+$$
+\ba
+\surv(t) \le p
+&\iff 1 - \cdf(t) \le p\\
+&\iff \cdf(t) \ge 1 - p.
+\ea
+$$
+
+Therefore,
+
+$$
+\surv^{-1}(p)
+= \inf\cb{t \ge 0 : \surv(t) \le p}
+= \inf\cb{t \ge 0 : \cdf(t) \ge 1-p}
+= Q(1-p).
+$$
+
+:::
+
+---
+
+:::{#exm-inv-surv-exp}
+##### Exponential distribution
+
+For an exponential distribution with rate $\haz > 0$,
+the survival function is $\surv(t) = \ef{-\haz t}$.
+
+Setting $\surv(t) = p$ and solving for $t$:
+
+$$
+\ba
+\ef{-\haz t} &= p\\
+-\haz t &= \logf{p}\\
+t &= \frac{-\logf{p}}{\haz},
+\ea
+$$
+
+so the inverse survival function of the exponential distribution is:
+
+$$\surv^{-1}(p) = \frac{-\logf{p}}{\haz}.$$
+
+**Numerical example.**
+Suppose patients in a clinical trial have exponentially distributed
+survival times with rate $\haz = 2$ events per year.
+What is the median survival time?
+
+The median survival time is the time $t$ at which
+half the patients are still alive, i.e. $\surv(t) = 0.5$:
+
+$$
+\surv^{-1}(0.5)
+= \frac{-\logf{0.5}}{2}
+= \frac{\logf{2}}{2}
+\approx \frac{0.693}{2}
+\approx 0.347 \text{ years.}
+$$
+
+In R:
+
+```{r}
+#| code-fold: show
+qexp(p = 0.5, rate = 2)
+```
+
+:::
