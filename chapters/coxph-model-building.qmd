@@ -486,37 +486,47 @@ vector: $\ell'(\beta;y_i)$
 
 ### Schoenfeld residuals
 
+:::{#def-risk-score}
+
+#### Risk Score
+
+For a Cox proportional hazards model with estimated coefficient vector $\hat{\vb}$,
+the **risk score** (also called the **hazard multiplier** or **partial hazard**) for subject $j$
+with covariate vector $\vx_j$ is:
+
+$$\theta(\vx_j) = \expf{\dprod{\vx_j}{\hat{\vb}}}$$
+
+:::
+
 :::{#def-schoenfeld-residual}
 
 #### Schoenfeld Residual
 
 For each subject $i$ who experienced an event (not censored) and for
-each predictor $k$, the **Schoenfeld residual** is defined as
-[@grambsch1994proportional]:
+each predictor $k$,
+the **Schoenfeld residual** is defined as [@grambsch1994proportional]:
 
 $$
 r^S_{ik} =
-x_{ik}-\frac{\sum_{j\in R(t_i)} x_{jk}\,\theta_j}{\sum_{j\in R(t_i)} \theta_j}
+x_{ik}-\frac{\sum_{j\in \mathcal{R}(t_i)} x_{jk}\,\theta(\vx_j)}{\sum_{j\in \mathcal{R}(t_i)} \theta(\vx_j)}
 $$
 
-where $R(t_i)$ is the risk set at event time $t_i$ of subject $i$,
-$x_{jk}$ is the value of predictor $k$ for subject $j$, and
-$\theta_j = \exp(\hat{\vb} \cdot \vx_j)$ is the estimated risk score
-for subject $j$.
+where $\mathcal{R}(t_i)$ is the risk set (@def-risk-set) at event time $t_i$ of subject $i$,
+$x_{jk}$ is the value of predictor $k$ for subject $j$,
+and $\theta(\vx_j)$ is the risk score (@def-risk-score) for subject $j$.
 
 :::
 
 Intuitively, $r^S_{ik}$ measures how unusual subject $i$'s covariate value
-is relative to the risk-weighted average among everyone at risk when
-subject $i$ failed. If the proportional hazards assumption holds, these
-residuals should show no systematic trend over time. A trend signals
-non-proportionality.
+is relative to the risk-weighted average among everyone at risk when subject $i$ failed.
+If the proportional hazards assumption holds,
+these residuals should show no systematic trend over time.
+A trend signals non-proportionality.
 
-We can test for such a trend with the correlation between Schoenfeld
-residuals and a function of time. The default in `cox.zph()` uses the
-KM survival curve as a transform, which handles censoring better than
-raw ranks. The `cox.zph()` function implements a score test proposed
-in @grambsch1994proportional.
+We can test for such a trend with the correlation between Schoenfeld residuals and a function of time.
+The default in `cox.zph()` uses the KM survival curve as a transform,
+which handles censoring better than raw ranks.
+The `cox.zph()` function implements a score test proposed in @grambsch1994proportional.
 
 ```{r}
 hodg_zph <- cox.zph(hodg_cox1)
