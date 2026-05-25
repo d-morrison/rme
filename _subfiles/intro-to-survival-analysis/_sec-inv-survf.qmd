@@ -15,6 +15,177 @@ $$\surv^{-1}(p) \eqdef \inf\{t \ge 0 : \surv(t) \le p\}, \quad 0 < p < 1.$$
 
 ---
 
+:::{#exm-inv-surv-exp}
+##### Exponential distribution
+
+For an exponential distribution with rate $\haz > 0$,
+the survival function is $\surv(t) = \ef{-\haz t}$.
+
+Setting $\surv(t) = p$ and solving for $t$:
+
+$$
+\ba
+\ef{-\haz t} &= p\\
+-\haz t &= \logf{p}\\
+t &= \frac{-\logf{p}}{\haz},
+\ea
+$$
+
+so the inverse survival function of the exponential distribution is:
+
+$$\surv^{-1}(p) = \frac{-\logf{p}}{\haz}.$$
+
+@fig-exp-isf-rates shows the ISF for several values of $\haz$.
+
+:::{#fig-exp-isf-rates}
+```{r}
+#| code-fold: true
+library(ggplot2)
+ggplot() +
+  geom_function(
+    aes(col = "0.5"),
+    fun = qexp,
+    args = list(lower.tail = FALSE, rate = 0.5),
+    xlim = c(0.01, 0.99)
+  ) +
+  geom_function(
+    aes(col = "1"),
+    fun = qexp,
+    args = list(lower.tail = FALSE, rate = 1),
+    xlim = c(0.01, 0.99)
+  ) +
+  geom_function(
+    aes(col = "1.5"),
+    fun = qexp,
+    args = list(lower.tail = FALSE, rate = 1.5),
+    xlim = c(0.01, 0.99)
+  ) +
+  geom_function(
+    aes(col = "5"),
+    fun = qexp,
+    args = list(lower.tail = FALSE, rate = 5),
+    xlim = c(0.01, 0.99)
+  ) +
+  theme_bw() +
+  ylab(expression(S^{-1}(p))) +
+  xlab("p") +
+  guides(col = guide_legend(title = expr(lambda))) +
+  theme(
+    axis.title.x = element_text(angle = 0, vjust = 1, hjust = 1),
+    axis.title.y = element_text(angle = 0, vjust = 1, hjust = 1)
+  )
+```
+Exponential inverse survival functions for various rate parameters $\haz$.
+Higher $\haz$ compresses survival toward earlier times, so the ISF is
+lower for any given $p$.
+:::
+
+**Numerical example.**
+Suppose patients in a clinical trial have exponentially distributed
+survival times with rate $\haz = 2$ events per year.
+What is the median survival time?
+
+The median survival time is the time $t$ at which
+half the patients are still alive, i.e. $\surv(t) = 0.5$:
+
+$$
+\surv^{-1}(0.5)
+= \frac{-\logf{0.5}}{2}
+= \frac{\logf{2}}{2}
+\approx \frac{0.693}{2}
+\approx 0.347 \text{ years.}
+$$
+
+In R:
+
+```{r}
+#| code-fold: show
+qexp(p = 0.5, rate = 2)
+```
+
+@fig-exp-isf-median shows this point in both the survival function and
+the inverse survival function.
+
+:::{#fig-exp-isf-median layout-ncol=2}
+
+```{r}
+#| label: fig-exp-survfn-with-median
+#| fig-cap: "Survival function $S(t) = e^{-2t}$."
+#| code-fold: true
+library(ggplot2)
+lambda_val <- 2
+t_med <- log(2) / lambda_val
+
+ggplot() +
+  geom_function(
+    fun = pexp,
+    args = list(lower.tail = FALSE, rate = lambda_val),
+    xlim = c(0, 1.5)
+  ) +
+  geom_segment(
+    aes(x = 0, xend = t_med, y = 0.5, yend = 0.5),
+    linetype = "dashed",
+    color = "red"
+  ) +
+  geom_segment(
+    aes(x = t_med, xend = t_med, y = 0, yend = 0.5),
+    linetype = "dashed",
+    color = "red"
+  ) +
+  geom_point(aes(x = t_med, y = 0.5), size = 3, color = "red") +
+  theme_bw() +
+  xlab("t (years)") +
+  ylab("S(t)") +
+  theme(
+    axis.title.x = element_text(angle = 0, vjust = 1, hjust = 1),
+    axis.title.y = element_text(angle = 0, vjust = 1, hjust = 1)
+  )
+```
+
+```{r}
+#| label: fig-exp-isf-with-median
+#| fig-cap: "Inverse survival function $S^{-1}(p) = -\\log(p)/2$."
+#| code-fold: true
+library(ggplot2)
+lambda_val <- 2
+t_med <- log(2) / lambda_val
+
+ggplot() +
+  geom_function(
+    fun = qexp,
+    args = list(lower.tail = FALSE, rate = lambda_val),
+    xlim = c(0.01, 0.99)
+  ) +
+  geom_segment(
+    aes(x = 0, xend = 0.5, y = t_med, yend = t_med),
+    linetype = "dashed",
+    color = "red"
+  ) +
+  geom_segment(
+    aes(x = 0.5, xend = 0.5, y = 0, yend = t_med),
+    linetype = "dashed",
+    color = "red"
+  ) +
+  geom_point(aes(x = 0.5, y = t_med), size = 3, color = "red") +
+  theme_bw() +
+  xlab("p") +
+  ylab(expression(S^{-1}(p))) +
+  theme(
+    axis.title.x = element_text(angle = 0, vjust = 1, hjust = 1),
+    axis.title.y = element_text(angle = 0, vjust = 1, hjust = 1)
+  )
+```
+
+The median survival time ($p = 0.5$, $t \approx 0.347$ years) shown in
+the survival function (left) and inverse survival function (right).
+The dashed red lines mark the coordinates of this point.
+
+:::
+
+:::
+
+---
+
 :::{#thm-inv-surv-is-quantile}
 
 The inverse survival function equals the $(1-p)$th
@@ -47,52 +218,5 @@ $$
 = \inf\cb{t \ge 0 : \cdf(t) \ge 1-p}
 = Q(1-p).
 $$
-
-:::
-
----
-
-:::{#exm-inv-surv-exp}
-##### Exponential distribution
-
-For an exponential distribution with rate $\haz > 0$,
-the survival function is $\surv(t) = \ef{-\haz t}$.
-
-Setting $\surv(t) = p$ and solving for $t$:
-
-$$
-\ba
-\ef{-\haz t} &= p\\
--\haz t &= \logf{p}\\
-t &= \frac{-\logf{p}}{\haz},
-\ea
-$$
-
-so the inverse survival function of the exponential distribution is:
-
-$$\surv^{-1}(p) = \frac{-\logf{p}}{\haz}.$$
-
-**Numerical example.**
-Suppose patients in a clinical trial have exponentially distributed
-survival times with rate $\haz = 2$ events per year.
-What is the median survival time?
-
-The median survival time is the time $t$ at which
-half the patients are still alive, i.e. $\surv(t) = 0.5$:
-
-$$
-\surv^{-1}(0.5)
-= \frac{-\logf{0.5}}{2}
-= \frac{\logf{2}}{2}
-\approx \frac{0.693}{2}
-\approx 0.347 \text{ years.}
-$$
-
-In R:
-
-```{r}
-#| code-fold: show
-qexp(p = 0.5, rate = 2)
-```
 
 :::
