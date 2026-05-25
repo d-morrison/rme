@@ -22,7 +22,14 @@ on:
       - '*.scss'
       - 'latex-macros'
 
-concurrency: preview-${{ github.ref }}
+# Cancel an in-progress preview build when a newer commit on the same
+# ref supersedes it. Without `cancel-in-progress: true` the default is
+# `false`, so a fresh push QUEUES behind the stale run and the
+# up-to-date preview is delayed until the obsolete one finishes
+# (see issue #812: PR #755 waited on an out-of-date preview run).
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-deploy:
