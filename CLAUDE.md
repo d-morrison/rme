@@ -81,3 +81,10 @@ If a failure is not caused by your changes, document it in the PR description.
   `.github/copilot-instructions.md` → "Accessing the private
   `ucdavis/epi202` repository" for usage snippets. If the variable is
   empty, the repo is unavailable for this session.
+
+- `$EPI204_TOKEN` — fine-grained PAT with read access to
+  `https://github.com/ucdavis/epi204` (Epi 204 homework and solutions).
+  Use on demand to look up homework/solution content from that repo;
+  see `.github/copilot-instructions.md` → "Accessing the private
+  `ucdavis/epi204` repository" for usage snippets. If the variable is
+  empty, the repo is unavailable for this session.
