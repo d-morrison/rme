@@ -754,13 +754,12 @@ measure (the grey distribution).
 
 :::{#cor-fubini-joint}
 
-### Joint-density form (without independence; corollary of Fubini–Tonelli)
+### Joint-distribution form (without independence; corollary of Fubini–Tonelli)
 
-Let $(X, Y)$ be jointly distributed continuous random variables
-with joint density $f_{X,Y}$
-supported on a (possibly non-rectangular) subset of
-$\rangef{X} \times \rangef{Y}$
-and extended by zero to the full product,
+Let $(X, Y)$ be jointly distributed random variables
+whose joint distribution has a density $f_{X,Y}$
+with respect to a product of σ-finite reference measures
+$\mu_X \otimes \mu_Y$ on $\rangef{X} \times \rangef{Y}$,
 and let $h : \rangef{X} \times \rangef{Y} \to \mathbb{R}$ be measurable.
 If either
 
@@ -768,34 +767,45 @@ If either
 
 (b) $\E{\abs{h(X, Y)}} < \infty$,
 
-then the expectation of $h(X, Y)$ can be written as a double integral
-against the joint density, with the order of integration exchangeable:
+then the expectation of $h(X, Y)$ can be written as an iterated integral
+against $f_{X,Y}$, with the order of integration exchangeable:
 
 $$
 \E{h(X, Y)}
-= \int_{\rangef{X}}\paren{\int_{\rangef{Y}} h(x, y)\,f_{X,Y}(x, y)\,dy}\,dx
-= \int_{\rangef{Y}}\paren{\int_{\rangef{X}} h(x, y)\,f_{X,Y}(x, y)\,dx}\,dy.
+= \int_{\rangef{X}}\paren{\int_{\rangef{Y}} h(x, y)\,f_{X,Y}(x, y)\,d\mu_Y(y)}\,d\mu_X(x)
+= \int_{\rangef{Y}}\paren{\int_{\rangef{X}} h(x, y)\,f_{X,Y}(x, y)\,d\mu_X(x)}\,d\mu_Y(y).
 $$
+
+The choice of reference measures covers three cases:
+
+- **Both continuous:** $\mu_X = \mu_Y = $ Lebesgue measure;
+  $f_{X,Y}$ is the joint probability density function (PDF),
+  and $\int g(x)\,d\mu_X(x) = \int g(x)\,dx$.
+- **Both discrete:** $\mu_X = \mu_Y = $ counting measure;
+  $f_{X,Y}(x,y) = \P(X = x,\, Y = y)$ is the joint probability mass function (PMF),
+  and $\int g(x)\,d\mu_X(x) = \sum_{x \in \rangef{X}} g(x)$.
+- **Mixed** (one continuous, one discrete):
+  one reference measure is Lebesgue and the other is counting;
+  $f_{X,Y}(x,y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$
+  (or $\P(X = x \mid Y = y)\,f_Y(y)$ if $X$ is discrete and $Y$ continuous),
+  and the iterated integrals combine an ordinary integral with a sum.
 
 :::
 
 {{< slidebreak >}}
 
 ::: proof
-Take both $\mu_1$ and $\mu_2$ to be Lebesgue measure on
-$\rangef{X}$ and $\rangef{Y}$ respectively, and apply
-[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) to the integrand $h(x,y)\,f_{X,Y}(x,y)$ on
-$\rangef{X} \times \rangef{Y}$.
-The relevant hypothesis is (a) when $h \ge 0$
-and (b) when $\E{\abs{h(X, Y)}} < \infty$.
-When the joint density's support is not all of
-$\rangef{X} \times \rangef{Y}$, the convention that $f_{X,Y}$ is
-extended by zero outside its support means the integrand
-$h(x,y)\,f_{X,Y}(x,y)$ vanishes there, so the integral over the full
-product domain agrees with the integral over the support;
-[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) then expresses it as either iterated form above.
+Apply [Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) with
+$\mu_1 = \mu_X$ and $\mu_2 = \mu_Y$ to the integrand
+$h(x,y)\,f_{X,Y}(x,y)$ on $\rangef{X} \times \rangef{Y}$.
+Lebesgue measure and counting measure on a countable set are each
+σ-finite, so $\mu_X \otimes \mu_Y$ is σ-finite in all three cases.
+The relevant hypothesis is (a) when $h \ge 0$ and
+(b) when $\E{\abs{h(X, Y)}} < \infty$.
 Independence is not required.
-When $X$ and $Y$ are independent, $f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$,
+When $X$ and $Y$ are independent,
+$f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$
+(or $\P(X=x,Y=y) = \P(X=x)\,\P(Y=y)$ in the discrete case),
 and this corollary reduces to @cor-fubini-prob.
 :::
 
@@ -803,7 +813,7 @@ and this corollary reduces to @cor-fubini-prob.
 
 ::::{#exm-fubini-joint}
 
-#### Expectation using a joint density (dependent variables)
+#### Both-continuous case: joint PDF on a non-rectangular support
 
 Let $(X, Y)$ have joint density
 $f_{X,Y}(x, y) = 2$ for $0 \le x \le y \le 1$
@@ -853,6 +863,142 @@ plotly::plot_ly(x = ~x_seq, y = ~y_seq, z = ~t(z_mat)) |>
 Joint density $f_{X,Y}(x, y) = 2$ on the triangular support
 $\{(x, y) : 0 \le x \le y \le 1\}$, and zero elsewhere. The total
 "volume" under the density is $2 \cdot \tfrac{1}{2} = 1$, as required.
+
+:::
+
+::::
+
+{{< slidebreak >}}
+
+::::{#exm-fubini-joint-disc}
+
+#### Both-discrete case: joint PMF
+
+Let $(X, Y)$ be discrete with joint probability mass function:
+
+| | $Y = 0$ | $Y = 1$ |
+|:---:|:---:|:---:|
+| $X = 0$ | $0.2$ | $0.3$ |
+| $X = 1$ | $0.1$ | $0.4$ |
+
+Compute $\E{X + Y}$ using @cor-fubini-joint with
+$\mu_X = \mu_Y = $ counting measure and $h(x,y) = x + y$.
+
+By @cor-fubini-joint (both-discrete case):
+
+$$
+\ba
+\E{X + Y}
+&= \sum_{x \in \{0,1\}} \sum_{y \in \{0,1\}} (x + y)\,\P(X = x,\, Y = y) \\
+&= (0{+}0)(0.2) + (0{+}1)(0.3) + (1{+}0)(0.1) + (1{+}1)(0.4) \\
+&= 0 + 0.3 + 0.1 + 0.8 \\
+&= 1.2
+\ea
+$$
+
+As a check: $\E{X} = 0(0.5) + 1(0.5) = 0.5$ and
+$\E{Y} = 0(0.3) + 1(0.7) = 0.7$,
+so $\E{X + Y} = \E{X} + \E{Y} = 1.2$.
+
+:::{#fig-fubini-joint-disc}
+
+```{r}
+#| code-fold: true
+#| message: false
+
+x_labs <- c("X=0", "X=0", "X=1", "X=1")
+y_labs <- c("Y=0", "Y=1", "Y=0", "Y=1")
+probs  <- c(0.2, 0.3, 0.1, 0.4)
+
+plotly::plot_ly(
+  x = ~y_labs, y = ~probs, color = ~x_labs,
+  colors = c("steelblue", "tomato"),
+  type = "bar"
+) |>
+  plotly::layout(
+    barmode = "group",
+    xaxis = list(title = "Y"),
+    yaxis = list(title = "P(X = x, Y = y)", range = c(0, 0.5)),
+    legend = list(title = list(text = "X value"))
+  )
+```
+
+Joint probability mass function $\P(X = x, Y = y)$.
+Marginal totals: $\P(X = 0) = 0.5$, $\P(X = 1) = 0.5$,
+$\P(Y = 0) = 0.3$, $\P(Y = 1) = 0.7$.
+
+:::
+
+::::
+
+{{< slidebreak >}}
+
+::::{#exm-fubini-joint-mixed}
+
+#### Mixed case: one continuous variable, one discrete variable
+
+Let $Y \sim \mathrm{Bernoulli}(0.6)$ and,
+given $Y = y$, let $X \mid Y = y \sim \mathrm{Uniform}(0,\, y + 1)$.
+Compute $\E{X}$ using @cor-fubini-joint with $\mu_X = $ Lebesgue measure,
+$\mu_Y = $ counting measure, and $h(x, y) = x$.
+
+The joint density w.r.t. Lebesgue $\times$ counting measure is
+$f_{X,Y}(x, y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$:
+
+$$
+f_{X,Y}(x,\, 0) = 1 \cdot 0.4 = 0.4 \text{ for } x \in [0,1];
+\qquad
+f_{X,Y}(x,\, 1) = \tfrac{1}{2} \cdot 0.6 = 0.3 \text{ for } x \in [0,2].
+$$
+
+By @cor-fubini-joint (mixed case):
+
+$$
+\ba
+\E{X}
+&= \sum_{y \in \{0,1\}} \int_0^{y+1} x\,f_{X,Y}(x,\, y)\,dx \\
+&= \int_0^1 x \cdot 0.4\,dx
+   + \int_0^2 x \cdot 0.3\,dx \\
+&= 0.4 \cdot \frac{1}{2} + 0.3 \cdot 2 \\
+&= 0.2 + 0.6 = 0.8
+\ea
+$$
+
+As a check using the law of total expectation:
+$\E{X \mid Y = 0} = \tfrac{1}{2}$ and $\E{X \mid Y = 1} = 1$, so
+$\E{X} = \tfrac{1}{2}(0.4) + 1(0.6) = 0.2 + 0.6 = 0.8$.
+
+:::{#fig-fubini-joint-mixed}
+
+```{r}
+#| code-fold: true
+#| message: false
+
+x_fine <- seq(0, 2, by = 0.005)
+df <- data.frame(
+  x       = c(x_fine[x_fine <= 1], x_fine),
+  density = c(rep(0.4, sum(x_fine <= 1)), rep(0.3, length(x_fine))),
+  label   = c(
+    rep("Y = 0  (P = 0.4)", sum(x_fine <= 1)),
+    rep("Y = 1  (P = 0.6)", length(x_fine))
+  )
+)
+
+plotly::plot_ly(df, x = ~x, y = ~density, color = ~label,
+  colors = c("steelblue", "tomato")) |>
+  plotly::add_lines() |>
+  plotly::layout(
+    xaxis = list(title = "x"),
+    yaxis = list(title = "f<sub>X,Y</sub>(x, y)", range = c(0, 0.55)),
+    legend = list(title = list(text = "Y value"))
+  )
+```
+
+Joint density $f_{X,Y}(x, y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$
+for each value of the discrete variable $Y$.
+The area under each component integrates to $\P(Y = y)$:
+$0.4 \cdot 1 = 0.4$ (blue) and $0.3 \cdot 2 = 0.6$ (red),
+summing to 1.
 
 :::
 
