@@ -325,6 +325,19 @@ jobs:
             ${{ github.event_name }}. Address the request in that
             comment/issue/review.
 
+            **If your reply is prose (a question answered, a
+            recommendation, a design discussion) rather than a code
+            change**, write your final assistant message as if you
+            were posting a reply on the triggering PR/issue thread —
+            because that's what happens: a post-Claude workflow step
+            takes your last assistant message and posts it back to
+            the source thread when you didn't commit any code. (When
+            you DO commit code, the commits themselves are the
+            deliverable and the post-step skips posting your text to
+            avoid noise.) Don't write it as an internal log
+            ("Investigated foo, found bar, will do baz") — write it
+            as the actual reply you want the requester to read.
+
             **Before declaring the task complete, check for additional
             @claude requests that arrived after the triggering event.**
 
@@ -445,6 +458,113 @@ jobs:
           # gh CLI for the polling step in the prompt above, plus WebFetch
           # for every host in the shared stats-allowlist.
           claude_args: '--allowed-tools "${{ steps.tools.outputs.allowed }}"'
+
+      # Post Claude's final assistant message back to the source thread
+      # when no code was committed.
+      #
+      # Background: claude-code-action runs in `agent` mode whenever
+      # `prompt:` is set (we set it for the late-comment polling loop
+      # above). Agent mode skips the action's built-in machinery that
+      # tag mode uses to surface Claude's final response as a sticky
+      # GitHub comment — the action just runs the agent and assumes
+      # the workflow author handles output surfacing. We already added
+      # explicit pre/post steps for the analogous setup-branch +
+      # git-push gap (#788 / #794); this step closes the remaining
+      # gap for **prose** responses, where Claude's deliverable is
+      # text rather than commits and there's nothing else to surface.
+      # See PR #755 comment 4530859000 (2026-05-25): a math question
+      # ran a successful 60s / 16-turn Claude session that produced
+      # ~$0.19 of thinking and zero visible output, because the
+      # response lived in /home/runner/work/_temp/claude-execution-output.json
+      # until the runner tore down.
+      #
+      # When Claude HAS committed code, the commits themselves convey
+      # the work and the existing `Re-request review` / `Push branch
+      # and open draft PR` steps surface it; in that case posting
+      # Claude's running text on top would be noise — skipped via
+      # the COMMITTED check below.
+      - name: Post Claude's response if no code was committed
+        if: always() && steps.claude.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENTITY_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+          ISSUE_BRANCH_STARTING_SHA: ${{ steps.issue_branch.outputs.starting_sha }}
+          PR_HEAD_BEFORE: ${{ steps.head_before.outputs.sha }}
+        run: |
+          # Did Claude commit anything? Two cases:
+          #   - Issue triggers: the pre-step put us on a fresh
+          #     `claude/issue-N-*` branch and recorded its tip in
+          #     ISSUE_BRANCH_STARTING_SHA. Local HEAD vs. that SHA
+          #     tells us whether Claude committed.
+          #   - PR triggers: PR_HEAD_BEFORE captured the PR's remote
+          #     head SHA pre-Claude. We re-fetch the remote head now;
+          #     if it moved, Claude pushed. (Local HEAD is `main` on
+          #     PR triggers — actions/checkout pulls the default
+          #     branch for `issue_comment` events — so the local-SHA
+          #     check from the issue branch doesn't apply here.)
+          COMMITTED=false
+          if [ -n "$ISSUE_BRANCH_STARTING_SHA" ]; then
+            CURRENT_LOCAL=$(git rev-parse HEAD)
+            if [ "$CURRENT_LOCAL" != "$ISSUE_BRANCH_STARTING_SHA" ]; then
+              COMMITTED=true
+            fi
+          fi
+          if [ -n "$PR_HEAD_BEFORE" ]; then
+            PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
+            CURRENT_REMOTE=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
+            if [ "$CURRENT_REMOTE" != "$PR_HEAD_BEFORE" ]; then
+              COMMITTED=true
+            fi
+          fi
+          if [ "$COMMITTED" = "true" ]; then
+            echo "Claude committed code; commits are the deliverable, skipping response-text post."
+            exit 0
+          fi
+
+          # Locate the execution-output JSON. Prefer the action's
+          # exported step output; fall back to the known default path
+          # in case the action version changes the output name.
+          FILE="${EXECUTION_FILE:-/home/runner/work/_temp/claude-execution-output.json}"
+          if [ ! -f "$FILE" ]; then
+            echo "::warning::No Claude execution output found at $FILE; nothing to post."
+            exit 0
+          fi
+
+          # The action streams one JSON event per line (NDJSON).
+          # Grab the LAST assistant message's text-typed content blocks
+          # (a single message may interleave text and tool_use blocks;
+          # we want only the prose).
+          RESPONSE=$(jq -rs '
+            [.[] | select(.type == "assistant")]
+            | last
+            | (.message.content // [])
+            | map(select(.type == "text") | .text)
+            | join("\n\n")
+          ' < "$FILE")
+
+          if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
+            echo "::warning::No assistant text in execution output; nothing to post."
+            exit 0
+          fi
+
+          # GitHub comment bodies are capped at 65,536 characters.
+          # Truncate with a link back to the full run output if we're
+          # over a safe ceiling (60k leaves headroom for the footer).
+          MAX_LEN=60000
+          if [ "${#RESPONSE}" -gt "$MAX_LEN" ]; then
+            RESPONSE="${RESPONSE:0:$MAX_LEN}
+
+          … (response truncated at ${MAX_LEN} chars; full text in the [workflow run](${RUN_URL}))"
+          fi
+
+          # `gh issue comment` works for both issues and PRs (both
+          # post to the same `/repos/{owner}/{repo}/issues/{N}/comments`
+          # endpoint internally), so we don't need to branch on
+          # PR-vs-issue here.
+          gh issue comment "$ENTITY_NUMBER" --body "$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")" \
+            || echo "::warning::Could not post Claude's response back to the source thread."
 
       - name: Re-request review and dispatch code review if Claude pushed commits
         if: always() && (github.event.pull_request.number || github.event.issue.pull_request) && steps.head_before.outputs.sha != ''
