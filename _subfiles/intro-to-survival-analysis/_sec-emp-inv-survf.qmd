@@ -19,7 +19,7 @@ $\hsurv^{-1}(p)$ equals the smallest observed event time
 at which the estimated survival probability has dropped to or below $p$.
 
 **From the Kaplan-Meier estimator.**
-Substituting $\hsurv_{KM}(t)$ from @def-KM-estimator:
+Substituting $\hsurv_{KM}(t)$ from #def-KM-estimator:
 
 $$
 \hsurv_{KM}^{-1}(p)
@@ -28,7 +28,7 @@ $$
 
 **From the Nelson-Aalen estimator.**
 Substituting $\hsurv_{NA}(t) = \expf{-\hat{\cuhaz}_{NA}(t)}$
-from @def-na-cuhaz-est:
+from #def-na-cuhaz-est:
 
 $$
 \hsurv_{NA}^{-1}(p)
@@ -84,88 +84,67 @@ kable(
 )
 ```
 
-@fig-drug6mp-surv-est shows the estimated survival curves from both
-estimators, and @fig-drug6mp-isf-est shows the corresponding empirical
-inverse survival functions.
+:::{#fig-emp-surv-drug6mp}
 
-:::{#fig-drug6mp-surv-est}
 ```{r}
 #| code-fold: true
 library(ggplot2)
 
-surv_plot_data <- bind_rows(
-  tibble(
+surv_df <- rbind(
+  data.frame(
     time = c(0, km_fit$time),
     surv = c(1, km_fit$surv),
-    estimator = "KM"
+    method = "Kaplan-Meier"
   ),
-  tibble(
+  data.frame(
     time = c(0, na_fit$time),
     surv = c(1, na_fit$surv),
-    estimator = "Nelson-Aalen"
+    method = "Nelson-Aalen"
   )
 )
 
-ggplot(surv_plot_data, aes(x = time, y = surv, col = estimator)) +
+ggplot(surv_df, aes(x = time, y = surv, color = method)) +
   geom_step() +
-  theme_bw() +
-  xlab("Time (months)") +
-  ylab(expression(hat(S)(t))) +
-  expand_limits(y = 0) +
-  labs(color = "Estimator") +
-  theme(
-    axis.title.x = element_text(angle = 0, vjust = 1, hjust = 1),
-    axis.title.y = element_text(angle = 0, vjust = 1, hjust = 1)
-  )
+  labs(
+    x = "Time (months)",
+    y = expression(hat(S)(t)),
+    color = "Method"
+  ) +
+  theme_bw()
 ```
-Estimated survival functions for 6-MP patients using the Kaplan-Meier
-and Nelson-Aalen estimators.
+
+Estimated survival functions for 6-MP patients from the KM and
+Nelson-Aalen estimators.
+
 :::
 
-:::{#fig-drug6mp-isf-est}
+:::{#fig-emp-isf-drug6mp}
+
 ```{r}
 #| code-fold: true
-library(ggplot2)
-library(dplyr)
+p_seq <- seq(0.01, 0.99, by = 0.01)
+km_quants <- quantile(km_fit, probs = p_seq)$quantile
+na_quants <- quantile(na_fit, probs = p_seq)$quantile
 
-km_event_mask <- km_fit$n.event > 0
-na_event_mask <- na_fit$n.event > 0
+quant_df <- rbind(
+  data.frame(p = p_seq, t = km_quants, method = "Kaplan-Meier"),
+  data.frame(p = p_seq, t = na_quants, method = "Nelson-Aalen")
+)
+quant_df <- quant_df[!is.na(quant_df$t), ]
 
-isf_plot_data <- bind_rows(
-  tibble(
-    p = c(km_fit$surv[km_event_mask], 1),
-    t = c(
-      km_fit$time[km_event_mask],
-      km_fit$time[km_event_mask][1]
-    ),
-    estimator = "KM"
-  ),
-  tibble(
-    p = c(na_fit$surv[na_event_mask], 1),
-    t = c(
-      na_fit$time[na_event_mask],
-      na_fit$time[na_event_mask][1]
-    ),
-    estimator = "Nelson-Aalen"
-  )
-) |>
-  arrange(estimator, p)
-
-ggplot(isf_plot_data, aes(x = p, y = t, col = estimator)) +
-  geom_step(direction = "hv") +
-  theme_bw() +
-  xlab("p") +
-  ylab(expression(hat(S)^{-1}(p))) +
-  labs(color = "Estimator") +
-  theme(
-    axis.title.x = element_text(angle = 0, vjust = 1, hjust = 1),
-    axis.title.y = element_text(angle = 0, vjust = 1, hjust = 1)
-  )
+ggplot(quant_df, aes(x = p, y = t, color = method)) +
+  geom_step() +
+  labs(
+    x = "p",
+    y = expression(hat(S)^{-1}*(p)),
+    color = "Method"
+  ) +
+  theme_bw()
 ```
-Empirical inverse survival functions for 6-MP patients from the
-Kaplan-Meier and Nelson-Aalen estimators.
-Each step indicates the smallest event time at which the estimated
-survival probability drops to or below $p$.
+
+Empirical inverse survival function $\hsurv^{-1}(p)$ for 6-MP patients
+from the KM and Nelson-Aalen estimators.
+
 :::
 
 The empirical median survival time is the smallest event time $t$
@@ -197,3 +176,4 @@ Both the KM and Nelson-Aalen estimators give an estimated median
 relapse-free survival time of **23 months** for the 6-MP patients.
 
 :::
+
