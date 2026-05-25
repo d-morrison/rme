@@ -249,10 +249,16 @@ jobs:
           # HTTP-method filtering. The ultimate bound on what's
           # possible is `GITHUB_TOKEN`'s scopes (`contents: write`,
           # `pull-requests: write`, `issues: write`), not this
-          # allowlist. `Bash(gh pr view:*)` and `Bash(gh issue view:*)`
-          # are strict subsets (the CLI commands hit the same API
-          # internally), so they're omitted.
-          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*)"
+          # allowlist.
+          #
+          # The `gh pr/issue/run` read-only CLI patterns below mirror
+          # the committed `.claude/settings.json` allowlist so the CI
+          # agent and local sessions grant the same inspection commands
+          # (these CLI subcommands hit the same API as `gh api` but
+          # under different command strings, so the `gh api repos/*`
+          # entry alone doesn't cover them). Kept to `view`/`list`
+          # (read-only) — no `gh pr merge`/`close`/`edit` etc.
+          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*),Bash(gh pr view *),Bash(gh pr list *),Bash(gh issue view *),Bash(gh issue list *),Bash(gh run view *),Bash(gh run list *)"
           # Git commands Claude needs to commit work in agent mode.
           # In tag mode the action auto-injects these; in agent mode
           # (which we're in whenever `prompt:` is set) it doesn't, and
