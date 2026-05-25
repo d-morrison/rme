@@ -3,7 +3,8 @@
 #### Empirical inverse survival function
 
 Given a time-to-event dataset,
-the **empirical inverse survival function**
+the **empirical inverse survival function** (empirical ISF),
+also called the **empirical survival quantile function** (empirical SQF),
 $\hsurv^{-1}(p)$
 replaces the population survival function $\surv(t)$
 with an estimated survival function $\hsurv(t)$:
@@ -88,29 +89,34 @@ kable(
 
 ```{r}
 #| code-fold: true
-library(ggplot2)
 
-surv_df <- rbind(
-  data.frame(
-    time = c(0, km_fit$time),
-    surv = c(1, km_fit$surv),
-    method = "Kaplan-Meier"
-  ),
-  data.frame(
-    time = c(0, na_fit$time),
-    surv = c(1, na_fit$surv),
-    method = "Nelson-Aalen"
-  )
+t_all_km <- c(0, km_fit$time)
+s_all_km <- c(1, km_fit$surv)
+t_all_na <- c(0, na_fit$time)
+s_all_na <- c(1, na_fit$surv)
+t_max_plot <- max(km_fit$time, na_fit$time) * 1.05
+
+draw_surv_step <- function(t_all, s_all, t_end, col) {
+  n <- length(t_all)
+  segments(t_all, s_all, c(t_all[-1], t_end), s_all, col = col, lwd = 2)
+  points(t_all[-1], s_all[-n], pch = 1, col = col)
+  points(t_all, s_all, pch = 19, col = col)
+}
+
+plot(
+  0, 0, type = "n",
+  xlim = c(0, t_max_plot), ylim = c(0, 1.05),
+  xlab = "Time (months)",
+  ylab = expression(hat(S)(t))
 )
-
-ggplot(surv_df, aes(x = time, y = surv, color = method)) +
-  geom_step() +
-  labs(
-    x = "Time (months)",
-    y = expression(hat(S)(t)),
-    color = "Method"
-  ) +
-  theme_bw()
+draw_surv_step(t_all_km, s_all_km, t_max_plot, "steelblue")
+draw_surv_step(t_all_na, s_all_na, t_max_plot, "darkorange")
+legend(
+  "topright",
+  legend = c("Kaplan-Meier", "Nelson-Aalen"),
+  col = c("steelblue", "darkorange"),
+  lwd = 2, pch = 19, bty = "n"
+)
 ```
 
 Estimated survival functions for 6-MP patients from the KM and
@@ -122,24 +128,38 @@ Nelson-Aalen estimators.
 
 ```{r}
 #| code-fold: true
-p_seq <- seq(0.01, 0.99, by = 0.01)
-km_quants <- quantile(km_fit, probs = p_seq)$quantile
-na_quants <- quantile(na_fit, probs = p_seq)$quantile
 
-quant_df <- rbind(
-  data.frame(p = p_seq, t = km_quants, method = "Kaplan-Meier"),
-  data.frame(p = p_seq, t = na_quants, method = "Nelson-Aalen")
+draw_isf_step <- function(s_ev, t_ev, col) {
+  p_right <- c(1, s_ev[-length(s_ev)])
+  segments(s_ev, t_ev, p_right, t_ev, col = col, lwd = 2)
+  points(s_ev, t_ev, pch = 19, col = col)
+  points(p_right, t_ev, pch = 1, col = col)
+}
+
+ev_km <- km_fit$n.event > 0
+t_ev_km <- km_fit$time[ev_km]
+s_ev_km <- km_fit$surv[ev_km]
+
+ev_na <- na_fit$n.event > 0
+t_ev_na <- na_fit$time[ev_na]
+s_ev_na <- na_fit$surv[ev_na]
+
+t_max_isf <- max(t_ev_km, t_ev_na) * 1.05
+
+plot(
+  0, 0, type = "n",
+  xlim = c(0, 1), ylim = c(0, t_max_isf),
+  xlab = "p",
+  ylab = expression(hat(S)^{-1}*(p))
 )
-quant_df <- quant_df[!is.na(quant_df$t), ]
-
-ggplot(quant_df, aes(x = p, y = t, color = method)) +
-  geom_step() +
-  labs(
-    x = "p",
-    y = expression(hat(S)^{-1}*(p)),
-    color = "Method"
-  ) +
-  theme_bw()
+draw_isf_step(s_ev_km, t_ev_km, "steelblue")
+draw_isf_step(s_ev_na, t_ev_na, "darkorange")
+legend(
+  "topright",
+  legend = c("Kaplan-Meier", "Nelson-Aalen"),
+  col = c("steelblue", "darkorange"),
+  lwd = 2, pch = 19, bty = "n"
+)
 ```
 
 Empirical inverse survival function $\hsurv^{-1}(p)$ for 6-MP patients
