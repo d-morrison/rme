@@ -501,6 +501,15 @@ jobs:
       # Claude's running text on top would be noise — skipped via
       # the COMMITTED check below.
       - name: Post Claude's response if no code was committed
+        # The `steps.claude.outcome == 'success'` guard is deliberate:
+        # we only surface a *completed* session's response. A
+        # cancelled session (concurrency preemption — another run is
+        # taking over and will post its own response) or a timed-out
+        # one (partial, possibly-misleading output) is intentionally
+        # NOT posted. If surfacing partial output on cancellation
+        # ever proves useful, broaden to `!= 'skipped'` with a
+        # "(session interrupted)" footer.
+        #
         # Skip on `@claude review` triggers that have PR context — the
         # dispatch step below will fire claude-code-review.yml, which
         # posts its own sticky review comment. Posting Claude's
@@ -560,7 +569,15 @@ jobs:
               COMMITTED=true
             fi
           fi
-          if [ -n "$PR_HEAD_BEFORE" ] && [ "$PR_HEAD_AFTER" != "$PR_HEAD_BEFORE" ]; then
+          # Require a non-empty PR_HEAD_AFTER: if the "Capture PR head
+          # SHA after Claude" step's `gh api` failed (transient 5xx,
+          # rate limit), its output is "". Without the `-n` guard,
+          # "" != "$PR_HEAD_BEFORE" would be true and we'd wrongly
+          # conclude Claude committed and SKIP posting the prose —
+          # the exact data-loss this step exists to prevent. Defaulting
+          # to "not committed" on an unknown AFTER SHA errs toward
+          # posting (safe) rather than swallowing (lossy).
+          if [ -n "$PR_HEAD_BEFORE" ] && [ -n "$PR_HEAD_AFTER" ] && [ "$PR_HEAD_AFTER" != "$PR_HEAD_BEFORE" ]; then
             COMMITTED=true
           fi
           if [ "$COMMITTED" = "true" ]; then
@@ -709,7 +726,13 @@ jobs:
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
           echo "before=$SHA_BEFORE  after=$SHA_AFTER"
-          if [ "$SHA_AFTER" != "$SHA_BEFORE" ]; then
+          # Require a non-empty SHA_AFTER: if "Capture PR head SHA
+          # after Claude" failed, its output is "" and a bare
+          # `"" != "$SHA_BEFORE"` would be true, dispatching a
+          # spurious review against an unchanged diff. Defaulting to
+          # "no new commits" on an unknown AFTER SHA errs toward not
+          # dispatching (cheap miss) rather than a wasted review run.
+          if [ -n "$SHA_AFTER" ] && [ "$SHA_AFTER" != "$SHA_BEFORE" ]; then
             echo "Claude pushed new commits; re-requesting review and dispatching code review."
             gh api -X POST \
               "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
