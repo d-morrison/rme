@@ -524,18 +524,24 @@ and $\hrf{\vx_j}$ is the risk score (@def-risk-score) for subject $j$.
 
 :::
 
+::: notes
 Intuitively,
 $r^S_{ik}$ measures how unusual subject $i$'s covariate value is,
 relative to the risk-weighted average among those at risk when subject $i$ failed.
 If the proportional hazards assumption holds,
 these residuals should show no systematic trend over time.
 A trend signals non-proportionality.
+:::
 
+{{< slidebreak >}}
+
+::: notes
 We can test for such a trend
 with the correlation between Schoenfeld residuals and a function of time.
 The default in `cox.zph()` uses the KM survival curve as a transform,
 which handles censoring better than raw ranks.
 The `cox.zph()` function implements a score test proposed in @grambsch1994proportional.
+:::
 
 ```{r}
 hodg_zph <- cox.zph(hodg_cox1)
@@ -687,6 +693,7 @@ and $r^{CS}_i = \hat{\cuhaz}(t_i \mid \vx_i)$ is the Cox-Snell residual
 
 :::
 
+::: notes
 Martingale residuals estimate the excess number of events in the data
 relative to what the model predicted.
 They are bounded above by $1$
@@ -697,6 +704,7 @@ This asymmetry makes it harder to spot unexpectedly early deaths,
 motivating the deviance residual.
 
 We will use martingale residuals to examine the functional forms of continuous covariates.
+:::
 
 ::: content-hidden
 
@@ -860,11 +868,13 @@ and $r_i^{CS}$ is the Cox-Snell residual (@def-CS-resid).
 
 :::
 
+::: notes
 Deviance residuals are roughly centered on 0 with approximate standard deviation 1.
 By symmetrizing the skewed martingale residuals,
 they make it equally easy to identify
 unexpectedly early events (large positive $r^D_i$)
 and unexpectedly long survival (large negative $r^D_i$).
+:::
 
 ### Computing residuals
 
@@ -924,9 +934,11 @@ Worth examining.
 
 :::
 
+::: notes
 A useful rule of thumb: examine observations where
 $|\text{dfbeta}_{ik}| > 2/\sqrt{n}$,
 analogous to Cook's distance in linear regression.
+:::
 
 #### Graft type
 
@@ -1134,12 +1146,14 @@ ggcoxzph(hodg_cox2_zph)
 
 ### Strategy: stratify by disease type
 
+::: notes
 The diagnostics suggest that the hazard-ratio profile for disease type
 (and its interaction with graft type) is not constant over time.
 One remedy is a **stratified Cox model**
 that allows separate baseline hazards for each disease type,
 absorbing between-disease trajectory differences into two free baseline functions,
 while still estimating proportional effects of graft type, Karnofsky score, and waiting time.
+:::
 
 ```{r}
 #| label: tbl-hodg-cox3
@@ -1166,9 +1180,11 @@ print(hodg_cox3_zph)
 ggcoxzph(hodg_cox3_zph)
 ```
 
+::: notes
 Stratifying by disease type removes the between-disease baseline difference
 from the proportional-hazards stratum,
 so the remaining terms should satisfy PH more closely.
+:::
 
 ### Verifying the fix: residual diagnostics
 
@@ -1229,12 +1245,14 @@ data.frame(
   knitr::kable(digits = 2)
 ```
 
+::: notes
 The stratified model resolves the PH violation
 by allowing disease-specific baseline hazards.
 The trade-off: we can no longer directly estimate a disease-type hazard ratio,
 as that effect is absorbed into the baseline functions.
 The graft-type coefficient remains interpretable as the
 within-stratum hazard ratio comparing autologous to allogeneic grafts.
+:::
 
 ## Stratified survival models
 
@@ -1973,3 +1991,4 @@ Ways to check PH assumption:
 ## Age as the time scale
 
 See @canchola2003cox.
+
