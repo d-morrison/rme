@@ -110,26 +110,6 @@ jobs:
                   --input - || true
           fi
 
-      - name: Delete prior Claude sticky comments so the new one lands at the bottom
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          # Mirrors how anthropics/claude-code-action locates its sticky comment to update.
-          # See create-initial.ts in:
-          # https://github.com/anthropics/claude-code-action/tree/main/src/github/operations/comments
-          CLAUDE_APP_BOT_ID: '209825114'
-        run: |
-          # Delete every Claude-authored top-level comment, not just the most
-          # recent one — PRs predating use_sticky_comment may have multiple.
-          gh api --paginate \
-            "repos/$REPO/issues/$PR_NUMBER/comments" \
-            --jq ".[] | select(.user.id == $CLAUDE_APP_BOT_ID or (.user.type == \"Bot\" and (.user.login | ascii_downcase | contains(\"claude\")))) | .id" \
-            | while read -r CID; do
-                [ -z "$CID" ] && continue
-                echo "Deleting prior Claude comment $CID."
-                gh api -X DELETE "repos/$REPO/issues/comments/$CID" || true
-              done
-
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
@@ -163,14 +143,37 @@ jobs:
           # PRs where the plugin scores <80 — acceptable vs. the
           # dispatch path failing outright.
           track_progress: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
-          # Bundle the tracking comment into a single sticky per PR rather than
-          # a new comment each run. (Only consulted in tag mode.) The previous
-          # sticky is deleted in the step above so the new one always lands at
-          # the bottom of the conversation rather than getting buried in place.
-          use_sticky_comment: 'true'
+          # Post a fresh tracking comment on every run and leave prior ones in
+          # place, rather than reusing/editing one sticky. (Only consulted in
+          # tag mode.) With sticky enabled the action edits its existing
+          # comment in place, which GitHub can bury inside a folded "more
+          # comments" panel; posting anew keeps each review visible at the
+          # bottom and preserves the history of prior reviews.
+          use_sticky_comment: 'false'
           # Also archive the formatted report to the Actions step summary page
           # (does not affect PR comments).
           display_report: 'true'
+          # Keep this a REVIEW-ONLY workflow: it should comment, never edit.
+          # track_progress (tag mode, above) is set purely to guarantee a
+          # tracking comment — but as a side effect tag mode hands the
+          # reviewer git add/commit/rm and the action's git-push.sh wrapper,
+          # and the action's default prompt tells it to commit+push any local
+          # changes. That let a review run push a fix commit to the PR branch
+          # (observed on PR #809 commit 00a880177), blurring the line with the
+          # @claude agent in claude.yml (the contents:write workflow that is
+          # actually meant to make edits). Strip the write tools so the
+          # reviewer physically cannot mutate the branch. Disallowed tools
+          # take precedence over the action's generated allow-list, so this
+          # wins even though tag mode adds them. `git commit:*` is the
+          # load-bearing entry (no commit -> nothing to push); the rest are
+          # belt-and-suspenders in case the action's mechanics change.
+          claude_args: >-
+            --disallowedTools
+            "Bash(git add:*)"
+            "Bash(git commit:*)"
+            "Bash(git rm:*)"
+            "Bash(git push:*)"
+            "Bash(*git-push.sh*)"
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
