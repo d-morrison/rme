@@ -15,18 +15,18 @@
 
 name: "Copilot Setup Steps"
 
-# This workflow has two independent invocation paths:
+# The `on:` triggers below run this workflow as ordinary validation CI,
+# gated to changes of THIS file so edits to it can be validated without
+# paying the setup cost on every unrelated PR.
 #
-#  1. Copilot agent provisioning: GitHub's Copilot coding agent runs the
-#     `copilot-setup-steps` job DIRECTLY to build its environment when it
-#     starts a task. That invocation is NOT governed by the `on:` triggers
-#     below — so the `paths:` filter does not affect it. The `skip-cp-setup`
-#     label short-circuits the heavy install (checkout only) in that context,
-#     so a PR Copilot is working on can opt out of the full setup cost.
-#  2. Validation CI: the `on:` triggers below run the workflow as an ordinary
-#     job, gated to changes of THIS file so we can validate edits to it
-#     without paying the setup cost on every unrelated PR. The
-#     `labeled`/`unlabeled` types let toggling the label re-run a validation.
+# `skip-cp-setup` label: the check_label step skips the heavy install
+# (checkout only) ONLY on `pull_request` events that carry the label — so a
+# metadata/workflow-only PR can opt out of the validation-run setup. Any
+# non-`pull_request` invocation (push, workflow_dispatch) always runs full
+# setup. GitHub's Copilot coding agent also runs this job directly to
+# provision its environment; that invocation is NOT a documented
+# `pull_request` event, so the label is NOT guaranteed to affect Copilot's
+# provisioning — treat the label as a CI-validation control only.
 on:
   workflow_dispatch:
   push:
