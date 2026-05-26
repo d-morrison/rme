@@ -1,7 +1,7 @@
 ---
 description: Render a single Quarto chapter to HTML and report build status
 allowed-tools:
-  - Bash(quarto render:*)
+  - Bash(quarto render *)
 ---
 
 Render only the touched chapter to HTML: `quarto render chapters/<chapter>.qmd --to html`. Do **not** render the full book — it's slow, and the book builds in CI.

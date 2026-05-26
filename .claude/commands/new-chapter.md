@@ -4,7 +4,7 @@ allowed-tools:
   - Read
   - Write
   - Edit
-  - Bash(quarto render:*)
+  - Bash(quarto render *)
 ---
 
 Create a new chapter from `$ARGUMENTS` (e.g. `/new-chapter ridge Ridge Regression`).
