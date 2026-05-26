@@ -83,6 +83,18 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Initialize the latex-macros submodule so the reviewer can read its
+      # contents — without this, reviews of files that `{{< include >}}` or
+      # reference latex-macros report "the latex-macros submodule is not
+      # initialized in this environment" (see PR #806). Mirrors claude.yml's
+      # submodule step: the `insteadOf` rule authenticates the clone with
+      # SUBMODULES_TOKEN (a fine-grained PAT scoped to the submodule repos),
+      # since the default GITHUB_TOKEN can't read them.
+      - name: Checkout submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.SUBMODULES_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive --depth 1
+
       # The reviewer stash/restore is a serialization signal: we clear the
       # human reviewers before Claude runs so they aren't notified mid-run,
       # then re-add them when Claude finishes so the re-add fires a fresh
