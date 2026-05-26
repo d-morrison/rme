@@ -171,6 +171,27 @@ jobs:
           # Also archive the formatted report to the Actions step summary page
           # (does not affect PR comments).
           display_report: 'true'
+          # Keep this a REVIEW-ONLY workflow: it should comment, never edit.
+          # track_progress (tag mode, above) is set purely to guarantee a
+          # tracking comment — but as a side effect tag mode hands the
+          # reviewer git add/commit/rm and the action's git-push.sh wrapper,
+          # and the action's default prompt tells it to commit+push any local
+          # changes. That let a review run push a fix commit to the PR branch
+          # (observed on PR #809 commit 00a880177), blurring the line with the
+          # @claude agent in claude.yml (the contents:write workflow that is
+          # actually meant to make edits). Strip the write tools so the
+          # reviewer physically cannot mutate the branch. Disallowed tools
+          # take precedence over the action's generated allow-list, so this
+          # wins even though tag mode adds them. `git commit:*` is the
+          # load-bearing entry (no commit -> nothing to push); the rest are
+          # belt-and-suspenders in case the action's mechanics change.
+          claude_args: >-
+            --disallowedTools
+            "Bash(git add:*)"
+            "Bash(git commit:*)"
+            "Bash(git rm:*)"
+            "Bash(git push:*)"
+            "Bash(*git-push.sh*)"
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
