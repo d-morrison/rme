@@ -577,6 +577,65 @@ yields the corollary below directly.
 
 {{< slidebreak >}}
 
+:::{#cor-fubini-joint}
+
+### Joint-distribution form (without independence; corollary of Fubini–Tonelli)
+
+Let $(X, Y)$ be jointly distributed random variables
+whose joint distribution has a density $f_{X,Y}$
+with respect to a product of σ-finite reference measures
+$\mu_X \otimes \mu_Y$ on $\rangef{X} \times \rangef{Y}$,
+and let $h : \rangef{X} \times \rangef{Y} \to \mathbb{R}$ be measurable.
+If either
+
+(a) $h(X, Y) \ge 0$ almost surely, or
+
+(b) $\E{\abs{h(X, Y)}} < \infty$,
+
+then the expectation of $h(X, Y)$ can be written as an iterated integral
+against $f_{X,Y}$, with the order of integration exchangeable:
+
+$$
+\E{h(X, Y)}
+= \int_{\rangef{X}}\paren{\int_{\rangef{Y}} h(x, y)\,f_{X,Y}(x, y)\,d\mu_Y(y)}\,d\mu_X(x)
+= \int_{\rangef{Y}}\paren{\int_{\rangef{X}} h(x, y)\,f_{X,Y}(x, y)\,d\mu_X(x)}\,d\mu_Y(y).
+$$
+
+The choice of reference measures covers three cases:
+
+- **Both continuous:** $\mu_X = \mu_Y = \text{Lebesgue measure}$;
+  $f_{X,Y}$ is the joint probability density function (PDF),
+  and $\int g(x)\,d\mu_X(x) = \int g(x)\,dx$.
+- **Both discrete:** $\mu_X = \mu_Y = \text{counting measure}$;
+  $f_{X,Y}(x,y) = \P(X = x,\, Y = y)$ is the joint probability mass function (PMF),
+  and $\int g(x)\,d\mu_X(x) = \sum_{x \in \rangef{X}} g(x)$.
+- **Mixed** (one continuous, one discrete):
+  one reference measure is Lebesgue and the other is counting;
+  $f_{X,Y}(x,y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$
+  (or $\P(X = x \mid Y = y)\,f_Y(y)$ if $X$ is discrete and $Y$ continuous),
+  and the iterated integrals combine an ordinary integral with a sum.
+
+:::
+
+{{< slidebreak >}}
+
+::: proof
+Apply [Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) with
+$\mu_1 = \mu_X$ and $\mu_2 = \mu_Y$ to the integrand
+$h(x,y)\,f_{X,Y}(x,y)$ on $\rangef{X} \times \rangef{Y}$.
+Lebesgue measure and counting measure on a countable set are each
+σ-finite, so $\mu_X \otimes \mu_Y$ is σ-finite in all three cases.
+The relevant hypothesis is (a) when $h \ge 0$ and
+(b) when $\E{\abs{h(X, Y)}} < \infty$.
+Independence is not required.
+When $X$ and $Y$ are independent,
+$f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$
+(or $\P(X=x,Y=y) = \P(X=x)\,\P(Y=y)$ in the discrete case),
+and the iterated integrals factor into separate integrals over the marginals.
+:::
+
+{{< slidebreak >}}
+
 :::{#exm-fubini-prob}
 
 #### Expectation of a product of independent variables
@@ -589,7 +648,7 @@ We apply @cor-fubini-joint (both-continuous case) with $h(x, y) = xy$.
 Since $X$ and $Y$ are independent with densities $f_X(x) = 1$ on $[0,1]$
 and $f_Y(y) = \tfrac{1}{2}$ on $[0,2]$,
 the joint density factors as $f_{X,Y}(x,y) = f_X(x)\,f_Y(y) = \tfrac{1}{2}$,
-and $\mu_X = \mu_Y = $ Lebesgue measure:
+and $\mu_X = \mu_Y = \text{Lebesgue measure}$:
 
 $$
 \ba
@@ -714,65 +773,6 @@ measure (the grey distribution).
 
 {{< slidebreak >}}
 
-:::{#cor-fubini-joint}
-
-### Joint-distribution form (without independence; corollary of Fubini–Tonelli)
-
-Let $(X, Y)$ be jointly distributed random variables
-whose joint distribution has a density $f_{X,Y}$
-with respect to a product of σ-finite reference measures
-$\mu_X \otimes \mu_Y$ on $\rangef{X} \times \rangef{Y}$,
-and let $h : \rangef{X} \times \rangef{Y} \to \mathbb{R}$ be measurable.
-If either
-
-(a) $h(X, Y) \ge 0$ almost surely, or
-
-(b) $\E{\abs{h(X, Y)}} < \infty$,
-
-then the expectation of $h(X, Y)$ can be written as an iterated integral
-against $f_{X,Y}$, with the order of integration exchangeable:
-
-$$
-\E{h(X, Y)}
-= \int_{\rangef{X}}\paren{\int_{\rangef{Y}} h(x, y)\,f_{X,Y}(x, y)\,d\mu_Y(y)}\,d\mu_X(x)
-= \int_{\rangef{Y}}\paren{\int_{\rangef{X}} h(x, y)\,f_{X,Y}(x, y)\,d\mu_X(x)}\,d\mu_Y(y).
-$$
-
-The choice of reference measures covers three cases:
-
-- **Both continuous:** $\mu_X = \mu_Y = $ Lebesgue measure;
-  $f_{X,Y}$ is the joint probability density function (PDF),
-  and $\int g(x)\,d\mu_X(x) = \int g(x)\,dx$.
-- **Both discrete:** $\mu_X = \mu_Y = $ counting measure;
-  $f_{X,Y}(x,y) = \P(X = x,\, Y = y)$ is the joint probability mass function (PMF),
-  and $\int g(x)\,d\mu_X(x) = \sum_{x \in \rangef{X}} g(x)$.
-- **Mixed** (one continuous, one discrete):
-  one reference measure is Lebesgue and the other is counting;
-  $f_{X,Y}(x,y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$
-  (or $\P(X = x \mid Y = y)\,f_Y(y)$ if $X$ is discrete and $Y$ continuous),
-  and the iterated integrals combine an ordinary integral with a sum.
-
-:::
-
-{{< slidebreak >}}
-
-::: proof
-Apply [Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) with
-$\mu_1 = \mu_X$ and $\mu_2 = \mu_Y$ to the integrand
-$h(x,y)\,f_{X,Y}(x,y)$ on $\rangef{X} \times \rangef{Y}$.
-Lebesgue measure and counting measure on a countable set are each
-σ-finite, so $\mu_X \otimes \mu_Y$ is σ-finite in all three cases.
-The relevant hypothesis is (a) when $h \ge 0$ and
-(b) when $\E{\abs{h(X, Y)}} < \infty$.
-Independence is not required.
-When $X$ and $Y$ are independent,
-$f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$
-(or $\P(X=x,Y=y) = \P(X=x)\,\P(Y=y)$ in the discrete case),
-and the iterated integrals factor into separate integrals over the marginals.
-:::
-
-{{< slidebreak >}}
-
 ::::{#exm-fubini-joint}
 
 #### Both-continuous case: joint PDF on a non-rectangular support
@@ -844,7 +844,7 @@ Let $(X, Y)$ be discrete with joint probability mass function:
 | $X = 1$ | $0.1$ | $0.4$ |
 
 Compute $\E{X + Y}$ using @cor-fubini-joint with
-$\mu_X = \mu_Y = $ counting measure and $h(x,y) = x + y$.
+$\mu_X = \mu_Y = \text{counting measure}$ and $h(x,y) = x + y$.
 
 By @cor-fubini-joint (both-discrete case):
 
@@ -861,6 +861,11 @@ $$
 As a check: $\E{X} = 0(0.5) + 1(0.5) = 0.5$ and
 $\E{Y} = 0(0.3) + 1(0.7) = 0.7$,
 so $\E{X + Y} = \E{X} + \E{Y} = 1.2$.
+
+Note that $X$ and $Y$ are **not** independent here:
+$\P(X = 0, Y = 0) = 0.2 \neq 0.15 = \P(X = 0)\,\P(Y = 0)$.
+@cor-fubini-joint applies regardless, since it requires only the
+*actual* joint mass function, not independence.
 
 :::{#fig-fubini-joint-disc}
 
@@ -901,8 +906,8 @@ $\P(Y = 0) = 0.3$, $\P(Y = 1) = 0.7$.
 
 Let $Y \sim \mathrm{Bernoulli}(0.6)$ and,
 given $Y = y$, let $X \mid Y = y \sim \mathrm{Uniform}(0,\, y + 1)$.
-Compute $\E{X}$ using @cor-fubini-joint with $\mu_X = $ Lebesgue measure,
-$\mu_Y = $ counting measure, and $h(x, y) = x$.
+Compute $\E{X}$ using @cor-fubini-joint with $\mu_X = \text{Lebesgue measure}$,
+$\mu_Y = \text{counting measure}$, and $h(x, y) = x$.
 
 The joint density w.r.t. Lebesgue $\times$ counting measure is
 $f_{X,Y}(x, y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$:
