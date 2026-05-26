@@ -83,6 +83,18 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Initialize the latex-macros submodule so the reviewer can read its
+      # contents — without this, reviews of files that `{{< include >}}` or
+      # reference latex-macros report "the latex-macros submodule is not
+      # initialized in this environment" (see PR #806). Mirrors claude.yml's
+      # submodule step: the `insteadOf` rule authenticates the clone with
+      # SUBMODULES_TOKEN (a fine-grained PAT scoped to the submodule repos),
+      # since the default GITHUB_TOKEN can't read them.
+      - name: Checkout submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.SUBMODULES_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive --depth 1
+
       # The reviewer stash/restore is a serialization signal: we clear the
       # human reviewers before Claude runs so they aren't notified mid-run,
       # then re-add them when Claude finishes so the re-add fires a fresh
@@ -109,26 +121,6 @@ jobs:
                   "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers" \
                   --input - || true
           fi
-
-      - name: Delete prior Claude sticky comments so the new one lands at the bottom
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          # Mirrors how anthropics/claude-code-action locates its sticky comment to update.
-          # See create-initial.ts in:
-          # https://github.com/anthropics/claude-code-action/tree/main/src/github/operations/comments
-          CLAUDE_APP_BOT_ID: '209825114'
-        run: |
-          # Delete every Claude-authored top-level comment, not just the most
-          # recent one — PRs predating use_sticky_comment may have multiple.
-          gh api --paginate \
-            "repos/$REPO/issues/$PR_NUMBER/comments" \
-            --jq ".[] | select(.user.id == $CLAUDE_APP_BOT_ID or (.user.type == \"Bot\" and (.user.login | ascii_downcase | contains(\"claude\")))) | .id" \
-            | while read -r CID; do
-                [ -z "$CID" ] && continue
-                echo "Deleting prior Claude comment $CID."
-                gh api -X DELETE "repos/$REPO/issues/comments/$CID" || true
-              done
 
       - name: Run Claude Code Review
         id: claude-review
@@ -163,14 +155,58 @@ jobs:
           # PRs where the plugin scores <80 — acceptable vs. the
           # dispatch path failing outright.
           track_progress: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
-          # Bundle the tracking comment into a single sticky per PR rather than
-          # a new comment each run. (Only consulted in tag mode.) The previous
-          # sticky is deleted in the step above so the new one always lands at
-          # the bottom of the conversation rather than getting buried in place.
-          use_sticky_comment: 'true'
+          # Post a fresh tracking comment on every run and leave prior ones in
+          # place, rather than reusing/editing one sticky. (Only consulted in
+          # tag mode.) With sticky enabled the action edits its existing
+          # comment in place, which GitHub can bury inside a folded "more
+          # comments" panel; posting anew keeps each review visible at the
+          # bottom and preserves the history of prior reviews.
+          use_sticky_comment: 'false'
           # Also archive the formatted report to the Actions step summary page
           # (does not affect PR comments).
           display_report: 'true'
+          # Keep this a REVIEW-ONLY workflow: it should comment, never edit.
+          # track_progress (tag mode, above) is set purely to guarantee a
+          # tracking comment — but as a side effect tag mode hands the
+          # reviewer git add/commit/rm and the action's git-push.sh wrapper,
+          # and the action's default prompt tells it to commit+push any local
+          # changes. That let a review run push a fix commit to the PR branch
+          # (observed on PR #809 commit 00a880177), blurring the line with the
+          # @claude agent in claude.yml (the contents:write workflow that is
+          # actually meant to make edits). Strip the write tools so the
+          # reviewer physically cannot mutate the branch. Disallowed tools
+          # take precedence over the action's generated allow-list, so this
+          # wins even though tag mode adds them. `git commit:*` is the
+          # load-bearing entry (no commit -> nothing to push); the rest are
+          # belt-and-suspenders in case the action's mechanics change.
+          #
+          # --append-system-prompt makes the reviewer review-ONLY at the
+          # instruction level, not just the tool level. Disallowing the git
+          # tools alone isn't enough: tag mode's default prompt still tells
+          # the agent to "commit and push your changes", so it would attempt
+          # fixes, hit a wall of permission denials, and then post a
+          # confusing tracking comment claiming it made uncommitted changes
+          # and asking the user to grant git permissions (observed on PR #806
+          # review run 26427017500: 29 permission_denials and a "to commit,
+          # add Bash(git add *)..." comment that, if followed, would undo
+          # this very workflow's read-only guarantee). Telling it up front
+          # not to attempt edits stops the flailing and the misleading
+          # comment; it folds any would-be fix into its review instead.
+          claude_args: >-
+            --disallowedTools
+            "Bash(git add:*)"
+            "Bash(git commit:*)"
+            "Bash(git rm:*)"
+            "Bash(git push:*)"
+            "Bash(*git-push.sh*)"
+            --append-system-prompt
+            "This is a review-only run. Report every issue you find as part
+            of your review. Do NOT modify, stage, commit, or push files, and
+            do NOT attempt to — the git write tools are intentionally
+            disallowed. Never describe changes as 'uncommitted' or ask the
+            user to grant git/commit permissions; there is nothing for you to
+            commit. If you would have fixed something, describe the fix in
+            your review instead."
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
