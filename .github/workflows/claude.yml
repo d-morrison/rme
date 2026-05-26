@@ -385,10 +385,15 @@ jobs:
                `issues` triggers — the GitHub-Actions expression
                `${{ github.event.issue.number || github.event.pull_request.number }}`
                is already substituted in below):
+               (the URLs are NOT quoted — they contain no shell-special
+               characters after substitution, and the allowed-tools pattern
+               `Bash(gh api repos/<repo>/*)` only matches the unquoted form;
+               a leading quote like `gh api 'repos/...` fails the match and
+               the call is denied — see PR #806 comment 4539906359):
                ```
-               gh api 'repos/${{ github.repository }}/issues/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate
-               gh api 'repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate   # PRs only
-               gh api 'repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/reviews'  --paginate   # PRs only
+               gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number || github.event.pull_request.number }}/comments --paginate
+               gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/comments --paginate   # PRs only
+               gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/reviews  --paginate   # PRs only
                ```
 
             2. From the combined response, identify entries where ALL of:
