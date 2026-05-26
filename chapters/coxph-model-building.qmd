@@ -30,6 +30,7 @@
 #| label: load-hodg
 library(dplyr)
 library(survival)
+library(survminer)
 data(hodg, package = "KMsurv")
 hodg2 <- hodg |>
   as_tibble() |>
@@ -838,12 +839,12 @@ The **deviance residual** for subject $i$ is defined as
 
 $$
 \ba
-r_i^D &= \signt\{r_i^M\}\sqrt{-2\left[ r_i^M+\delta_i\ln(\delta_i-r_i^M)  \right]}\\
-      &= \signt\{r_i^M\}\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \right]}
+r_i^D &= \signf{r_i^M}\sqrt{-2\left[ r_i^M+\delta_i\ln(\delta_i-r_i^M)  \right]}\\
+      &= \signf{r_i^M}\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \right]}
 \ea
 $$
 
-where $\signt\{\cdot\}$ is the sign function,
+where $\signf{\cdot}$ is the sign function,
 $r_i^M$ is the martingale residual (@def-martingale-residual),
 and $r_i^{CS}$ is the Cox-Snell residual (@def-CS-resid).
 
@@ -1109,7 +1110,7 @@ and verifies that the revision actually helps.
 :::
 
 
-### Checking PH in the current model
+### Checking PH for `hodg_cox2`
 
 ::: notes
 Let's verify whether non-proportionality persists in `hodg_cox2`
@@ -1117,7 +1118,7 @@ Let's verify whether non-proportionality persists in `hodg_cox2`
 :::
 
 ```{r}
-#| label: tbl-zph-hodg-cox2
+#| label: zph-hodg-cox2-print
 hodg_cox2_zph <- cox.zph(hodg_cox2)
 print(hodg_cox2_zph)
 ```
@@ -1126,7 +1127,6 @@ print(hodg_cox2_zph)
 #| label: fig-zph-hodg-cox2
 #| fig-cap: "Scaled Schoenfeld residuals for hodg_cox2"
 #| code-fold: true
-library(survminer)
 ggcoxzph(hodg_cox2_zph)
 ```
 
@@ -1144,8 +1144,7 @@ while still estimating proportional effects of graft type, Karnofsky score, and 
 ```{r}
 #| label: tbl-hodg-cox3
 hodg_cox3 <- coxph(
-  formula = Surv(time, event = delta == "dead") ~
-    gtype + score + wt2 + strata(dtype),
+  formula = surv ~ gtype + score + wt2 + strata(dtype),
   data = hodg2
 )
 summary(hodg_cox3)
@@ -1154,7 +1153,7 @@ summary(hodg_cox3)
 ### Verifying the fix: `cox.zph` on the stratified model
 
 ```{r}
-#| label: tbl-zph-hodg-cox3
+#| label: zph-hodg-cox3-print
 hodg_cox3_zph <- cox.zph(hodg_cox3)
 print(hodg_cox3_zph)
 ```
@@ -1197,14 +1196,13 @@ data.frame(lp = hodg3_lp, deviance = hodg3_dev) |>
 #| label: fig-dfbeta-hodg3
 #| fig-cap: "dfbeta values for stratified model hodg_cox3"
 #| code-fold: true
-hodg3_dfb |>
-  as.data.frame() |>
-  dplyr::mutate(obs = dplyr::row_number()) |>
-  tidyr::pivot_longer(
-    -obs,
-    names_to = "coefficient",
-    values_to = "dfbeta"
-  ) |>
+hodg3_dfb_mat <- as.matrix(hodg3_dfb)
+colnames(hodg3_dfb_mat) <- names(coef(hodg_cox3))
+data.frame(
+  obs = rep(seq_len(nrow(hodg3_dfb_mat)), times = ncol(hodg3_dfb_mat)),
+  coefficient = rep(colnames(hodg3_dfb_mat), each = nrow(hodg3_dfb_mat)),
+  dfbeta = as.vector(hodg3_dfb_mat)
+) |>
   ggplot(aes(x = obs, y = dfbeta)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
@@ -1224,14 +1222,18 @@ data.frame(
     "hodg_cox2: gtype*dtype + score + wt2",
     "hodg_cox3: gtype + score + wt2 + strata(dtype)"
   ),
-  Parameters = c(length(coef(hodg_cox2)), length(coef(hodg_cox3))),
-  LogLik = c(as.numeric(logLik(hodg_cox2)), as.numeric(logLik(hodg_cox3))),
-  AIC = c(AIC(hodg_cox2), AIC(hodg_cox3))
+  Parameters = c(length(coef(hodg_cox2)), length(coef(hodg_cox3)))
 ) |>
   knitr::kable(digits = 2)
 ```
 
 ::: notes
+We deliberately omit log-likelihood and AIC from this comparison:
+the partial likelihood of the stratified model `hodg_cox3`
+is computed within disease-type strata and excludes the between-stratum
+comparisons that `hodg_cox2`'s partial likelihood includes,
+so the two are not on a common scale and their AIC values are not comparable.
+
 The stratified model resolves the PH violation
 by allowing disease-specific baseline hazards.
 The trade-off: we can no longer directly estimate a disease-type hazard ratio,
