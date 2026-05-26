@@ -905,8 +905,8 @@ Worth examining.
 #### dfbeta and dfbetas
 
 -   **dfbeta** for observation $i$ is the approximate change in the
-    coefficient vector $\hat{\vb}$ if subject $i$ were removed from the data:
-    $$\text{dfbeta}_i \approx \hat{\vb} - \hat{\vb}_{(-i)}$$
+    coefficient vector $\hvb$ if subject $i$ were removed from the data:
+    $$\text{dfbeta}_i \approx \hvb - \hvb_{(-i)}$$
     computed via a one-step Newton approximation rather than a full refit
     [@klein2003survival, §11.4].
 
@@ -917,9 +917,10 @@ Worth examining.
 :::
 
 ::: notes
-A useful rule of thumb: examine observations where
-$|\text{dfbeta}_{ik}| > 2/\sqrt{n}$,
-analogous to Cook's distance in linear regression.
+A useful rule of thumb is to examine the observations whose dfbeta values
+stand out from the rest — those whose removal would shift a coefficient
+the most — analogous to influence diagnostics such as Cook's distance in
+linear regression.
 :::
 
 #### Graft type
@@ -1142,7 +1143,7 @@ while still estimating proportional effects of graft type, Karnofsky score, and 
 :::
 
 ```{r}
-#| label: tbl-hodg-cox3
+#| label: hodg-cox3-summary
 hodg_cox3 <- coxph(
   formula = surv ~ gtype + score + wt2 + strata(dtype),
   data = hodg2
@@ -1211,6 +1212,18 @@ data.frame(
   xlab("Observation Index") +
   ylab("dfbeta")
 ```
+
+::: notes
+To check whether stratification changed the influence picture,
+re-examine the subjects flagged earlier from the `hodg_cox2` diagnostics
+(1, 15, 16, 18, and 29):
+scan each panel for points that stand apart from the rest,
+since those are the observations whose removal would most shift the
+corresponding coefficient.
+The deviance residuals above and these dfbeta panels together indicate
+whether any single subject still exerts outsized influence on
+`hodg_cox3`.
+:::
 
 ### Comparing models
 
