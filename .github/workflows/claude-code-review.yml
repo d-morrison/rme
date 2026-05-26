@@ -167,6 +167,19 @@ jobs:
           # wins even though tag mode adds them. `git commit:*` is the
           # load-bearing entry (no commit -> nothing to push); the rest are
           # belt-and-suspenders in case the action's mechanics change.
+          #
+          # --append-system-prompt makes the reviewer review-ONLY at the
+          # instruction level, not just the tool level. Disallowing the git
+          # tools alone isn't enough: tag mode's default prompt still tells
+          # the agent to "commit and push your changes", so it would attempt
+          # fixes, hit a wall of permission denials, and then post a
+          # confusing tracking comment claiming it made uncommitted changes
+          # and asking the user to grant git permissions (observed on PR #806
+          # review run 26427017500: 29 permission_denials and a "to commit,
+          # add Bash(git add *)..." comment that, if followed, would undo
+          # this very workflow's read-only guarantee). Telling it up front
+          # not to attempt edits stops the flailing and the misleading
+          # comment; it folds any would-be fix into its review instead.
           claude_args: >-
             --disallowedTools
             "Bash(git add:*)"
@@ -174,6 +187,14 @@ jobs:
             "Bash(git rm:*)"
             "Bash(git push:*)"
             "Bash(*git-push.sh*)"
+            --append-system-prompt
+            "This is a review-only run. Report every issue you find as part
+            of your review. Do NOT modify, stage, commit, or push files, and
+            do NOT attempt to — the git write tools are intentionally
+            disallowed. Never describe changes as 'uncommitted' or ask the
+            user to grant git/commit permissions; there is nothing for you to
+            commit. If you would have fixed something, describe the fix in
+            your review instead."
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
