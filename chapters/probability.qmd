@@ -573,48 +573,7 @@ which holds on any σ-finite measure space.
 The σ-finiteness hypothesis is automatic for probability measures
 (every probability measure is finite, hence σ-finite),
 so [Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli)
-yields the corollaries below directly.
-
-{{< slidebreak >}}
-
-:::{#cor-fubini-prob}
-
-### Probability-measure form (independent variables; corollary of Fubini–Tonelli)
-
-Let $X$ and $Y$ be independent random variables
-with probability measures $\P_X$ and $\P_Y$,
-and let $h : \rangef{X} \times \rangef{Y} \to \mathbb{R}$
-be measurable.
-If either
-
-(a) $h(X, Y) \ge 0$ almost surely, or
-
-(b) $\E{\abs{h(X, Y)}} < \infty$,
-
-then:
-
-$$
-\E{h(X, Y)}
-= \int_{\rangef{X}} \paren{\int_{\rangef{Y}} h(x, y)\,d\P_Y(y)}\,d\P_X(x)
-= \int_{\rangef{Y}} \paren{\int_{\rangef{X}} h(x, y)\,d\P_X(x)}\,d\P_Y(y).
-$$
-
-:::
-
-{{< slidebreak >}}
-
-::: proof
-
-By independence, the joint distribution of $(X, Y)$ is the product measure
-$\P_X \otimes \P_Y$, so
-$\E{h(X, Y)} = \int_{\rangef{X} \times \rangef{Y}} h(x, y)\,d(\P_X \otimes \P_Y)$.
-Probability measures are finite (hence σ-finite),
-so the σ-finiteness hypothesis of
-[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) is automatic;
-under either (a) or (b) above the theorem applies and yields both
-iterated forms.
-
-:::
+yields the corollary below directly.
 
 {{< slidebreak >}}
 
@@ -626,9 +585,11 @@ Let $X \sim \mathrm{Uniform}(0, 1)$ and $Y \sim \mathrm{Uniform}(0, 2)$,
 independently distributed.
 Compute $\E{XY}$.
 
-We apply @cor-fubini-prob with $h(x, y) = xy$.
-Since $X$ and $Y$ have densities $f_X(x) = 1$ and $f_Y(y) = \tfrac{1}{2}$,
-we have $d\P_X(x) = f_X(x)\,dx = dx$ and $d\P_Y(y) = f_Y(y)\,dy = \tfrac{1}{2}\,dy$:
+We apply @cor-fubini-joint (both-continuous case) with $h(x, y) = xy$.
+Since $X$ and $Y$ are independent with densities $f_X(x) = 1$ on $[0,1]$
+and $f_Y(y) = \tfrac{1}{2}$ on $[0,2]$,
+the joint density factors as $f_{X,Y}(x,y) = f_X(x)\,f_Y(y) = \tfrac{1}{2}$,
+and $\mu_X = \mu_Y = $ Lebesgue measure:
 
 $$
 \ba
@@ -652,8 +613,9 @@ As a check: $\E{X} = \tfrac{1}{2}$, $\E{Y} = 1$, and $\E{X}\E{Y} = \tfrac{1}{2}$
 
 #### When independence fails: a counterexample
 
-The independence condition in @cor-fubini-prob is essential.
-Without it, applying the product-measure formula gives the wrong answer.
+Correctly applying @cor-fubini-joint requires the *actual* joint density $f_{X,Y}$
+— not the product of marginals $f_X(x)\,f_Y(y)$, which is valid only when $X$ and $Y$
+are independent. Using the wrong joint density gives the wrong answer.
 
 Let $X \sim \mathrm{Uniform}(0, 1)$ and set $Y = X$
 (so $X$ and $Y$ are perfectly correlated and **not** independent).
@@ -677,7 +639,7 @@ The joint distribution is therefore **not** absolutely continuous with
 respect to two-dimensional Lebesgue measure, so **no joint density
 $f_{X,Y}$ on $[0, 1]^2$ exists**, and in particular the joint
 distribution is **not** the product measure $\P_X \otimes \P_Y$
-that @cor-fubini-prob assumes.
+that @cor-fubini-joint would need.
 
 The calculation below is what someone would *erroneously* write if
 they assumed independence and used $f_X(x)\,f_Y(y)$ as a "joint
@@ -700,11 +662,11 @@ $$
 
 This recovers $\E{XY}$ for *independent* uniforms ($\tfrac{1}{4}$),
 not $\E{XX}$ for the perfectly correlated pair ($\tfrac{1}{3}$).
-The lesson is that the independence hypothesis of @cor-fubini-prob is
-*structural*, not just notational: without it, there is no joint
-density to integrate against in the first place.
-The correct approach for *dependent* $(X, Y)$ that *do* admit a joint
-density uses @cor-fubini-joint.
+The lesson is that @cor-fubini-joint requires the *actual* joint density
+$f_{X,Y}$. For independent $(X, Y)$, this factors as $f_X(x)\,f_Y(y)$;
+for dependent $(X, Y)$, $f_{X,Y}$ need not factor — and for $(X, X)$,
+no joint density on $\mathbb{R}^2$ exists at all, so @cor-fubini-joint
+simply does not apply.
 
 :::{#fig-fubini-prob-fail}
 
@@ -806,7 +768,7 @@ Independence is not required.
 When $X$ and $Y$ are independent,
 $f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$
 (or $\P(X=x,Y=y) = \P(X=x)\,\P(Y=y)$ in the discrete case),
-and this corollary reduces to @cor-fubini-prob.
+and the iterated integrals factor into separate integrals over the marginals.
 :::
 
 {{< slidebreak >}}
@@ -976,9 +938,9 @@ $\E{X} = \tfrac{1}{2}(0.4) + 1(0.6) = 0.2 + 0.6 = 0.8$.
 
 x_fine <- seq(0, 2, by = 0.005)
 df <- data.frame(
-  x       = c(x_fine[x_fine <= 1], x_fine),
+  x = c(x_fine[x_fine <= 1], x_fine),
   density = c(rep(0.4, sum(x_fine <= 1)), rep(0.3, length(x_fine))),
-  label   = c(
+  label = c(
     rep("Y = 0  (P = 0.4)", sum(x_fine <= 1)),
     rep("Y = 1  (P = 0.6)", length(x_fine))
   )
