@@ -102,8 +102,24 @@ surv_steps <- rbind(
   )
 )
 
+# Censored observations are marked with "+" at the current survival height,
+# matching survival::plot.survfit(mark.time = TRUE).
+cens_marks <- rbind(
+  data.frame(
+    time = km_fit$time[km_fit$n.censor > 0],
+    surv = km_fit$surv[km_fit$n.censor > 0],
+    estimator = "Kaplan-Meier"
+  ),
+  data.frame(
+    time = na_fit$time[na_fit$n.censor > 0],
+    surv = na_fit$surv[na_fit$n.censor > 0],
+    estimator = "Nelson-Aalen"
+  )
+)
+
 ggplot(surv_steps, aes(x = time, y = surv, color = estimator)) +
   geom_step() +
+  geom_point(data = cens_marks, shape = 3, size = 2, show.legend = FALSE) +
   scale_color_manual(
     values = c("Kaplan-Meier" = "steelblue", "Nelson-Aalen" = "darkorange")
   ) +
