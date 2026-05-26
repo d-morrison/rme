@@ -147,7 +147,22 @@ jobs:
           # PRs. track_progress forces tag mode, which creates a tracking
           # comment up front via createInitialComment() and updates it at the
           # end — guaranteeing a PR comment regardless of plugin output.
-          track_progress: 'true'
+          #
+          # BUT the action rejects track_progress for workflow_dispatch
+          # ("track_progress is only supported for events: pull_request,
+          # issues, issue_comment, pull_request_review_comment,
+          # pull_request_review"), failing the whole step. Every
+          # workflow_dispatch of this workflow hit that — including the
+          # dispatch paths in claude.yml (the post-commit dispatch and
+          # the @claude-review dispatch), which were silently 100%
+          # failing (see issue #801 option 2; confirmed on run
+          # 26425354090). So gate it on event_name: keep tag mode for
+          # the pull_request path (where the guaranteed tracking comment
+          # matters), fall back to agent mode for dispatched runs.
+          # Caveat: dispatched runs may now be silent on small/mechanical
+          # PRs where the plugin scores <80 — acceptable vs. the
+          # dispatch path failing outright.
+          track_progress: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
           # Bundle the tracking comment into a single sticky per PR rather than
           # a new comment each run. (Only consulted in tag mode.) The previous
           # sticky is deleted in the step above so the new one always lands at
