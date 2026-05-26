@@ -15,14 +15,25 @@
 
 name: "Copilot Setup Steps"
 
-# Automatically run the setup steps when they are changed to allow for easy validation,
-# and allow manual testing through the repository's "Actions" tab
+# This workflow has two independent invocation paths:
+#
+#  1. Copilot agent provisioning: GitHub's Copilot coding agent runs the
+#     `copilot-setup-steps` job DIRECTLY to build its environment when it
+#     starts a task. That invocation is NOT governed by the `on:` triggers
+#     below — so the `paths:` filter does not affect it. The `skip-cp-setup`
+#     label short-circuits the heavy install (checkout only) in that context,
+#     so a PR Copilot is working on can opt out of the full setup cost.
+#  2. Validation CI: the `on:` triggers below run the workflow as an ordinary
+#     job, gated to changes of THIS file so we can validate edits to it
+#     without paying the setup cost on every unrelated PR. The
+#     `labeled`/`unlabeled` types let toggling the label re-run a validation.
 on:
   workflow_dispatch:
   push:
     paths:
       - .github/workflows/copilot-setup-steps.yml
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
@@ -35,11 +46,32 @@ jobs:
     # Copilot will be given its own token for its operations.
     permissions:
       contents: read
-    
+      pull-requests: read   # read PR labels for the skip-cp-setup check
+
     # Timeout after 55 minutes (max is 59 for copilot-setup-steps)
     timeout-minutes: 55
-    
+
     steps:
+      # Skip the heavy install when a PR carries the `skip-cp-setup` label
+      # (e.g. metadata- or workflow-only PRs). Non-PR events always run setup.
+      - name: Check if setup should be skipped
+        id: check_label
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          LABELS_CONTAIN_SKIP: ${{ contains(github.event.pull_request.labels.*.name, 'skip-cp-setup') }}
+        shell: bash
+        run: |
+          if [[ "$EVENT_NAME" != 'pull_request' ]]; then
+            echo "Not a pull request, running full setup"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          elif [[ "$LABELS_CONTAIN_SKIP" == 'true' ]]; then
+            echo "skip-cp-setup label present, skipping setup steps"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip-cp-setup label not present, running full setup"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # Checkout code - Copilot will do this automatically if we don't,
       # but we need it to install dependencies from renv.lock
       - name: Checkout code
@@ -48,6 +80,7 @@ jobs:
           submodules: false
 
       - name: Checkout submodules
+        if: steps.check_label.outputs.skip != 'true'
         run: |
           git config --global url."https://x-access-token:${{ secrets.SUBMODULES_TOKEN }}@github.com/".insteadOf "https://github.com/"
           git submodule update --init --recursive --depth 1
@@ -55,6 +88,7 @@ jobs:
       # Install system dependencies required for R packages
       # See .github/copilot-instructions.md "System Dependencies" and "JAGS Dependencies" sections
       - name: Install system dependencies
+        if: steps.check_label.outputs.skip != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -83,16 +117,19 @@ jobs:
       # Maxima (installed above via apt-get) provides a complementary full-featured CAS
       # accessible from the command line.
       - name: Install SymPy (Python CAS)
+        if: steps.check_label.outputs.skip != 'true'
         run: pip3 install --break-system-packages sympy
       
       # Set up pandoc for documentation
       - name: Set up Pandoc
+        if: steps.check_label.outputs.skip != 'true'
         uses: r-lib/actions/setup-pandoc@v2
       
       # Set up R using the standard GitHub Actions setup
       # R version >= 3.5 required (see DESCRIPTION and .github/copilot-instructions.md)
       # Using 'release' to get the latest R version
       - name: Set up R
+        if: steps.check_label.outputs.skip != 'true'
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: 'release'
@@ -101,6 +138,7 @@ jobs:
       # Set up Quarto - required for rendering the website
       # See .github/copilot-instructions.md "Quarto Rendering" section
       - name: Set up Quarto
+        if: steps.check_label.outputs.skip != 'true'
         uses: quarto-dev/quarto-actions/setup@v2
         with:
           tinytex: true
@@ -111,6 +149,7 @@ jobs:
       # This project uses renv for package management
       # See .github/copilot-instructions.md "R Package Management" section
       - name: Install R dependencies via renv
+        if: steps.check_label.outputs.skip != 'true'
         uses: r-lib/actions/setup-renv@v2
         with:
           cache-version: 1
@@ -118,6 +157,7 @@ jobs:
       # Verify R environment is properly configured
       # See .github/copilot-instructions.md sections on development setup
       - name: Verify development environment
+        if: steps.check_label.outputs.skip != 'true'
         run: |
           echo "=== R Development Environment Status ==="
           Rscript -e '

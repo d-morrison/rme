@@ -1,0 +1,51 @@
+name: Check Bibliography DOIs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check-dois:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@HEAD
+        with:
+          install-quarto: false
+          extra-packages: |
+            any::bib2df
+            any::httr
+            any::jsonlite
+            any::stringr
+
+      - name: Find bibliography files
+        id: find-bibs
+        run: |
+          # Find all .bib files in the repository
+          BIB_FILES=$(find . -name "*.bib" -not -path "./.git/*" | tr '\n' ' ')
+          echo "Found bibliography files: $BIB_FILES"
+          echo "bib_files=$BIB_FILES" >> $GITHUB_OUTPUT
+
+      - name: Check bibliography DOIs
+        if: steps.find-bibs.outputs.bib_files != ''
+        run: |
+          Rscript .github/scripts/check-bibliography-dois.R ${BIB_FILES}
+        env:
+          BIB_FILES: ${{ steps.find-bibs.outputs.bib_files }}
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "✓ All bibliography entries have valid DOIs"
