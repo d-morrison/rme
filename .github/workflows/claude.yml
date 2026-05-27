@@ -342,7 +342,11 @@ jobs:
             deliverable and the post-step skips posting your text to
             avoid noise.) Don't write it as an internal log
             ("Investigated foo, found bar, will do baz") — write it
-            as the actual reply you want the requester to read.
+            as the actual reply you want the requester to read. When the
+            trigger was an inline review comment on the diff (a
+            `pull_request_review_comment`), your reply is posted as a threaded
+            reply to that exact comment — keep it focused on the line(s) that
+            comment is about.
 
             **Before declaring the task complete, check for additional
             @claude requests that arrived after the triggering event.**
@@ -679,11 +683,21 @@ jobs:
           … (response truncated at ${MAX_LEN} bytes; full text in the [workflow run](${RUN_URL}))"
           fi
 
-          # `gh issue comment` works for both issues and PRs (both
-          # post to the same `/repos/{owner}/{repo}/issues/{N}/comments`
-          # endpoint internally), so we don't need to branch on
-          # PR-vs-issue here.
-          gh issue comment "$ENTITY_NUMBER" --body "$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")" \
+          BODY="$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")"
+          # When the trigger was an inline review comment, reply IN-THREAD to
+          # it (pulls/.../comments/<id>/replies) so the conversation stays
+          # anchored to the diff line. Every other trigger gets a top-level
+          # `gh issue comment` (issue and PR-conversation comments share the
+          # same endpoint). Fall back to top-level if the reply API fails
+          # (e.g. the parent review comment was deleted).
+          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+            if jq -n --arg b "$BODY" '{body: $b}' \
+                 | gh api --method POST "repos/${{ github.repository }}/pulls/$ENTITY_NUMBER/comments/${{ github.event.comment.id }}/replies" --input - >/dev/null; then
+              exit 0
+            fi
+            echo "::warning::In-thread reply failed; falling back to a top-level comment."
+          fi
+          gh issue comment "$ENTITY_NUMBER" --body "$BODY" \
             || echo "::warning::Could not post Claude's response back to the source thread."
 
       # Dispatch the dedicated reviewer workflow when the triggering
