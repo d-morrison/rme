@@ -330,12 +330,21 @@ At 5 years, 8% of participants had experienced the event.
 Compute the values in a code chunk (using `#| include: false` if needed),
 then reference them with inline `` `r expr` `` expressions.
 
-## Parentheticals and Asides in Quarto
+## Notes Divs in Quarto Slides
 
-When parenthetical references or short asides are supplementary
-(for example, `c.f. @dunn2018generalized §2.10.3`),
-place them in a `::: notes` div
-instead of leaving them inline in the main narrative.
+Wrap content in `::: notes` divs in two situations:
+
+1. **Parenthetical references and short asides** that are supplementary
+   (for example, `c.f. @dunn2018generalized §2.10.3`) —
+   place them in a `::: notes` div
+   instead of leaving them inline in the main narrative.
+
+2. **Large explanatory text blocks** — multi-sentence prose that provides
+   intuition, context, or derivation details —
+   should be wrapped in `::: notes` when the surrounding content is
+   structured for slide presentation.
+   Use `::: notes` for any block that would overflow or distract on a slide;
+   leave brief one- or two-line slide headers and summary bullet points unwrapped.
 
 ## Fenced Divs and List Indentation in Quarto
 
@@ -992,3 +1001,4 @@ spelling::spell_check_files("path/to/modified/file.qmd")
 - **If it's your responsibility**: Fix the issue and re-run the workflow
 - **If it's NOT your responsibility**: Document it in your PR description and notify the repository maintainer
 - **Never** fix unrelated pre-existing issues - focus on your changes only
+
