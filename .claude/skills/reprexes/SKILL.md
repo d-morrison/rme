@@ -57,8 +57,9 @@ but nothing more.
 1. **Hypothesize the minimal trigger.** What is the smallest combination of
    data + operation you believe causes the phenomenon?
 2. **Create a standalone scratch file** outside the repo tree (e.g.
-   `/tmp/reprex.R`, or a tiny `/tmp/reprex.qmd` for a render bug). Put in it,
-   in order:
+   `/tmp/reprex.R`, or a tiny `/tmp/reprex.qmd` for a render bug; on a
+   non-Unix machine use `tempfile(fileext = ".R")` / `tempdir()` for a
+   portable path). Put in it, in order:
    - the package loads (`library(...)`),
    - the minimal data (see tactics below),
    - the minimal code that triggers the phenomenon, with a comment marking
@@ -97,19 +98,24 @@ but nothing more.
   Copy the code and call `reprex::reprex()` (reads the clipboard by default),
   or point it at a file with `reprex(input = "/tmp/reprex.R")` — handy from a
   non-interactive CLI session where there's no clipboard. Useful arguments:
-  - `venue =` — output format: `"gh"` (GitHub-flavored Markdown, default),
-    `"so"`/`"ds"` (Stack Overflow / Discourse), `"slack"`, `"R"` (runnable
-    script with commented output), `"html"`, `"rtf"`.
+  - `venue =` — output format:
+    - `"gh"` — GitHub-flavored Markdown (default)
+    - `"so"` / `"ds"` — Stack Overflow / Discourse
+    - `"slack"` — Slack message
+    - `"r"` — runnable R script with commented output
+    - `"html"` — HTML
+    - `"rtf"` — rich text for presentations
   - `session_info = TRUE` — append `sessionInfo()` / `sessioninfo::session_info()`,
     so versions travel with the reprex (set this when the bug may be
     version-dependent).
-  - `std_out_err = TRUE` — capture stdout/stderr too (for output that doesn't
-    come back as normal R results).
+  - `std_out_err = TRUE` — capture stdout/stderr too (e.g. `system()` /
+    subprocess or C-level output that doesn't come back as normal R results).
   - `wd =` — set the working directory when the code needs one.
   - Use this when the reprex is destined for a PR comment or an upstream
-    issue. Companion helpers clean up "wild-caught" reprexes: `reprex_clean()`
-    (strip a GitHub/SO paste), `reprex_rescue()` (from console output), and
-    `reprex_invert()` (recover clean code from a rendered reprex).
+    issue. Companion helpers handle "wild-caught" reprexes: `reprex_clean()`
+    (strip the prompts/output from a copied reprex), `reprex_rescue()`
+    (recover code from R-console output with `>`/`+` prompts), and
+    `reprex_invert()` (turn a rendered reprex back into plain code).
   - Validation bonus: because `reprex()` runs in a fresh session, if it errors
     on a missing object or package, your example wasn't actually
     self-contained — fix that before sharing.
