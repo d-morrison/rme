@@ -98,7 +98,8 @@ but nothing more.
   Copy the code and call `reprex::reprex()` (reads the clipboard by default),
   or point it at a file with `reprex(input = "/tmp/reprex.R")` (or a
   `tempfile(fileext = ".R")` path on non-Unix machines) — handy from a
-  non-interactive CLI session where there's no clipboard. Useful arguments:
+  non-interactive CLI session where there's no clipboard. Use it when the
+  output is destined for a PR comment or an upstream issue. Useful arguments:
   - `venue =` — output format:
     - `"gh"` — GitHub-flavored Markdown (default)
     - `"so"` / `"ds"` — Stack Overflow / Discourse
@@ -112,16 +113,15 @@ but nothing more.
   - `std_out_err = TRUE` — capture stdout/stderr too (e.g. `system()` /
     subprocess or C-level output that doesn't come back as normal R results).
   - `wd =` — set the working directory when the code needs one.
-  - Use this when the reprex is destined for a PR comment or an upstream
-    issue. Companion helpers handle "wild-caught" reprexes (all exported in
-    reprex 2.x): `reprex_clean()` (strip the `#>` output markers from a
-    rendered/pasted reprex, leaving runnable code), `reprex_rescue()`
-    (recover code from R-console output with `>`/`+` prompts), and
-    `reprex_invert()` (the inverse of `reprex()` — recover the input code
-    from a rendered reprex).
   - Validation bonus: because `reprex()` runs in a fresh session, if it errors
     on a missing object or package, your example wasn't actually
     self-contained — fix that before sharing.
+
+  Companion helpers handle "wild-caught" reprexes (all exported in reprex
+  2.x): `reprex_clean()` (strip the `#>` output markers from a rendered/pasted
+  reprex, leaving runnable code), `reprex_rescue()` (recover code from
+  R-console output with `>`/`+` prompts), and `reprex_invert()` (the inverse
+  of `reprex()` — recover the input code from a rendered reprex).
 - When the bug might be **version-dependent**, capture `sessionInfo()` (or set
   `session_info = TRUE` above) in the reprex so versions are part of the
   record. If you suspect *stale* packages are the cause,
