@@ -1,0 +1,172 @@
+::: proof
+
+Adapted from [@klein2003survival, §8.3, Theoretical Note 1, p. 257].
+
+Assume that the censoring is noninformative
+(conditional on $\vx$, censoring times are independent of event times)
+and that there are no tied event times,
+so each ordered event time $t_i$ corresponds to a unique subject.
+Let $R(t_i)$ be the risk set at $t_i$ —
+$\{j : \tilde T_j \ge t_i\}$ per the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set).
+
+Fix any candidate subject $f \in R(t_i)$ and condition on the event
+"exactly one failure occurs at $t_i$, among subjects in $R(t_i)$".
+The conditional probability that this failure is subject $f$ (as
+opposed to some other subject in $R(t_i)$) follows from the
+definition of conditional probability,
+$\Pr(A \mid B \cap C) = \Pr(A \cap B \mid C) / \Pr(B \mid C)$,
+applied with
+
+- $A$ = "subject $f$ fails at $t_i$",
+- $B$ = "exactly one failure occurs at $t_i$",
+- $C$ = "the risk set at $t_i$ is $R(t_i)$".
+
+Under the no-ties assumption $A \subset B$ (subject $f$ failing at
+$t_i$ is automatically a one-failure event), so $A \cap B = A$ and
+$\Pr(A \cap B \mid C) = \Pr(A \mid C)$. The ratio simplifies to
+
+$$
+\ba
+\Pr\sb{f \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
+&= \frac{\Pr\sb{f \text{ fails at } t_i \mid R(t_i)}}
+         {\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}.
+\ea
+$$
+
+Since $j \in R(t_i)$ means $\tilde{T}_j = \min(T_j,\,C_j) \ge t_i$
+(see the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set)),
+we have both $T_j \ge t_i$ and $C_j \ge t_i$.
+Under noninformative censoring ($T_j$ and $C_j$ are conditionally
+independent given $\vx_j$), the event $C_j \ge t_i$ carries no
+additional information about the distribution of $T_j$ given $\vx_j$,
+so conditioning on $j \in R(t_i)$ is equivalent to conditioning on
+$T_j \ge t_i$ alone.
+By the [hazard definition](intro-to-survival-analysis.qmd#def-hazard),
+$\haz(t \mid \vx)$ is the instantaneous
+conditional failure rate at time $t$, given that the subject has
+survived to at least $t$; for a small interval of width $\Delta t$:
+
+$$
+\Pr\sb{T_j \in [t_i,\, t_i + \Delta t) \mid j \in R(t_i)}
+= \Pr\sb{T_j \in [t_i,\, t_i + \Delta t) \mid T_j \ge t_i}
+\;\approx\; \haz(t_i \mid \vx_j)\,\Delta t.
+$$
+
+Apply this to the candidate $f$ (and, more generally, to any
+$j \in R(t_i)$, since we'll need the same expression for every
+subject when we form the partial-likelihood denominator).
+Viewed as a function of $j \in R(t_i)$ for fixed $t_i$,
+the right-hand side $\haz(t_i \mid \vx_j)\,\Delta t$ is proportional
+to $\haz(t_i \mid \vx_j)$, because $\Delta t$ is the same constant
+for every subject in the risk set.
+By @thm-ph-haz-decomp,
+$\haz(t_i \mid \vx_j) = \haz_0(t_i)\,\theta(\vx_j)$,
+and $\haz_0(t_i)$ is likewise a constant shared by all subjects at $t_i$, so
+
+$$
+\ba
+\Pr\sb{j \text{ fails at } t_i \mid j \in R(t_i)}
+\;&\approx\; \haz(t_i \mid \vx_j)\,\Delta t
+\\
+\;&\propto\; \haz(t_i \mid \vx_j)
+&& \text{(as a function of } j \in R(t_i)\text{, fixed } t_i\text{)}
+\\
+&= \haz_0(t_i)\,\theta(\vx_j).
+\ea
+$$
+
+Treating subjects' individual failure events as conditionally
+independent given $R(t_i)$ (under the Cox model assumption that,
+conditional on covariates, each subject's failure time is
+independent of all other subjects' failure times;
+see [@klein2003survival, §8.3]),
+the probability of exactly one failure in $[t_i, t_i + \Delta t)$
+is, by inclusion-exclusion,
+
+$$
+\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
+= \sum_{k \in R(t_i)}
+    \Pr\sb{k \text{ fails} \mid R(t_i)}
+    \prod_{m \in R(t_i),\, m \ne k} \Pr\sb{m \text{ survives} \mid R(t_i)}.
+$$
+
+By the same hazard approximation,
+$\Pr\sb{m \text{ fails} \mid R(t_i)} \approx \haz_0(t_i)\,\theta(\vx_m)\,\Delta t = O(\Delta t)$,
+so each product $\prod_{m \ne k} \Pr\sb{m \text{ survives} \mid R(t_i)} = \prod_{m \ne k}(1 - O(\Delta t)) = 1 - O(\Delta t)$,
+and dropping $O(\Delta t^2)$ cross-terms (each pair of co-failures has
+probability $O(\Delta t^2)$) gives
+
+$$
+\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
+\;\approx\;
+\sum_{k \in R(t_i)} \haz_0(t_i)\,\theta(\vx_k)\,\Delta t.
+$$
+
+Substituting both into the conditional probability
+and canceling the common factor $\haz_0(t_i)\,\Delta t$:
+
+$$
+\ba
+\Pr\sb{f \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
+&\approx \frac{\haz_0(t_i)\,\theta(\vx_f)\,\Delta t}
+         {\sum_{k \in R(t_i)} \haz_0(t_i)\,\theta(\vx_k)\,\Delta t}
+\\
+&= \frac{\theta(\vx_f)}{\sum_{k \in R(t_i)} \theta(\vx_k)}.
+\ea
+$$
+
+The first display step uses $\approx$ because it inherits the
+first-order hazard approximation $\Pr\{T_j \in [t_i, t_i + \Delta t)
+\mid T_j \ge t_i\} \approx \haz(t_i \mid \vx_j)\,\Delta t$ (the
+*conditional* probability — the hazard's defining quantity, given
+the subject has survived to $t_i$). The second step's $=$ is exact:
+the $\haz_0(t_i)\,\Delta t$ factors cancel algebraically between
+numerator and denominator, leaving a ratio that is independent of
+$\Delta t$ altogether.
+
+In the realized data, let $(i)$ denote the subject who actually
+failed at $t_i$ (uniquely defined under the no-ties assumption).
+Since the ratio $\theta(\vx_f)/\sum_{k \in R(t_i)}\theta(\vx_k)$
+is already free of $\Delta t$, the $\Delta t \to 0$ limit is trivial;
+substituting $f = (i)$ gives the partial-likelihood
+contribution $\Lik^*_i(\b)$ from @def-ph-partial-lik:
+
+$$
+\lim_{\Delta t \to 0}
+\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
+\;=\;
+\frac{\theta(\vx_{(i)})}{\sum_{k \in R(t_i)} \theta(\vx_k)}
+\;=\; \Lik^*_i(\b).
+$$
+
+The **partial likelihood** [@cox1972regression] takes the product of
+these per-event conditional probabilities across the $D$ observed
+failure times:
+
+$$
+\Lik^*(\b)
+\;\eqdef\; \prod_{i=1}^{D} \Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}.
+$$
+
+Under the no-ties assumption, each ordered event time $t_i$ has
+$d_i = 1$, so $\prod_{i=1}^{D}(\cdots) = \prod_{\{i:\,d_i=1\}}(\cdots)$,
+and this matches the form in @def-ph-partial-lik.
+
+This partial likelihood product is a *construction* rather than a derivation of the joint
+probability: the factors are not formally independent (the risk set
+$R(t_{i+1})$ depends on who failed and was censored before $t_{i+1}$),
+but Cox showed that treating $\Lik^*(\b)$ as a likelihood — i.e.,
+maximizing it as a function of $\b$ — yields estimators with the
+usual large-sample properties (consistency, asymptotic normality,
+the standard score and information identities;
+see also [@klein2003survival, §8.3, Theoretical Note 1]).
+Under noninformative censoring, each factor depends on the observed
+history only through $R(t_i)$ and $\{\vx_j\}_{j \in R(t_i)}$, and
+substituting the per-event limit gives exactly the
+partial likelihood $\Lik^*(\b)$ of @def-ph-partial-lik.
+
+Because $\haz_0(t_i)$ and $\Delta t$ cancel within each factor,
+the partial likelihood depends on $\b$ alone
+and not on the baseline hazard $\haz_0(\cdot)$.
+
+:::

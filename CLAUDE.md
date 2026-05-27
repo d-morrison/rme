@@ -47,6 +47,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 ### Math Notation
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
+- Use `\eqdef` instead of `=` for the defining equation in any `{#def-...}` div
 - Include every intermediate step in derivations — do not skip steps
 - Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
 
@@ -60,6 +61,9 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Factual claims must have a specific citation
 - Variable definitions in exercises: use bullet points/table with symbol, meaning, and dataset column
 - After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div
+- Never use "above" or "below" to refer to content — cross-reference with `@label` syntax instead
+- For cross-page cross-references (labels in a different chapter), use direct markdown links `[text](chapter.qmd#label)` — Quarto `@label` syntax only resolves within the same page
+- Always add a noun phrase after "This", "That", and "Those" to clarify the referent (e.g., "This estimator", not "This")
 
 ### Pull Requests
 - Remove existing review requests immediately when starting work on a PR

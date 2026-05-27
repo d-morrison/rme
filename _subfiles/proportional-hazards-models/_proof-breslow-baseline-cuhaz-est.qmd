@@ -1,0 +1,183 @@
+::: proof
+
+Adapted from [@klein2003survival, §8.3, Theoretical Note 2, p. 258];
+the original profile-likelihood argument is due to @johansen1983extension.
+
+Assume, as in the partial-likelihood proof, that there are no tied event times,
+so each ordered event time $t_i$ corresponds to exactly one event.
+
+The full censored-data likelihood for the proportional-hazards model is
+
+$$
+\Lik\sb{\b,\,\haz_0(\cdot)}
+= \prod_{j = 1}^{n}
+    \haz(\tilde{T}_j \mid \vx_j)^{\delta_j}\,
+    \surv(\tilde{T}_j \mid \vx_j),
+$$
+
+where $\delta_j$ is the event indicator and $\tilde{T}_j$ the observed time
+for subject $j$.
+Substituting
+$\haz(t \mid \vx) = \haz_0(t)\,\theta(\vx)$ (by @thm-ph-haz-decomp)
+and
+$\surv(t \mid \vx) = \expf{-\cuhaz_0(t)\,\theta(\vx)}$
+(by @thm-ph-cuhaz, using $\surv(t) = \expf{-\cuhaz(t)}$ from the [survival/cumulative hazard relationship](intro-to-survival-analysis.qmd#cor-surv-int-haz))
+gives
+
+$$
+\Lik\sb{\b,\,\haz_0(\cdot)}
+= \prod_{j = 1}^{n}
+    \sb{\haz_0(\tilde{T}_j)\,\theta(\vx_j)}^{\delta_j}\,
+    \expf{-\cuhaz_0(\tilde{T}_j)\,\theta(\vx_j)}.
+$$
+
+Fix $\b$ and maximize over $\haz_0(\cdot)$.
+Subjects with $\delta_j = 0$ contribute only the survival term;
+for such subjects, $\haz_0(\tilde{T}_j)^{\delta_j} = 1$ regardless of $\haz_0$.
+Adding mass to $\haz_0$ at a non-event time $t$ increases $\cuhaz_0(\tilde{T}_j)$
+for every subject with $\tilde{T}_j \ge t$, penalizing their survival terms,
+without any compensating gain in a hazard-density factor.
+Conversely, for each event subject $j$ with $\delta_j = 1$, treat
+$\haz_0$ as a discrete hazard measure: $\haz_0(t_i)$ equals the
+point-mass weight placed at $t_i$. Consider any allocation of a
+fixed total mass $h_{0i}$ to a neighborhood of $t_i$:
+$\cuhaz_0(\tilde{T}_j)$ depends only on that total (the survival
+penalty $\expf{-\cuhaz_0(\tilde T_j)\theta(\vx_j)}$ is therefore
+unchanged), but the hazard-density factor
+$\haz_0(t_i)^{\delta_j}$ is maximized when all of that mass is
+concentrated as a single point at $t_i$ (so $\haz_0(t_i) = h_{0i}$);
+spreading the same total across a wider interval would reduce the
+per-point weight at $t_i$, lowering $\haz_0(t_i)$ below $h_{0i}$,
+while leaving the survival penalty fixed.
+The likelihood is therefore maximized by a hazard
+that places point masses only at the observed event times:
+
+$$
+\haz_0(t) = \begin{cases}
+h_{0i}, & t = t_i \text{ for some } i \in \set{1, \dots, D},\\
+0,      & \text{otherwise},
+\end{cases}
+$$
+
+with $\cuhaz_0(\tilde{T}_j) = \sum_{i\ :\ t_i \le \tilde{T}_j} h_{0i}$.
+Expanding the survival exponent and swapping the order of summation:
+
+$$
+\ba
+\sum_j \cuhaz_0(\tilde{T}_j)\,\theta(\vx_j)
+&= \sum_j \theta(\vx_j) \sum_{i:\ t_i \le \tilde{T}_j} h_{0i}
+\\
+&= \sum_i h_{0i} \sum_{j:\ \tilde{T}_j \ge t_i} \theta(\vx_j)
+\\
+&= \sum_i h_{0i} \sum_{j \in R(t_i)} \theta(\vx_j),
+\ea
+$$
+
+where the second equality swaps the order of summation,
+and the third uses $R(t_i) = \{j : \tilde{T}_j \ge t_i\}$
+(see the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set); this is the "at risk *at* $t_i$" convention with the
+$\ge$ boundary — a subject censored exactly at $t_i$ is in $R(t_i)$
+and contributes $h_{0i}$ to $\cuhaz_0(\tilde{T}_j)$).
+Write $S_i = \sum_{j \in R(t_i)} \theta(\vx_j)$ for the
+risk-set-weighted hazard-multiplier sum at $t_i$.
+Reindexing the hazard-density product: subjects with $\delta_j = 0$
+contribute a factor of $\haz_0(\tilde{T}_j)^0 = 1$ (no contribution),
+and for each subject with $\delta_j = 1$ their event occurred at some
+$t_i$, so $\haz_0(\tilde{T}_j) = h_{0i}$:
+
+$$
+\ba
+\prod_{j=1}^n \sb{\haz_0(\tilde{T}_j)\,\theta(\vx_j)}^{\delta_j}
+&= \prod_{j:\,\delta_j=1} \haz_0(\tilde{T}_j)\,\theta(\vx_j)
+   && \text{(terms with } \delta_j = 0 \text{ equal } 1\text{, dropped)}
+\\
+&= \prod_{i=1}^D h_{0i}\,\theta(\vx_{(i)}).
+   && \text{(}\haz_0(\tilde{T}_j) = h_{0i} \text{ for event } j \text{ at event time } t_i\text{)}
+\ea
+$$
+
+Factoring $\expf{-\sum_i h_{0i}\,S_i} = \prod_i \expf{-h_{0i}\,S_i}$
+and combining factor-by-factor with the hazard-density product:
+
+$$
+\ba
+\Lik\sb{\b,\,h_{01},\dots,h_{0D}}
+&= \underbrace{\prod_{i=1}^{D} h_{0i}\,\theta(\vx_{(i)})}_{\text{hazard-density}}
+   \cdot \underbrace{\prod_{i=1}^{D} \expf{-h_{0i}\,S_i}}_{\text{survival}}
+\\
+&= \prod_{i = 1}^{D}
+    h_{0i}\;\theta(\vx_{(i)})\;
+    \expf{-h_{0i}\,S_i}.
+\ea
+$$
+
+The log-likelihood is separable in the $h_{0i}$ (each summand $\log h_{0i} - h_{0i}\,S_i$ involves only $h_{0i}$):
+
+$$
+\loglik\sb{\b,\,h_{01},\dots,h_{0D}}
+= \sum_{i = 1}^{D} \log\theta(\vx_{(i)})
+  + \sum_{i = 1}^{D}
+    \cb{\log h_{0i} - h_{0i}\,S_i}.
+$$
+
+Differentiating with respect to $h_{0i}$ and setting the derivative to zero:
+
+$$
+\frac{1}{h_{0i}} \;-\; S_i \;=\; 0
+\quad\Longrightarrow\quad
+\hat h_{0i} = \frac{1}{S_i}.
+$$
+
+The second derivative $-1/h_{0i}^2 < 0$ confirms this critical point is a maximum.
+
+Summing over event times $t_i \le t$ gives the **Breslow estimator**
+of the baseline cumulative hazard:
+
+$$
+\hat \cuhaz_0(t)
+= \sum_{t_i \le t} \hat h_{0i}
+= \sum_{t_i \le t} \frac{1}{S_i}
+\quad\text{where } S_i = \sum_{j \in R(t_i)} \theta(\vx_j).
+$$
+
+With tied event times, the numerator generalizes to $d_i$,
+the number of events at $t_i$
+(see [@klein2003survival, §8.8] for the tie-handling adjustments).
+
+Substituting $\hat h_{0i}$ back into the profile likelihood:
+
+$$
+\ba
+\Lik\sb{\b,\,\hat h_{01},\dots,\hat h_{0D}}
+&= \prod_{i = 1}^{D}
+    \hat h_{0i}\;\theta(\vx_{(i)})\;
+    \expf{-\hat h_{0i}\,S_i}
+\\
+&= \prod_{i = 1}^{D}
+    \frac{\theta(\vx_{(i)})}{S_i}\;
+    \expf{-S_i / S_i}
+    && \text{(substituting } \hat h_{0i} = 1/S_i\text{)}
+\\
+&= \prod_{i = 1}^{D}
+    \frac{\theta(\vx_{(i)})}{S_i}\;
+    e^{-1}
+    && \text{(since } S_i/S_i = 1\text{)}
+\\
+&= e^{-D}
+   \cdot \prod_{i = 1}^{D} \frac{\theta(\vx_{(i)})}{S_i}.
+\ea
+$$
+
+Under the no-ties assumption each event time $t_i$ has $d_i = 1$, so
+$\prod_{i=1}^D \frac{\theta(\vx_{(i)})}{S_i}$
+equals the partial likelihood $\Lik^*(\b)$ of @def-ph-partial-lik.
+Hence
+
+$$\Lik\sb{\b,\,\hat h_{01},\dots,\hat h_{0D}} = e^{-D}\,\Lik^*(\b).$$
+
+The factor $e^{-D}$ does not depend on $\b$,
+so the profile likelihood is proportional to the partial likelihood $\Lik^*(\b)$.
+This proportionality justifies treating the partial likelihood as a profile likelihood
+for $\b$, with $\haz_0(\cdot)$ concentrated out.
+
+:::
