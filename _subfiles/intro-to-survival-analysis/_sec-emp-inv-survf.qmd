@@ -1,0 +1,238 @@
+:::{#def-emp-inv-surv-fn}
+
+#### Empirical inverse survival function
+
+Given a time-to-event dataset,
+the **empirical inverse survival function** (empirical ISF),
+also called the **empirical survival quantile function** (empirical SQF),
+$\hsurv^{-1}(p)$
+replaces the population survival function $\surv(t)$
+with an estimated survival function $\hsurv(t)$:
+
+$$\hsurv^{-1}(p) \eqdef \inf\cb{t \ge 0 : \hsurv(t) \le p}, \quad 0 < p < 1.$$
+
+:::
+
+{{< slidebreak >}}
+
+Since $\hsurv(t)$ is a non-increasing step function,
+$\hsurv^{-1}(p)$ equals the smallest observed event time
+at which the estimated survival probability has dropped to or below $p$.
+
+**From the Kaplan-Meier estimator.**
+Substituting $\hsurv_{KM}(t)$ from @def-KM-estimator:
+
+$$
+\hsurv_{KM}^{-1}(p)
+= \inf\cb{t \ge 0 : \prod_{t_i \le t}\sb{1 - \frac{d_i}{r_i}} \le p}.
+$$
+
+**From the Nelson-Aalen estimator.**
+Substituting $\hsurv_{NA}(t) = \expf{-\hat{\cuhaz}_{NA}(t)}$
+from @def-na-cuhaz-est:
+
+$$
+\hsurv_{NA}^{-1}(p)
+= \inf\cb{t \ge 0 : \expf{-\sum_{t_i \le t}\frac{d_i}{r_i}} \le p}.
+$$
+
+In R, both estimators are computed from a `survfit()` object using `quantile()`.
+
+{{< slidebreak >}}
+
+:::{#exm-emp-isf-drug6mp}
+##### Empirical ISF for 6-MP patients
+
+Using the `drug6mp` dataset,
+we compute the empirical ISF for the 6-MP patients.
+The KM and Nelson-Aalen survival estimates at each event time are:
+
+```{r}
+#| code-fold: true
+library(KMsurv)
+library(dplyr)
+library(survival)
+data(drug6mp)
+
+km_fit <- drug6mp |>
+  mutate(surv = Surv(t2, relapse)) |>
+  survfit(formula = surv ~ 1, data = _)
+
+na_fit <- drug6mp |>
+  mutate(surv = Surv(t2, relapse)) |>
+  survfit(formula = surv ~ 1, type = "fleming-harrington", data = _)
+
+tbl <- tibble(
+  time = km_fit$time,
+  n.risk = km_fit$n.risk,
+  n.event = km_fit$n.event,
+  surv_km = km_fit$surv,
+  surv_na = na_fit$surv
+) |>
+  filter(n.event > 0)
+
+library(knitr)
+kable(
+  tbl,
+  digits = 3,
+  col.names = c(
+    "Time (months)",
+    "At risk $r_i$",
+    "Events $d_i$",
+    "$\\hat{S}_{KM}(t)$",
+    "$\\hat{S}_{NA}(t)$"
+  )
+)
+```
+
+:::{#fig-emp-surv-drug6mp}
+
+```{r}
+#| code-fold: true
+library(ggplot2)
+
+surv_steps <- rbind(
+  data.frame(
+    time = c(0, km_fit$time), surv = c(1, km_fit$surv),
+    estimator = "Kaplan-Meier"
+  ),
+  data.frame(
+    time = c(0, na_fit$time), surv = c(1, na_fit$surv),
+    estimator = "Nelson-Aalen"
+  )
+)
+
+cens_marks <- rbind(
+  data.frame(
+    time = km_fit$time[km_fit$n.censor > 0],
+    surv = km_fit$surv[km_fit$n.censor > 0],
+    estimator = "Kaplan-Meier"
+  ),
+  data.frame(
+    time = na_fit$time[na_fit$n.censor > 0],
+    surv = na_fit$surv[na_fit$n.censor > 0],
+    estimator = "Nelson-Aalen"
+  )
+)
+
+ev_idx_km <- km_fit$n.event > 0
+s_after_km <- km_fit$surv[ev_idx_km]
+s_before_km <- c(1, head(s_after_km, -1))
+ev_idx_na <- na_fit$n.event > 0
+s_after_na <- na_fit$surv[ev_idx_na]
+s_before_na <- c(1, head(s_after_na, -1))
+
+open_surv <- rbind(
+  data.frame(time = km_fit$time[ev_idx_km], surv = s_before_km, estimator = "Kaplan-Meier"),
+  data.frame(time = na_fit$time[ev_idx_na], surv = s_before_na, estimator = "Nelson-Aalen")
+)
+closed_surv <- rbind(
+  data.frame(time = km_fit$time[ev_idx_km], surv = s_after_km, estimator = "Kaplan-Meier"),
+  data.frame(time = na_fit$time[ev_idx_na], surv = s_after_na, estimator = "Nelson-Aalen")
+)
+
+ggplot(surv_steps, aes(x = time, y = surv, color = estimator)) +
+  geom_step() +
+  geom_point(data = cens_marks, shape = 3, size = 2, show.legend = FALSE) +
+  geom_point(data = open_surv, shape = 1, size = 2) +
+  geom_point(data = closed_surv, shape = 19, size = 2) +
+  scale_color_manual(
+    values = c("Kaplan-Meier" = "steelblue", "Nelson-Aalen" = "darkorange")
+  ) +
+  coord_cartesian(ylim = c(0, 1.05)) +
+  labs(x = "Time (months)", y = expression(hat(S)(t)), color = NULL) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+Estimated survival functions for 6-MP patients from the KM and
+Nelson-Aalen estimators.
+
+:::
+
+:::{#fig-emp-isf-drug6mp}
+
+```{r}
+#| code-fold: true
+
+ev_km <- km_fit$n.event > 0
+t_ev_km <- km_fit$time[ev_km]
+s_ev_km <- km_fit$surv[ev_km]
+
+ev_na <- na_fit$n.event > 0
+t_ev_na <- na_fit$time[ev_na]
+s_ev_na <- na_fit$surv[ev_na]
+
+isf_steps <- rbind(
+  data.frame(
+    p = c(1, s_ev_km), t = c(t_ev_km[1], t_ev_km),
+    estimator = "Kaplan-Meier"
+  ),
+  data.frame(
+    p = c(1, s_ev_na), t = c(t_ev_na[1], t_ev_na),
+    estimator = "Nelson-Aalen"
+  )
+)
+isf_steps <- isf_steps[order(isf_steps$estimator, isf_steps$p), ]
+
+open_isf <- rbind(
+  data.frame(p = head(s_ev_km, -1), t = tail(t_ev_km, -1), estimator = "Kaplan-Meier"),
+  data.frame(p = head(s_ev_na, -1), t = tail(t_ev_na, -1), estimator = "Nelson-Aalen")
+)
+closed_isf <- rbind(
+  data.frame(p = s_ev_km, t = t_ev_km, estimator = "Kaplan-Meier"),
+  data.frame(p = s_ev_na, t = t_ev_na, estimator = "Nelson-Aalen")
+)
+
+ggplot(isf_steps, aes(x = p, y = t, color = estimator)) +
+  geom_step() +
+  geom_point(data = open_isf, shape = 1, size = 2) +
+  geom_point(data = closed_isf, shape = 19, size = 2) +
+  scale_color_manual(
+    values = c("Kaplan-Meier" = "steelblue", "Nelson-Aalen" = "darkorange")
+  ) +
+  coord_cartesian(xlim = c(0, 1)) +
+  labs(x = "p", y = expression(hat(S)^{-1}*(p)), color = NULL) +
+  theme_bw() +
+  theme(legend.position = "top")
+```
+
+Empirical inverse survival function $\hsurv^{-1}(p)$ for 6-MP patients
+from the KM and Nelson-Aalen estimators.
+
+:::
+
+The rightmost step is drawn out to $p = 1$ for visual continuity only.
+The inverse survival function is defined for $0 < p < 1$;
+at the boundary, $\hsurv^{-1}(1) = \inf\cb{t \ge 0 : \hsurv(t) \le 1} = 0$,
+since $\hsurv(0) = 1$.
+
+The empirical median survival time is the smallest event time $t$
+at which the estimated survival probability falls to or below 0.5.
+
+From the table:
+
+- $\hsurv_{KM}(22) \approx 0.538 > 0.5$
+  and $\hsurv_{KM}(23) \approx 0.448 \le 0.5$,
+  so $\hsurv_{KM}^{-1}(0.5) = 23$ months.
+
+- $\hsurv_{NA}(22) \approx 0.557 > 0.5$
+  and $\hsurv_{NA}(23) \approx 0.471 \le 0.5$,
+  so $\hsurv_{NA}^{-1}(0.5) = 23$ months.
+
+In R:
+
+```{r}
+#| code-fold: show
+quantile(km_fit, probs = 0.5)
+```
+
+```{r}
+#| code-fold: show
+quantile(na_fit, probs = 0.5)
+```
+
+Both the KM and Nelson-Aalen estimators give an estimated median
+relapse-free survival time of **23 months** for the 6-MP patients.
+
+:::

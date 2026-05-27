@@ -1,0 +1,214 @@
+:::{#def-inv-surv-fn}
+
+#### Inverse survival function
+
+Given a random time-to-event variable $T$ with
+survival function $\surv(t)$ (@def-surv-fn),
+the **inverse survival function** (ISF),
+also called the **survival quantile function** (SQF),
+$\surv^{-1}(p)$
+is the earliest time $t$ at which the survival probability
+has fallen to or below $p$:
+
+$$\surv^{-1}(p) \eqdef \inf\cb{t \ge 0 : \surv(t) \le p}, \quad 0 < p < 1.$$
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-inv-surv-exp}
+##### Exponential distribution
+
+For an exponential distribution with rate $\haz > 0$,
+the survival function is $\surv(t) = \ef{-\haz t}$.
+
+Setting $\surv(t) = p$ and solving for $t$:
+
+$$
+\ba
+\ef{-\haz t} &= p\\
+-\haz t &= \logf{p}\\
+t &= \frac{-\logf{p}}{\haz},
+\ea
+$$
+
+so the inverse survival function of the exponential distribution is:
+
+$$\surv^{-1}(p) = \frac{-\logf{p}}{\haz}.$$
+
+:::{#fig-isf-exp-rates}
+
+```{r}
+#| code-fold: true
+library(ggplot2)
+
+p_seq <- seq(0.001, 0.999, length.out = 500)
+rates <- c(0.5, 1, 2, 4)
+
+df_isf <- do.call(rbind, lapply(rates, function(lam) {
+  data.frame(
+    p = p_seq,
+    isf = -log(p_seq) / lam,
+    lambda = factor(
+      paste0("λ = ", lam),
+      levels = paste0("λ = ", rates)
+    )
+  )
+}))
+
+ggplot(df_isf, aes(x = p, y = isf, color = lambda)) +
+  geom_line() +
+  labs(
+    x = expression(p),
+    y = expression(S^{-1}*(p)),
+    color = NULL
+  ) +
+  theme_bw()
+```
+
+Exponential inverse survival function $\surv^{-1}(p) = -\log(p)/\haz$
+for various rate parameters $\haz$.
+
+:::
+
+**Numerical example.**
+Suppose patients in a clinical trial have exponentially distributed
+survival times with rate $\haz = 2$ events per year.
+What is the median survival time?
+
+The median survival time is the time $t$ at which
+half the patients are still alive, i.e. $\surv(t) = 0.5$:
+
+$$
+\surv^{-1}(0.5)
+= \frac{-\logf{0.5}}{2}
+= \frac{\logf{2}}{2}
+\approx \frac{0.693}{2}
+\approx 0.347 \text{ years.}
+$$
+
+@fig-isf-surv-exp-median and @fig-isf-isf-exp-median show the survival
+function $\surv(t) = \ef{-2t}$ and the inverse survival function
+$\surv^{-1}(p) = -\log(p)/2$, each with the median survival point
+highlighted.
+
+::::{#fig-isf-exp-median layout-ncol=2}
+
+:::{#fig-isf-surv-exp-median}
+```{r}
+#| code-fold: true
+library(ggplot2)
+
+lam <- 2
+t_med <- log(2) / lam
+t_seq <- seq(0, 2, length.out = 500)
+p_seq <- seq(0.001, 0.999, length.out = 500)
+
+ggplot(
+  data.frame(t = t_seq, s = exp(-lam * t_seq)),
+  aes(x = t, y = s)
+) +
+  geom_line() +
+  geom_segment(
+    aes(x = 0, xend = t_med, y = 0.5, yend = 0.5),
+    linetype = "dashed", color = "red"
+  ) +
+  geom_segment(
+    aes(x = t_med, xend = t_med, y = 0, yend = 0.5),
+    linetype = "dashed", color = "red"
+  ) +
+  geom_point(aes(x = t_med, y = 0.5), color = "red", size = 3) +
+  labs(x = "t (years)", y = expression(S(t))) +
+  theme_bw()
+```
+
+Survival function $\surv(t)$.
+:::
+
+:::{#fig-isf-isf-exp-median}
+```{r}
+#| code-fold: true
+ggplot(
+  data.frame(p = p_seq, isf = -log(p_seq) / lam),
+  aes(x = p, y = isf)
+) +
+  geom_line() +
+  geom_segment(
+    aes(x = 0.5, xend = 0.5, y = 0, yend = t_med),
+    linetype = "dashed", color = "red"
+  ) +
+  geom_segment(
+    aes(x = 0, xend = 0.5, y = t_med, yend = t_med),
+    linetype = "dashed", color = "red"
+  ) +
+  geom_point(aes(x = 0.5, y = t_med), color = "red", size = 3) +
+  labs(x = "p", y = expression(S^{-1}*(p))) +
+  theme_bw()
+```
+
+Inverse survival function $\surv^{-1}(p)$.
+:::
+
+For $\haz = 2$, the survival function $\surv(t)$ (@fig-isf-surv-exp-median) and
+inverse survival function $\surv^{-1}(p)$ (@fig-isf-isf-exp-median),
+with the median survival time $\surv^{-1}(0.5) \approx 0.347$ years
+shown as a red point.
+::::
+
+In R:
+
+```{r}
+#| code-fold: show
+qexp(p = 0.5, rate = 2)
+```
+
+:::
+
+{{< slidebreak >}}
+
+:::{#thm-inv-surv-is-quantile}
+
+The inverse survival function equals the $(1-p)$th
+[population quantile](probability.qmd#def-quantile-function)
+of $T$:
+
+$$\surv^{-1}(p) = Q(1 - p),$$
+
+where $Q(u) = \inf\cb{t : \cdf(t) \ge u}$ is the quantile function of $T$.
+
+:::
+
+::: proof
+
+Since $\surv(t) = 1 - \cdf(t)$,
+
+$$
+\ba
+\surv(t) \le p
+&\iff 1 - \cdf(t) \le p\\
+&\iff \cdf(t) \ge 1 - p.
+\ea
+$$
+
+Therefore,
+
+$$
+\surv^{-1}(p)
+= \inf\cb{t \ge 0 : \surv(t) \le p}
+= \inf\cb{t \ge 0 : \cdf(t) \ge 1-p}.
+$$
+
+Since $T \ge 0$ almost surely, $\cdf(t) = 0 < 1-p$ for all $t < 0$
+(using $p < 1$), so no $t < 0$ satisfies $\cdf(t) \ge 1-p$;
+hence the constraint $t \ge 0$ is redundant and can be dropped:
+
+$$
+\inf\cb{t \ge 0 : \cdf(t) \ge 1-p}
+= \inf\cb{t : \cdf(t) \ge 1-p}
+= Q(1-p).
+$$
+
+:::
+
+{{< slidebreak >}}
+
