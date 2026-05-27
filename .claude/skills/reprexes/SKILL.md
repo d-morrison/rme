@@ -1,6 +1,12 @@
 ---
 name: reprexes
-description: Isolate a technical problem into a minimal reproducible example ("reprex") and iterate fixes on that instead of inside the full application. Use when debugging a bug whose cause isn't obvious after a first look, when a failure only surfaces deep in a large pipeline / app / render, when the full-context test loop is slow, or before filing an upstream issue. Invoke explicitly with /reprexes.
+description: >
+  Isolate a technical problem into a minimal reproducible example ("reprex")
+  and iterate fixes on that instead of inside the full application. Use when
+  debugging a bug whose cause isn't obvious after a first look, when a failure
+  only surfaces deep in a large pipeline / app / render, when the full-context
+  test loop is slow, or before filing an upstream issue. Invoke explicitly
+  with /reprexes.
 user-invocable: true
 allowed-tools:
   - Bash
@@ -17,8 +23,8 @@ reproduction of the phenomenon, iterate candidate fixes on *that* (a fast,
 clean loop), then port the working fix back to the real code.
 
 Reference: <https://r4ds.hadley.nz/workflow-help.html#making-a-reprex>. The
-payoff is real: ~80% of the time, the act of building a thorough reprex
-surfaces the cause on its own — the noise you strip away was hiding it.
+payoff is real: often, the act of building a thorough reprex surfaces the
+cause on its own — the noise you strip away was hiding it.
 
 ## When this fires
 
@@ -73,7 +79,7 @@ but nothing more.
 
 ## Minimizing the data
 
-- Prefer a **built-in dataset** (`mtcars`, `iris`, `mpg`) or a hand-built
+- Prefer a **built-in dataset** (`mtcars`, `mpg`) or a hand-built
   tiny frame over the real data.
 - If you must use a slice of real data, serialize the minimal slice with
   `dput()` so the reprex recreates it inline — no external file dependency.
@@ -82,11 +88,12 @@ but nothing more.
 ## R / Quarto specifics
 
 - In R packages and Quarto projects, reprexes are usually short R snippets or
-  a single standalone `.qmd` page. Respect the repo's lint config
-  (`.lintr` / `.lintr.R`) if the reprex code will be ported back.
+  a single standalone `.qmd` page. Respect the repo's lint config if the
+  reprex code will be ported back.
 - The **`reprex` package** (tidyverse, <https://reprex.tidyverse.org/>)
   formats a reprex for sharing: it runs your code in a clean, separate R
-  session via `rmarkdown::render()` and emits code **plus actual output**.
+  session (via `callr` since reprex 2.0) and emits code **plus actual
+  output**.
   Copy the code and call `reprex::reprex()` (reads the clipboard by default),
   or point it at a file with `reprex(input = "/tmp/reprex.R")` — handy from a
   non-interactive CLI session where there's no clipboard. Useful arguments:
@@ -106,8 +113,11 @@ but nothing more.
   - Validation bonus: because `reprex()` runs in a fresh session, if it errors
     on a missing object or package, your example wasn't actually
     self-contained — fix that before sharing.
-- When the bug might be **version-dependent**, capture `sessionInfo()` (or
-  run `tidyverse_update()`) in the reprex so versions are part of the record.
+- When the bug might be **version-dependent**, capture `sessionInfo()` (or set
+  `session_info = TRUE` above) in the reprex so versions are part of the
+  record. If you suspect *stale* packages are the cause, `tidyverse_update()`
+  outside the reprex can rule that out — but it updates packages, it doesn't
+  record versions, so don't put it in the reprex itself.
 - Build artifacts (`_site/`, `_freeze/`, `.quarto/`) are common confounders
   for "it renders differently" bugs — a clean standalone render sidesteps
   stale freeze caches.
