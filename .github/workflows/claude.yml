@@ -797,6 +797,17 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          # Sweep any staged-but-uncommitted edits into a commit FIRST.
+          # Claude sometimes runs `git add` without `git commit`; without this,
+          # those edits are silently dropped by the HEAD-unchanged check below
+          # (it compares HEAD to the recorded starting SHA, which a bare
+          # `git add` doesn't move). Back-ported from UCD-SERG/shigella#24.
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "claude[bot]"
+            git config user.email "claude[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "@claude: auto-commit residual uncommitted changes"
+          fi
           CURRENT_SHA=$(git rev-parse HEAD)
           if [ "$CURRENT_SHA" = "$STARTING_SHA" ]; then
             echo "No new commits on $BRANCH — Claude produced no changes; skipping push/PR."
