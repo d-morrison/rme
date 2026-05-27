@@ -797,6 +797,14 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          # Sweep changes Claude staged or left untracked but didn't commit, so the HEAD-unchanged check below doesn't drop them.
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "claude[bot]"
+            git config user.email "claude[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: auto-commit residual staged/untracked changes from @claude session" \
+              || { echo "::error::auto-commit of residual @claude changes failed"; exit 1; }
+          fi
           CURRENT_SHA=$(git rev-parse HEAD)
           if [ "$CURRENT_SHA" = "$STARTING_SHA" ]; then
             echo "No new commits on $BRANCH — Claude produced no changes; skipping push/PR."
