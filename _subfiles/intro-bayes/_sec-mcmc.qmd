@@ -1,7 +1,7 @@
 When the posterior distribution has a known closed form,
 we can sample from it directly and compute summaries analytically.
 In most real-world models, however,
-the normalizing constant $p(\bfy)$ is intractable,
+the normalizing constant $p(\vy)$ is intractable,
 making direct sampling and closed-form summaries impossible.
 **Markov Chain Monte Carlo (MCMC)** methods provide a practical solution:
 instead of sampling independent draws from the exact posterior,
@@ -10,10 +10,10 @@ converges to the posterior [@dobson4e, Chapter 13, p. 287].
 
 ## Why the normalizing constant is computationally challenging
 
-The posterior is $p(\vth \mid \bfy) \propto p(\bfy \mid \vth)\, p(\vth)$.
+The posterior is $p(\vth \mid \vy) \propto p(\vy \mid \vth)\, p(\vth)$.
 The normalizing constant is
 
-$$p(\bfy) = \int p(\bfy \mid \vth)\, p(\vth)\, d\vth,$$
+$$p(\vy) = \int p(\vy \mid \vth)\, p(\vth)\, d\vth,$$
 
 a high-dimensional integral that typically has no closed form.
 Computing it numerically becomes infeasible as the dimension of $\vth$ grows
@@ -21,7 +21,7 @@ Computing it numerically becomes infeasible as the dimension of $\vth$ grows
 
 MCMC sidesteps this problem:
 many algorithms require only the *ratio*
-$p(\vth^* \mid \bfy) / p(\vth \mid \bfy)$,
+$p(\vth^* \mid \vy) / p(\vth \mid \vy)$,
 in which the normalizing constant cancels.
 
 ## Monte Carlo integration
@@ -30,10 +30,10 @@ Before introducing Markov chains,
 it helps to understand **Monte Carlo integration**
 [@dobson4e, Chapter 13, p. 290].
 If we could draw $M$ independent samples
-$\vth^{(1)}, \ldots, \vth^{(M)} \siid p(\vth \mid \bfy)$,
+$\vth^{(1)}, \ldots, \vth^{(M)} \siid p(\vth \mid \vy)$,
 we could approximate any posterior expectation:
 
-$$\E{g(\vth) \mid \bfy} \approx \frac{1}{M} \sum_{m=1}^{M} g\!\left(\vth^{(m)}\right).$$
+$$\E{g(\vth) \mid \vy} \approx \frac{1}{M} \sum_{m=1}^{M} g\!\left(\vth^{(m)}\right).$$
 
 In particular, the posterior mean,
 posterior variance,
@@ -45,7 +45,7 @@ are all special cases of this formula.
 
 Recall the Beta-Bernoulli model with
 $n = 91$ observations and $r = 55$ successes.
-The posterior is $\pi \mid \bfy \sim \mathrm{Beta}(56, 37)$.
+The posterior is $\pi \mid \vy \sim \mathrm{Beta}(56, 37)$.
 We draw $M = 5{,}000$ samples and compare Monte Carlo summaries with exact values.
 
 ```{r}
@@ -89,7 +89,7 @@ p(\vth^{(t+1)} \mid \vth^{(t)}).$$
 Under mild conditions,
 a Markov chain converges to a unique **stationary distribution**.
 MCMC algorithms are designed so that the stationary distribution
-is the target posterior $p(\vth \mid \bfy)$
+is the target posterior $p(\vth \mid \vy)$
 [@dobson4e, Chapter 13, p. 291].
 
 ## The Metropolis--Hastings algorithm
@@ -101,27 +101,27 @@ At each iteration $t$:
 1. Propose a new value $\vth^*$ from a **proposal distribution** $q(\vth^* \mid \vth^{(t)})$.
 2. Compute the **acceptance ratio**
 
-$$\alpha = \frac{p(\bfy \mid \vth^*)\, p(\vth^*)}{p(\bfy \mid \vth^{(t)})\, p(\vth^{(t)})}
+$$\alpha = \frac{p(\vy \mid \vth^*)\, p(\vth^*)}{p(\vy \mid \vth^{(t)})\, p(\vth^{(t)})}
 \cdot \frac{q(\vth^{(t)} \mid \vth^*)}{q(\vth^* \mid \vth^{(t)})}.$$
 
 3. Accept the proposal with probability $\min(1, \alpha)$:
-   if accepted, set $\vth^{(t+1)} = \vth^*$;
+   if accepted, set $\vth^{(t+1)} = \vth^*$.
    otherwise set $\vth^{(t+1)} = \vth^{(t)}$.
 
-Because the normalizing constant $p(\bfy)$ appears in both numerator and denominator,
+Because the normalizing constant $p(\vy)$ appears in both numerator and denominator,
 it cancels in the ratio,
 so only the unnormalized posterior is needed.
 
 :::{#def-mh}
 ## Metropolis--Hastings algorithm
 
-Given a target posterior $p(\vth \mid \bfy) \propto p(\bfy \mid \vth)\, p(\vth)$
+Given a target posterior $p(\vth \mid \vy) \propto p(\vy \mid \vth)\, p(\vth)$
 and a proposal distribution $q(\cdot \mid \vth)$,
 one step of the **MH algorithm** proceeds as:
 
 1. Draw $\vth^* \sim q(\cdot \mid \vth^{(t)})$.
 2. Compute $\alpha = \min\!\left(1,\,
-   \frac{p(\bfy \mid \vth^*)\, p(\vth^*)}{p(\bfy \mid \vth^{(t)})\, p(\vth^{(t)})}
+   \frac{p(\vy \mid \vth^*)\, p(\vth^*)}{p(\vy \mid \vth^{(t)})\, p(\vth^{(t)})}
    \cdot \frac{q(\vth^{(t)} \mid \vth^*)}{q(\vth^* \mid \vth^{(t)})}\right)$.
 3. Set $\vth^{(t+1)} = \vth^*$ with probability $\alpha$,
    else $\vth^{(t+1)} = \vth^{(t)}$.
@@ -169,12 +169,11 @@ for multiparameter models
 When $\vth = (\theta_1, \ldots, \theta_K)$,
 each component is updated in turn by sampling from its
 **full conditional distribution**
-$p(\theta_k \mid \theta_{-k}, \bfy)$,
+$p(\theta_k \mid \theta_{-k}, \vy)$,
 where $\theta_{-k}$ denotes all components except $\theta_k$.
 The resulting proposal is always accepted (acceptance probability 1).
 Gibbs sampling requires that the full conditionals are available in closed form.
-JAGS (Just Another Gibbs Sampler) automates this approach for a wide class of models;
-see @sec-jags for an example.
+JAGS (Just Another Gibbs Sampler) automates this approach for a wide class of models.
 
 ## Burn-in {#sec-burnin}
 
@@ -188,8 +187,7 @@ and does not yet represent draws from the posterior
 [@dobson4e, Chapter 13, p. 301].
 :::
 
-The length of the burn-in period is chosen by inspection of trace plots
-(see @sec-mcmc-diagnostics).
+The length of the burn-in period is chosen by inspection of trace plots.
 A common default is to discard the first 10--20% of iterations.
 
 ## Convergence diagnostics {#sec-mcmc-diagnostics}
@@ -209,9 +207,6 @@ with no obvious trends or stuck regions.
 
 ```{r}
 #| code-fold: show
-#| label: fig-trace-mh
-#| fig-cap: "MH chain trace plot; dashed line marks end of burn-in."
-library(ggplot2)
 burnin <- 500L
 df_chain <- data.frame(iteration = seq_along(mh_chain), pi = mh_chain)
 ggplot(df_chain, aes(x = iteration, y = pi)) +
@@ -234,7 +229,7 @@ A rapidly decaying ACF indicates good mixing.
 Running multiple chains from different starting points
 provides a stronger convergence check than a single chain.
 The **Gelman--Rubin statistic** $\hat{R}$
-compares within-chain and between-chain variance;
+compares within-chain and between-chain variance.
 $\hat{R} \approx 1$ indicates convergence
 [@dobson4e, Chapter 13, p. 304].
 A common rule of thumb is $\hat{R} < 1.1$.
