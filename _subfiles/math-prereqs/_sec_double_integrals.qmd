@@ -49,49 +49,78 @@ equal — so the order of integration can be exchanged.
 
 {{< slidebreak >}}
 
-:::{#thm-fubini-tonelli}
+::::{#exm-fubini-nonrect}
 
-### Fubini–Tonelli theorem (measure-theoretic form)
+#### Changing the order of integration for a non-rectangular region
 
-Let $(\Omega_1, \mathcal F_1, \mu_1)$ and $(\Omega_2, \mathcal F_2, \mu_2)$
-be **σ-finite** measure spaces,
-and let $f : \Omega_1 \times \Omega_2 \to \mathbb{R}$ be measurable
-with respect to the product σ-algebra
-$\mathcal F_1 \otimes \mathcal F_2$.
-If either
+Adapted from [@larsonCalc11e, Section 14.2, Example 4, pp. 984--985].
 
-(a) $f \ge 0$ almost everywhere with respect to $\mu_1 \otimes \mu_2$
-(**Tonelli's theorem**), or
+Find the volume of the solid bounded by the surface $z = \ef{-x^2}$
+and the planes $z = 0$, $y = 0$, $y = x$, and $x = 1$.
 
-(b) $\int_{\Omega_1 \times \Omega_2} \abs{f}\,d(\mu_1 \otimes \mu_2) < \infty$
-(**Fubini's theorem**),
+The base of the solid in the $xy$-plane is the triangular region
+$D = \{(x, y) : 0 \le x \le 1,\; 0 \le y \le x\}$,
+so the volume is
 
-then both iterated integrals exist, agree with the double integral,
-and equal each other:
+$$\iint_D \ef{-x^2}\,dA.$$
+
+**Order $dx\,dy$ is intractable.** Re-describing $D$ as
+$D = \{(x, y) : 0 \le y \le 1,\; y \le x \le 1\}$, the inner integral is
+
+$$\int_y^1 \ef{-x^2}\,dx,$$
+
+which has no elementary antiderivative.
+
+**Order $dy\,dx$ works.** Applying @thm-fubini Part 1
+($\ef{-x^2}$ is continuous and $D$ is the vertically simple region
+$0 \le x \le 1$, $0 \le y \le x$):
 
 $$
 \ba
-\int_{\Omega_1 \times \Omega_2} f\,d(\mu_1 \otimes \mu_2)
-&= \int_{\Omega_1} \paren{\int_{\Omega_2} f(\omega_1, \omega_2)\,d\mu_2(\omega_2)}\,d\mu_1(\omega_1)\\
-&= \int_{\Omega_2} \paren{\int_{\Omega_1} f(\omega_1, \omega_2)\,d\mu_1(\omega_1)}\,d\mu_2(\omega_2).
+\iint_D \ef{-x^2}\,dA
+&= \int_0^1\!\int_0^x \ef{-x^2}\,dy\,dx
+\\&= \int_0^1 \ef{-x^2}\paren{\int_0^x dy}\,dx
+\\&= \int_0^1 x\,\ef{-x^2}\,dx
+\\&= \sb{-\frac{1}{2}\,\ef{-x^2}}_0^1
+\\&= -\frac{1}{2}\paren{\ef{-1} - 1}
+\\&= \frac{e - 1}{2e}
+\\&\approx 0.316
 \ea
 $$
 
-[@billingsley1995probability, Theorem 18.3; @gut2013, Theorem 9.1, p. 65;
-@fubini1907; @wp:fubini]
+:::{#fig-fubini-nonrect}
+
+```{r}
+#| code-fold: true
+#| message: false
+
+n_grid <- 51
+x_seq <- seq(0, 1, length.out = n_grid)
+y_seq <- seq(0, 1, length.out = n_grid)
+
+z_mat <- outer(x_seq, y_seq, function(x, y) {
+  z <- exp(-x^2)
+  z[y > x] <- NA
+  z
+})
+
+plotly::plot_ly(x = ~x_seq, y = ~y_seq, z = ~t(z_mat)) |>
+  plotly::add_surface(showscale = FALSE) |>
+  plotly::layout(scene = list(
+    xaxis = list(title = "x"),
+    yaxis = list(title = "y"),
+    zaxis = list(title = "z = exp(-x^2)"),
+    camera = list(eye = list(x = 1.6, y = -1.6, z = 0.8))
+  ))
+```
+
+Surface $z = e^{-x^2}$ over the triangular region $0 \le y \le x \le 1$.
+The surface depends only on $x$ (constant in $y$), so for each $x$ the
+inner integral over $y \in [0, x]$ contributes $x \cdot e^{-x^2}$.
 
 :::
 
-::: notes
-This generalization is not required for Epi 204 itself, but it is
-what justifies the
-[joint-distribution form](probability.qmd#cor-fubini-joint)
-corollary used later in the probability
-chapter: probability measures are finite (hence σ-finite), so the
-σ-finiteness hypothesis is automatic. The integrability conditions
-(nonnegativity or absolute integrability) still need to be verified
-in each application.
-:::
+::::
 
 {{< slidebreak >}}
 
@@ -193,81 +222,6 @@ this surface and the $xy$-plane.
 
 {{< slidebreak >}}
 
-::::{#exm-fubini-nonrect}
-
-#### Changing the order of integration for a non-rectangular region
-
-Adapted from [@larsonCalc11e, Section 14.2, Example 4, pp. 984--985].
-
-Find the volume of the solid bounded by the surface $z = \ef{-x^2}$
-and the planes $z = 0$, $y = 0$, $y = x$, and $x = 1$.
-
-The base of the solid in the $xy$-plane is the triangular region
-$D = \{(x, y) : 0 \le x \le 1,\; 0 \le y \le x\}$,
-so the volume is
-
-$$\iint_D \ef{-x^2}\,dA.$$
-
-**Order $dx\,dy$ is intractable.** Re-describing $D$ as
-$D = \{(x, y) : 0 \le y \le 1,\; y \le x \le 1\}$, the inner integral is
-
-$$\int_y^1 \ef{-x^2}\,dx,$$
-
-which has no elementary antiderivative.
-
-**Order $dy\,dx$ works.** Applying @thm-fubini Part 1
-($\ef{-x^2}$ is continuous and $D$ is the vertically simple region
-$0 \le x \le 1$, $0 \le y \le x$):
-
-$$
-\ba
-\iint_D \ef{-x^2}\,dA
-&= \int_0^1\!\int_0^x \ef{-x^2}\,dy\,dx
-\\&= \int_0^1 \ef{-x^2}\paren{\int_0^x dy}\,dx
-\\&= \int_0^1 x\,\ef{-x^2}\,dx
-\\&= \sb{-\frac{1}{2}\,\ef{-x^2}}_0^1
-\\&= -\frac{1}{2}\paren{\ef{-1} - 1}
-\\&= \frac{e - 1}{2e}
-\\&\approx 0.316
-\ea
-$$
-
-:::{#fig-fubini-nonrect}
-
-```{r}
-#| code-fold: true
-#| message: false
-
-n_grid <- 51
-x_seq <- seq(0, 1, length.out = n_grid)
-y_seq <- seq(0, 1, length.out = n_grid)
-
-z_mat <- outer(x_seq, y_seq, function(x, y) {
-  z <- exp(-x^2)
-  z[y > x] <- NA
-  z
-})
-
-plotly::plot_ly(x = ~x_seq, y = ~y_seq, z = ~t(z_mat)) |>
-  plotly::add_surface(showscale = FALSE) |>
-  plotly::layout(scene = list(
-    xaxis = list(title = "x"),
-    yaxis = list(title = "y"),
-    zaxis = list(title = "z = exp(-x^2)"),
-    camera = list(eye = list(x = 1.6, y = -1.6, z = 0.8))
-  ))
-```
-
-Surface $z = e^{-x^2}$ over the triangular region $0 \le y \le x \le 1$.
-The surface depends only on $x$ (constant in $y$), so for each $x$ the
-inner integral over $y \in [0, x]$ contributes $x \cdot e^{-x^2}$.
-
-:::
-
-::::
-
-{{< slidebreak >}}
-
 ::::{#exm-fubini-fail}
 
 #### When conditions fail: a counterexample
@@ -316,32 +270,11 @@ $$
 so the two iterated integrals are unequal.
 Neither @thm-fubini nor @cor-fubini-rect applies here.
 
-**Why the hypotheses fail:**
+**Why @thm-fubini's hypothesis fails:**
 @thm-fubini requires $f$ to be **continuous** on $R$.
 The denominator $(x^2 + y^2)^2$ vanishes at the origin $(0, 0) \in R$,
 so $f$ is *not even defined* there — let alone continuous — and the
 theorem does not apply.
-
-For @thm-fubini-tonelli, the failure shows up as
-$\iint_R |f|\,dA = \infty$, which violates the absolute-integrability
-hypothesis (b).
-Switching to polar coordinates $(r, \theta)$ near the origin, the
-integrand satisfies
-$|f(x, y)| = \abs{x^2 - y^2}/(x^2 + y^2)^2 = \abs{\cos 2\theta}/r^2$,
-so
-
-$$
-\ba
-\iint_R |f|\,dA
-&\ge \int_0^{\pi/2}\!\int_0^{\epsilon}
-   \frac{\abs{\cos 2\theta}}{r^2}\, r\,dr\,d\theta\\
-&= \paren{\int_0^{\pi/2}\abs{\cos 2\theta}\,d\theta}
-       \int_0^{\epsilon} \frac{dr}{r}\\
-&= +\infty,
-\ea
-$$
-
-since $\int_0^{\epsilon} dr/r$ diverges.
 
 [@wp:fubini]
 
@@ -383,9 +316,94 @@ sampled away from the origin and clipped to $[-50, 50]$ for display.
 The function diverges to $+\infty$ along the $x$-axis (red ridge,
 $f > 0$ when $|x| > |y|$) and to $-\infty$ along the $y$-axis (blue
 ridge, $f < 0$ when $|y| > |x|$). The singularity at $(0, 0)$ is why
-$\iint_R |f|\,dA = \infty$ and Fubini–Tonelli's absolute-integrability
-hypothesis fails.
+$f$ is not continuous on $R$ and @thm-fubini does not apply.
 
 :::
+
+::::
+
+{{< slidebreak >}}
+
+:::{#thm-fubini-tonelli}
+
+### Fubini–Tonelli theorem (measure-theoretic form)
+
+Let $(\Omega_1, \mathcal F_1, \mu_1)$ and $(\Omega_2, \mathcal F_2, \mu_2)$
+be **σ-finite** measure spaces,
+and let $f : \Omega_1 \times \Omega_2 \to \mathbb{R}$ be measurable
+with respect to the product σ-algebra
+$\mathcal F_1 \otimes \mathcal F_2$.
+If either
+
+(a) $f \ge 0$ almost everywhere with respect to $\mu_1 \otimes \mu_2$
+(**Tonelli's theorem**), or
+
+(b) $\int_{\Omega_1 \times \Omega_2} \abs{f}\,d(\mu_1 \otimes \mu_2) < \infty$
+(**Fubini's theorem**),
+
+then both iterated integrals exist, agree with the double integral,
+and equal each other:
+
+$$
+\ba
+\int_{\Omega_1 \times \Omega_2} f\,d(\mu_1 \otimes \mu_2)
+&= \int_{\Omega_1} \paren{\int_{\Omega_2} f(\omega_1, \omega_2)\,d\mu_2(\omega_2)}\,d\mu_1(\omega_1)\\
+&= \int_{\Omega_2} \paren{\int_{\Omega_1} f(\omega_1, \omega_2)\,d\mu_1(\omega_1)}\,d\mu_2(\omega_2).
+\ea
+$$
+
+[@billingsley1995probability, Theorem 18.3; @gut2013, Theorem 9.1, p. 65;
+@fubini1907; @wp:fubini]
+
+:::
+
+::: notes
+This generalization is not required for Epi 204 itself, but it is
+what justifies the
+[joint-distribution form](probability.qmd#cor-fubini-joint)
+corollary used later in the probability
+chapter: probability measures are finite (hence σ-finite), so the
+σ-finiteness hypothesis is automatic. The integrability conditions
+(nonnegativity or absolute integrability) still need to be verified
+in each application.
+:::
+
+{{< slidebreak >}}
+
+::::{#exm-fubini-fail-tonelli}
+
+#### When the Fubini–Tonelli absolute-integrability condition fails
+
+The same function $f(x, y) = (x^2 - y^2)/(x^2 + y^2)^2$ from
+@exm-fubini-fail also illustrates that @thm-fubini-tonelli's
+absolute-integrability hypothesis (b) is essential.
+
+**Why @thm-fubini-tonelli's hypothesis fails:**
+$\iint_R |f|\,dA = \infty$, which violates hypothesis (b).
+Switching to polar coordinates $(r, \theta)$ near the origin, the
+integrand satisfies
+$|f(x, y)| = \abs{x^2 - y^2}/(x^2 + y^2)^2 = \abs{\cos 2\theta}/r^2$,
+so
+
+$$
+\ba
+\iint_R |f|\,dA
+&\ge \int_0^{\pi/2}\!\int_0^{\epsilon}
+   \frac{\abs{\cos 2\theta}}{r^2}\, r\,dr\,d\theta\\
+&= \paren{\int_0^{\pi/2}\abs{\cos 2\theta}\,d\theta}
+       \int_0^{\epsilon} \frac{dr}{r}\\
+&= +\infty,
+\ea
+$$
+
+since $\int_0^{\epsilon} dr/r$ diverges.
+Therefore $\iint_R |f|\,dA = \infty$,
+and hypothesis (b) of @thm-fubini-tonelli is not satisfied.
+(Hypothesis (a) also fails: $f$ takes both positive and negative values,
+so it is not nonnegative a.e.)
+The unequal iterated integrals from @exm-fubini-fail are thus consistent
+with @thm-fubini-tonelli: the theorem simply does not apply.
+
+[@wp:fubini]
 
 ::::

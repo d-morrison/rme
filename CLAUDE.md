@@ -60,7 +60,9 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Introduce concepts before using them — no forward references
 - Factual claims must have a specific citation
 - Variable definitions in exercises: use bullet points/table with symbol, meaning, and dataset column
-- After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div
+- After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div; if a counterexample is feasible, include one immediately after the example
+- After every theoretical claim (thm, cor, lem): (1) immediately follow with a proof, then (2) immediately follow with an example utilizing the claim
+- Always arrange divs and sections so that related items are adjacent: theorem → proof → example(s) → counterexample(s)
 
 ### Pull Requests
 - Remove existing review requests immediately when starting work on a PR
