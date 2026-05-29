@@ -50,6 +50,10 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
 - Include every intermediate step in derivations — do not skip steps
 - Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
+- **Matrix dimensions**: always verify dimension compatibility for every matrix expression -- dimensions of each operand must be consistent with the operation
+- **Annotate matrix dimensions with underbraces** in display math: use `\underbrace{M}_{m \times n}` for each matrix or vector
+- **Zero matrices**: never write bare `\mathbf{0}` in a matrix equation -- subscript dimensions: `\mathbf{0}_{m \times n}`
+- **Jacobian**: `\deriv{\vb} \vx` where both are p-vectors produces a p x p Jacobian matrix (not a vector)
 
 ### Citations
 - Always use BibTeX keys with `@citekey` Pandoc syntax — never plaintext author-date
