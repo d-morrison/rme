@@ -73,6 +73,12 @@ $$
 \underbrace{\deriv{\vb} (\vx \cdot \vb)}_{p \times 1} =
 \underbrace{\deriv{\vb} (\vb \cdot \vx)}_{p \times 1} =
 \underbrace{\vx}_{p \times 1}
+
+:::: notes
+Here $\deriv{\vb} \vx$ is the $p \times p$ Jacobian matrix in denominator layout:
+entry $(i,j)$ equals $\partial x_j / \partial \beta_i$.
+No transpose on $\vb$ or $\vx$ is needed.
+::::
 $$
 
 :::
@@ -103,6 +109,41 @@ x_{p}
 $$
 
 :::
+---
+
+:::{#thm-deriv-linear-map}
+
+#### Derivative of a linear map
+
+If $A$ is a constant $m \times p$ matrix
+(constant with respect to $\vb$),
+then:
+
+$$
+\underbrace{\deriv{\vb} (A\vb)}_{p \times m} =
+\underbrace{\tp{A}}_{p \times m}
+$$
+
+:::
+
+::: proof
+
+For entry $(i,j)$, where row $i$ indexes the denominator $\vb$
+and column $j$ indexes the numerator $A\vb$:
+
+$$
+\ba
+\left[\deriv{\vb} (A\vb)\right]_{ij}
+&= \deriv{\beta_i} (A\vb)_j \\
+&= \deriv{\beta_i} \sum_{k=1}^{p} a_{jk} \beta_k \\
+&= a_{ji} \\
+&= \left[\tp{A}\right]_{ij}
+\ea
+$$
+
+:::
+
+
 
 ---
 
@@ -124,6 +165,40 @@ becomes $\vx$ (a column vector) in the result.
 ::::
 
 :::
+::: proof
+
+**Using @thm-deriv-lincom:**
+
+Since $\tp{\vx}\vb = \vx \cdot \vb$ (@def-dot-product),
+and $\vx$ is constant with respect to $\vb$:
+
+$$
+\deriv{\vb}(\tp{\vx}\vb)
+= \deriv{\vb}(\vx \cdot \vb)
+= \vx
+$$
+
+by @thm-deriv-lincom.
+
+:::
+
+::: proof
+
+**Using @thm-deriv-linear-map:**
+
+Since $\vx$ is constant with respect to $\vb$,
+$A = \tp{\vx}$ is a constant $1 \times p$ matrix.
+Applying @thm-deriv-linear-map:
+
+$$
+\deriv{\vb}(\tp{\vx}\vb)
+= \tp{(\tp{\vx})}
+= \vx
+$$
+
+:::
+
+
 
 ---
 
