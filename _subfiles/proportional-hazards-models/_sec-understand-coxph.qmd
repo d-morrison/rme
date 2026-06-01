@@ -41,7 +41,7 @@ If $\loghaz(t|\vx) = \loghaz_0(t) + \reglincomb$, then:
 
 $$
 \ba
-\theta(t|\vx: \vxs)
+\hr(t|\vx: \vxs)
 &= \expf{\diffloghaz(t|\vx: \vxs)}
 \\
 &= \expf{(\vx - \vxs) \cdot \beta}
@@ -60,7 +60,7 @@ where $\diffvx \eqdef \vx - \vxs$ is the difference in covariate vectors.
 
 $$
 \ba
-\theta(t|\vx: \vxs)
+\hr(t|\vx: \vxs)
 &\eqdef \frac{\haz(t|\vx)}{\haz(t|\vxs)}
 \\
 &= \expf{\loghaz(t|\vx) - \loghaz(t|\vxs)}
@@ -73,7 +73,7 @@ $$
 \ea
 $$
 
-Expanding the definition of $\theta$, the first equality writes the ratio
+Expanding the definition of $\hr$, the first equality writes the ratio
 as the exponential of a difference of logarithms;
 the second applies the definition of $\diffloghaz$ as that difference;
 the third is @lem-diffloghaz-ph;
@@ -85,7 +85,7 @@ and the last substitutes $\diffvx$ for $\vx - \vxs$.
 
 So for proportional hazards models, we can write the hazard ratio using a shorthand notation:
 
-$$\theta(t| \vx : \vxs)  = \theta(\vx : \vxs)$$
+$$\hr(t| \vx : \vxs)  = \hr(\vx : \vxs)$$
 
 {{< slidebreak >}}
 
@@ -99,7 +99,7 @@ $$\diffloghaz(t|\vx)= \reglincomb$${#eq-diffloghaz-0-ph}
 
 If $\loghaz(t|\vx) = \loghaz_0(t) + \reglincomb$, then: 
 
-$$\theta(t|\vx) = \expf{\reglincomb}$$
+$$\hazfactor(t|\vx) = \expf{\reglincomb}$$
 
 :::
 
@@ -109,8 +109,8 @@ $$\theta(t|\vx) = \expf{\reglincomb}$$
 
 $$
 \ba
-\theta(t|\vx)
-&\eqdef \theta(t| \vx : \vec{0})
+\hazfactor(t|\vx)
+&\eqdef \hr(t| \vx : \vec{0})
 \\
 &= \expf{\diffloghaz(t|\vx)}
 \\
@@ -123,7 +123,7 @@ $$
 {{< slidebreak >}}
 
 :::{#thm-ph-haz-decomp}
-$$\haz(t|\vx) = \haz_0(t)\theta(\vx)$$
+$$\haz(t|\vx) = \haz_0(t)\hazfactor(\vx)$$
 :::
 
 {{< slidebreak >}}
@@ -136,7 +136,7 @@ Also:
 
 $$
 \ba
-\theta(\vx) &= \expf{\diffloghaz(\vx)}
+\hazfactor(\vx) &= \expf{\diffloghaz(\vx)}
 \\
 \logf{\haz(t|\vx)}
 &= \logf{\haz_0(t)} + \diffloghaz(\vx)
@@ -177,8 +177,8 @@ the ratio of the hazard functions
 $$
 \ba
 \frac{\haz(t|\vx_1)}{\haz(t|\vx_2)}
-&=\frac{\haz_0(t)\theta(\vx_1)}{\haz_0(t)\theta(\vx_2)}\\
-&=\frac{\theta(\vx_1)}{\theta(\vx_2)}\\
+&=\frac{\haz_0(t)\hazfactor(\vx_1)}{\haz_0(t)\hazfactor(\vx_2)}\\
+&=\frac{\hazfactor(\vx_1)}{\hazfactor(\vx_2)}\\
 \ea
 $$
 
@@ -199,13 +199,13 @@ has **proportional hazards** if the hazard ratio $\haz(t|\vx_1)/\haz(t|\vx_2)$ d
 
 $$
 \frac{\haz(t|\vx_1)}{\haz(t|\vx_2)}
-= \theta(\vx_1,\vx_2)
+= \hr(\vx_1,\vx_2)
 $$
 
 :::
 
 ::: notes
-As we saw above, Cox's proportional hazards model has this property, with $\theta(\vx_1,\vx_2) = \frac{\theta(\vx_1)}{\theta(\vx_2)}$.
+As we saw above, Cox's proportional hazards model has this property, with $\hr(\vx_1,\vx_2) = \frac{\hazfactor(\vx_1)}{\hazfactor(\vx_2)}$.
 :::
 
 {{< slidebreak >}}
@@ -214,15 +214,15 @@ As we saw above, Cox's proportional hazards model has this property, with $\thet
 
 ::: notes
 We are using two similar notations,
-$\theta(\vx,\vxs)$ and $\theta(\vx)$.
+$\hr(\vx,\vxs)$ and $\hazfactor(\vx)$.
 We can link these notations:
-$$\theta(\vx) \eqdef \theta(\vx, \vzero)$$
+$$\hazfactor(\vx) \eqdef \hr(\vx, \vzero)$$
 
 Then:
 :::
 
-$$\theta(\vx, \vxs) = \frac{\theta(\vx)}{\theta(\vxs)}$$
-$$\theta(\vzero) = \theta(\vzero, \vzero) = 1$$
+$$\hr(\vx, \vxs) = \frac{\hazfactor(\vx)}{\hazfactor(\vxs)}$$
+$$\hazfactor(\vzero) = \hr(\vzero, \vzero) = 1$$
 
 :::
 
@@ -233,7 +233,7 @@ The proportional hazards model also has additional notable properties:
 $$
 \ba
 \frac{\haz(t|\vx_1)}{\haz(t|\vx_2)}
-&=\frac{\theta(\vx_1)}{\theta(\vx_2)}\\
+&=\frac{\hazfactor(\vx_1)}{\hazfactor(\vx_2)}\\
 &=\frac{\expf{\eta(\vx_1)}}{\expf{\eta(\vx_2)}}\\
 &=\expf{\eta(\vx_1)-\eta(\vx_2)}\\
 &=\expf{\vx_1'\vb-\vx_2'\vb}\\
@@ -298,7 +298,7 @@ See also:
 
 ### Additional properties of the proportional hazards model
 
-If $\haz(t|\vx)= \haz_0(t)\theta(\vx)$, then:
+If $\haz(t|\vx)= \haz_0(t)\hazfactor(\vx)$, then:
 
 :::{#thm-ph-cuhaz}
 
@@ -308,9 +308,9 @@ $$
 \ba
 \cuhaz(t|\vx)
 &\eqdef \int_{u=0}^t \haz(u)du\\
-&= \int_{u=0}^t \haz_0(u)\theta(\vx)du\\
-&= \theta(\vx)\int_{u=0}^t \haz_0(u)du\\
-&= \theta(\vx)\cuhaz_0(t)
+&= \int_{u=0}^t \haz_0(u)\hazfactor(\vx)du\\
+&= \hazfactor(\vx)\int_{u=0}^t \haz_0(u)du\\
+&= \hazfactor(\vx)\cuhaz_0(t)
 \ea
 $$
 
@@ -345,7 +345,7 @@ $$
 :::{#thm-ph-surv}
 #### Survival functions are exponential multiples of $\surv_0(t)$
 
-$$\surv(t|\vx) = \sb{\surv_0(t)}^{\theta(\vx)}$$
+$$\surv(t|\vx) = \sb{\surv_0(t)}^{\hazfactor(\vx)}$$
 
 :::
 
@@ -356,9 +356,9 @@ $$
 \ba
 \surv(t|\vx)
 &= \expf{-\cuhaz(t|\vx)}\\
-&= \expf{-\theta(\vx)\cdot \cuhaz_0(t)}\\
-&= \paren{\expf{- \cuhaz_0(t)}}^{\theta(\vx)}\\
-&= \sb{\surv_0(t)}^{\theta(\vx)}\\
+&= \expf{-\hazfactor(\vx)\cdot \cuhaz_0(t)}\\
+&= \paren{\expf{- \cuhaz_0(t)}}^{\hazfactor(\vx)}\\
+&= \sb{\surv_0(t)}^{\hazfactor(\vx)}\\
 \ea
 $$
 
