@@ -180,9 +180,14 @@ needles |>
 
 {{< slidebreak >}}
 
+@fig-needles-raw shows the underlying counts:
+the number of shared syringes against the number of injections,
+with a dashed $y = x$ line marking the ceiling
+where every injection involves a shared syringe.
+
+::: {#fig-needles-raw}
+
 ```{r}
-#| fig-cap: "Shared syringes vs. number of injections (raw counts)"
-#| label: fig-needles-raw
 #| code-fold: true
 library(ggplot2)
 
@@ -208,6 +213,14 @@ needles |>
   ) +
   theme(legend.position = "bottom", legend.box = "vertical")
 ```
+
+Number of shared syringes versus number of injections
+(raw counts, 30-day window).
+The dashed line marks $y = x$ (every injection involves a shared syringe).
+This panel is drawn before the singleton `sex = "Trans"` participant
+is removed, so that participant appears as a third shape category.
+
+:::
 
 ---
 
@@ -244,9 +257,9 @@ glm1 <-
   needles |>
   dplyr::filter(nivdu > 0) |>
   glm(
-    offset = log(nivdu),
     family = stats::poisson,
-    formula = shared_syr ~ age + sex + homeless * polydrug
+    formula = shared_syr ~ age + sex + homeless * polydrug +
+      offset(log(nivdu))
   )
 library(equatiomatic)
 equatiomatic::extract_eq(glm1)

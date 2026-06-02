@@ -36,7 +36,7 @@ Expand $P(Y=0|X=x,T=t)$, $P(Y=1|X=x,T=t)$ and $P(Y=y|X=x,T=t)$ into expressions 
 
 ::: {.solution}
 
-Let $\pi = \P(Z=1|X=x)$ and $\mu = \Expp[Y|Z=0,X=x,T=t]$.
+Let $\pi = \P(Z=1|X=x)$ and $\mu_0 = \Expp[Y|Z=0,X=x,T=t]$.
 
 **$P(Y=0)$:** $Y=0$ occurs either because $Z=1$ (always zero)
 or because $Z=0$ and the Poisson draw equals 0:
@@ -45,7 +45,7 @@ $$
 \ba
 \P(Y=0|X=x,T=t)
 &= \P(Z=1|X=x) + \P(Z=0|X=x)\,\P(Y=0|Z=0,X=x,T=t)\\
-&= \pi + (1-\pi)\,e^{-\mu}
+&= \pi + (1-\pi)\,e^{-\mu_0}
 \ea
 $$
 
@@ -54,14 +54,14 @@ $$
 $$
 \P(Y=1|X=x,T=t)
 = (1-\pi)\,\P(Y=1|Z=0,X=x,T=t)
-= (1-\pi)\,\mu e^{-\mu}
+= (1-\pi)\,\mu_0 e^{-\mu_0}
 $$
 
 **$P(Y=y)$ for $y \geq 1$:** Identical reasoning gives
 
 $$
 \P(Y=y|X=x,T=t)
-= (1-\pi)\,\frac{\mu^y e^{-\mu}}{y!}
+= (1-\pi)\,\frac{\mu_0^y e^{-\mu_0}}{y!}
 $$
 
 :::
@@ -77,18 +77,26 @@ Derive the expected value and variance of $Y$, conditional on $X$ and $T$, as fu
 
 Let $\pi = \P(Z=1|X=x)$ and $\mu_0 = \Expp[Y|Z=0,X=x,T=t]$.
 
-**Expected value.** By the Law of Total Expectation:
+**Expected value.** By the Law of Total Expectation
+(conditioning on $Z$, within the subpopulation $\{X=x, T=t\}$):
 
 $$
 \ba
 \Expp[Y|X=x,T=t]
-&= \Expp[Y|Z=1]\,\pi + \Expp[Y|Z=0]\,(1-\pi)\\
+&= \Expp[Y|Z=1,X=x,T=t]\,\pi + \Expp[Y|Z=0,X=x,T=t]\,(1-\pi)\\
 &= 0 \cdot \pi + \mu_0(1-\pi)\\
 &= (1-\pi)\,\mu_0
 \ea
 $$
 
-**Variance.** By the Law of Total Variance:
+The substitution $\Expp[Y|Z=0,X=x,T=t] = \mu_0$ follows immediately
+from the definition of $\mu_0$ above.
+
+**Variance.** By the Law of Total Variance.
+To reduce clutter, we suppress the $(X=x, T=t)$ conditioning in the
+intermediate steps below: every expectation and variance is taken within
+the subpopulation $\{X=x, T=t\}$, and we restore the explicit conditioning
+in the final line.
 
 $$
 \Var{Y} = \Expp[\Var{Y|Z}] + \Var{\Expp[Y|Z]}
