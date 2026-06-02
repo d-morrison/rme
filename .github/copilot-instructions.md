@@ -330,12 +330,21 @@ At 5 years, 8% of participants had experienced the event.
 Compute the values in a code chunk (using `#| include: false` if needed),
 then reference them with inline `` `r expr` `` expressions.
 
-## Parentheticals and Asides in Quarto
+## Notes Divs in Quarto Slides
 
-When parenthetical references or short asides are supplementary
-(for example, `c.f. @dunn2018generalized §2.10.3`),
-place them in a `::: notes` div
-instead of leaving them inline in the main narrative.
+Wrap content in `::: notes` divs in two situations:
+
+1. **Parenthetical references and short asides** that are supplementary
+   (for example, `c.f. @dunn2018generalized §2.10.3`) —
+   place them in a `::: notes` div
+   instead of leaving them inline in the main narrative.
+
+2. **Large explanatory text blocks** — multi-sentence prose that provides
+   intuition, context, or derivation details —
+   should be wrapped in `::: notes` when the surrounding content is
+   structured for slide presentation.
+   Use `::: notes` for any block that would overflow or distract on a slide;
+   leave brief one- or two-line slide headers and summary bullet points unwrapped.
 
 ## Fenced Divs and List Indentation in Quarto
 
@@ -604,6 +613,21 @@ Residual and deviation helper macros include:
   use `\tp{(\vxs)}` not `\tp{\vxs}`.
   This avoids LaTeX "Double superscript" errors.
 
+**Ratio vs. factor macros**:
+
+- **Ratios** compare two quantities. Use the *generic* `\ratio` / `\ratiof` macro when the
+  inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — the type of ratio
+  is clear from the inputs. For example, an odds ratio of two odds is `\ratio(\odds_1, \odds_2)`,
+  **not** `\ror(\odds_1, \odds_2)`.
+- Use the *type-subscripted* ratio macros (`\ror` for odds ratios, `\hazratio`/`\hr` for hazard
+  ratios, and `\rateratio`, `\riskratio`, `\prevratio`, `\cuhazratio`, …) only when the inputs are
+  **covariate patterns** (e.g. `\ror(\vx, \vxs)`, `\hr(t \mid \vx : \vxs)`), where the subscript
+  is needed to indicate which kind of ratio it is.
+- **Factors** compare **one** covariate pattern to the implicit baseline pattern. Use the
+  type-subscripted factor macros (`\hazfactor`, `\oddsfactor`, …; function forms `\hazfactorf` /
+  `\hazff`, …) — e.g. the Cox risk score `\hazfactor(\vx)`. Factors always take a covariate
+  pattern, so they keep their subscript.
+
 **Vector–scalar product ordering** (for dimensional clarity):
 
 - When multiplying a **column vector** `\vb` by a scalar `s`, write the **vector on the left**:
@@ -633,6 +657,56 @@ git remote set-url origin "https://x-access-token:${SUBMODULES_TOKEN}@github.com
 git push origin main:copilot/your-branch-name
 # then open and merge a PR via the GitHub API or UI
 ```
+
+## Accessing the private `ucdavis/epi202` repository
+
+The `EPI202_TOKEN` environment variable holds a fine-grained PAT with
+read access to `https://github.com/ucdavis/epi202` (Epi 202 course
+materials, taught alongside this Epi 204 course). Use it on demand
+when you need to look up course content from that repo. If
+`EPI202_TOKEN` is empty in your environment, the repo is not
+available for this session — say so rather than guessing.
+
+```bash
+# Clone the whole repo:
+git clone "https://x-access-token:${EPI202_TOKEN}@github.com/ucdavis/epi202.git" /tmp/epi202
+
+# Fetch a specific file via the API:
+curl -fsSL -H "Authorization: token ${EPI202_TOKEN}" \
+  https://raw.githubusercontent.com/ucdavis/epi202/main/path/to/file.qmd
+
+# Hit the GitHub REST API:
+GH_TOKEN="${EPI202_TOKEN}" gh api repos/ucdavis/epi202/contents/path/to/file.qmd
+```
+
+The token is loaded automatically for the Copilot coding agent (via the
+`copilot` deployment environment) and for `@claude` PR sessions (via a
+job-level `env:` mapping in `.github/workflows/claude.yml`).
+
+## Accessing the private `ucdavis/epi204` repository
+
+The `EPI204_TOKEN` environment variable holds a fine-grained PAT with
+read access to `https://github.com/ucdavis/epi204` (Epi 204 homework
+and solutions for this course). Use it on demand when you need to look
+up homework or solution content from that repo. If `EPI204_TOKEN` is
+empty in your environment, the repo is not available for this session —
+say so rather than guessing.
+
+```bash
+# Clone the whole repo:
+git clone "https://x-access-token:${EPI204_TOKEN}@github.com/ucdavis/epi204.git" /tmp/epi204
+
+# Fetch a specific file via the API:
+curl -fsSL -H "Authorization: token ${EPI204_TOKEN}" \
+  https://raw.githubusercontent.com/ucdavis/epi204/main/path/to/file.qmd
+
+# Hit the GitHub REST API:
+GH_TOKEN="${EPI204_TOKEN}" gh api repos/ucdavis/epi204/contents/path/to/file.qmd
+```
+
+The token is loaded automatically for the Copilot coding agent (via the
+`copilot` deployment environment) and for `@claude` PR sessions (via a
+job-level `env:` mapping in `.github/workflows/claude.yml`).
 
 ## Color Coding Strategy for Math Expressions
 
@@ -942,3 +1016,4 @@ spelling::spell_check_files("path/to/modified/file.qmd")
 - **If it's your responsibility**: Fix the issue and re-run the workflow
 - **If it's NOT your responsibility**: Document it in your PR description and notify the repository maintainer
 - **Never** fix unrelated pre-existing issues - focus on your changes only
+

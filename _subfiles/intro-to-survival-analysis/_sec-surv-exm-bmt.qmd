@@ -45,28 +45,7 @@ and test for differences.
 -   We will construct the cumulative hazard curves and compare them.
 -   We will estimate the hazard functions, interpret, and compare them.
 
-##### Survival Function Estimate and Variance
-
-$$\hsurv(t) = \prod_{t_i \le t}\sb{1-\frac{d_i}{r_i}}$$ where
-$r_i$ is the number at risk at time $t_i$.
-
-The estimated variance of $\hsurv(t)$ is:
-
-:::{#thm-greenwood}
-#### Greenwood's estimator for variance of Kaplan-Meier survival estimator
-
-$$
-\varhf{\hsurv(t)} = \hsurv(t)^2\sum_{t_i \le t}\frac{d_i}{r_i(r_i-d_i)}
-$${#eq-var-est-surv}
-:::
-
-
-We can use @eq-var-est-surv for confidence intervals for a survival function or a
-difference of survival functions.
-
-{{< slidebreak >}}
-
-###### Kaplan-Meier survival curves
+##### Kaplan-Meier survival curves
 
 ```{r}
 #| code-summary: "code to preprocess and model `bmt` data"
@@ -106,102 +85,24 @@ autoplot(
   theme(legend.position = "bottom")
 ```
 
-{{< slidebreak >}}
-
-##### Understanding Greenwood's formula (optional)
-
-::: notes
-To see where Greenwood's formula comes from, let $x_i = Y_i - d_i$. We
-approximate the solution treating each time as independent, with $Y_i$
-fixed and ignore randomness in times of failure and we treat $x_i$ as
-independent binomials $\text{Bin}(Y_i,p_i)$. Letting $\surv(t)$ be the
-"true" survival function
-:::
-
-$$
-\begin{aligned}
-\hsurv(t) &=\prod_{t_i \le t}x_i/Y_i\\
-\surv(t)&=\prod_{t_i \le t}p_i
-\end{aligned}
-$$
-
-$$
-\begin{aligned}
-\frac{\hsurv(t)}{\surv(t)}
-&= \prod_{t_i \le t} \frac{x_i}.    {p_iY_i}
-\\ &= \prod_{t_i \le t} \frac{\hat p_i}{p_i}
-\\ &= \prod_{t_i \le t} \paren{1+\frac{\hat p_i-p_i}{p_i}}
-\\ &\approx 1+\sum_{t_i \le t} \frac{\hat p_i-p_i}{p_i}
-\end{aligned}
-$$
-
-{{< slidebreak >}}
-
-$$
-\begin{aligned}
-\text{Var}\left(\frac{\hsurv(t)}{\surv(t)}\right)
-&\approx \text{Var}\left(1+\sum_{t_i \le t} \frac{\hat p_i-p_i}{p_i}\right)
-\\ &=\sum_{t_i \le t} \frac{1}{p_i^2}\frac{p_i(1-p_i)}{Y_i}
-\\ &= \sum_{t_i \le t} \frac{(1-p_i)}{p_iY_i}
-\\ &\approx\sum_{t_i \le t} \frac{(1-x_i/Y_i)}{x_i}
-\\ &=\sum_{t_i \le t} \frac{Y_i-x_i}{x_iY_i}
-\\ &=\sum_{t_i \le t} \frac{d_i}{Y_i(Y_i-d_i)}
-\\ \tf \Varf{\hsurv(t)}
-&\approx \hsurv(t)^2\sum_{t_i \le t} \frac{d_i}{Y_i(Y_i-d_i)}
-\end{aligned}
-$$
-
 ##### Test for differences among the disease groups
 
 Here we compute a chi-square test for assocation between disease group
 (`group`) and disease-free survival:
 
 ```{r}
+#| code-fold: show
 survdiff(surv ~ group, data = bmt)
 ```
 
-##### Cumulative Hazard
-
-$$
-\begin{aligned}
-\haz(t)
-&\eqdef   \p(T=t|T\ge t)\\
-&= \frac{\p(T=t)}{\P(T\ge t)}\\
-&= -\deriv{t}\logf{\surv(t)}
-\end{aligned}
-$$
-
-The **cumulative hazard** (or **integrated hazard**) function is
-
-$$\cuhaz(t)\eqdef  \int_0^t \haz(t) dt$$
-
-Since
-$\haz(t) = -\deriv{t}\logf{\surv(t)}$ as shown above,
-we have:
-
-$$
-\cuhaz(t)=-\logf{\surv(t)}
-$$
-
-{{< slidebreak >}}
-
-So we can estimate $\cuhaz(t)$ as:
-
-$$
-\begin{aligned}
-\hat \cuhaz(t)
-&= -\logf{\hsurv(t)}\\
-&= -\logf{\prod_{t_i \le t}\sb{1-\frac{d_i}{Y_i}}}\\
-&= -\sum_{t_i \le t}\logf{1-\frac{d_i}{Y_i}}
-\end{aligned}
-$$
-
-This is the **Kaplan-Meier (product-limit) estimate of cumulative
-hazard**.
-
-{{< slidebreak >}}
-
 ##### Cumulative Hazard Curves for Bone-Marrow Transplant (`bmt`) data {#exm-bmt-cuhaz}
+
+The cumulative hazard $\cuhaz(t)$ is defined in @def-cuhaz, and the
+Kaplan-Meier (product-limit) estimator $\hat\cuhaz(t) = -\logf{\hsurv(t)}$
+is discussed in @sec-nelson-aalen alongside the Nelson-Aalen estimator.
+
+{{< slidebreak >}}
+
 
 ```{r}
 #| fig-cap: "Disease-Free Cumulative Hazard by Disease Group"
