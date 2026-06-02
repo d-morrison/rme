@@ -31,16 +31,31 @@ needles =
     sex = sex |> factor() |> relevel(ref = "M")
   ) |> 
   labelled::set_variable_labels(
-    "sex" = "sex (reference = Male)",
-    "ethn" = "ethnicity (reference = White)",
-    "shsyryn"  = "shared syringe yes/no (1 = yes, 0 = no)",
+    "id" = "Participant identifier",
+    "sex" = "Biological sex (reference = Male)",
+    "ethn" = "Self-reported ethnicity (reference = White)",
+    "age" = "Age at first interview (years)",
+    "dprsn_dx" = "Depression diagnosis indicator",
+    "sexabuse" = "History of sexual abuse (1 = yes, 0 = no)",
+    "shared_syr" = "Number of shared syringes (in 30 days)",
+    "hivstat" = "HIV serostatus (reference = HIV-)",
+    "hplsns" = "Hopelessness score",
+    "nivdu" = "Number of injections (in 30 days)",
+    "shsyryn" = "Shared syringe? (1 = yes, 0 = no)",
+    "sqrtnivd" = "sqrt(No. of injections in 30 days)",
     "logshsyr" = "log(No. of shared needles)",
-    "polydrug" = "how many drugs used?",
-    "sqrtninj" = "sqrt(No. of infections in 30 days)",
-    "homeless" = "Homeless (1 = yes, 0 = no)",
-    "hivstat" = "HIV status (reference = HIV-)"
+    "polydrug" = "Multiple non-injection drugs used?",
+    "sqrtninj" = "sqrt(No. of injections in 30 days)",
+    "homeless" = "Homeless? (reference = not homeless)",
+    "shsyr" = "Number of shared needles (in 30 days)"
   )
 ```
+
+Dataset source: Chapter 8 of *Regression Methods in Biostatistics*, 2e
+([UCSF companion website](https://regression.ucsf.edu/second-edition/data-examples-and-problems)) —
+a longitudinal panel study of injection drug users measuring
+repeated needle-sharing behaviour.
+$n = 128$ participants, 17 variables.
 
 :::{#tbl-needles-data-dict}
 
@@ -54,6 +69,69 @@ dict |> pander::pander()
 ```
 
 Data dictionary for `needles` data
+
+:::
+
+---
+
+:::{#tbl-needles-demographics}
+
+```{r}
+#| code-fold: true
+
+demog_data <- needles |>
+  dplyr::filter(sex != "Trans")
+
+med_iqr <- function(x) {
+  q <- stats::quantile(x, c(0.25, 0.5, 0.75), na.rm = TRUE)
+  sprintf("%.0f (%.0f, %.0f)", q[2], q[1], q[3])
+}
+
+n_pct <- function(x, level) {
+  sprintf(
+    "%d (%.0f%%)",
+    sum(x == level, na.rm = TRUE),
+    100 * mean(x == level, na.rm = TRUE)
+  )
+}
+
+ethn_levels <- levels(demog_data$ethn)
+ethn_rows <- vapply(
+  ethn_levels,
+  function(L) n_pct(demog_data$ethn, L),
+  character(1)
+)
+
+demog_tbl <- tibble::tibble(
+  Characteristic = c(
+    "N",
+    "Age (years), median (Q1, Q3)",
+    "Female, n (%)",
+    paste0("Ethnicity — ", ethn_levels, ", n (%)"),
+    "HIV+, n (%)",
+    "Homeless, n (%)",
+    "Multiple drugs used, n (%)",
+    "Injections in 30 days, median (Q1, Q3)",
+    "Shared syringes in 30 days, median (Q1, Q3)"
+  ),
+  Value = c(
+    as.character(nrow(demog_data)),
+    med_iqr(demog_data$age),
+    n_pct(demog_data$sex, "F"),
+    ethn_rows,
+    n_pct(demog_data$hivstat, "HIV+"),
+    n_pct(demog_data$homeless, "homeless"),
+    n_pct(demog_data$polydrug, "multiple drugs used"),
+    med_iqr(demog_data$nivdu),
+    med_iqr(demog_data$shared_syr)
+  )
+)
+
+demog_tbl |> pander::pander()
+```
+
+Demographics and key behavioural variables for the needle-sharing dataset
+(excluding one individual with `sex == "Trans"`).
 
 :::
 
@@ -82,13 +160,9 @@ needles |>
       col = ethn
     )
   ) +
-  geom_point(
-    aes(size = nivdu),
-    alpha = .5) +
+  geom_point(aes(size = nivdu), alpha = .5) +
   scale_size_area(max_size = 4) +
-  facet_grid(
-    cols = vars(polydrug),
-    rows = vars(homeless)) +
+  facet_grid(cols = vars(polydrug), rows = vars(homeless)) +
   labs(y = "Shared needles per injection") +
   theme(legend.position = "bottom")
 ```
