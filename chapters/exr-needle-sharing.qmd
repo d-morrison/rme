@@ -144,60 +144,14 @@ Data dictionary for `needles` data
 
 ```{r}
 #| code-fold: true
-
-demog_data <- needles |>
-  dplyr::filter(sex != "Trans")
-
-med_iqr <- function(x) {
-  q <- stats::quantile(x, c(0.25, 0.5, 0.75), na.rm = TRUE)
-  sprintf("%.0f (%.0f, %.0f)", q[2], q[1], q[3])
-}
-
-n_pct <- function(x, level) {
-  sprintf(
-    "%d (%.0f%%)",
-    sum(x == level, na.rm = TRUE),
-    100 * mean(x == level, na.rm = TRUE)
-  )
-}
-
-ethn_levels <- levels(demog_data$ethn)
-ethn_rows <- vapply(
-  ethn_levels,
-  function(L) n_pct(demog_data$ethn, L),
-  character(1)
-)
-
-demog_tbl <- tibble::tibble(
-  Characteristic = c(
-    "N",
-    "Age (years), median (Q1, Q3)",
-    "Female, n (%)",
-    paste0("Ethnicity — ", ethn_levels, ", n (%)"),
-    "HIV+, n (%)",
-    "Homeless, n (%)",
-    "Multiple drugs used, n (%)",
-    "Injections in 30 days, median (Q1, Q3)",
-    "Shared syringes in 30 days, median (Q1, Q3)"
-  ),
-  Value = c(
-    as.character(nrow(demog_data)),
-    med_iqr(demog_data$age),
-    n_pct(demog_data$sex, "F"),
-    ethn_rows,
-    n_pct(demog_data$hivstat, "HIV+"),
-    n_pct(demog_data$homeless, "homeless"),
-    n_pct(demog_data$polydrug, "multiple drugs used"),
-    med_iqr(demog_data$nivdu),
-    med_iqr(demog_data$shared_syr)
-  )
-)
-
-demog_tbl |> pander::pander()
+needles |>
+  dplyr::select(-id) |>
+  gtsummary::tbl_summary()
 ```
 
-Demographics and key behavioural variables for the needle-sharing dataset
-(excluding one individual with `sex == "Trans"`).
+Demographics and behavioural variables for the needle-sharing dataset
+(all participants, including the one individual with `sex == "Trans"`;
+the `id` identifier column is omitted).
 
 :::
 
