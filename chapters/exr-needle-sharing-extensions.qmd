@@ -3,7 +3,7 @@
 library(MASS) #need this for glm.nb()
 glm1.nb = glm.nb(
   data = needles,
-  shared_syr ~ age + sex + homeless*polydrug
+  shared_syr ~ age + sex + homeless + polydrug
 )
 
 equatiomatic::extract_eq(glm1.nb)
@@ -32,8 +32,8 @@ library(glmmTMB)
 zinf_fit1 = glmmTMB(
   family = "poisson",
   data  = needles,
-  formula = shared_syr ~ age + sex + homeless*polydrug,
-  ziformula = ~ age + sex + homeless + polydrug # fit won't converge with interaction
+  formula = shared_syr ~ age + sex + homeless + polydrug,
+  ziformula = ~ age + sex + homeless + polydrug
 )
 
 zinf_fit1 |>
@@ -57,9 +57,8 @@ library(glmmTMB)
 zinf_fit1 = glmmTMB(
   family = nbinom2,
   data  = needles,
-  formula = shared_syr ~ age + sex + homeless*polydrug,
-  ziformula = ~ age + sex + homeless + polydrug 
-  # fit won't converge with interaction
+  formula = shared_syr ~ age + sex + homeless + polydrug,
+  ziformula = ~ age + sex + homeless + polydrug
 )
 
 zinf_fit1 |>

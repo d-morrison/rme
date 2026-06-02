@@ -139,18 +139,15 @@ Demographic factors (`age`, `sex`, `ethn`) and social factors
 ::: notes
 In @fig-needles-dag, injection frequency `nivdu` is a **mediator**:
 each covariate can affect the number of shared syringes both
-**directly** (its effect on the propensity to share *per injection*)
+**directly** (its effect on the propensity to share per injection)
 and **indirectly** (through how often the participant injects).
 
-This distinction drives the two models we fit below:
-
-- Putting `nivdu` in the model as an **offset** (`offset(log(nivdu))`)
-conditions on the mediator. The covariate coefficients then describe the
-*per-injection sharing rate* — the **direct** path, holding injection
-frequency fixed.
-- Leaving `nivdu` out of the model lets the covariate coefficients
-describe the *total* number of shared syringes — the **total** effect,
-including the indirect path through `nivdu`.
+Because `nivdu` lies *on* these causal paths, we do **not** adjust for it
+(neither as a covariate nor as an offset): conditioning on a mediator
+would block the indirect path and leave only a partial effect.
+Modeling the count of shared syringes on the covariates alone therefore
+estimates each covariate's **total** association with needle-sharing —
+the approach taken by @vittinghoff2e [§8.3.1].
 
 This DAG is simplified; a fuller model might include
 HIV status, depression, or hopelessness.
@@ -259,31 +256,41 @@ needles <- needles |> filter(sex != "Trans")
 
 ## Model {.smaller}
 
-As @fig-needles-dag suggests, injection frequency `nivdu` is a mediator,
-so we fit two complementary Poisson models:
+Following @vittinghoff2e [§8.3.1],
+we model the **count** of shared syringes directly
+with a Poisson regression (log link),
+rather than modeling a rate.
 
-- a **rate model** that includes `nivdu` as an offset, estimating the
-effect of each covariate on the *per-injection* sharing rate
-(the direct path, holding injection frequency fixed); and
-- a **count model** that omits `nivdu`, estimating the *total* effect of
-each covariate on the number of shared syringes
-(direct plus the indirect path through `nivdu`).
+**Why not use `nivdu` as an offset?**
+A Poisson *rate* model would add `offset(log(nivdu))`,
+forcing the expected count to be proportional to injection frequency
+(the coefficient of `log(nivdu)` fixed at exactly 1).
+We avoid that here for two reasons:
 
-### Rate model {.smaller}
+- **`nivdu` is a mediator, not an exposure window.**
+An offset is appropriate when its variable is a known denominator —
+person-time or population at risk — that is external to the causal
+question. Injection frequency is instead *caused* by the covariates
+(@fig-needles-dag), so conditioning on it (whether as an offset or as a
+covariate) would block the indirect path and estimate only a partial
+effect. We want each covariate's *total* association with needle-sharing.
+- **It imposes an untested proportionality assumption.**
+Fixing the `log(nivdu)` coefficient at 1 assumes sharing scales
+one-for-one with injecting, which the data need not support.
 
-The offset `offset(log(nivdu))` fixes the coefficient of `log(nivdu)`
-at 1, which is equivalent to modeling the *rate* of shared syringes
-per injection (`shared_syr / nivdu`):
+Vittinghoff's analysis uses neither an offset nor `nivdu` as a covariate.
+
+We also use **main effects only**:
+a `homeless × polydrug` interaction is not identifiable here,
+because no non-homeless participant who used multiple drugs shared any
+needles, leaving that cell empty for the outcome.
 
 ```{r}
-glm1 <-
-  needles |>
-  dplyr::filter(nivdu > 0) |>
-  glm(
-    family = stats::poisson,
-    formula = shared_syr ~ age + sex + homeless * polydrug +
-      offset(log(nivdu))
-  )
+glm1 <- glm(
+  formula = shared_syr ~ age + sex + homeless + polydrug,
+  family = stats::poisson,
+  data = needles
+)
 library(equatiomatic)
 equatiomatic::extract_eq(glm1)
 ```
@@ -291,7 +298,7 @@ equatiomatic::extract_eq(glm1)
 ---
 
 ```{r}
-#| tbl-cap: "Poisson model for needle-sharing data"
+#| tbl-cap: "Poisson count model for needle-sharing data"
 #| label: tbl-needles-pois
 
 
@@ -304,143 +311,87 @@ glm1 |>
 ---
 
 ```{r}
-#| fig-cap: "Fitted Poisson rate model and observed needle-sharing rates"
+#| fig-cap: "Fitted Poisson count model and observed shared-syringe counts"
 #| label: fig-needles-pois
 #| code-fold: true
 library(ggplot2)
 
-# Build a prediction grid that varies age and the categorical covariates,
-# with nivdu = 1 so the offset log(nivdu) = 0 and predict(type = "response")
-# returns the Poisson rate per injection (matching the y-axis scale of
-# @fig-needles).
+# Predicted expected counts across age and the categorical covariates.
+# The model has no offset, so predict(type = "response") returns the
+# expected number of shared syringes directly.
 pred_grid <- with(glm1$model, expand.grid(
   age = seq(min(age), max(age), length.out = 100),
   sex = levels(droplevels(sex)),
   homeless = levels(homeless),
-  polydrug = levels(polydrug),
-  nivdu = 1
+  polydrug = levels(polydrug)
 ))
-pred_grid$rate <- predict(glm1, newdata = pred_grid, type = "response")
+pred_grid$shared_syr <- predict(glm1, newdata = pred_grid, type = "response")
 
-obs_data <- needles |>
-  dplyr::filter(
-    nivdu > 0,
-    !is.na(homeless), !is.na(polydrug), !is.na(sex), !is.na(age)
-  ) |>
-  dplyr::mutate(rate = shared_syr / nivdu)
-
-ggplot(obs_data, aes(x = age, y = rate, color = sex)) +
-  geom_point(aes(size = nivdu), alpha = 0.4) +
+ggplot(glm1$model, aes(x = age, y = shared_syr, color = sex)) +
+  geom_point(alpha = 0.4) +
   geom_line(data = pred_grid, linewidth = 0.8) +
-  scale_size_area(max_size = 4) +
   facet_grid(
     rows = vars(homeless),
     cols = vars(polydrug),
     labeller = label_both
   ) +
-  labs(y = "Shared needles per injection") +
-  guides(
-    color = guide_legend(nrow = 1),
-    size = guide_legend(nrow = 1)
-  ) +
+  labs(y = "Number of shared syringes (30 days)") +
+  guides(color = guide_legend(nrow = 1)) +
   theme_bw() +
-  theme(legend.position = "bottom", legend.box = "vertical")
+  theme(legend.position = "bottom")
 ```
-
-{{< slidebreak >}}
-
-### Count model {.smaller}
-
-Dropping the offset models the *count* of shared syringes directly.
-We keep the same sample of injectors (`nivdu > 0`) so the two models are
-comparable; the only difference is whether `nivdu` enters as an offset:
-
-```{r}
-glm2 <-
-  needles |>
-  dplyr::filter(nivdu > 0) |>
-  glm(
-    family = stats::poisson,
-    formula = shared_syr ~ age + sex + homeless * polydrug
-  )
-equatiomatic::extract_eq(glm2)
-```
-
-{{< slidebreak >}}
-
-:::{#tbl-needles-count}
-
-```{r}
-#| code-fold: true
-glm2 |>
-  parameters(exponentiate = TRUE) |>
-  print_md()
-```
-
-Count model (no offset) for needle-sharing data.
-
-:::
 
 ## Interpreting the coefficients {.smaller}
 
 For a Poisson model with a log link,
-exponentiating a coefficient turns it into a *ratio*:
-$\exp{\b_j}$ is the multiplicative change in the expected outcome
-per one-unit increase in $x_j$,
-holding the other covariates fixed
-(this is the rate-ratio interpretation introduced earlier in this chapter).
-In the **rate model** this ratio is a *rate ratio* (shared syringes per
-injection); in the **count model** it is a *count ratio*
-(total shared syringes).
-The fitted ratios are reported in @tbl-needles-pois (rate model) and
-@tbl-needles-count (count model).
+exponentiating a coefficient turns it into a *ratio of expected counts*
+(an **incidence rate ratio**, IRR, in @vittinghoff2e's terminology):
+$\exp{\b_j}$ is the multiplicative change in the expected number of
+shared syringes per one-unit increase in $x_j$,
+holding the other covariates fixed.
+Because we do not condition on the mediator `nivdu`,
+each ratio is a *total* association.
+The fitted ratios are reported in @tbl-needles-pois.
 
 ```{r}
 #| code-fold: true
-rr_rate <- exp(coef(glm1))
-rr_count <- exp(coef(glm2))
+irr <- exp(coef(glm1))
 ```
 
 **Baseline (intercept).**
-In the rate model, $\exp{\hat\b_0} = `r round(rr_rate[["(Intercept)"]], 3)`$
-is the estimated sharing rate per injection for the reference participant
-(male, not homeless, one drug used),
-extrapolated to age 0.
+$\exp{\hat\b_0} = `r round(irr[["(Intercept)"]], 3)`$
+is the expected count of shared syringes for the reference participant
+(male, not homeless, one drug used), extrapolated to age 0.
 Age 0 is outside the data, so the intercept is a mathematical anchor
 rather than a directly interpretable quantity.
 
 **Age.**
-The rate ratio per additional year of age is
-$\exp{\hat\b_{\text{age}}} = `r round(rr_rate[["age"]], 3)`$,
-i.e., essentially no change in the per-injection sharing rate with age.
+$\exp{\hat\b_{\text{age}}} = `r round(irr[["age"]], 3)`$ per year:
+essentially no association between age and the expected count.
 
 **Sex.**
-The rate ratio for female versus male is
-$\exp{\hat\b_{\text{sexF}}} = `r round(rr_rate[["sexF"]], 2)`$:
-women share needles at about `r round(rr_rate[["sexF"]], 2)` times
-the per-injection rate of men with the same age, housing status, and
-drug-use pattern.
-In the count model the corresponding count ratio is larger,
-about `r round(rr_count[["sexF"]], 2)`.
-Because the total-count ratio exceeds the per-injection rate ratio,
-part of women's higher total sharing operates **indirectly** —
-through injecting more often
-(the `sex → nivdu → shared_syr` path in @fig-needles-dag) —
-on top of their higher per-injection rate.
+$\exp{\hat\b_{\text{sexF}}} = `r round(irr[["sexF"]], 2)`$:
+women's expected count of shared syringes is about
+`r round(irr[["sexF"]], 2)` times men's,
+adjusting for age, housing status, and drug-use pattern.
 
 **Homelessness.**
-Among participants using one drug,
-the rate ratio for homeless versus not-homeless is
-$\exp{\hat\b_{\text{homeless}}} = `r round(rr_rate[["homelesshomeless"]], 2)`$,
-versus a count ratio of about `r round(rr_count[["homelesshomeless"]], 2)`
-in the count model —
-again, a larger *total* association than *direct* (per-injection) one.
+$\exp{\hat\b_{\text{homeless}}} = `r round(irr[["homelesshomeless"]], 2)`$:
+homeless participants share syringes about
+`r round(irr[["homelesshomeless"]], 2)` times as often as the non-homeless,
+adjusting for the other covariates.
+@vittinghoff2e [§8.3.1] reports a comparable unadjusted IRR of about 3.3
+for homelessness in a single-predictor model.
 
-**Interaction (caution).**
-The `homeless × polydrug` cell is sparse,
-which produces an extreme, unstable interaction estimate
-(a rate ratio in the hundreds of thousands).
-We would not interpret that coefficient without more data;
-it is a reminder to check cell counts (see @tbl-count-needles)
-before trusting an interaction term.
+**Multiple-drug use.**
+$\exp{\hat\b_{\text{polydrug}}} = `r round(irr[["polydrugmultiple drugs used"]], 2)`$:
+multiple-drug users have a *lower* expected count than single-drug users,
+though only `r sum(glm1$model[["polydrug"]] == "multiple drugs used")`
+participants used multiple drugs, so this estimate is imprecise.
+
+**Overdispersion caveat.**
+These data are highly overdispersed — the variance far exceeds the mean —
+so the model-based Poisson standard errors are too small.
+@vittinghoff2e [§8.3.1] recommends robust standard errors or a
+negative-binomial model for this example.
 
