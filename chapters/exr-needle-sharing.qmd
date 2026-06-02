@@ -229,15 +229,42 @@ glm1 |> parameters(exponentiate = TRUE) |>
 ---
 
 ```{r}
-#| fig-cap: "fitted Poisson model for needle-sharing data"
+#| fig-cap: "Fitted Poisson rate model overlaid on observed needle-sharing rates"
 #| label: fig-needles-pois
-library(sjPlot)
-glm1 |> 
-  sjPlot::plot_model(
-    type = "pred",
-    terms = c("age", "sex", "homeless", "polydrug"),
-    show.data = TRUE
+#| code-fold: true
+library(ggplot2)
+
+# Build a prediction grid that varies age and the categorical covariates,
+# with nivdu = 1 so the offset log(nivdu) = 0 and predict(type = "response")
+# returns the Poisson rate per injection (matching the y-axis scale of
+# @fig-needles).
+pred_grid <- with(glm1$model, expand.grid(
+  age = seq(min(age), max(age), length.out = 100),
+  sex = levels(droplevels(sex)),
+  homeless = levels(homeless),
+  polydrug = levels(polydrug),
+  nivdu = 1
+))
+pred_grid$rate <- predict(glm1, newdata = pred_grid, type = "response")
+
+obs_data <- needles |>
+  dplyr::filter(
+    nivdu > 0,
+    !is.na(homeless), !is.na(polydrug), !is.na(sex), !is.na(age)
+  ) |>
+  dplyr::mutate(rate = shared_syr / nivdu)
+
+ggplot(obs_data, aes(x = age, y = rate, color = sex)) +
+  geom_point(aes(size = nivdu), alpha = 0.4) +
+  geom_line(data = pred_grid, linewidth = 0.8) +
+  scale_size_area(max_size = 4) +
+  facet_grid(
+    rows = vars(homeless),
+    cols = vars(polydrug),
+    labeller = label_both
   ) +
+  labs(y = "Shared needles per injection") +
+  theme_bw() +
   theme(legend.position = "bottom")
 ```
 
