@@ -1,39 +1,29 @@
 ```{r}
 library(tidyverse)
 library(haven)
-needles = 
-  here::here("inst/extdata/needle_sharing.dta") |> 
+needles <-
+  here::here("inst/extdata/needle_sharing.dta") |>
   read_dta() |>
   as_tibble() |>
   mutate(
-    hivstat =
-      hivstat |>
-      case_match(
-        1 ~ "HIV+",
-        0 ~ "HIV-") |> 
-      factor() |> 
+    hivstat = hivstat |>
+      case_match(1 ~ "HIV+", 0 ~ "HIV-") |>
+      factor() |>
       relevel(ref = "HIV-"),
-    polydrug =
-      polydrug |>
-      case_match(
-        1 ~ "multiple drugs used",
-        0 ~ "one drug used") |>
+    polydrug = polydrug |>
+      case_match(1 ~ "multiple drugs used", 0 ~ "one drug used") |>
       factor() |>
       relevel(ref = "one drug used"),
-    homeless = 
-      homeless |> 
-      case_match(
-        1 ~ "homeless", 
-        0 ~ "not homeless") |>
+    homeless = homeless |>
+      case_match(1 ~ "homeless", 0 ~ "not homeless") |>
       factor() |>
       relevel(ref = "not homeless"),
-    ethn =
-      ethn |>
+    ethn = ethn |>
       factor() |>
       forcats::fct_lump_min(min = 5, other_level = "Other") |>
       relevel(ref = "White"),
     sex = sex |> factor() |> relevel(ref = "M")
-  ) |> 
+  ) |>
   labelled::set_variable_labels(
     "id" = "Participant identifier",
     "sex" = "Biological sex (reference = Male)",
@@ -224,11 +214,11 @@ needles |>
 #### Covariate counts
 
 ```{r}
-#| tbl-cap: "Counts of observations in `needles` dataset by sex, unhoused status, and multiple drug use"
+#| tbl-cap: "Counts in `needles` by sex, housing status, and multiple drug use"
 #| label: tbl-count-needles
 #| code-fold: show
-needles |> 
-  dplyr::select(sex, homeless, polydrug) |> 
+needles |>
+  dplyr::select(sex, homeless, polydrug) |>
   summary()
 ```
 
@@ -241,7 +231,7 @@ We will remove that individual:
 ```{r}
 #| label: remove-trans-obs
 #| code-summary: 'remove singleton observation with sex == Trans'
-needles = needles |> filter(sex != "Trans")
+needles <- needles |> filter(sex != "Trans")
 
 ```
 
@@ -250,13 +240,13 @@ needles = needles |> filter(sex != "Trans")
 ### Model {.smaller}
 
 ```{r}
-glm1 = 
-  needles |> 
-  dplyr::filter(nivdu > 0) |> 
+glm1 <-
+  needles |>
+  dplyr::filter(nivdu > 0) |>
   glm(
     offset = log(nivdu),
     family = stats::poisson,
-    formula = shared_syr ~ age + sex + homeless*polydrug
+    formula = shared_syr ~ age + sex + homeless * polydrug
   )
 library(equatiomatic)
 equatiomatic::extract_eq(glm1)
@@ -270,7 +260,8 @@ equatiomatic::extract_eq(glm1)
 
 
 library(parameters)
-glm1 |> parameters(exponentiate = TRUE) |> 
+glm1 |>
+  parameters(exponentiate = TRUE) |>
   print_md()
 ```
 
