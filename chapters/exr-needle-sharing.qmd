@@ -51,6 +51,42 @@ a longitudinal panel study of injection drug users measuring
 repeated needle-sharing behaviour.
 $n = 128$ participants, 17 variables.
 
+:::{#tbl-needles-data-dict}
+
+```{r}
+dict <- tibble(
+  variable = names(needles),
+  description = labelled::get_variable_labels(needles) |> 
+    sapply(function(x) ifelse(is.null(x), "", x)),
+)
+dict |> pander::pander()
+```
+
+Data dictionary for `needles` data
+
+:::
+
+---
+
+:::{#tbl-needles-demographics}
+
+```{r}
+#| code-fold: true
+needles |>
+  dplyr::select(-id) |>
+  gtsummary::tbl_summary()
+```
+
+Demographics and behavioural variables for the needle-sharing dataset
+(all participants; the `id` identifier column is omitted).
+
+:::
+
+{{< slidebreak >}}
+
+Before modeling, we sketch a hypothesized causal structure for these
+variables.
+
 ::: {#fig-needles-dag}
 
 ```{r}
@@ -98,54 +134,24 @@ Demographic factors (`age`, `sex`, `ethn`) and social factors
 :::
 
 ::: notes
-In @fig-needles-dag:
+In @fig-needles-dag, injection frequency `nivdu` is a **mediator**:
+each covariate can affect the number of shared syringes both
+**directly** (its effect on the propensity to share *per injection*)
+and **indirectly** (through how often the participant injects).
 
-- **`nivdu`** (number of injections in 30 days) acts as the denominator
-for the sharing rate: more injections create more opportunities to share.
-The Poisson model enters it as an offset (`offset = log(nivdu)`),
-so the covariates are modeled as predictors of the *rate*
-of sharing per injection.
-- The demographic and social factors have both an **indirect** path
-to `shared_syr` (through injection frequency `nivdu`)
-and a **direct** path (their effect on the propensity to share
-per injection).
-- This DAG is simplified; a fuller model might include
+This distinction drives the two models we fit below:
+
+- Putting `nivdu` in the model as an **offset** (`offset(log(nivdu))`)
+conditions on the mediator. The covariate coefficients then describe the
+*per-injection sharing rate* — the **direct** path, holding injection
+frequency fixed.
+- Leaving `nivdu` out of the model lets the covariate coefficients
+describe the *total* number of shared syringes — the **total** effect,
+including the indirect path through `nivdu`.
+
+This DAG is simplified; a fuller model might include
 HIV status, depression, or hopelessness.
 :::
-
-:::{#tbl-needles-data-dict}
-
-```{r}
-dict <- tibble(
-  variable = names(needles),
-  description = labelled::get_variable_labels(needles) |> 
-    sapply(function(x) ifelse(is.null(x), "", x)),
-)
-dict |> pander::pander()
-```
-
-Data dictionary for `needles` data
-
-:::
-
----
-
-:::{#tbl-needles-demographics}
-
-```{r}
-#| code-fold: true
-needles |>
-  dplyr::select(-id) |>
-  gtsummary::tbl_summary()
-```
-
-Demographics and behavioural variables for the needle-sharing dataset
-(all participants, including the one individual with `sex == "Trans"`;
-the `id` identifier column is omitted).
-
-:::
-
-{{< slidebreak >}}
 
 ```{r}
 #| tbl-cap: "Needle-sharing data"
@@ -217,14 +223,12 @@ needles |>
 Number of shared syringes versus number of injections
 (raw counts, 30-day window).
 The dashed line marks $y = x$ (every injection involves a shared syringe).
-This panel is drawn before the singleton `sex = "Trans"` participant
-is removed, so that participant appears as a third shape category.
 
 :::
 
 ---
 
-#### Covariate counts
+## Covariate counts
 
 ```{r}
 #| tbl-cap: "Counts in `needles` by sex, housing status, and multiple drug use"
@@ -250,7 +254,23 @@ needles <- needles |> filter(sex != "Trans")
 
 ---
 
-### Model {.smaller}
+## Model {.smaller}
+
+As @fig-needles-dag suggests, injection frequency `nivdu` is a mediator,
+so we fit two complementary Poisson models:
+
+- a **rate model** that includes `nivdu` as an offset, estimating the
+effect of each covariate on the *per-injection* sharing rate
+(the direct path, holding injection frequency fixed); and
+- a **count model** that omits `nivdu`, estimating the *total* effect of
+each covariate on the number of shared syringes
+(direct plus the indirect path through `nivdu`).
+
+### Rate model {.smaller}
+
+The offset `offset(log(nivdu))` fixes the coefficient of `log(nivdu)`
+at 1, which is equivalent to modeling the *rate* of shared syringes
+per injection (`shared_syr / nivdu`):
 
 ```{r}
 glm1 <-
@@ -316,7 +336,101 @@ ggplot(obs_data, aes(x = age, y = rate, color = sex)) +
     labeller = label_both
   ) +
   labs(y = "Shared needles per injection") +
+  guides(
+    color = guide_legend(nrow = 1),
+    size = guide_legend(nrow = 1)
+  ) +
   theme_bw() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom", legend.box = "vertical")
 ```
+
+---
+
+### Count model {.smaller}
+
+Dropping the offset models the *count* of shared syringes directly.
+We keep the same sample of injectors (`nivdu > 0`) so the two models are
+comparable; the only difference is whether `nivdu` enters as an offset:
+
+```{r}
+glm2 <-
+  needles |>
+  dplyr::filter(nivdu > 0) |>
+  glm(
+    family = stats::poisson,
+    formula = shared_syr ~ age + sex + homeless * polydrug
+  )
+equatiomatic::extract_eq(glm2)
+```
+
+---
+
+```{r}
+#| tbl-cap: "Count model (no offset) for needle-sharing data"
+#| label: tbl-needles-count
+glm2 |>
+  parameters(exponentiate = TRUE) |>
+  print_md()
+```
+
+## Interpreting the coefficients {.smaller}
+
+For a Poisson model with a log link,
+exponentiating a coefficient turns it into a *ratio*:
+$\exp(\beta_j)$ is the multiplicative change in the expected outcome
+per one-unit increase in $x_j$,
+holding the other covariates fixed
+(this is the rate-ratio interpretation introduced earlier in this chapter).
+In the **rate model** this ratio is a *rate ratio* (shared syringes per
+injection); in the **count model** it is a *count ratio*
+(total shared syringes).
+
+```{r}
+#| code-fold: true
+rr_rate <- exp(coef(glm1))
+rr_count <- exp(coef(glm2))
+```
+
+**Baseline (intercept).**
+In the rate model, $\exp(\hat\beta_0) = `r round(rr_rate[["(Intercept)"]], 3)`$
+is the estimated sharing rate per injection for the reference participant
+(male, not homeless, one drug used),
+extrapolated to age 0.
+Age 0 is outside the data, so the intercept is a mathematical anchor
+rather than a directly interpretable quantity.
+
+**Age.**
+The rate ratio per additional year of age is
+$\exp(\hat\beta_{\text{age}}) = `r round(rr_rate[["age"]], 3)`$,
+i.e., essentially no change in the per-injection sharing rate with age.
+
+**Sex.**
+The rate ratio for female versus male is
+$\exp(\hat\beta_{\text{sexF}}) = `r round(rr_rate[["sexF"]], 2)`$:
+women share needles at about `r round(rr_rate[["sexF"]], 2)` times
+the per-injection rate of men with the same age, housing status, and
+drug-use pattern.
+In the count model the corresponding count ratio is larger,
+about `r round(rr_count[["sexF"]], 2)`.
+Because the total-count ratio exceeds the per-injection rate ratio,
+part of women's higher total sharing operates **indirectly** —
+through injecting more often
+(the `sex → nivdu → shared_syr` path in @fig-needles-dag) —
+on top of their higher per-injection rate.
+
+**Homelessness.**
+Among participants using one drug,
+the rate ratio for homeless versus not-homeless is
+$\exp(\hat\beta_{\text{homeless}}) = `r round(rr_rate[["homelesshomeless"]], 2)`$,
+versus a count ratio of about `r round(rr_count[["homelesshomeless"]], 2)`
+in the count model —
+again, a larger *total* association than *direct* (per-injection) one.
+
+**Interaction (caution).**
+The `homeless × polydrug` cell is sparse,
+which produces an extreme, unstable interaction estimate
+(a rate ratio in the hundreds of thousands).
+We would not interpret that coefficient without more data;
+it is a reminder to check cell counts (see @tbl-count-needles)
+before trusting an interaction term.
 
