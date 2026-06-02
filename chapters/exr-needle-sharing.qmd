@@ -41,7 +41,7 @@ needles <-
     "polydrug" = "Multiple non-injection drugs used?",
     "sqrtninj" = "sqrt(No. of injections in 30 days); duplicate of sqrtnivd",
     "homeless" = "Homeless? (reference = not homeless)",
-    "shsyr" = "Number of shared needles (in 30 days)"
+    "shsyr" = "Shared needles (30 days); sparse duplicate of shared_syr"
   )
 ```
 
@@ -68,6 +68,9 @@ Data dictionary for `needles` data
 
 ---
 
+@tbl-needles-demographics summarizes the demographic and behavioural
+variables for the participants.
+
 :::{#tbl-needles-demographics}
 
 ```{r}
@@ -78,7 +81,7 @@ needles |>
 ```
 
 Demographics and behavioural variables for the needle-sharing dataset
-(all participants; the `id` identifier column is omitted).
+(all participants).
 
 :::
 
@@ -344,7 +347,7 @@ ggplot(obs_data, aes(x = age, y = rate, color = sex)) +
   theme(legend.position = "bottom", legend.box = "vertical")
 ```
 
----
+{{< slidebreak >}}
 
 ### Count model {.smaller}
 
@@ -363,27 +366,34 @@ glm2 <-
 equatiomatic::extract_eq(glm2)
 ```
 
----
+{{< slidebreak >}}
+
+:::{#tbl-needles-count}
 
 ```{r}
-#| tbl-cap: "Count model (no offset) for needle-sharing data"
-#| label: tbl-needles-count
+#| code-fold: true
 glm2 |>
   parameters(exponentiate = TRUE) |>
   print_md()
 ```
 
+Count model (no offset) for needle-sharing data.
+
+:::
+
 ## Interpreting the coefficients {.smaller}
 
 For a Poisson model with a log link,
 exponentiating a coefficient turns it into a *ratio*:
-$\exp(\beta_j)$ is the multiplicative change in the expected outcome
+$\exp{\b_j}$ is the multiplicative change in the expected outcome
 per one-unit increase in $x_j$,
 holding the other covariates fixed
 (this is the rate-ratio interpretation introduced earlier in this chapter).
 In the **rate model** this ratio is a *rate ratio* (shared syringes per
 injection); in the **count model** it is a *count ratio*
 (total shared syringes).
+The fitted ratios are reported in @tbl-needles-pois (rate model) and
+@tbl-needles-count (count model).
 
 ```{r}
 #| code-fold: true
@@ -392,7 +402,7 @@ rr_count <- exp(coef(glm2))
 ```
 
 **Baseline (intercept).**
-In the rate model, $\exp(\hat\beta_0) = `r round(rr_rate[["(Intercept)"]], 3)`$
+In the rate model, $\exp{\hat\b_0} = `r round(rr_rate[["(Intercept)"]], 3)`$
 is the estimated sharing rate per injection for the reference participant
 (male, not homeless, one drug used),
 extrapolated to age 0.
@@ -401,12 +411,12 @@ rather than a directly interpretable quantity.
 
 **Age.**
 The rate ratio per additional year of age is
-$\exp(\hat\beta_{\text{age}}) = `r round(rr_rate[["age"]], 3)`$,
+$\exp{\hat\b_{\text{age}}} = `r round(rr_rate[["age"]], 3)`$,
 i.e., essentially no change in the per-injection sharing rate with age.
 
 **Sex.**
 The rate ratio for female versus male is
-$\exp(\hat\beta_{\text{sexF}}) = `r round(rr_rate[["sexF"]], 2)`$:
+$\exp{\hat\b_{\text{sexF}}} = `r round(rr_rate[["sexF"]], 2)`$:
 women share needles at about `r round(rr_rate[["sexF"]], 2)` times
 the per-injection rate of men with the same age, housing status, and
 drug-use pattern.
@@ -421,7 +431,7 @@ on top of their higher per-injection rate.
 **Homelessness.**
 Among participants using one drug,
 the rate ratio for homeless versus not-homeless is
-$\exp(\hat\beta_{\text{homeless}}) = `r round(rr_rate[["homelesshomeless"]], 2)`$,
+$\exp{\hat\b_{\text{homeless}}} = `r round(rr_rate[["homelesshomeless"]], 2)`$,
 versus a count ratio of about `r round(rr_count[["homelesshomeless"]], 2)`
 in the count model —
 again, a larger *total* association than *direct* (per-injection) one.
