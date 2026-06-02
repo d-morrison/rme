@@ -27,13 +27,17 @@ needles =
         0 ~ "not homeless") |>
       factor() |>
       relevel(ref = "not homeless"),
-    ethn = ethn |> factor() |> relevel(ref = "White"),
+    ethn =
+      ethn |>
+      factor() |>
+      forcats::fct_lump_min(min = 5, other_level = "Other") |>
+      relevel(ref = "White"),
     sex = sex |> factor() |> relevel(ref = "M")
   ) |> 
   labelled::set_variable_labels(
     "id" = "Participant identifier",
     "sex" = "Biological sex (reference = Male)",
-    "ethn" = "Self-reported ethnicity (reference = White)",
+    "ethn" = "Self-reported ethnicity (reference = White; n<5 lumped to Other)",
     "age" = "Age at first interview (years)",
     "dprsn_dx" = "Depression diagnosis indicator",
     "sexabuse" = "History of sexual abuse (1 = yes, 0 = no)",
