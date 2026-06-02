@@ -45,11 +45,23 @@ needles <-
   )
 ```
 
-Dataset source: Chapter 8 of *Regression Methods in Biostatistics*, 2e
-([UCSF companion website](https://regression.ucsf.edu/second-edition/data-examples-and-problems)) —
-a longitudinal panel study of injection drug users measuring
-repeated needle-sharing behaviour.
-$n = 128$ participants, 17 variables.
+## Introduction
+
+Needle sharing among injection drug users (IDUs)
+is a primary route of HIV and hepatitis C transmission.
+Unstable housing (homelessness) and patterns of drug use
+have been proposed as structural drivers of risk behavior,
+including receptive syringe sharing,
+while injection frequency reflects overall exposure and addiction severity.
+
+These data come from a longitudinal panel study of injection drug users
+measuring repeated needle-sharing behavior,
+analyzed in @vittinghoff2e [§8.3.1]
+and available from the
+[UCSF companion website](https://regression.ucsf.edu/second-edition/data-examples-and-problems).
+There are $n = 128$ participants and 17 variables.
+Our outcome is `shared_syr`,
+the number of times a participant shared a syringe in the past 30 days.
 
 :::{#tbl-needles-data-dict}
 
@@ -162,7 +174,7 @@ needles
 ---
 
 ```{r}
-#| fig-cap: "Rates of needle sharing"
+#| fig-cap: "Needle-sharing counts by age"
 #| label: fig-needles
 library(ggplot2)
 
@@ -171,7 +183,7 @@ needles |>
   ggplot(
     aes(
       x = age,
-      y = shared_syr / nivdu,
+      y = shared_syr,
       shape = sex,
       col = ethn
     )
@@ -179,7 +191,7 @@ needles |>
   geom_point(aes(size = nivdu), alpha = .5) +
   scale_size_area(max_size = 4) +
   facet_grid(cols = vars(polydrug), rows = vars(homeless)) +
-  labs(y = "Shared needles per injection") +
+  labs(y = "Number of shared syringes (30 days)") +
   theme(legend.position = "bottom")
 ```
 
