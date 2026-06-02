@@ -61,6 +61,68 @@ a longitudinal panel study of injection drug users measuring
 repeated needle-sharing behaviour.
 $n = 128$ participants, 17 variables.
 
+::: {#fig-needles-dag}
+
+```{r}
+#| fig-width: 7
+#| fig-height: 5
+#| code-fold: true
+
+library(dagitty)
+
+needles_dag <- dagitty(
+  'dag {
+    age      [pos="0,-2"]
+    sex      [pos="0,-1"]
+    ethn     [pos="0,0"]
+    homeless [pos="0,1"]
+    polydrug [pos="0,2"]
+    nivdu    [pos="2,0"]
+    shared_syr [outcome, pos="4,0"]
+
+    age -> nivdu
+    sex -> nivdu
+    ethn -> nivdu
+    homeless -> nivdu
+    polydrug -> nivdu
+
+    age -> shared_syr
+    sex -> shared_syr
+    ethn -> shared_syr
+    homeless -> shared_syr
+    polydrug -> shared_syr
+
+    nivdu -> shared_syr
+  }'
+)
+
+plot(needles_dag)
+```
+
+Hypothesized causal structure for the needle-sharing example.
+Demographic factors (`age`, `sex`, `ethn`) and social factors
+(`homeless`, `polydrug`) influence both how often a participant injects
+(`nivdu`) and how many of those injections involve a shared syringe
+(`shared_syr`, the outcome).
+
+:::
+
+::: notes
+In @fig-needles-dag:
+
+- **`nivdu`** (number of injections in 30 days) acts as the denominator
+for the sharing rate: more injections create more opportunities to share.
+The Poisson model enters it as an offset (`offset = log(nivdu)`),
+so the covariates are modeled as predictors of the *rate*
+of sharing per injection.
+- The demographic and social factors have both an **indirect** path
+to `shared_syr` (through injection frequency `nivdu`)
+and a **direct** path (their effect on the propensity to share
+per injection).
+- This DAG is simplified; a fuller model might include
+HIV status, depression, or hopelessness.
+:::
+
 :::{#tbl-needles-data-dict}
 
 ```{r}
@@ -190,12 +252,17 @@ needles |>
     )
   ) +
   geom_point(alpha = .5) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", alpha = .5) +
   facet_grid(cols = vars(polydrug), rows = vars(homeless)) +
   labs(
     x = "Number of injections (in 30 days)",
     y = "Number of shared syringes (in 30 days)"
   ) +
-  theme(legend.position = "bottom")
+  guides(
+    col = guide_legend(nrow = 2),
+    shape = guide_legend(nrow = 2)
+  ) +
+  theme(legend.position = "bottom", legend.box = "vertical")
 ```
 
 ---
