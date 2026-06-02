@@ -72,22 +72,24 @@ needles
 #| label: fig-needles
 library(ggplot2)
 
-needles |> 
+needles |>
+  dplyr::filter(nivdu > 0) |>
   ggplot(
     aes(
       x = age,
-      y = shsyryn,
+      y = shared_syr / nivdu,
       shape = sex,
       col = ethn
     )
-  ) + 
+  ) +
   geom_point(
-    aes(size = nivdu), 
+    aes(size = nivdu),
     alpha = .5) +
   scale_size_area(max_size = 4) +
   facet_grid(
-    cols = vars(polydrug), 
+    cols = vars(polydrug),
     rows = vars(homeless)) +
+  labs(y = "Shared needles per injection") +
   theme(legend.position = "bottom")
 ```
 
@@ -149,7 +151,7 @@ glm1 |> parameters(exponentiate = TRUE) |>
 ---
 
 ```{r}
-#| tbl-cap: "fitted Poisson model for needle-sharing data"
+#| fig-cap: "fitted Poisson model for needle-sharing data"
 #| label: fig-needles-pois
 library(sjPlot)
 glm1 |> 
