@@ -47,16 +47,25 @@ Mnemonic: **ratio = two things compared; factor = one thing vs. the baseline.**
 - Generic: `\ratio` (= `\theta`), `\ratiof{·}`; `\factor` (= `\theta`), `\factorf{·}`.
 - Subscripted ratios: `\ror` (odds), `\hazratio`/`\hr` (hazard, fn `\hrf`),
   `\rateratio` (fn `\rateratiof`), `\riskratio` (fn `\riskratiof`),
-  `\prevratio`, `\cuhazratio`, `\survratio`.
+  `\prevratio` (fn `\prevratiof`/`\prrf`), `\cuhazratio` (fn `\cuhazratiof`),
+  `\survratio` (fn `\survratiof`/`\rsurvf`/`\survrf`).
+  Every subscripted ratio macro has a corresponding `-f` function form.
 - Subscripted factors: `\oddsfactor`, `\hazfactor`, `\ratefactor`, `\riskfactor`,
   `\prevfactor`, `\cuhazfactor`, `\survfactor`;
   function forms `\oddsfactorf`/`\oddsff`, `\hazfactorf`/`\hazff`,
   `\ratefactorf`/`\rateff`, `\riskfactorf`/`\riskff`,
-  `\prevfactorf`/`\prevff`, `\cuhazfactorf`/`\cuhazff`.
+  `\prevfactorf`/`\prevff`, `\cuhazfactorf`/`\cuhazff`,
+  `\survfactorf`/`\survff`.
 
 Before relying on a name, confirm it still exists:
 
 `grep -nE '\\(def|providecommand)\\(ratio|ror|hr|hazratio|hazfactor|oddsfactor)' latex-macros/macros.qmd`
+
+Note: `\providecommand`-defined macros (the `-f` function forms like
+`\ratiof`, `\hrf`, `\survfactorf`) won't appear in this output, because the
+pattern matches `\def\name` / `\providecommand\name` but not the braced
+`\providecommand{\name}` form those use. Drop the `\\` before the name
+group (e.g. `'\\(def|providecommand)\{?\\(...)'`) to catch both.
 
 ## Workflow
 
