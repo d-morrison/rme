@@ -1,0 +1,58 @@
+{{< include latex-macros/macros.qmd >}}
+
+:::{#def-coef-interp-procedure}
+
+#### General procedure for interpreting a regression coefficient
+
+To derive the interpretation of coefficient $\b_j$
+in a model with linear predictor
+$\eta(\vx) = \eta(x_1, \ldots, x_p)$:
+
+1. **Write down the linear predictor** $\eta(x_1, \ldots, x_p)$.
+
+2. **Differentiate or difference** $\eta$ with respect to $x_j$:
+
+   a. If $x_j$ is **continuous**:
+      compute the partial derivative $\deriv{x_j}\eta(\vx)$.
+
+   b. If $x_j$ is **discrete**:
+      compute the one-unit difference
+      $\eta(\vx)\big|_{x_j \,\to\, x_j+1} - \eta(\vx)\big|_{x_j}$.
+
+   For an **interaction coefficient** $\b_{jk}$
+   (multiplying the product $x_j \cdot x_k$),
+   apply this step once for each variable in the product:
+   differentiate or difference with respect to $x_j$,
+   then differentiate or difference the result with respect to $x_k$.
+
+3. **Set any remaining covariates to 0**.
+   If covariates other than the one(s) used in step 2
+   still appear in the resulting expression,
+   substitute $0$ for each such covariate.
+   This eliminates the corresponding interaction terms
+   and isolates $\b_j$ alone on the right-hand side.
+
+4. **Solve for $\b_j$** by symmetry of equality:
+   reverse the equation to read $\b_j = \cdots$
+
+:::  
+
+::: notes
+This procedure gives the interpretation on the **linear predictor scale**.
+For Gaussian linear regression (identity link),
+$\eta(\vx) = \E{Y|\vx}$,
+so the resulting interpretation is directly on the mean outcome scale.
+For other GLMs and for proportional hazards models,
+the linear predictor is a transformed version of the mean
+(e.g., the log-odds for logistic regression,
+the log-rate for Poisson regression,
+or the log-hazard for Cox models),
+so an additional step --- applying the inverse link or exponentiating ---
+translates the interpretation to the scale of the outcome.
+
+The reference covariate pattern used in step 3 is not arbitrary:
+setting remaining covariates to $0$ is correct when $0$ is
+their reference level (as coded in the model).
+If the reference level for some covariate is not $0$,
+substitute the actual reference value instead.
+:::
