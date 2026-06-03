@@ -33,7 +33,10 @@ zinf_fit1 = glmmTMB(
   family = "poisson",
   data  = needles,
   formula = shared_syr ~ age + sex + homeless + polydrug + hivstat,
-  ziformula = ~ age + sex + homeless + polydrug + hivstat
+  # hivstat omitted from ziformula because only ~8 of 128 participants are
+  # HIV+, which risks convergence failure in the zero-inflation submodel
+  # (mirroring why the homeless*polydrug interaction was avoided above).
+  ziformula = ~ age + sex + homeless + polydrug
 )
 
 zinf_fit1 |>
@@ -58,7 +61,10 @@ zinf_fit1 = glmmTMB(
   family = nbinom2,
   data  = needles,
   formula = shared_syr ~ age + sex + homeless + polydrug + hivstat,
-  ziformula = ~ age + sex + homeless + polydrug + hivstat
+  # hivstat omitted from ziformula because only ~8 of 128 participants are
+  # HIV+, which risks convergence failure in the zero-inflation submodel
+  # (mirroring why the homeless*polydrug interaction was avoided above).
+  ziformula = ~ age + sex + homeless + polydrug
 )
 
 zinf_fit1 |>
