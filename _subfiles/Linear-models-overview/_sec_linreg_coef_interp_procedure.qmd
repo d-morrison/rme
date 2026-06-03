@@ -17,7 +17,7 @@ $\eta(\vx) = \eta(x_1, \ldots, x_p)$:
 
    b. If $x_j$ is **discrete**:
       compute the one-unit difference
-      $\eta(\vx)\big|_{x_j \,\to\, x_j+1} - \eta(\vx)\big|_{x_j}$.
+      $\eta(\vx)\big|_{x_j = a+1} - \eta(\vx)\big|_{x_j = a}$.
 
    For an **interaction coefficient** $\b_{jk}$
    (multiplying the product $x_j \cdot x_k$),
@@ -25,17 +25,23 @@ $\eta(\vx) = \eta(x_1, \ldots, x_p)$:
    differentiate or difference with respect to $x_j$,
    then differentiate or difference the result with respect to $x_k$.
 
-3. **Set any remaining covariates to 0**.
+3. **Set any remaining covariates to their reference levels**.
    If covariates other than the one(s) used in step 2
    still appear in the resulting expression,
-   substitute $0$ for each such covariate.
+   substitute each covariate's reference level for it.
    This eliminates the corresponding interaction terms
    and isolates $\b_j$ alone on the right-hand side.
 
-4. **Solve for $\b_j$** by symmetry of equality:
-   reverse the equation to read $\b_j = \cdots$
+4. **Identify $\b_j$**: the expression from the previous steps equals $\b_j$;
+   write $\b_j = \cdots$ to state the interpretation explicitly.
 
-:::  
+**Special case --- intercept ($\b_0$):**
+If the coefficient of interest is the intercept $\b_0$,
+skip step 2.
+Apply step 3 directly by setting all covariates to their reference levels:
+$\b_0 = \eta(\text{reference pattern})$.
+
+:::
 
 ::: notes
 This procedure gives the interpretation on the **linear predictor scale**.
@@ -55,4 +61,37 @@ setting remaining covariates to $0$ is correct when $0$ is
 their reference level (as coded in the model).
 If the reference level for some covariate is not $0$,
 substitute the actual reference value instead.
+:::
+
+:::{#exm-coef-interp-procedure}
+
+#### Applying the procedure to [Model @eq-lm-parallel]
+
+For the birthweight parallel-lines model
+$$E[Y|M=m, A=a] = \beta_0 + \beta_M m + \beta_A a,$$
+where $M \in \{0,1\}$ (sex; $1$ = male, $0$ = female)
+and $A$ is gestational age (weeks):
+
+**$\beta_A$ (gestational age, continuous):**
+$\deriv{a}\eta(m,a) = \beta_A$,
+so $\beta_A = \deriv{a}E[Y|M=m, A=a]$.
+
+**$\beta_M$ (sex, discrete):**
+
+$$
+\ba
+\eta(m,a)\big|_{m=1} - \eta(m,a)\big|_{m=0}
+&= (\beta_0 + \beta_M + \beta_A a) - (\beta_0 + \beta_A a)
+\\\\
+&= \beta_M,
+\ea
+$$
+
+so $\beta_M = E[Y|M=1, A=a] - E[Y|M=0, A=a]$.
+
+**$\beta_0$ (intercept, special case):**
+Skip step 2;
+set $m=0$ and $a=0$ (the reference levels) in step 3:
+$\beta_0 = \eta(0,0) = E[Y|M=0, A=0]$.
+
 :::
