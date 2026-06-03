@@ -1,0 +1,156 @@
+---
+title: "Concept Map: Definitions and Results"
+---
+
+{{< include shared-config.qmd >}}
+
+This appendix shows how the definitions and results
+(`def`, `thm`, `lem`, `cor`, `prp` callouts)
+in the notes depend on one another.
+
+We say result $B$ is a **descendant** of result $A$
+if $A$ is referenced inside the statement or proof of $B$
+(directly, or transitively through a chain of intermediate results).
+The more descendants a result has,
+the more of the rest of the notes rests on it ---
+so descendant count is a rough measure of how foundational a result is.
+
+The dependency graph is built by `data-raw/callout-graph.R`,
+which scans the source `.qmd` files and saves the result to
+`inst/extdata/callout-graph.rds`.
+This appendix reads that saved file rather than re-scanning the notes on
+every render, so **re-run that script whenever divs are added, removed, or
+re-titled** to refresh the diagram and table below.
+
+```{r}
+#| label: load-concept-graph
+#| code-fold: true
+#| message: false
+#| warning: false
+
+library(igraph)
+library(ggraph)
+
+cg <- readRDS(here::here("inst/extdata/callout-graph.rds"))
+
+type_levels <- c("def", "thm", "lem", "cor", "prp")
+type_labels <- c(
+  def = "Definition", thm = "Theorem", lem = "Lemma",
+  cor = "Corollary", prp = "Proposition"
+)
+type_palette <- c(
+  def = "#1b9e77", thm = "#d95f02", lem = "#7570b3",
+  cor = "#e7298a", prp = "#66a61e"
+)
+```
+
+There are `r nrow(cg$nodes)` labeled definitions and results in the notes,
+connected by `r nrow(cg$edges)` direct dependency links.
+
+## Dependency diagram
+
+@fig-concept-map shows the results that participate in at least one
+dependency link, laid out so that connected results sit near each other.
+Color encodes the type of result,
+and **node size grows with the number of descendants**,
+so the most foundational results stand out
+(the largest, most-connected nodes are also labeled).
+Results with no detected dependency links
+(foundational definitions used only in prose, or standalone results)
+are omitted from the diagram but appear in @sec-descendants-table
+if they have descendants.
+
+:::{#fig-concept-map}
+
+```{r}
+#| label: fig-concept-map-plot
+#| code-fold: true
+#| message: false
+#| warning: false
+#| fig-width: 11
+#| fig-height: 9
+
+connected <- cg$nodes$id[cg$nodes$id %in% c(cg$edges$from, cg$edges$to)]
+core <- graph_from_data_frame(
+  cg$edges,
+  vertices = cg$nodes[cg$nodes$id %in% connected, ],
+  directed = TRUE
+)
+V(core)$type <- factor(V(core)$type, levels = type_levels)
+
+set.seed(204)
+ggraph(core, layout = "stress") +
+  geom_edge_link(
+    arrow = arrow(length = unit(1.8, "mm"), type = "closed"),
+    end_cap = circle(1.6, "mm"),
+    edge_alpha = 0.25, edge_width = 0.3
+  ) +
+  geom_node_point(aes(size = n_desc + 1, color = type)) +
+  geom_node_text(
+    aes(label = ifelse(n_desc >= 3, name, "")),
+    repel = TRUE, size = 2.7, max.overlaps = 30, segment.alpha = 0.3
+  ) +
+  scale_color_manual(
+    values = type_palette, labels = type_labels, name = "Type", drop = FALSE
+  ) +
+  scale_size_continuous(range = c(1.5, 9), guide = "none") +
+  theme_void() +
+  theme(
+    legend.position = "bottom",
+    text = element_text(family = "serif")
+  )
+```
+
+Dependency structure of the definitions and results in the notes.
+An arrow points from a result to each result that uses it.
+Node and label size are proportional to the total number of descendants.
+
+:::
+
+## Descendants of each result {#sec-descendants-table}
+
+@tbl-descendants lists every result that has at least one descendant,
+sorted by the number of **direct** descendants.
+For each result, the first column links to its direct descendants
+(results that reference it directly)
+and the second column links to its indirect descendants
+(results that reach it only through a chain of intermediate results).
+All entries are live cross-reference links.
+
+::: {#tbl-descendants}
+
+```{r}
+#| label: tbl-descendants-build
+#| code-fold: true
+#| message: false
+#| warning: false
+
+ref_list <- function(ids) {
+  if (!length(ids)) return("—")
+  ids <- ids[order(match(sub("-.*", "", ids), type_levels), ids)]
+  paste0("@", ids, collapse = ", ")
+}
+
+ranked <- cg$nodes[cg$nodes$n_direct >= 1, ]
+ranked <- ranked[order(-ranked$n_direct, -ranked$n_desc, ranked$id), ]
+
+direct_col <- vapply(
+  ranked$id, function(v) ref_list(cg$descendants[[v]]$direct), character(1)
+)
+indirect_col <- vapply(
+  ranked$id, function(v) ref_list(cg$descendants[[v]]$indirect), character(1)
+)
+descendant_table <- data.frame(
+  Result = paste0("@", ranked$id),
+  `Direct descendants` = direct_col,
+  `Indirect descendants` = indirect_col,
+  check.names = FALSE, row.names = NULL, stringsAsFactors = FALSE
+)
+
+knitr::kable(descendant_table, format = "pipe", align = "lll")
+```
+
+Direct and indirect descendants of every result that has at least one
+descendant, sorted by number of direct descendants.
+
+:::
