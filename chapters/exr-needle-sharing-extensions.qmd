@@ -57,19 +57,43 @@ Another R package for zero-inflated models is [`pscl`](https://cran.r-project.or
 #| tbl-cap: "Zero-inflated negative binomial model"
 #| label: tbl-zeroinf-nb
 library(glmmTMB)
-zinf_fit1 = glmmTMB(
+zinf_fit_nb = glmmTMB(
   family = nbinom2,
   data  = needles,
   formula = shared_syr ~ age + sex + homeless + polydrug + hivstat,
-  # hivstat omitted from ziformula because only ~8 of 128 participants are
-  # HIV+, which risks convergence failure in the zero-inflation submodel
-  # (mirroring why the homeless*polydrug interaction was avoided above).
-  ziformula = ~ age + sex + homeless + polydrug
+  # Intercept-only zero-inflation submodel (see note below).
+  ziformula = ~ 1
 )
 
-zinf_fit1 |>
+zinf_fit_nb |>
   parameters(exponentiate = TRUE) |>
   print_md()
 
 ```
+
+::: notes
+Unlike the zero-inflated Poisson model above,
+here the zero-inflation submodel uses only an intercept (`ziformula = ~ 1`).
+Two reasons to drop the covariates from this submodel:
+
+- **The DAG gives it no covariates.**
+@fig-needles-dag posits a *single* process
+in which the covariates act on `shared_syr`
+(directly and through the mediator `nivdu`);
+it does not posit a separate latent class of "structural never-sharers"
+for those covariates to predict.
+So a covariate-laden zero-inflation submodel
+is not identified by the assumed causal structure.
+
+- **The data cannot identify it either.**
+The negative binomial's overdispersion parameter and the zero-inflation component
+both compete to explain the excess zeros,
+so with all four covariates in the zero-inflation submodel
+the logistic fit *separates*:
+its coefficients diverge and the exponentiated estimates (odds ratios)
+run off to $\pm\infty$.
+Reducing the zero-inflation submodel to a single constant
+removes the separation
+while still allowing a fixed fraction of structural zeros.
+:::
 
