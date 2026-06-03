@@ -112,14 +112,19 @@ variables.
 #| code-fold: true
 
 library(dagitty)
+library(ggdag)
 
 needles_dag <- dagitty(
   'dag {
-    age      [pos="0,-2"]
-    sex      [pos="0,-1"]
-    ethn     [pos="0,0"]
-    homeless [pos="0,1"]
-    polydrug [pos="0,2"]
+    age      [pos="0,-4"]
+    sex      [pos="0,-3"]
+    ethn     [pos="0,-2"]
+    homeless [pos="0,-1"]
+    polydrug [pos="0,0"]
+    hivstat  [pos="0,1"]
+    sexabuse [pos="0,2"]
+    dprsn_dx [pos="0,3"]
+    hplsns   [pos="0,4"]
     nivdu    [pos="2,0"]
     shared_syr [outcome, pos="4,0"]
 
@@ -128,25 +133,53 @@ needles_dag <- dagitty(
     ethn -> nivdu
     homeless -> nivdu
     polydrug -> nivdu
+    hivstat -> nivdu
+    sexabuse -> nivdu
+    dprsn_dx -> nivdu
+    hplsns -> nivdu
 
     age -> shared_syr
     sex -> shared_syr
     ethn -> shared_syr
     homeless -> shared_syr
     polydrug -> shared_syr
+    hivstat -> shared_syr
+    sexabuse -> shared_syr
+    dprsn_dx -> shared_syr
+    hplsns -> shared_syr
 
     nivdu -> shared_syr
   }'
 )
 
-plot(needles_dag)
+# Pair each variable name with the human-readable label from the data
+# dictionary so the DAG shows both.
+labels(needles_dag) <- c(
+  age        = "Age (years)",
+  sex        = "Biological sex",
+  ethn       = "Ethnicity",
+  homeless   = "Homeless",
+  polydrug   = "Multiple drugs used",
+  hivstat    = "HIV serostatus",
+  sexabuse   = "Sexual abuse history",
+  dprsn_dx   = "Depression diagnosis",
+  hplsns     = "Hopelessness score",
+  nivdu      = "Injections (30 d)",
+  shared_syr = "Shared syringes (30 d)"
+)
+
+ggdag(needles_dag, use_labels = "label", text = TRUE) +
+  theme_dag()
 ```
 
 Hypothesized causal structure for the needle-sharing example.
-Demographic factors (`age`, `sex`, `ethn`) and social factors
-(`homeless`, `polydrug`) influence both how often a participant injects
-(`nivdu`) and how many of those injections involve a shared syringe
-(`shared_syr`, the outcome).
+Demographic (`age`, `sex`, `ethn`), social (`homeless`, `polydrug`),
+mental-health (`dprsn_dx`, `hplsns`, `sexabuse`), and serostatus
+(`hivstat`) factors all plausibly influence both how often a participant
+injects (`nivdu`) and how many of those injections involve a shared
+syringe (`shared_syr`, the outcome).
+Each node carries both its variable name (top) and its data-dictionary
+label.
 
 :::
 
@@ -189,7 +222,7 @@ needles |>
       x = age,
       y = shared_syr,
       shape = sex,
-      col = ethn
+      col = hivstat
     )
   ) +
   geom_point(aes(size = nivdu), alpha = .5) +
@@ -219,7 +252,7 @@ needles |>
       x = nivdu,
       y = shared_syr,
       shape = sex,
-      col = ethn
+      col = hivstat
     )
   ) +
   geom_point(alpha = .5) +
@@ -315,7 +348,7 @@ needles, leaving that cell empty for the outcome.
 
 ```{r}
 glm1 <- glm(
-  formula = shared_syr ~ age + sex + homeless + polydrug,
+  formula = shared_syr ~ age + sex + homeless + polydrug + hivstat,
   family = stats::poisson,
   data = needles
 )
@@ -351,13 +384,14 @@ pred_grid <- with(glm1$model, expand.grid(
   age = seq(min(age), max(age), length.out = 100),
   sex = levels(droplevels(sex)),
   homeless = levels(homeless),
-  polydrug = levels(polydrug)
+  polydrug = levels(polydrug),
+  hivstat = levels(hivstat)
 ))
 pred_grid$shared_syr <- predict(glm1, newdata = pred_grid, type = "response")
 
-ggplot(glm1$model, aes(x = age, y = shared_syr, color = sex)) +
+ggplot(glm1$model, aes(x = age, y = shared_syr, color = hivstat, shape = sex)) +
   geom_point(alpha = 0.4) +
-  geom_line(data = pred_grid, linewidth = 0.8) +
+  geom_line(data = pred_grid, aes(linetype = sex), linewidth = 0.8) +
   facet_grid(
     rows = vars(homeless),
     cols = vars(polydrug),
@@ -389,7 +423,7 @@ irr <- exp(coef(glm1))
 **Baseline (intercept).**
 $\exp{\hat\b_0} = `r round(irr[["(Intercept)"]], 3)`$
 is the expected count of shared syringes for the reference participant
-(male, not homeless, one drug used), extrapolated to age 0.
+(male, not homeless, one drug used, HIV-negative), extrapolated to age 0.
 Age 0 is outside the data, so the intercept is a mathematical anchor
 rather than a directly interpretable quantity.
 
@@ -416,6 +450,13 @@ $\exp{\hat\b_{\text{polydrug}}} = `r round(irr[["polydrugmultiple drugs used"]],
 multiple-drug users have a *lower* expected count than single-drug users,
 though only `r sum(glm1$model[["polydrug"]] == "multiple drugs used")`
 participants used multiple drugs, so this estimate is imprecise.
+
+**HIV serostatus.**
+$\exp{\hat\b_{\text{hivstatHIV+}}} = `r round(irr[["hivstatHIV+"]], 2)`$:
+HIV-positive participants have a lower expected count of shared syringes
+than HIV-negative participants, adjusting for the other covariates.
+Only `r sum(glm1$model[["hivstat"]] == "HIV+")` participants are HIV+
+in this sample, so this estimate is imprecise.
 
 **Overdispersion caveat.**
 These data are highly overdispersed — the variance far exceeds the mean —
