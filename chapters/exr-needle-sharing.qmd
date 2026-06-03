@@ -112,7 +112,6 @@ variables.
 #| code-fold: true
 
 library(dagitty)
-library(ggdag)
 
 needles_dag <- dagitty(
   'dag {
@@ -152,34 +151,19 @@ needles_dag <- dagitty(
   }'
 )
 
-# Pair each variable name with the human-readable label from the data
-# dictionary so the DAG shows both.
-labels(needles_dag) <- c(
-  age        = "Age (years)",
-  sex        = "Biological sex",
-  ethn       = "Ethnicity",
-  homeless   = "Homeless",
-  polydrug   = "Multiple drugs used",
-  hivstat    = "HIV serostatus",
-  sexabuse   = "Sexual abuse history",
-  dprsn_dx   = "Depression diagnosis",
-  hplsns     = "Hopelessness score",
-  nivdu      = "Injections (30 d)",
-  shared_syr = "Shared syringes (30 d)"
-)
-
-ggdag(needles_dag, use_labels = "label", text = TRUE) +
-  theme_dag()
+plot(needles_dag)
 ```
 
 Hypothesized causal structure for the needle-sharing example.
-Demographic (`age`, `sex`, `ethn`), social (`homeless`, `polydrug`),
-mental-health (`dprsn_dx`, `hplsns`, `sexabuse`), and serostatus
-(`hivstat`) factors all plausibly influence both how often a participant
-injects (`nivdu`) and how many of those injections involve a shared
-syringe (`shared_syr`, the outcome).
-Each node carries both its variable name (top) and its data-dictionary
-label.
+Demographic (`age` — age in years; `sex` — biological sex; `ethn` — ethnicity),
+social (`homeless`; `polydrug` — multiple drugs used),
+mental-health (`sexabuse` — sexual-abuse history; `dprsn_dx` — depression diagnosis;
+`hplsns` — hopelessness score),
+and serostatus (`hivstat` — HIV serostatus) factors
+all plausibly influence both how often a participant injects
+(`nivdu` — injections in 30 days)
+and how many of those injections involve a shared syringe
+(`shared_syr` — shared syringes in 30 days; the outcome).
 
 :::
 
