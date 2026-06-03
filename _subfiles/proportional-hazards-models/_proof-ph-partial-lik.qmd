@@ -60,7 +60,7 @@ the right-hand side $\haz(t_i \mid \vx_j)\,\Delta t$ is proportional
 to $\haz(t_i \mid \vx_j)$, because $\Delta t$ is the same constant
 for every subject in the risk set.
 By @thm-ph-haz-decomp,
-$\haz(t_i \mid \vx_j) = \haz_0(t_i)\,\theta(\vx_j)$,
+$\haz(t_i \mid \vx_j) = \haz_0(t_i)\,\hazfactor(\vx_j)$,
 and $\haz_0(t_i)$ is likewise a constant shared by all subjects at $t_i$, so
 
 $$
@@ -71,7 +71,7 @@ $$
 \;&\propto\; \haz(t_i \mid \vx_j)
 && \text{(as a function of } j \in R(t_i)\text{, fixed } t_i\text{)}
 \\
-&= \haz_0(t_i)\,\theta(\vx_j).
+&= \haz_0(t_i)\,\hazfactor(\vx_j).
 \ea
 $$
 
@@ -91,7 +91,7 @@ $$
 $$
 
 By the same hazard approximation,
-$\Pr\sb{m \text{ fails} \mid R(t_i)} \approx \haz_0(t_i)\,\theta(\vx_m)\,\Delta t = O(\Delta t)$,
+$\Pr\sb{m \text{ fails} \mid R(t_i)} \approx \haz_0(t_i)\,\hazfactor(\vx_m)\,\Delta t = O(\Delta t)$,
 so each product $\prod_{m \ne k} \Pr\sb{m \text{ survives} \mid R(t_i)} = \prod_{m \ne k}(1 - O(\Delta t)) = 1 - O(\Delta t)$,
 and dropping $O(\Delta t^2)$ cross-terms (each pair of co-failures has
 probability $O(\Delta t^2)$) gives
@@ -99,7 +99,7 @@ probability $O(\Delta t^2)$) gives
 $$
 \Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
 \;\approx\;
-\sum_{k \in R(t_i)} \haz_0(t_i)\,\theta(\vx_k)\,\Delta t.
+\sum_{k \in R(t_i)} \haz_0(t_i)\,\hazfactor(\vx_k)\,\Delta t.
 $$
 
 Substituting both into the conditional probability
@@ -108,10 +108,10 @@ and canceling the common factor $\haz_0(t_i)\,\Delta t$:
 $$
 \ba
 \Pr\sb{f \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
-&\approx \frac{\haz_0(t_i)\,\theta(\vx_f)\,\Delta t}
-         {\sum_{k \in R(t_i)} \haz_0(t_i)\,\theta(\vx_k)\,\Delta t}
+&\approx \frac{\haz_0(t_i)\,\hazfactor(\vx_f)\,\Delta t}
+         {\sum_{k \in R(t_i)} \haz_0(t_i)\,\hazfactor(\vx_k)\,\Delta t}
 \\
-&= \frac{\theta(\vx_f)}{\sum_{k \in R(t_i)} \theta(\vx_k)}.
+&= \frac{\hazfactor(\vx_f)}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}.
 \ea
 $$
 
@@ -126,7 +126,7 @@ $\Delta t$ altogether.
 
 In the realized data, let $(i)$ denote the subject who actually
 failed at $t_i$ (uniquely defined under the no-ties assumption).
-Since the ratio $\theta(\vx_f)/\sum_{k \in R(t_i)}\theta(\vx_k)$
+Since the ratio $\hazfactor(\vx_f)/\sum_{k \in R(t_i)}\hazfactor(\vx_k)$
 is already free of $\Delta t$, the $\Delta t \to 0$ limit is trivial;
 substituting $f = (i)$ gives the partial-likelihood
 contribution $\Lik^*_i(\b)$ from @def-ph-partial-lik:
@@ -135,7 +135,7 @@ $$
 \lim_{\Delta t \to 0}
 \Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
 \;=\;
-\frac{\theta(\vx_{(i)})}{\sum_{k \in R(t_i)} \theta(\vx_k)}
+\frac{\hazfactor(\vx_{(i)})}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}
 \;=\; \Lik^*_i(\b).
 $$
 
@@ -145,7 +145,7 @@ failure times:
 
 $$
 \Lik^*(\b)
-\;\eqdef\; \prod_{i=1}^{D} \Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}.
+\;=\; \prod_{i=1}^{D} \Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}.
 $$
 
 Under the no-ties assumption, each ordered event time $t_i$ has
@@ -164,13 +164,13 @@ into a *which-subject-fails* factor and a *whether-a-failure-occurs* factor:
 $$
 \ba
 \underbrace{\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}}
-          _{\approx\ \haz_0(t_i)\,\theta(\vx_{(i)})\,\Delta t}
+          _{\approx\ \haz_0(t_i)\,\hazfactor(\vx_{(i)})\,\Delta t}
 &= \underbrace{\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}}
-             _{\to\ \Lik^*_i(\b)\ =\ \theta(\vx_{(i)}) / \sum_{k \in R(t_i)} \theta(\vx_k)}
+             _{\to\ \Lik^*_i(\b)\ =\ \hazfactor(\vx_{(i)}) / \sum_{k \in R(t_i)} \hazfactor(\vx_k)}
 \\
 &\quad \times\
 \underbrace{\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
-          _{\approx\ \haz_0(t_i)\,\sum_{k \in R(t_i)} \theta(\vx_k)\,\Delta t}.
+          _{\approx\ \haz_0(t_i)\,\sum_{k \in R(t_i)} \hazfactor(\vx_k)\,\Delta t}.
 \ea
 $$
 
@@ -182,11 +182,11 @@ $$
 \ba
 \prod_{i=1}^{D} \Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}
 &\approx
-\underbrace{\prod_{i=1}^{D} \frac{\theta(\vx_{(i)})}{\sum_{k \in R(t_i)} \theta(\vx_k)}}
+\underbrace{\prod_{i=1}^{D} \frac{\hazfactor(\vx_{(i)})}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}}
           _{\Lik^*(\b)\ \text{(kept)}}
 \\
 &\quad \times\
-\underbrace{\prod_{i=1}^{D} \haz_0(t_i)\paren{\sum_{k \in R(t_i)} \theta(\vx_k)}\Delta t}
+\underbrace{\prod_{i=1}^{D} \haz_0(t_i)\paren{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}\Delta t}
           _{\text{discarded}}.
 \ea
 $$
@@ -198,55 +198,18 @@ kept factor — which is why maximizing $\Lik^*(\b)$ alone frees the
 estimator from $\haz_0(\cdot)$.
 The discarded factor is **not** free of $\b$, however:
 it still depends on $\b$ through the risk-set sums
-$\sum_{k \in R(t_i)} \theta(\vx_k)$.
+$\sum_{k \in R(t_i)} \hazfactor(\vx_k)$.
 Dropping it therefore sacrifices the information about $\b$ carried by
 *when* (and within how large a risk set) failures occur,
 retaining only the information in *which* subject fails at each event time.
 
 The discarded-factor decomposition rests on a conditional-probability
-argument and a first-order hazard approximation;
-the algebraic connection to the full censored-data likelihood is exact.
-Under the discrete-baseline parameterization
-(point masses $h_{0i}$ at the $D$ observed event times,
-derived in the proof of @def-breslow-baseline-cuhaz-est),
-the full likelihood factors as
-
-$$
-\ba
-\Lik(\b,\,h_{01},\dots,h_{0D})
-&= \prod_{i=1}^{D}
-    h_{0i}\;\theta(\vx_{(i)})\;\expf{-h_{0i}\,S_i}
-\\
-&= \underbrace{\prod_{i=1}^{D} \frac{\theta(\vx_{(i)})}{S_i}}_{\Lik^*(\b)}
-   \;\cdot\;
-   \prod_{i=1}^{D} h_{0i}\,S_i\,\expf{-h_{0i}\,S_i},
-\ea
-$$
-
-where $S_i = \sum_{j \in R(t_i)} \theta(\vx_j)$.
-The first product is $\Lik^*(\b)$ (by @def-ph-partial-lik,
-since under the no-ties assumption $S_i = \sum_{k \in R(t_i)} \theta(\vx_k)$).
-Substituting the Breslow MLE $\hat h_{0i} = 1/S_i$
-(@def-breslow-baseline-cuhaz-est) into the second product
-yields a constant:
-
-$$
-\prod_{i=1}^{D} \hat h_{0i}\,S_i\,\expf{-\hat h_{0i}\,S_i}
-= \prod_{i=1}^{D} \frac{S_i}{S_i}\,\expf{-1}
-= e^{-D}.
-$$
-
-The profile likelihood (the full likelihood maximized over $\haz_0(\cdot)$
-at fixed $\b$) is therefore
-
-$$
-\Lik(\b,\,\hat h_{01},\dots,\hat h_{0D})
-= e^{-D}\,\Lik^*(\b).
-$$
-
-The factor $e^{-D}$ does not depend on $\b$,
-so maximizing $\Lik^*(\b)$ over $\b$
-is equivalent to maximizing the full profile likelihood.
+argument and a first-order hazard approximation.
+The exact algebraic connection to the full censored-data likelihood —
+factoring the discrete-baseline likelihood into $\Lik^*(\b)$ times a
+$\b$-free constant $e^{-D}$, so that maximizing $\Lik^*(\b)$ is
+equivalent to maximizing the full profile likelihood — is established
+in the proof of @def-breslow-baseline-cuhaz-est.
 
 This partial likelihood product is a *construction* rather than a derivation of the joint
 probability: the factors are not formally independent (the risk set
