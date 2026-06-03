@@ -36,13 +36,10 @@ jobs:
 
       - name: Extract and lint files changed by this PR
         run: |
-          # `.token` is passed explicitly so gh skips its own PAT-format
-          # validation. The Actions runner now hands `secrets.GITHUB_TOKEN`
-          # as a `ghs_*` server-to-server token, which gh 1.5.0's
-          # `validate_gh_pat()` rejects outright (the fix for this lives
-          # in gh main / PR #233 but is not in any CRAN release yet, so
-          # bumping the pin is not an option). Bypassing validation works
-          # because Actions' token authenticates fine against the API.
+          # Explicit `.token` bypasses gh 1.5.0's validate_gh_pat(), which
+          # rejects the `ghs_*` server-to-server token Actions now issues.
+          # Remove once r-lib/gh#233 lands on CRAN (merged to gh main
+          # 2026-05-28, not yet released).
           files <- gh::gh(
             "GET https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files",
             .token = Sys.getenv("GITHUB_PAT")
