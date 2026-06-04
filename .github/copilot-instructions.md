@@ -613,6 +613,21 @@ Residual and deviation helper macros include:
   use `\tp{(\vxs)}` not `\tp{\vxs}`.
   This avoids LaTeX "Double superscript" errors.
 
+**Ratio vs. factor macros**:
+
+- **Ratios** compare two quantities. Use the *generic* `\ratio` / `\ratiof` macro when the
+  inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — the type of ratio
+  is clear from the inputs. For example, an odds ratio of two odds is `\ratio(\odds_1, \odds_2)`,
+  **not** `\ror(\odds_1, \odds_2)`.
+- Use the *type-subscripted* ratio macros (`\ror` for odds ratios, `\hazratio`/`\hr` for hazard
+  ratios, and `\rateratio`, `\riskratio`, `\prevratio`, `\cuhazratio`, …) only when the inputs are
+  **covariate patterns** (e.g. `\ror(\vx, \vxs)`, `\hr(t \mid \vx : \vxs)`), where the subscript
+  is needed to indicate which kind of ratio it is.
+- **Factors** compare **one** covariate pattern to the implicit baseline pattern. Use the
+  type-subscripted factor macros (`\hazfactor`, `\oddsfactor`, …; function forms `\hazfactorf` /
+  `\hazff`, …) — e.g. the Cox risk score `\hazfactor(\vx)`. Factors always take a covariate
+  pattern, so they keep their subscript.
+
 **Vector–scalar product ordering** (for dimensional clarity):
 
 - When multiplying a **column vector** `\vb` by a scalar `s`, write the **vector on the left**:
