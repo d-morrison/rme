@@ -54,7 +54,7 @@ dependency link, laid out so that connected results sit near each other.
 Color encodes the type of result,
 and **node size grows with the number of descendants**,
 so the most foundational results stand out
-(the largest, most-connected nodes are also labeled).
+(the largest, most-connected nodes appear biggest).
 Results with no detected dependency links
 (foundational definitions used only in prose, or standalone results)
 are omitted from the diagram but appear in @sec-descendants-table
@@ -82,18 +82,20 @@ set.seed(204)
 ggraph(core, layout = "stress") +
   geom_edge_link(
     arrow = arrow(length = unit(1.8, "mm"), type = "closed"),
-    end_cap = circle(1.6, "mm"),
+    end_cap = circle(3, "mm"),
     edge_alpha = 0.25, edge_width = 0.3
   ) +
-  geom_node_point(aes(size = n_desc + 1, color = type)) +
-  geom_node_text(
-    aes(label = ifelse(n_desc >= 3, name, "")),
-    repel = TRUE, size = 2.7, max.overlaps = 30, segment.alpha = 0.3
+  geom_node_label(
+    aes(label = title, fill = type, size = n_desc + 1),
+    color = "white", alpha = 0.85,
+    label.padding = unit(0.12, "lines"),
+    label.r = unit(0.08, "lines"),
+    fontface = "bold"
   ) +
-  scale_color_manual(
+  scale_fill_manual(
     values = type_palette, labels = type_labels, name = "Type", drop = FALSE
   ) +
-  scale_size_continuous(range = c(1.5, 9), guide = "none") +
+  scale_size_continuous(range = c(1.8, 5), guide = "none") +
   theme_void() +
   theme(
     legend.position = "bottom",
