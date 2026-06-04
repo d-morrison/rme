@@ -49,16 +49,13 @@ connected by `r nrow(cg$edges)` direct dependency links.
 
 ## Dependency diagram
 
+::: {.content-visible when-format="html"}
+
 @fig-concept-map shows the results that participate in at least one
 dependency link, laid out so that connected results sit near each other.
-Color encodes the type of result,
-and **node size grows with the number of descendants**,
-so the most foundational results stand out
-(the largest, most-connected nodes appear biggest).
-Results with no detected dependency links
-(foundational definitions used only in prose, or standalone results)
-are omitted from the diagram but appear in @sec-descendants-table
-if they have descendants.
+Color encodes the type of result.
+Results with no detected dependency links are omitted from the diagram.
+Zoom in with Ctrl+scroll (or pinch on mobile) to read individual labels.
 
 :::{#fig-concept-map}
 
@@ -67,8 +64,10 @@ if they have descendants.
 #| code-fold: true
 #| message: false
 #| warning: false
-#| fig-width: 11
-#| fig-height: 9
+#| fig-width: 50
+#| fig-height: 40
+#| out-width: "100%"
+#| fig-format: "svg"
 
 connected <- cg$nodes$id[cg$nodes$id %in% c(cg$edges$from, cg$edges$to)]
 core <- graph_from_data_frame(
@@ -86,16 +85,16 @@ ggraph(core, layout = "stress") +
     edge_alpha = 0.25, edge_width = 0.3
   ) +
   geom_node_label(
-    aes(label = title, fill = type, size = n_desc + 1),
+    aes(label = title, fill = type),
     color = "white", alpha = 0.85,
     label.padding = unit(0.12, "lines"),
     label.r = unit(0.08, "lines"),
-    fontface = "bold"
+    fontface = "bold",
+    size = 2.5
   ) +
   scale_fill_manual(
     values = type_palette, labels = type_labels, name = "Type", drop = FALSE
   ) +
-  scale_size_continuous(range = c(1.8, 5), guide = "none") +
   theme_void() +
   theme(
     legend.position = "bottom",
@@ -105,19 +104,24 @@ ggraph(core, layout = "stress") +
 
 Dependency structure of the definitions and results in the notes.
 An arrow points from a result to each result that uses it.
-Node and label size are proportional to the total number of descendants.
+Color indicates result type (see legend).
+
+:::
+
+:::
+
+::: {.content-hidden when-format="html"}
+
+The dependency diagram is only available in the
+[HTML version of the notes](https://d-morrison.github.io/rme/chapters/concept-map.html).
 
 :::
 
 ## Descendants of each result {#sec-descendants-table}
 
 @tbl-descendants lists every result that has at least one descendant,
-sorted by the number of **direct** descendants.
-For each result, the first column links to its direct descendants
-(results that reference it directly)
-and the second column links to its indirect descendants
-(results that reach it only through a chain of intermediate results).
-All entries are live cross-reference links.
+sorted by the number of **direct** descendants (results that reference it directly).
+The total column counts all transitive descendants.
 
 ::: {#tbl-descendants}
 
@@ -127,32 +131,21 @@ All entries are live cross-reference links.
 #| message: false
 #| warning: false
 
-ref_list <- function(ids) {
-  if (!length(ids)) return("—")
-  ids <- ids[order(match(sub("-.*", "", ids), type_levels), ids)]
-  paste0("@", ids, collapse = ", ")
-}
-
 ranked <- cg$nodes[cg$nodes$n_direct >= 1, ]
 ranked <- ranked[order(-ranked$n_direct, -ranked$n_desc, ranked$id), ]
 
-direct_col <- vapply(
-  ranked$id, function(v) ref_list(cg$descendants[[v]]$direct), character(1)
-)
-indirect_col <- vapply(
-  ranked$id, function(v) ref_list(cg$descendants[[v]]$indirect), character(1)
-)
 descendant_table <- data.frame(
-  Result = paste0("@", ranked$id),
-  `Direct descendants` = direct_col,
-  `Indirect descendants` = indirect_col,
+  Result               = ranked$title,
+  Type                 = type_labels[ranked$type],
+  `Direct descendants` = ranked$n_direct,
+  `Total descendants`  = ranked$n_desc,
   check.names = FALSE, row.names = NULL, stringsAsFactors = FALSE
 )
 
-knitr::kable(descendant_table, format = "pipe", align = "lll")
+knitr::kable(descendant_table, format = "pipe", align = "llrr")
 ```
 
-Direct and indirect descendants of every result that has at least one
-descendant, sorted by number of direct descendants.
+All results with at least one descendant,
+sorted by number of direct descendants (most-foundational first).
 
 :::
