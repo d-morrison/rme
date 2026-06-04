@@ -47,7 +47,7 @@ few things, start at the top of each part.
 library(survival)
 library(dplyr)
 
-data <- tibble(
+surv_data <- tibble(
   time  = c(10, 14, 14, 15, 18, 21, 25),
   death = c(1,  1,  0,  0,  1,  1,  1),
   surv  = Surv(time, death)
@@ -61,7 +61,7 @@ back to it throughout this part.
 
 ```{r}
 #| label: km-na-calc
-KM_est <- survfit(surv ~ 1, type = "kaplan-meier", data = data)
+KM_est <- survfit(surv ~ 1, type = "kaplan-meier", data = surv_data)
 
 surv_table <-
   KM_est |>
@@ -183,12 +183,12 @@ or interpolating between rows. Some answers gave only a verbal description
 ::: {.solution}
 $\hat S(t)$ is a **right-continuous step function**: it only changes at observed
 event times and stays flat in between. To evaluate it at $t = 17$, find the
-**most recent event time at or before 17**, which is $t = 15$ (the value did
-not change at the $15^+$ censoring). So:
+**most recent event time at or before 17**, which is $t = 14$ (the subsequent
+$t = 15^+$ is a censoring, not an event, so the curve does not step there). So:
 
-$$\hat S_{KM}(17) = \hat S_{KM}(15) = 0.714,
+$$\hat S_{KM}(17) = \hat S_{KM}(14) = 0.714,
 \qquad
-\hat S_{NA}(17) = \hat S_{NA}(15) = 0.734$$
+\hat S_{NA}(17) = \hat S_{NA}(14) = 0.734$$
 
 Give the actual numbers, not just "it's flat."
 :::
