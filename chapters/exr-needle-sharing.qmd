@@ -18,6 +18,10 @@ needles <-
       case_match(1 ~ "homeless", 0 ~ "not homeless") |>
       factor() |>
       relevel(ref = "not homeless"),
+    sexabuse = sexabuse |>
+      case_match(1 ~ "yes", 0 ~ "no") |>
+      factor() |>
+      relevel(ref = "no"),
     ethn = ethn |>
       factor() |>
       forcats::fct_lump_min(min = 5, other_level = "Other") |>
@@ -359,9 +363,13 @@ needles <- needles |> filter(sex != "Trans")
 ## Model {.smaller}
 
 Following @vittinghoff2e [§8.3.1],
-we model the **count** of shared syringes directly
-with a Poisson regression (log link),
-rather than modeling a rate.
+we take **homelessness as the exposure of interest**
+and ask how it affects the **count** of shared syringes,
+using a Poisson regression (log link) rather than modeling a rate.
+The remaining covariates enter as adjustments for confounding
+(@fig-needles-dag): because the study is cross-sectional,
+each is read as a proxy for an unobserved past state
+that may influence both homelessness and sharing.
 
 **Why not use `nivdu` as an offset?**
 A Poisson *rate* model would add `offset(log(nivdu))`,
@@ -372,10 +380,12 @@ We avoid that here for two reasons:
 - **`nivdu` is a mediator, not an exposure window.**
 An offset is appropriate when its variable is a known denominator —
 person-time or population at risk — that is external to the causal
-question. Injection frequency is instead *caused* by the covariates
-(@fig-needles-dag), so conditioning on it (whether as an offset or as a
-covariate) would block the indirect path and estimate only a partial
-effect. We want each covariate's *total* association with needle-sharing.
+question. Injection frequency is instead on the causal path from
+homelessness to sharing (@fig-needles-dag): being homeless can raise
+sharing partly by raising how often a person injects. Conditioning on it
+(whether as an offset or as a covariate) would block that path and estimate
+only a partial effect. We want the *total* effect of homelessness on
+needle-sharing.
 - **It imposes an untested proportionality assumption.**
 Fixing the `log(nivdu)` coefficient at 1 assumes sharing scales
 one-for-one with injecting, which the data need not support.
@@ -394,14 +404,18 @@ it is a mediator rather than an exposure window, and we model the count
 directly instead of dividing by it.
 :::
 
-We also use **main effects only**:
-a `homeless × polydrug` interaction is not identifiable here,
-because no non-homeless participant who used multiple drugs shared any
-needles, leaving that cell empty for the outcome.
+We adjust for the measured covariates as proxies for the latent past
+confounders in @fig-needles-dag — demographic (`age`, `sex`, `ethn`),
+social (`polydrug`), serostatus (`hivstat`), and trauma/mental-health
+(`sexabuse`, hopelessness score `hplsns`) — using **main effects only**.
+We exclude the mediator `nivdu` (above) and the depression indicator
+`dprsn_dx`, whose `1`/`5` coding is undocumented in the source data and
+so cannot be interpreted.
 
 ```{r}
 glm1 <- glm(
-  formula = shared_syr ~ age + sex + homeless + polydrug + hivstat,
+  formula = shared_syr ~ homeless +
+    age + sex + ethn + polydrug + hivstat + sexabuse + hplsns,
   family = stats::poisson,
   data = needles
 )
@@ -425,38 +439,40 @@ glm1 |>
 ---
 
 ```{r}
-#| fig-cap: "Fitted Poisson count model and observed shared-syringe counts"
+#| fig-cap: "Fitted Poisson model: expected sharing by age and housing status"
 #| label: fig-needles-pois
 #| code-fold: true
 library(ggplot2)
 
-# Predicted expected counts across age and the categorical covariates.
-# The model has no offset, so predict(type = "response") returns the
-# expected number of shared syringes directly.
-pred_grid <- with(glm1$model, expand.grid(
-  age = seq(min(age), max(age), length.out = 100),
-  sex = levels(droplevels(sex)),
-  homeless = levels(homeless),
-  polydrug = levels(polydrug),
-  hivstat = levels(hivstat)
-))
+# Predicted expected counts across age for the two homelessness groups,
+# holding the other covariates at their reference levels (hplsns at its
+# median). The model has no offset, so predict(type = "response") returns
+# the expected number of shared syringes directly.
+ref_lvl <- function(v) levels(glm1$model[[v]])[1]
+pred_grid <- expand.grid(
+  age = seq(min(glm1$model$age), max(glm1$model$age), length.out = 100),
+  homeless = levels(glm1$model$homeless),
+  sex = ref_lvl("sex"),
+  ethn = ref_lvl("ethn"),
+  polydrug = ref_lvl("polydrug"),
+  hivstat = ref_lvl("hivstat"),
+  sexabuse = ref_lvl("sexabuse"),
+  hplsns = median(glm1$model$hplsns)
+)
 pred_grid$shared_syr <- predict(glm1, newdata = pred_grid, type = "response")
 
 ggplot(glm1$model) +
-  aes(x = age, y = shared_syr, color = hivstat, shape = sex) +
+  aes(x = age, y = shared_syr, colour = homeless) +
   geom_point(alpha = 0.4) +
-  geom_line(data = pred_grid, aes(linetype = sex), linewidth = 0.8) +
+  geom_line(data = pred_grid, linewidth = 1) +
   scale_y_continuous(
     transform = "pseudo_log",
     breaks = c(0, 1, 3, 10, 30, 60)
   ) +
-  facet_grid(
-    rows = vars(homeless),
-    cols = vars(polydrug),
-    labeller = label_both
+  labs(
+    y = "Number of shared syringes (30 days)",
+    colour = "Housing status"
   ) +
-  labs(y = "Number of shared syringes (30 days)") +
-  guides(color = guide_legend(nrow = 1)) +
   theme_bw() +
   theme(legend.position = "bottom")
 ```
@@ -469,8 +485,11 @@ exponentiating a coefficient turns it into a *ratio of expected counts*
 $\exp{\b_j}$ is the multiplicative change in the expected number of
 shared syringes per one-unit increase in $x_j$,
 holding the other covariates fixed.
+Our **focal estimate is the IRR for homelessness**;
+the remaining coefficients are adjustments for confounding,
+not effects of separate interest.
 Because we do not condition on the mediator `nivdu`,
-each ratio is a *total* association.
+the homelessness IRR is a *total* effect.
 The fitted ratios are reported in @tbl-needles-pois.
 
 ```{r}
@@ -481,7 +500,8 @@ irr <- exp(coef(glm1))
 **Baseline (intercept).**
 $\exp{\hat\b_0} = `r round(irr[["(Intercept)"]], 3)`$
 is the expected count of shared syringes for the reference participant
-(male, not homeless, one drug used, HIV-negative), extrapolated to age 0.
+(male, not homeless, White, one drug used, HIV-negative,
+no sexual-abuse history, hopelessness score 0), extrapolated to age 0.
 Age 0 is outside the data, so the intercept is a mathematical anchor
 rather than a directly interpretable quantity.
 
@@ -495,13 +515,15 @@ women's expected count of shared syringes is about
 `r round(irr[["sexF"]], 2)` times men's,
 adjusting for the other covariates.
 
-**Homelessness.**
+**Homelessness (the focal exposure).**
 $\exp{\hat\b_{\text{homeless}}} = `r round(irr[["homelesshomeless"]], 2)`$:
 homeless participants share syringes about
 `r round(irr[["homelesshomeless"]], 2)` times as often as the non-homeless,
 adjusting for the other covariates.
-@vittinghoff2e [§8.3.1] reports a comparable unadjusted IRR of about 3.3
-for homelessness in a single-predictor model.
+@vittinghoff2e [§8.3.1] reports an *unadjusted* IRR of about 3.3
+for homelessness in a single-predictor model;
+adjusting for the confounder-proxies here moves the estimate
+to about `r round(irr[["homelesshomeless"]], 1)`.
 
 **Multiple-drug use.**
 $\exp{\hat\b_{\text{polydrug}}} = `r round(irr[["polydrugmultiple drugs used"]], 2)`$:
@@ -515,6 +537,21 @@ HIV-positive participants have a lower expected count of shared syringes
 than HIV-negative participants, adjusting for the other covariates.
 Only `r sum(glm1$model[["hivstat"]] == "HIV+")` participants are HIV+
 in this sample, so this estimate is imprecise.
+
+**Ethnicity.**
+The `ethn` coefficients compare each retained group to the White reference
+(small groups were lumped into "Other"); they adjust for any confounding
+of the homelessness effect by ethnicity but are not of separate interest.
+
+**Sexual-abuse history.**
+$\exp{\hat\b_{\text{sexabuse}}} = `r round(irr[["sexabuseyes"]], 2)`$:
+the expected count for participants reporting a history of sexual abuse
+relative to those not reporting one, adjusting for the other covariates.
+
+**Hopelessness.**
+$\exp{\hat\b_{\text{hplsns}}} = `r round(irr[["hplsns"]], 2)`$ per point:
+the multiplicative change in the expected count per one-point increase
+in the hopelessness score.
 
 **Overdispersion caveat.**
 These data are highly overdispersed — the variance far exceeds the mean —
