@@ -30,6 +30,7 @@ re-titled** to refresh the diagram and table below.
 
 library(igraph)
 library(ggraph)
+library(ggrepel)
 
 cg <- readRDS(here::here("inst/extdata/callout-graph.rds"))
 
@@ -49,18 +50,20 @@ connected by `r nrow(cg$edges)` direct dependency links.
 
 ## Dependency diagram
 
-::: {.content-visible when-format="html"}
+::: {.content-visible unless-format="pdf"}
+::: {.content-visible unless-format="docx"}
 
 @fig-concept-map shows the results that participate in at least one
 dependency link, laid out so that connected results sit near each other.
 Color encodes the type of result.
 Results with no detected dependency links are omitted from the diagram.
 Zoom in with Ctrl+scroll (or pinch on mobile) to read individual labels.
+Lines from labels to dots indicate where ggrepel moved a label to avoid overlap.
 
 :::{#fig-concept-map}
 
 ```{r}
-#| label: fig-concept-map-plot
+#| label: concept-map-ggraph
 #| code-fold: true
 #| message: false
 #| warning: false
@@ -78,19 +81,35 @@ core <- graph_from_data_frame(
 V(core)$type <- factor(V(core)$type, levels = type_levels)
 
 set.seed(204)
-ggraph(core, layout = "stress") +
+layout <- create_layout(core, layout = "stress")
+
+ggraph(layout) +
   geom_edge_link(
     arrow = arrow(length = unit(1.8, "mm"), type = "closed"),
-    end_cap = circle(3, "mm"),
+    end_cap = circle(2, "mm"),
     edge_alpha = 0.25, edge_width = 0.3
   ) +
-  geom_node_label(
-    aes(label = title, fill = type),
-    color = "white", alpha = 0.85,
-    label.padding = unit(0.12, "lines"),
-    label.r = unit(0.08, "lines"),
+  geom_node_point(color = "grey60", size = 0.8, alpha = 0.7) +
+  geom_label_repel(
+    data = as.data.frame(layout),
+    aes(x = x, y = y, label = title, fill = type),
+    inherit.aes = FALSE,
+    color = "white",
     fontface = "bold",
-    size = 2.5
+    size = 2.2,
+    max.overlaps = Inf,
+    force = 3,
+    force_pull = 0.5,
+    box.padding = unit(0.25, "lines"),
+    label.padding = unit(0.1, "lines"),
+    label.r = unit(0.05, "lines"),
+    label.size = 0.1,
+    alpha = 0.88,
+    segment.color = "grey60",
+    segment.alpha = 0.6,
+    segment.size = 0.3,
+    min.segment.length = 0,
+    seed = 204
   ) +
   scale_fill_manual(
     values = type_palette, labels = type_labels, name = "Type", drop = FALSE
@@ -109,8 +128,16 @@ Color indicates result type (see legend).
 :::
 
 :::
+:::
 
-::: {.content-hidden when-format="html"}
+::: {.content-visible when-format="pdf"}
+
+The dependency diagram is only available in the
+[HTML version of the notes](https://d-morrison.github.io/rme/chapters/concept-map.html).
+
+:::
+
+::: {.content-visible when-format="docx"}
 
 The dependency diagram is only available in the
 [HTML version of the notes](https://d-morrison.github.io/rme/chapters/concept-map.html).
@@ -120,32 +147,31 @@ The dependency diagram is only available in the
 ## Descendants of each result {#sec-descendants-table}
 
 @tbl-descendants lists every result that has at least one descendant,
-sorted by the number of **direct** descendants (results that reference it directly).
-The total column counts all transitive descendants.
+sorted by the number of total descendants (direct or transitive).
 
 ::: {#tbl-descendants}
 
 ```{r}
-#| label: tbl-descendants-build
+#| label: descendants-table-build
 #| code-fold: true
 #| message: false
 #| warning: false
 
-ranked <- cg$nodes[cg$nodes$n_direct >= 1, ]
-ranked <- ranked[order(-ranked$n_direct, -ranked$n_desc, ranked$id), ]
+ranked <- cg$nodes[cg$nodes$n_desc >= 1, ]
+ranked <- ranked[order(-ranked$n_desc, ranked$id), ]
 
 descendant_table <- data.frame(
   Result               = ranked$title,
   Type                 = type_labels[ranked$type],
-  `Direct descendants` = ranked$n_direct,
   `Total descendants`  = ranked$n_desc,
   check.names = FALSE, row.names = NULL, stringsAsFactors = FALSE
 )
 
-knitr::kable(descendant_table, format = "pipe", align = "llrr")
+knitr::kable(descendant_table, format = "pipe", align = "llr")
 ```
 
 All results with at least one descendant,
-sorted by number of direct descendants (most-foundational first).
+sorted by number of total descendants (most-foundational first).
 
 :::
+
