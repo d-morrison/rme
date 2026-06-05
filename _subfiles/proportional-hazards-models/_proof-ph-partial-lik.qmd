@@ -8,31 +8,37 @@ and that there are no tied event times,
 so each ordered event time $t_i$ corresponds to a unique subject.
 Let $R(t_i)$ be the risk set at $t_i$ —
 $\{j : \tilde T_j \ge t_i\}$ per the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set).
+Let $(i)$ denote the subject who actually fails at $t_i$
+(uniquely defined under the no-ties assumption),
+and let $D$ be the number of observed failure times.
 
-Fix any candidate subject $f \in R(t_i)$ and condition on the event
-"exactly one failure occurs at $t_i$, among subjects in $R(t_i)$".
-The conditional probability that this failure is subject $f$ (as
-opposed to some other subject in $R(t_i)$) follows from the
-definition of conditional probability,
-$\Pr(A \mid B \cap C) = \Pr(A \cap B \mid C) / \Pr(B \mid C)$,
-applied with
-
-- $A$ = "subject $f$ fails at $t_i$",
-- $B$ = "exactly one failure occurs at $t_i$",
-- $C$ = "the risk set at $t_i$ is $R(t_i)$".
-
-Under the no-ties assumption $A \subset B$ (subject $f$ failing at
-$t_i$ is automatically a one-failure event), so $A \cap B = A$ and
-$\Pr(A \cap B \mid C) = \Pr(A \mid C)$. The ratio simplifies to
+**Start from the full likelihood.**
+The information we condition on are the successive risk sets;
+the outcome we model is *which* member of each risk set fails.
+At event time $t_i$ the realized outcome is that subject $(i)$ —
+and no other member of $R(t_i)$ — fails.
+Treating the per-event outcomes as conditionally independent given the
+risk sets (the Cox-model assumption that, conditional on covariates,
+subjects' failure times are mutually independent;
+see [@klein2003survival, §8.3]),
+the full likelihood of the realized failure sequence is the product
 
 $$
-\ba
-\Pr\sb{f \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
-&= \frac{\Pr\sb{f \text{ fails at } t_i \mid R(t_i)}}
-         {\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}.
-\ea
-$$
+\Lik(\b, \haz_0)
+\;=\;
+\prod_{i=1}^{D}
+\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}.
+$$ {#eq-ph-full-lik}
 
+The rest of the proof evaluates a single factor of @eq-ph-full-lik,
+splits it into a *which-subject-fails* part and a
+*whether-a-failure-occurs* part,
+and then shows that the product over $t_i$ separates into the partial
+likelihood (the first part) and a factor that the partial likelihood
+discards (the second part).
+
+**A single subject's failure probability.**
+We first record the per-subject building block used by every factor.
 Since $j \in R(t_i)$ means $\tilde{T}_j = \min(T_j,\,C_j) \ge t_i$
 (see the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set)),
 we have both $T_j \ge t_i$ and $C_j \ge t_i$.
@@ -52,33 +58,52 @@ $$
 \;\approx\; \haz(t_i \mid \vx_j)\,\Delta t.
 $$
 
-Apply this approximation to the candidate $f$ (and, more generally, to any
-$j \in R(t_i)$, since we'll need the same expression for every
-subject when we form the partial-likelihood denominator).
-Viewed as a function of $j \in R(t_i)$ for fixed $t_i$,
-the right-hand side $\haz(t_i \mid \vx_j)\,\Delta t$ is proportional
-to $\haz(t_i \mid \vx_j)$, because $\Delta t$ is the same constant
-for every subject in the risk set.
 By @thm-ph-haz-decomp,
-$\haz(t_i \mid \vx_j) = \haz_0(t_i)\,\hazfactor(\vx_j)$,
-and $\haz_0(t_i)$ is likewise a constant shared by all subjects at $t_i$, so
+$\haz(t_i \mid \vx_j) = \haz_0(t_i)\,\hazfactor(\vx_j)$, so for every
+$j \in R(t_i)$
+
+$$
+\Pr\sb{j \text{ fails at } t_i \mid j \in R(t_i)}
+\;\approx\; \haz_0(t_i)\,\hazfactor(\vx_j)\,\Delta t.
+$$ {#eq-ph-single-subj}
+
+Here $\haz_0(t_i)$ and $\Delta t$ are constants shared by every subject
+in the risk set; only $\hazfactor(\vx_j)$ varies with $j$.
+Applying @eq-ph-single-subj to the subject $j = (i)$ who actually fails gives the
+numerator of each full-likelihood factor,
+$\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)} \approx \haz_0(t_i)\,\hazfactor(\vx_{(i)})\,\Delta t$.
+
+**Split each factor into which-subject and whether-a-failure.**
+Apply the chain rule
+$\Pr(A \mid C) = \Pr(A \mid B \cap C)\,\Pr(B \mid C)$
+with
+
+- $A$ = "subject $(i)$ fails at $t_i$",
+- $B$ = "exactly one failure occurs at $t_i$",
+- $C$ = "the risk set at $t_i$ is $R(t_i)$".
+
+Under the no-ties assumption $A \subset B$ (subject $(i)$ failing at
+$t_i$ is automatically a one-failure event), so the rule is valid and
+splits each factor of @eq-ph-full-lik into a *which-subject-fails*
+factor and a *whether-a-failure-occurs* factor:
 
 $$
 \ba
-\Pr\sb{j \text{ fails at } t_i \mid j \in R(t_i)}
-\;&\approx\; \haz(t_i \mid \vx_j)\,\Delta t
+\underbrace{\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}}
+          _{\approx\ \haz_0(t_i)\,\hazfactor(\vx_{(i)})\,\Delta t}
+&= \underbrace{\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}}
+             _{\text{which subject fails}}
 \\
-\;&\propto\; \haz(t_i \mid \vx_j)
-&& \text{(as a function of } j \in R(t_i)\text{, fixed } t_i\text{)}
-\\
-&= \haz_0(t_i)\,\hazfactor(\vx_j).
+&\quad \times\
+\underbrace{\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
+          _{\text{whether a failure occurs}}.
 \ea
-$$
+$$ {#eq-ph-chain-rule}
 
+**The whether-a-failure-occurs factor.**
 Treating subjects' individual failure events as conditionally
-independent given $R(t_i)$ (under the Cox model assumption that,
-conditional on covariates, each subject's failure time is
-independent of all other subjects' failure times;
+independent given $R(t_i)$
+(the same Cox-model assumption used for @eq-ph-full-lik;
 see [@klein2003survival, §8.3]),
 the probability of exactly one failure in $[t_i, t_i + \Delta t)$
 is, by inclusion-exclusion,
@@ -90,7 +115,7 @@ $$
     \prod_{m \in R(t_i),\, m \ne k} \Pr\sb{m \text{ survives} \mid R(t_i)}.
 $$
 
-By the same hazard approximation,
+By @eq-ph-single-subj,
 $\Pr\sb{m \text{ fails} \mid R(t_i)} \approx \haz_0(t_i)\,\hazfactor(\vx_m)\,\Delta t = O(\Delta t)$,
 so each product $\prod_{m \ne k} \Pr\sb{m \text{ survives} \mid R(t_i)} = \prod_{m \ne k}(1 - O(\Delta t)) = 1 - O(\Delta t)$,
 and dropping $O(\Delta t^2)$ cross-terms (each pair of co-failures has
@@ -99,88 +124,50 @@ probability $O(\Delta t^2)$) gives
 $$
 \Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
 \;\approx\;
-\sum_{k \in R(t_i)} \haz_0(t_i)\,\hazfactor(\vx_k)\,\Delta t.
-$$
-
-Substituting both into the conditional probability
-and canceling the common factor $\haz_0(t_i)\,\Delta t$:
-
-$$
-\ba
-\Pr\sb{f \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
-&\approx \frac{\haz_0(t_i)\,\hazfactor(\vx_f)\,\Delta t}
-         {\sum_{k \in R(t_i)} \haz_0(t_i)\,\hazfactor(\vx_k)\,\Delta t}
-\\
-&= \frac{\hazfactor(\vx_f)}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}.
-\ea
-$$
-
-The first display step uses $\approx$ because it inherits the
-first-order hazard approximation $\Pr\{T_j \in [t_i, t_i + \Delta t)
-\mid T_j \ge t_i\} \approx \haz(t_i \mid \vx_j)\,\Delta t$ (the
-*conditional* probability — the hazard's defining quantity, given
-the subject has survived to $t_i$). The second step's $=$ is exact:
-the $\haz_0(t_i)\,\Delta t$ factors cancel algebraically between
-numerator and denominator, leaving a ratio that is independent of
-$\Delta t$ altogether.
-
-In the realized data, let $(i)$ denote the subject who actually
-failed at $t_i$ (uniquely defined under the no-ties assumption).
-Since the ratio $\hazfactor(\vx_f)/\sum_{k \in R(t_i)}\hazfactor(\vx_k)$
-is already free of $\Delta t$, the $\Delta t \to 0$ limit is trivial;
-substituting $f = (i)$ gives the partial-likelihood
-contribution $\Lik^*_i(\b)$ from @def-ph-partial-lik:
-
-$$
-\lim_{\Delta t \to 0}
-\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
+\sum_{k \in R(t_i)} \haz_0(t_i)\,\hazfactor(\vx_k)\,\Delta t
 \;=\;
-\frac{\hazfactor(\vx_{(i)})}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}
-\;=\; \Lik^*_i(\b).
-$$
+\haz_0(t_i)\paren{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}\Delta t.
+$$ {#eq-ph-one-failure}
 
-The **partial likelihood** [@cox1972regression] takes the product of
-these per-event conditional probabilities across the $D$ observed
-failure times:
-
-$$
-\Lik^*(\b)
-\;=\; \prod_{i=1}^{D} \Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}.
-$$
-
-Under the no-ties assumption, each ordered event time $t_i$ has
-$d_i = 1$, so $\prod_{i=1}^{D}(\cdots) = \prod_{\{i:\,d_i=1\}}(\cdots)$,
-and this equality matches the form in @def-ph-partial-lik.
-
-To see exactly which part of the failure probability the partial
-likelihood discards,
-factor each event's contribution.
-The chain rule
-$\Pr(A \mid C) = \Pr(A \mid B \cap C)\,\Pr(B \mid C)$
-(valid here since $A \subset B$)
-splits the probability that subject $(i)$ fails at $t_i$
-into a *which-subject-fails* factor and a *whether-a-failure-occurs* factor:
+**The which-subject-fails factor.**
+Solving @eq-ph-chain-rule for the conditional probability and
+substituting the numerator from @eq-ph-single-subj and the denominator
+from @eq-ph-one-failure, the common factor $\haz_0(t_i)\,\Delta t$
+cancels:
 
 $$
 \ba
-\underbrace{\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}}
-          _{\approx\ \haz_0(t_i)\,\hazfactor(\vx_{(i)})\,\Delta t}
-&= \underbrace{\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}}
-             _{\to\ \Lik^*_i(\b)\ =\ \hazfactor(\vx_{(i)}) / \sum_{k \in R(t_i)} \hazfactor(\vx_k)}
+\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
+&= \frac{\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}}
+         {\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
 \\
-&\quad \times\
-\underbrace{\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
-          _{\approx\ \haz_0(t_i)\,\sum_{k \in R(t_i)} \hazfactor(\vx_k)\,\Delta t}.
+&\approx \frac{\haz_0(t_i)\,\hazfactor(\vx_{(i)})\,\Delta t}
+         {\haz_0(t_i)\paren{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}\Delta t}
+\\
+&= \frac{\hazfactor(\vx_{(i)})}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}
+\;=\; \Lik^*_i(\b).
 \ea
-$$
+$$ {#eq-ph-which-subject}
 
-Taking the product over the $D$ event times factors the joint
-probability of the realized failure sequence into the partial
-likelihood and a discarded factor:
+The $\approx$ inherits the first-order hazard approximation
+$\Pr\{T_j \in [t_i, t_i + \Delta t) \mid T_j \ge t_i\} \approx \haz(t_i \mid \vx_j)\,\Delta t$
+(the *conditional* probability — the hazard's defining quantity, given
+the subject has survived to $t_i$).
+The final $=$ is exact: the $\haz_0(t_i)\,\Delta t$ factors cancel
+algebraically, leaving a ratio that is independent of $\Delta t$
+altogether, so the $\Delta t \to 0$ limit is trivial and the
+which-subject factor equals the partial-likelihood contribution
+$\Lik^*_i(\b)$ of @def-ph-partial-lik.
+
+**Factor the full likelihood.**
+Substituting @eq-ph-chain-rule into @eq-ph-full-lik and taking the
+product over the $D$ event times separates the full likelihood into the
+partial likelihood and a discarded factor:
 
 $$
 \ba
-\prod_{i=1}^{D} \Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}
+\Lik(\b, \haz_0)
+= \prod_{i=1}^{D} \Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}
 &\approx
 \underbrace{\prod_{i=1}^{D} \frac{\hazfactor(\vx_{(i)})}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}}
           _{\Lik^*(\b)\ \text{(kept)}}
@@ -189,7 +176,12 @@ $$
 \underbrace{\prod_{i=1}^{D} \haz_0(t_i)\paren{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}\Delta t}
           _{\text{discarded}}.
 \ea
-$$
+$$ {#eq-ph-factored-lik}
+
+Under the no-ties assumption, each ordered event time $t_i$ has
+$d_i = 1$, so $\prod_{i=1}^{D}(\cdots) = \prod_{\{i:\,d_i=1\}}(\cdots)$,
+and the kept product matches the form of $\Lik^*(\b)$ in
+@def-ph-partial-lik.
 
 The partial likelihood keeps the first product and drops the second.
 The discarded factor is the only place the baseline hazard
@@ -203,9 +195,10 @@ Dropping it therefore sacrifices the information about $\b$ carried by
 *when* (and within how large a risk set) failures occur,
 retaining only the information in *which* subject fails at each event time.
 
-This partial likelihood product is a *construction* rather than a derivation of the joint
-probability: the factors are not formally independent (the risk set
-$R(t_{i+1})$ depends on who failed and was censored before $t_{i+1}$),
+The factorization in @eq-ph-factored-lik is a *construction* rather than
+an exact decomposition of the joint probability: the factors are not
+formally independent (the risk set $R(t_{i+1})$ depends on who failed
+and was censored before $t_{i+1}$),
 but Cox showed that treating $\Lik^*(\b)$ as a likelihood — i.e.,
 maximizing it as a function of $\b$ — yields estimators with the
 usual large-sample properties (consistency, asymptotic normality,
@@ -213,11 +206,7 @@ the standard score and information identities;
 see also [@klein2003survival, §8.3, Theoretical Note 1]).
 Under noninformative censoring, each factor depends on the observed
 history only through $R(t_i)$ and $\{\vx_j\}_{j \in R(t_i)}$, and
-substituting the per-event limit gives exactly the
+substituting the per-event limit @eq-ph-which-subject gives exactly the
 partial likelihood $\Lik^*(\b)$ of @def-ph-partial-lik.
-
-Because $\haz_0(t_i)$ and $\Delta t$ cancel within each factor,
-the partial likelihood depends on $\b$ alone
-and not on the baseline hazard $\haz_0(\cdot)$.
 
 :::
