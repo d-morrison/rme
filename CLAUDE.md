@@ -47,7 +47,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - **Theorem-div headings** (`:::{#exm-...}`, `:::{#def-...}`, etc.): use `####` (level 4) or deeper for the name heading inside the div — using `##` or `###` creates numbered section headings that disrupt document structure and break example/definition numbering.
 
 ### Cross-references
-- **Within-chapter** (`@id`): use Pandoc `@id` syntax for any element in the same rendered `.html` file — includes the parent chapter and all its `{{< include >}}d subfiles.
+- **Within-chapter** (`@id`): use Pandoc `@id` syntax for any element in the same rendered `.html` file — includes the parent chapter and all its `{{< include >}}`d subfiles.
 - **Cross-chapter** (`other-chapter.qmd`): this is a Quarto `website` project (not `book`), so `@id` does **not** resolve across `.html` files. For elements in other chapters use an explicit relative link: `[text](other-chapter.qmd#id)`.
 
 ### Math Notation
