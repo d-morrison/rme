@@ -45,17 +45,23 @@ Mnemonic: **ratio = two things compared; factor = one thing vs. the baseline.**
 ## Available macros (in `latex-macros/macros.qmd`)
 
 - Generic: `\ratio` (= `\theta`), `\ratiof{·}`; `\factor` (= `\theta`), `\factorf{·}`.
-- Subscripted ratios: `\ror` (odds, fn `\orf`), `\hazratio`/`\hr` (hazard, fn `\hrf`/`\rhazf`/`\hazrf`),
-  `\rateratio` (fn `\rateratiof`/`\raterf`/`\rratef`), `\riskratio` (fn `\riskratiof`/`\rriskf`/`\riskrf`),
-  `\prevratio` (fn `\prevratiof`/`\prrf`), `\cuhazratio` (fn `\cuhazratiof`/`\rcuhazf`/`\cuhazrf`),
-  `\survratio` (fn `\survratiof`/`\rsurvf`/`\survrf`).
+- Subscripted ratios: `\ror` (odds, fn `\orf`),
+  `\hazratio`/`\hr`/`\rhaz`/`\hazr` (hazard, fn `\hrf`/`\rhazf`/`\hazrf`),
+  `\rateratio`/`\rater`/`\rrate` (fn `\rateratiof`/`\raterf`/`\rratef`),
+  `\riskratio`/`\rrisk`/`\riskr` (fn `\riskratiof`/`\rriskf`/`\riskrf`),
+  `\prevratio`/`\prr` (fn `\prevratiof`/`\prrf`),
+  `\cuhazratio`/`\rcuhaz`/`\cuhazr` (fn `\cuhazratiof`/`\rcuhazf`/`\cuhazrf`),
+  `\survratio`/`\rsurv`/`\survr` (fn `\survratiof`/`\rsurvf`/`\survrf`).
   Every subscripted ratio macro has a corresponding `-f` function form.
 - Subscripted factors: `\oddsfactor`, `\hazfactor`, `\ratefactor`, `\riskfactor`,
   `\prevfactor`, `\cuhazfactor`, `\survfactor`;
   function forms `\oddsfactorf`/`\oddsff`, `\hazfactorf`/`\hazff`,
   `\ratefactorf`/`\rateff`, `\riskfactorf`/`\riskff`,
-  `\prevfactorf`/`\prevff`, `\cuhazfactorf`/`\cuhazff`,
+  `\prevfactorf`/`\prevff`, `\cuhazfactorf`/`\cuhazmf`,
   `\survfactorf`/`\survff`.
+  Short aliases (`\f`-prefix): `\fodds`/`\foddsf`, `\fhaz`/`\fhazf`,
+  `\frate`/`\fratef`, `\frisk`/`\friskf`, `\fprev`/`\fprevf`,
+  `\fcuhaz`/`\fcuhazf`, `\fsurv`/`\fsurvf`; generic `\ff` = `\factorf`.
 
 Before relying on a name, confirm it still exists:
 
