@@ -57,7 +57,7 @@ Mnemonic: **ratio = two things compared; factor = one thing vs. the baseline.**
   `\prevfactor`, `\cuhazfactor`, `\survfactor`;
   function forms `\oddsfactorf`/`\oddsff`, `\hazfactorf`/`\hazff`,
   `\ratefactorf`/`\rateff`, `\riskfactorf`/`\riskff`,
-  `\prevfactorf`/`\prevff`, `\cuhazfactorf`/`\cuhazmf`,
+  `\prevfactorf`/`\prevff`, `\cuhazfactorf`/`\cuhazff`,
   `\survfactorf`/`\survff`.
   Short aliases (`\f`-prefix): `\fodds`/`\foddsf`, `\fhaz`/`\fhazf`,
   `\frate`/`\fratef`, `\frisk`/`\friskf`, `\fprev`/`\fprevf`,
