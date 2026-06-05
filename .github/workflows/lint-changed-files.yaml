@@ -34,16 +34,33 @@ jobs:
           cat('\noptions(lintr.linter_file = ".lintr")\n', file = "~/.Rprofile", append = TRUE)
         shell: Rscript {0}
 
-      - name: Extract and lint files changed by this PR
+      # Use the `gh` CLI (not the gh R package) to list changed files. The R
+      # package resolves the token via gitcreds and rejected the Actions token
+      # with "Invalid GitHub PAT format"; the CLI reads GH_TOKEN directly and
+      # handles the `ghs_` Actions token format natively.
+      - name: Extract files changed by this PR
         run: |
-          files <- gh::gh("GET https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files")
-          changed_files <- files |>
-            purrr::keep(~ .$status != "renamed" || .$changes > 0) |>
-            purrr::map_chr("filename")
+          gh api \
+            --paginate \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+            --jq '.[] | select(.status != "renamed" or .changes > 0) | .filename' \
+            > changed_files.txt
+          echo "Changed files:"
+          cat changed_files.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lint files changed by this PR
+        run: |
+          changed_files <- readLines("changed_files.txt")
           changed_files <- setdiff(changed_files, "renv/activate.R")
-          all_files <- list.files(recursive = TRUE)
-          exclusions_list <- as.list(setdiff(all_files, changed_files))
-          lintr::lint_dir(exclusions = exclusions_list)
+          if (length(changed_files) == 0) {
+            message("No changed files to lint.")
+          } else {
+            all_files <- list.files(recursive = TRUE)
+            exclusions_list <- as.list(setdiff(all_files, changed_files))
+            lintr::lint_dir(exclusions = exclusions_list)
+          }
         shell: Rscript {0}
         env:
           LINTR_ERROR_ON_LINT: true
