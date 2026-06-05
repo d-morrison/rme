@@ -81,7 +81,13 @@ core <- graph_from_data_frame(
 V(core)$type <- factor(V(core)$type, levels = type_levels)
 
 set.seed(204)
-layout <- create_layout(core, layout = "stress")
+# Layered (Sugiyama) layout instead of a force-directed one: it arranges the
+# dependency DAG into ranks, which is far more evenly spaced than "stress" and
+# gives a clear top-to-bottom reading order.
+layout <- create_layout(core, layout = "sugiyama")
+# Put the most *basic* results (roots of the DAG -- many descendants, few
+# ancestors) at the top by flipping the vertical axis.
+layout$y <- -layout$y
 
 ggraph(layout) +
   geom_edge_link(

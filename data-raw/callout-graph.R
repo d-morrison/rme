@@ -134,6 +134,51 @@ extract_callout_graph <- function(root) {
 root <- here::here()
 cg <- extract_callout_graph(root)
 
+# Curated *implicit* dependencies: foundational prerequisites that one result
+# relies on but does not cite with an explicit `@ref` (so the scan above misses
+# them). Each row is `prerequisite -> dependent` (same direction as the scanned
+# edges: from the thing depended on, to the thing that depends on it). Extend
+# this list as obvious gaps are noticed; ids must match `cg$nodes$id`.
+implicit_edges <- data.frame(
+  stringsAsFactors = FALSE,
+  rbind(
+    c("def-probability", "def-odds"),
+    c("def-probability", "def-conditional-prob"),
+    c("def-probability", "def-indpt"),
+    c("def-probability", "def-pdf"),
+    c("def-probability", "def-cdf"),
+    c("def-conditional-prob", "def-c-odds"),
+    c("def-conditional-prob", "def-cond-expectation"),
+    c("def-odds", "def-logodds"),
+    c("def-odds", "def-odds-fn"),
+    c("def-odds", "def-c-odds"),
+    c("def-logodds", "def-logit-fn"),
+    c("def-logit-fn", "def-expit"),
+    c("def-indpt", "def-iid"),
+    c("def-indpt", "def-cident"),
+    c("def-indpt", "def-independence-diagnostics"),
+    c("def-expectation", "def-variance"),
+    c("def-expectation", "def-cov"),
+    c("def-expectation", "def-cond-expectation"),
+    c("def-variance", "def-cov"),
+    c("def-variance", "def-cov-vec-x"),
+    c("def-cov", "def-cov-vec-x"),
+    c("def-cdf", "def-pdf"),
+    c("def-cdf", "def-surv-fn"),
+    c("def-hazard", "def-cuhaz"),
+    c("def-hazard", "def-cond-hazard"),
+    c("def-hazard", "def-hazard-ratio"),
+    c("def-cond-hazard", "def-cond-loghaz")
+  )
+)
+names(implicit_edges) <- c("from", "to")
+cg$edges <- unique(rbind(cg$edges, implicit_edges))
+cg$edges <- cg$edges[
+  cg$edges$from %in% cg$nodes$id & cg$edges$to %in% cg$nodes$id, ,
+  drop = FALSE
+]
+rownames(cg$edges) <- NULL
+
 # Precompute descendant counts and the direct/indirect descendant id lists, so
 # the chapter does no graph analysis at render time.
 ig <- graph_from_data_frame(cg$edges, vertices = cg$nodes, directed = TRUE)
