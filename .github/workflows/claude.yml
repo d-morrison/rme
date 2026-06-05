@@ -287,10 +287,34 @@ jobs:
           #   (allowed below) already reports the current branch name,
           #   covering the only legitimate read-only use case.
           GIT_TOOLS="Bash(git add *),Bash(git commit *),Bash(git rm *),Bash(git mv *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git show*),Bash(git restore *),Bash(git checkout -- *)"
+          # File-editing tools. claude-code-action ALREADY allows file
+          # reads/edits by default (see the action's configuration docs:
+          # "By default, Claude only has access to: File operations
+          # (reading, committing, editing files, ...)"), and `claude_args
+          # --allowed-tools` is ADDITIVE to that default rather than a
+          # replacement — which is why prior @claude runs committed file
+          # edits fine (e.g. claude[bot] commit 05318e02 on PR #843).
+          #
+          # We still list the file tools explicitly because a session
+          # that inspects its own --allowed-tools string and sees only
+          # Bash/gh/git/WebFetch entries can wrongly conclude file
+          # editing is disallowed and bail out — posting its diff as a
+          # comment instead of committing it (PR #843 run 27032044840,
+          # 2026-06-05: a 27-min session designed probability-based
+          # example rewrites, then declined to apply them claiming
+          # "Edit/Write require approval not configured in the current
+          # session's --allowed-tools list"). Naming the tools here makes
+          # the grant unambiguous in the string the agent can see, and
+          # guards against the action's additive behaviour ever changing.
+          # Read/Glob/Grep are listed alongside the write tools so the
+          # same allowlist-inspection logic can't talk a session out of
+          # reading or searching files either (they're read-only and,
+          # like the edit tools, already allowed by default).
+          FILE_TOOLS="Read,Glob,Grep,Edit,Write,MultiEdit"
           if [ -n "$WEBFETCH" ]; then
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${FILE_TOOLS},${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${FILE_TOOLS},${GH_TOOLS},${GIT_TOOLS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -342,7 +366,11 @@ jobs:
             deliverable and the post-step skips posting your text to
             avoid noise.) Don't write it as an internal log
             ("Investigated foo, found bar, will do baz") — write it
-            as the actual reply you want the requester to read.
+            as the actual reply you want the requester to read. When the
+            trigger was an inline review comment on the diff (a
+            `pull_request_review_comment`), your reply is posted as a threaded
+            reply to that exact comment — keep it focused on the line(s) that
+            comment is about.
 
             **Before declaring the task complete, check for additional
             @claude requests that arrived after the triggering event.**
@@ -679,11 +707,27 @@ jobs:
           … (response truncated at ${MAX_LEN} bytes; full text in the [workflow run](${RUN_URL}))"
           fi
 
-          # `gh issue comment` works for both issues and PRs (both
-          # post to the same `/repos/{owner}/{repo}/issues/{N}/comments`
-          # endpoint internally), so we don't need to branch on
-          # PR-vs-issue here.
-          gh issue comment "$ENTITY_NUMBER" --body "$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")" \
+          BODY="$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")"
+          # When the trigger was an inline review comment, reply IN-THREAD to
+          # it (pulls/.../comments/<id>/replies) so the conversation stays
+          # anchored to the diff line. Every other trigger gets a top-level
+          # `gh issue comment` (issue and PR-conversation comments share the
+          # same endpoint). Fall back to top-level if the reply API fails
+          # (e.g. the parent review comment was deleted).
+          #
+          # The /replies endpoint requires the THREAD-ROOT comment id; a
+          # reply id returns 422. When the trigger is itself a reply,
+          # `in_reply_to_id` holds the root id (it is null at the thread
+          # root), so prefer it and fall back to `comment.id`.
+          REPLY_TARGET_ID="${{ github.event.comment.in_reply_to_id || github.event.comment.id }}"
+          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+            if jq -n --arg b "$BODY" '{body: $b}' \
+                 | gh api --method POST "repos/${{ github.repository }}/pulls/$ENTITY_NUMBER/comments/$REPLY_TARGET_ID/replies" --input - >/dev/null; then
+              exit 0
+            fi
+            echo "::warning::In-thread reply failed; falling back to a top-level comment."
+          fi
+          gh issue comment "$ENTITY_NUMBER" --body "$BODY" \
             || echo "::warning::Could not post Claude's response back to the source thread."
 
       # Dispatch the dedicated reviewer workflow when the triggering
