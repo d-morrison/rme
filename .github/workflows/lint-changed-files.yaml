@@ -36,21 +36,21 @@ jobs:
 
       - name: Extract and lint files changed by this PR
         run: |
-          # Explicit `.token` bypasses gh 1.5.0's validate_gh_pat(), which
-          # rejects the `ghs_*` server-to-server token Actions now issues.
-          # Remove once r-lib/gh#233 lands on CRAN (merged to gh main
-          # 2026-05-28, not yet released).
           files <- gh::gh(
             "GET https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files",
-            .token = Sys.getenv("GITHUB_PAT")
+            .limit = Inf
           )
           changed_files <- files |>
             purrr::keep(~ .$status != "renamed" || .$changes > 0) |>
             purrr::map_chr("filename")
           changed_files <- setdiff(changed_files, "renv/activate.R")
-          all_files <- list.files(recursive = TRUE)
-          exclusions_list <- as.list(setdiff(all_files, changed_files))
-          lintr::lint_dir(exclusions = exclusions_list)
+          if (length(changed_files) == 0) {
+            message("No changed files to lint.")
+          } else {
+            all_files <- list.files(recursive = TRUE)
+            exclusions_list <- as.list(setdiff(all_files, changed_files))
+            lintr::lint_dir(exclusions = exclusions_list)
+          }
         shell: Rscript {0}
         env:
           LINTR_ERROR_ON_LINT: true
