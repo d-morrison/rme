@@ -55,14 +55,16 @@ equal — so the order of integration can be exchanged.
 
 Adapted from [@larsonCalc11e, Section 14.2, Example 4, pp. 984--985].
 
-Find the volume of the solid bounded by the surface $z = \ef{-x^2}$
-and the planes $z = 0$, $y = 0$, $y = x$, and $x = 1$.
+Let $X$ and $Y$ be independent $\operatorname{Uniform}(0, 1)$ random variables,
+with joint density $f(x, y) = 1$ on the unit square $[0, 1]^2$.
+Compute the expectation $\E{\ef{-X^2}\,\indicp{Y \le X}}$.
 
-The base of the solid in the $xy$-plane is the triangular region
-$D = \{(x, y) : 0 \le x \le 1,\; 0 \le y \le x\}$,
-so the volume is
+Because the joint density equals $1$ on $[0, 1]^2$,
+this expectation is the double integral of $\ef{-x^2}$
+over the triangular region where $Y \le X$,
+namely $D = \{(x, y) : 0 \le x \le 1,\; 0 \le y \le x\}$:
 
-$$\iint_D \ef{-x^2}\,dA.$$
+$$\E{\ef{-X^2}\,\indicp{Y \le X}} = \iint_D \ef{-x^2}\,dA.$$
 
 **Order $dx\,dy$ is intractable.** Re-describing $D$ as
 $D = \{(x, y) : 0 \le y \le 1,\; y \le x \le 1\}$, the inner integral is
@@ -161,21 +163,28 @@ two iterated forms shown.
 
 Adapted from [@larsonCalc11e, Section 14.2, Example 2, pp. 982--983].
 
-Evaluate $\displaystyle\iint_R \paren{1 - \frac{1}{2}x^2 - \frac{1}{2}y^2}\,dA$
-on the unit square $R = \{(x, y) : 0 \le x \le 1,\; 0 \le y \le 1\}$.
+Let $X$ and $Y$ be independent $\operatorname{Uniform}(0, 1)$ random variables,
+with joint density $f(x, y) = 1$ on the unit square
+$R = \{(x, y) : 0 \le x \le 1,\; 0 \le y \le 1\}$.
+Compute $\E{X^2 + Y^2}$.
+
+Because the joint density equals $1$ on $R$,
+this expectation is the double integral of $x^2 + y^2$ over $R$:
+
+$$\E{X^2 + Y^2} = \iint_R \paren{x^2 + y^2}\,dA.$$
 
 The integrand is continuous on $R$, so @cor-fubini-rect applies and
 either order of integration yields the same value.
 
-**Integrating $y$ first, then $x$** (the order Larson chooses):
+**Integrating $y$ first, then $x$:**
 
 $$
 \ba
-\iint_R \paren{1 - \frac{1}{2}x^2 - \frac{1}{2}y^2}\,dA
-&= \int_0^1\!\int_0^1 \paren{1 - \frac{1}{2}x^2 - \frac{1}{2}y^2}\,dy\,dx
-\\&= \int_0^1 \sb{\paren{1 - \frac{1}{2}x^2}y - \frac{y^3}{6}}_0^1\,dx
-\\&= \int_0^1 \paren{\frac{5}{6} - \frac{1}{2}x^2}\,dx
-\\&= \sb{\frac{5}{6}x - \frac{x^3}{6}}_0^1
+\E{X^2 + Y^2}
+&= \int_0^1\!\int_0^1 \paren{x^2 + y^2}\,dy\,dx
+\\&= \int_0^1 \sb{x^2 y + \frac{y^3}{3}}_0^1\,dx
+\\&= \int_0^1 \paren{x^2 + \frac{1}{3}}\,dx
+\\&= \sb{\frac{x^3}{3} + \frac{x}{3}}_0^1
 \\&= \frac{2}{3}
 \ea
 $$
@@ -186,11 +195,17 @@ The integrand is symmetric in $x$ and $y$, so the same arithmetic with
 the roles swapped gives:
 
 $$
-\int_0^1\!\int_0^1 \paren{1 - \frac{1}{2}x^2 - \frac{1}{2}y^2}\,dx\,dy
+\int_0^1\!\int_0^1 \paren{x^2 + y^2}\,dx\,dy
 = \frac{2}{3}
 $$
 
 Both orders give $\frac{2}{3}$, as @cor-fubini-rect guarantees.
+
+As a cross-check, linearity of expectation gives the same value:
+since $\E{X^2} = \int_0^1 x^2\,dx = \frac{1}{3}$ for $X \sim \operatorname{Uniform}(0, 1)$
+(and likewise for $Y$),
+
+$$\E{X^2 + Y^2} = \E{X^2} + \E{Y^2} = \frac{1}{3} + \frac{1}{3} = \frac{2}{3}.$$
 
 :::{#fig-fubini-rect}
 
@@ -201,20 +216,20 @@ Both orders give $\frac{2}{3}$, as @cor-fubini-rect guarantees.
 n_grid <- 41
 x_seq <- seq(0, 1, length.out = n_grid)
 y_seq <- seq(0, 1, length.out = n_grid)
-z_mat <- outer(x_seq, y_seq, function(x, y) 1 - x^2 / 2 - y^2 / 2)
+z_mat <- outer(x_seq, y_seq, function(x, y) x^2 + y^2)
 
 plotly::plot_ly(x = ~x_seq, y = ~y_seq, z = ~t(z_mat)) |>
   plotly::add_surface(showscale = FALSE) |>
   plotly::layout(scene = list(
     xaxis = list(title = "x"),
     yaxis = list(title = "y"),
-    zaxis = list(title = "z", range = c(0, 1))
+    zaxis = list(title = "z", range = c(0, 2))
   ))
 ```
 
-Surface $z = 1 - \tfrac{1}{2}x^2 - \tfrac{1}{2}y^2$ over the unit square
-$[0, 1]^2$. The double integral $\tfrac{2}{3}$ is the volume between
-this surface and the $xy$-plane.
+Surface $z = x^2 + y^2$ over the unit square $[0, 1]^2$. The double
+integral $\tfrac{2}{3}$ is the volume between this surface and the
+$xy$-plane, and equals $\E{X^2 + Y^2}$.
 
 :::
 
