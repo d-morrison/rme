@@ -45,9 +45,9 @@ Mnemonic: **ratio = two things compared; factor = one thing vs. the baseline.**
 ## Available macros (in `latex-macros/macros.qmd`)
 
 - Generic: `\ratio` (= `\theta`), `\ratiof{·}`; `\factor` (= `\theta`), `\factorf{·}`.
-- Subscripted ratios: `\ror` (odds), `\hazratio`/`\hr` (hazard, fn `\hrf`),
+- Subscripted ratios: `\ror` (odds, fn `\orf`), `\hazratio`/`\hr` (hazard, fn `\hrf`),
   `\rateratio` (fn `\rateratiof`), `\riskratio` (fn `\riskratiof`),
-  `\prevratio` (fn `\prevratiof`/`\prrf`), `\cuhazratio` (fn `\cuhazratiof`),
+  `\prevratio` (fn `\prevratiof`/`\prrf`), `\cuhazratio` (fn `\cuhazratiof`/`\rcuhazf`/`\cuhazrf`),
   `\survratio` (fn `\survratiof`/`\rsurvf`/`\survrf`).
   Every subscripted ratio macro has a corresponding `-f` function form.
 - Subscripted factors: `\oddsfactor`, `\hazfactor`, `\ratefactor`, `\riskfactor`,
