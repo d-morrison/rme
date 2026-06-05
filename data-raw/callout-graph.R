@@ -57,7 +57,9 @@ extract_callout_graph <- function(root) {
         for (j in seq(i + 1, min(i + 5, n))) {
           if (j > n || str_trim(lines[j]) != "") {
             hm <- str_match(lines[j], head_re)
-            if (!is.na(hm[1, 1])) title <- hm[1, 2]
+            if (!is.na(hm[1, 1])) {
+              title <- gsub("\\\\index\\{[^}]*\\}", "", hm[1, 2])
+            }
             break
           }
         }
@@ -76,7 +78,7 @@ extract_callout_graph <- function(root) {
         content <- str_trim(sub("^:::+", "", l))
         if (nzchar(content)) {
           # A proof/solution div directly following a callout inherits it.
-          is_proof <- grepl("proof|solution", content, ignore.case = TRUE)
+          is_proof <- grepl("\\b(proof|solution)\\b", content, ignore.case = TRUE)
           owner <- if (is_proof) pending else NA_character_
           stack[[length(stack) + 1]] <-
             list(kind = "div", class = content, owner = owner)
