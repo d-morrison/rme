@@ -295,9 +295,9 @@ jobs:
           # replacement — which is why prior @claude runs committed file
           # edits fine (e.g. claude[bot] commit 05318e02 on PR #843).
           #
-          # We still list Edit/Write/MultiEdit explicitly because a
-          # session that inspects its own --allowed-tools string and sees
-          # only Bash/gh/git/WebFetch entries can wrongly conclude file
+          # We still list the file tools explicitly because a session
+          # that inspects its own --allowed-tools string and sees only
+          # Bash/gh/git/WebFetch entries can wrongly conclude file
           # editing is disallowed and bail out — posting its diff as a
           # comment instead of committing it (PR #843 run 27032044840,
           # 2026-06-05: a 27-min session designed probability-based
@@ -306,7 +306,11 @@ jobs:
           # session's --allowed-tools list"). Naming the tools here makes
           # the grant unambiguous in the string the agent can see, and
           # guards against the action's additive behaviour ever changing.
-          FILE_TOOLS="Edit,Write,MultiEdit"
+          # Read/Glob/Grep are listed alongside the write tools so the
+          # same allowlist-inspection logic can't talk a session out of
+          # reading or searching files either (they're read-only and,
+          # like the edit tools, already allowed by default).
+          FILE_TOOLS="Read,Glob,Grep,Edit,Write,MultiEdit"
           if [ -n "$WEBFETCH" ]; then
             echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${FILE_TOOLS},${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
