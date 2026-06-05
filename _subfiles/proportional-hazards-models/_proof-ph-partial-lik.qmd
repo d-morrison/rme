@@ -6,33 +6,34 @@ Assume that the censoring is noninformative
 (conditional on $\vx$, censoring times are independent of event times)
 and that there are no tied event times.
 For subject $j$, let $T_j$ be the event time, $C_j$ the censoring time,
-$\tilde T_j = \min(T_j, C_j)$ the observed follow-up time, and
-$\delta_j = \1{T_j \le C_j}$ the event indicator.
-Let $R(t) = \{j : \tilde T_j \ge t\}$ be the risk set at $t$
+$Y_j = \min(T_j, C_j)$ the observed follow-up time, and
+$D_j = \1{T_j \le C_j}$ the event indicator (exit reason),
+matching the $Y$, $D$ notation of the
+[censored-data likelihood](intro-to-survival-analysis.qmd#likelihood-with-censoring).
+Let $R(t) = \{j : Y_j \ge t\}$ be the risk set at $t$
 (the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set)),
-let $t_1 < \dots < t_D$ be the $D$ distinct observed failure times, and
+let $t_1 < \dots < t_K$ be the $K$ distinct observed failure times, and
 let $(i)$ denote the subject who fails at $t_i$
 (unique under the no-ties assumption).
 
 **The full joint likelihood of the observed data.**
-The observed data set is $\{(\tilde T_j, \delta_j, \vx_j)\}_{j=1}^n$.
+The observed data set is $\{(Y_j, D_j, \vx_j)\}_{j=1}^n$.
 As derived for the
 [censored-data likelihood](intro-to-survival-analysis.qmd#likelihood-with-censoring),
-a subject observed to fail ($\delta_j = 1$) contributes the event-time
-density $\haz(\tilde T_j \mid \vx_j)\,\surv(\tilde T_j \mid \vx_j)$, while a
-subject still censored ($\delta_j = 0$) contributes the survival
-probability $\surv(\tilde T_j \mid \vx_j)$; under noninformative
+a subject observed to fail ($D_j = 1$) contributes the event-time
+density $\haz(Y_j \mid \vx_j)\,\surv(Y_j \mid \vx_j)$, while a
+subject still censored ($D_j = 0$) contributes the survival
+probability $\surv(Y_j \mid \vx_j)$; under noninformative
 censoring the two cases combine into the single contribution
-$\surv(\tilde T_j \mid \vx_j)\,\haz(\tilde T_j \mid \vx_j)^{\delta_j}$.
+$\surv(Y_j \mid \vx_j)\,\haz(Y_j \mid \vx_j)^{D_j}$.
 Subjects are independent, so the full likelihood of the entire observed
 data set is the product
 
 $$
 \Lik(\b, \haz_0)
-\;=\;
-\prod_{j=1}^{n}
-\surv(\tilde T_j \mid \vx_j)\,
-\haz(\tilde T_j \mid \vx_j)^{\delta_j}.
+= \prod_{j=1}^{n}
+\surv(Y_j \mid \vx_j)\,
+\haz(Y_j \mid \vx_j)^{D_j}.
 $$ {#eq-ph-obs-lik}
 
 No risk set appears yet: @eq-ph-obs-lik conditions on nothing but the
@@ -46,34 +47,34 @@ Write the survival function as the exponential of the negative
 cumulative hazard,
 $\surv(t \mid \vx) = \expf{-\int_0^{t} \haz(u \mid \vx)\,du}$
 (the [survival/cumulative-hazard relationship](intro-to-survival-analysis.qmd#the-cumulative-hazard-function)),
-and partition $[0, \max_j \tilde T_j]$ into intervals of width $\Delta t$
+and partition $[0, \max_j Y_j]$ into intervals of width $\Delta t$
 with left endpoints $\tau$.
 Approximating the integral by its left Riemann sum,
 
 $$
-\surv(\tilde T_j \mid \vx_j)
-= \expf{-\!\!\sum_{\tau < \tilde T_j} \haz(\tau \mid \vx_j)\,\Delta t + o(1)}
-= \prod_{\tau < \tilde T_j} \expf{-\haz(\tau \mid \vx_j)\,\Delta t}
-\;\approx\; \prod_{\tau < \tilde T_j}\paren{1 - \haz(\tau \mid \vx_j)\,\Delta t}.
+\surv(Y_j \mid \vx_j)
+= \expf{-\!\!\sum_{\tau < Y_j} \haz(\tau \mid \vx_j)\,\Delta t + o(1)}
+= \prod_{\tau < Y_j} \expf{-\haz(\tau \mid \vx_j)\,\Delta t}
+\approx \prod_{\tau < Y_j}\paren{1 - \haz(\tau \mid \vx_j)\,\Delta t}.
 $$ {#eq-ph-surv-discretized}
 
 Each factor $1 - \haz(\tau \mid \vx_j)\,\Delta t$ is, to first order in
 $\Delta t$, the probability that subject $j$ survives the interval at
 $\tau$ given that it is still at risk there.
-Likewise, when $\delta_j = 1$ the hazard factor satisfies
-$\haz(\tilde T_j \mid \vx_j)\,\Delta t \approx \Pr\sb{j \text{ fails in } [\tilde T_j,\, \tilde T_j + \Delta t) \mid j \in R(\tilde T_j)}$,
+Likewise, when $D_j = 1$ the hazard factor satisfies
+$\haz(Y_j \mid \vx_j)\,\Delta t \approx \Pr\sb{j \text{ fails in } [Y_j,\, Y_j + \Delta t) \mid j \in R(Y_j)}$,
 the first-order probability that $j$ fails in its final interval.
 Substituting @eq-ph-surv-discretized into @eq-ph-obs-lik
-(and absorbing the constant $\Delta t^{\delta_j}$, which does not depend
+(and absorbing the constant $\Delta t^{D_j}$, which does not depend
 on $\b$ or $\haz_0$),
 
 $$
 \Lik(\b, \haz_0)
-\;\approx\;
+\approx
 \prod_{j=1}^{n}
 \sb{
-\paren{\haz(\tilde T_j \mid \vx_j)\,\Delta t}^{\delta_j}
-\prod_{\tau < \tilde T_j}\paren{1 - \haz(\tau \mid \vx_j)\,\Delta t}
+\paren{\haz(Y_j \mid \vx_j)\,\Delta t}^{D_j}
+\prod_{\tau < Y_j}\paren{1 - \haz(\tau \mid \vx_j)\,\Delta t}
 }.
 $$ {#eq-ph-lik-by-subject}
 
@@ -88,7 +89,7 @@ subject who does not:
 
 $$
 \Lik(\b, \haz_0)
-\;\approx\;
+\approx
 \prod_{\tau} \Lik_\tau,
 \qquad
 \Lik_\tau
@@ -124,7 +125,7 @@ $$ {#eq-ph-fail-interval}
 To evaluate @eq-ph-fail-interval we need the per-subject failure
 probability inside a risk set.
 For any $j \in R(t_i)$, since $j \in R(t_i)$ means
-$\tilde{T}_j = \min(T_j,\,C_j) \ge t_i$, we have both $T_j \ge t_i$ and
+$Y_j = \min(T_j,\,C_j) \ge t_i$, we have both $T_j \ge t_i$ and
 $C_j \ge t_i$; under noninformative censoring the event $C_j \ge t_i$
 carries no information about $T_j$ given $\vx_j$, so conditioning on
 $j \in R(t_i)$ is equivalent to conditioning on $T_j \ge t_i$ alone.
@@ -134,8 +135,8 @@ $\haz(t_i \mid \vx_j) = \haz_0(t_i)\,\hazfactor(\vx_j)$, so
 
 $$
 \Pr\sb{j \text{ fails at } t_i \mid j \in R(t_i)}
-\;\approx\; \haz(t_i \mid \vx_j)\,\Delta t
-\;=\; \haz_0(t_i)\,\hazfactor(\vx_j)\,\Delta t,
+\approx \haz(t_i \mid \vx_j)\,\Delta t
+= \haz_0(t_i)\,\hazfactor(\vx_j)\,\Delta t,
 $$ {#eq-ph-single-subj}
 
 with $\haz_0(t_i)$ and $\Delta t$ shared by every subject in the risk set
@@ -145,8 +146,8 @@ $1 - O(\Delta t)$, so to first order
 
 $$
 \Lik_{t_i}^{\text{failure}}
-\;\approx\; \haz_0(t_i)\,\hazfactor(\vx_{(i)})\,\Delta t
-\;=\; \Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}.
+\approx \haz_0(t_i)\,\hazfactor(\vx_{(i)})\,\Delta t
+= \Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}.
 $$ {#eq-ph-fail-interval-approx}
 
 **Split each event factor into which-subject and whether-a-failure.**
@@ -198,9 +199,9 @@ probability $O(\Delta t^2)$) gives
 
 $$
 \Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
-\;\approx\;
+\approx
 \sum_{k \in R(t_i)} \haz_0(t_i)\,\hazfactor(\vx_k)\,\Delta t
-\;=\;
+=
 \haz_0(t_i)\paren{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}\Delta t.
 $$ {#eq-ph-one-failure}
 
@@ -220,7 +221,7 @@ $$
          {\haz_0(t_i)\paren{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}\Delta t}
 \\
 &= \frac{\hazfactor(\vx_{(i)})}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}
-\;=\; \Lik^*_i(\b).
+= \Lik^*_i(\b).
 \ea
 $$ {#eq-ph-which-subject}
 
@@ -236,7 +237,7 @@ $\Lik^*_i(\b)$ of @def-ph-partial-lik.
 
 **Factor the full likelihood.**
 Return to the interval product @eq-ph-lik-by-interval and separate the
-$D$ failure intervals from the rest.
+$K$ failure intervals from the rest.
 Using @eq-ph-fail-interval-approx and then @eq-ph-chain-rule on each
 failure interval,
 
@@ -244,27 +245,27 @@ $$
 \ba
 \Lik(\b, \haz_0)
 &\approx
-\paren{\prod_{i=1}^{D} \Lik_{t_i}^{\text{failure}}}
+\paren{\prod_{i=1}^{K} \Lik_{t_i}^{\text{failure}}}
 \paren{\prod_{\tau\,:\,\text{no failure}} \Lik_\tau^{\text{no failure}}}
 \\
-&= \paren{\prod_{i=1}^{D}
+&= \paren{\prod_{i=1}^{K}
    \Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}\,
    \Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
    \paren{\prod_{\tau\,:\,\text{no failure}} \Lik_\tau^{\text{no failure}}}
 \\
 &\approx
-\underbrace{\prod_{i=1}^{D} \frac{\hazfactor(\vx_{(i)})}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}}
+\underbrace{\prod_{i=1}^{K} \frac{\hazfactor(\vx_{(i)})}{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}}
           _{\Lik^*(\b)\ \text{(kept)}}
 \;\times\;
 \underbrace{
-\sb{\prod_{i=1}^{D} \haz_0(t_i)\paren{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}\Delta t}
+\sb{\prod_{i=1}^{K} \haz_0(t_i)\paren{\sum_{k \in R(t_i)} \hazfactor(\vx_k)}\Delta t}
 \sb{\prod_{\tau\,:\,\text{no failure}} \prod_{m \in R(\tau)} \paren{1 - \haz_0(\tau)\,\hazfactor(\vx_m)\,\Delta t}}}
           _{\text{discarded}}.
 \ea
 $$ {#eq-ph-factored-lik}
 
 Under the no-ties assumption each event time has $d_i = 1$, so the kept
-product $\prod_{i=1}^{D}(\cdots) = \prod_{\{i:\,d_i=1\}}(\cdots)$ matches
+product $\prod_{i=1}^{K}(\cdots) = \prod_{\{i:\,d_i=1\}}(\cdots)$ matches
 the form of $\Lik^*(\b)$ in @def-ph-partial-lik.
 
 The partial likelihood keeps the first product and drops the second.
