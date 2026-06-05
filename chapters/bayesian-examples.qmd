@@ -1,0 +1,102 @@
+---
+title: "Example Bayesian Analyses"
+format:
+  html: default
+  revealjs:
+    output-file: bayesian-examples-slides.html
+  pdf:
+    output-file: bayesian-examples-handout.pdf
+  docx:
+    output-file: bayesian-examples-handout.docx
+
+---
+
+
+{{< include shared-config.qmd >}}
+
+This appendix collects worked Bayesian analyses,
+applying the concepts of
+[the Bayesian-analysis appendix](intro-bayes.qmd#sec-bayes-paradigms)
+and the simulation machinery of
+[the MCMC appendix](mcmc-methods.qmd#sec-mcmc-methods)
+to regression models we have already met in the frequentist setting.
+The structure parallels [@dobson4e, Chapter 14].
+Each analysis specifies a model, places priors on its parameters,
+draws posterior samples by MCMC, and summarizes the posterior.
+
+# A first example: a single proportion {#sec-bayes-examples}
+
+We begin with the simplest possible model — a single Bernoulli
+probability — fit with **JAGS** ("Just Another Gibbs Sampler"),
+which we drive from R.
+This example introduces the mechanics (specifying a model, supplying
+data, monitoring parameters, and inspecting draws) that the later
+analyses reuse.
+
+{{< include dobson-bayes-example.qmd >}}
+
+# Binary outcomes: logistic regression {#sec-bayes-examples-logistic}
+
+For a binary outcome $Y_i \sim \Bernoulli(\pi_i)$ with
+$\operatorname{logit}(\pi_i) = \vx_i^\top \vbeta$,
+the Bayesian analysis places a prior on the coefficient vector
+$\vbeta$ — typically independent, weakly informative normals such as
+$\beta_j \sim \ndist{0, \sigma_0^2}$ with $\sigma_0$ large on the log-odds
+scale — and samples the posterior $p(\vbeta \mid \vy)$ by MCMC
+[@dobson4e, Chapter 14, p. 318].
+The posterior draws for each $\beta_j$ are summarized by their mean and a
+$95\%$ credible interval; exponentiating gives posterior summaries for
+the odds ratios.
+Unlike the frequentist fit, no large-sample normal approximation is
+needed: the credible interval is read directly from the posterior
+quantiles, and **prevalence ratios** or other nonlinear functions of
+$\vbeta$ are obtained simply by transforming the draws.
+
+# Survival analysis {#sec-bayes-examples-survival}
+
+Parametric survival models (for example, exponential or Weibull event
+times) admit a Bayesian treatment in which priors are placed on the
+baseline-hazard parameters and the regression coefficients, and the
+posterior is sampled by MCMC [@dobson4e, Chapter 14, p. 330].
+Censoring is handled naturally inside the model: a censored observation
+contributes its survival probability to the likelihood, exactly as in
+the frequentist [right-censored likelihood](intro-to-survival-analysis.qmd#likelihood-with-censoring),
+and the sampler treats unobserved event times as additional parameters
+to be imputed from their conditional distributions.
+
+# Random effects {#sec-bayes-examples-random-effects}
+
+Hierarchical models (introduced in
+[the Bayesian-analysis appendix](intro-bayes.qmd#sec-bayes-hierarchies))
+are the Bayesian counterpart of the random-effects and multilevel models
+of [@dobson4e, Chapter 11].
+Group-level parameters $\theta_j \sim \ndist{\mu, \tau^2}$ are drawn from
+a common distribution whose hyperparameters $\mu$ and $\tau$ carry their
+own priors.
+The posterior **shrinks** each group's estimate toward the overall mean
+by an amount the data determine through $\tau$, and — unlike the
+frequentist fit — the posterior for $\tau$ propagates the uncertainty in
+the between-group spread into every group-level summary
+[@dobson4e, Chapter 14, p. 333].
+
+# Bayesian model averaging {#sec-bayes-examples-bma}
+
+When several candidate models are plausible, **Bayesian model averaging
+(BMA)** forms predictions by averaging over models, weighting each by its
+posterior probability rather than committing to a single "best" model
+[@dobson4e, Chapter 14, p. 338].
+This propagates *model* uncertainty — not just parameter uncertainty —
+into the final inference, and it connects to the predictor-selection
+problem discussed in [@dobson4e, Chapter 14] and our
+[predictor-selection chapter](predictor-selection.qmd).
+
+::: notes
+The worked code for the logistic-regression, survival, random-effects,
+and model-averaging analyses is being added incrementally; the sections
+above describe the modeling approach each will implement.
+:::
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
