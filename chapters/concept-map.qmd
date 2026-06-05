@@ -57,6 +57,8 @@ connected by `r nrow(cg$edges)` direct dependency links.
 dependency link, laid out so that connected results sit near each other.
 Color encodes the type of result.
 Results with no detected dependency links are omitted from the diagram.
+Node labels are larger for results with more total descendants,
+so the most foundational results are visually prominent.
 Zoom in with Ctrl+scroll (or pinch on mobile) to read individual labels.
 Lines from labels to dots indicate where ggrepel moved a label to avoid overlap.
 
@@ -98,11 +100,10 @@ ggraph(layout) +
   geom_node_point(color = "grey60", size = 0.8, alpha = 0.7) +
   geom_label_repel(
     data = as.data.frame(layout),
-    aes(x = x, y = y, label = title, fill = type),
+    aes(x = x, y = y, label = title, fill = type, size = n_desc),
     inherit.aes = FALSE,
     color = "white",
     fontface = "bold",
-    size = 2.2,
     max.overlaps = Inf,
     force = 3,
     force_pull = 0.5,
@@ -120,6 +121,7 @@ ggraph(layout) +
   scale_fill_manual(
     values = type_palette, labels = type_labels, name = "Type", drop = FALSE
   ) +
+  scale_size_continuous(range = c(2.0, 4.5), guide = "none") +
   theme_void() +
   theme(
     legend.position = "bottom",
@@ -130,6 +132,7 @@ ggraph(layout) +
 Dependency structure of the definitions and results in the notes.
 An arrow points from a result to each result that uses it.
 Color indicates result type (see legend).
+Label font size is proportional to the number of total descendants.
 
 :::
 
@@ -169,15 +172,15 @@ ranked <- ranked[order(-ranked$n_desc, ranked$id), ]
 descendant_table <- data.frame(
   Result               = ranked$title,
   Type                 = type_labels[ranked$type],
-  `Total descendants`  = ranked$n_desc,
+  `Direct descendants`  = ranked$n_direct,
+  `Total descendants`   = ranked$n_desc,
   check.names = FALSE, row.names = NULL, stringsAsFactors = FALSE
 )
 
-knitr::kable(descendant_table, format = "pipe", align = "llr")
+knitr::kable(descendant_table, format = "pipe", align = "llrr")
 ```
 
 All results with at least one descendant,
 sorted by number of total descendants (most-foundational first).
 
 :::
-
