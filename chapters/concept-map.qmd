@@ -33,7 +33,7 @@ library(ggraph)
 library(ggrepel)
 
 cg <- readRDS(here::here("inst/extdata/callout-graph.rds"))
-cg$nodes$title <- gsub("\\\\index\\{[^}]*\\}", "", cg$nodes$title)
+cg$nodes$title <- trimws(gsub("\\\\index\\{[^}]*\\}", "", cg$nodes$title))
 
 type_levels <- c("def", "thm", "lem", "cor", "prp")
 type_labels <- c(
@@ -71,7 +71,7 @@ Lines from labels to dots indicate where ggrepel moved a label to avoid overlap.
 #| message: false
 #| warning: false
 #| fig-width: 50
-#| fig-height: 40
+#| fig-height: 50
 #| out-width: "100%"
 #| fig-format: "svg"
 
@@ -84,13 +84,10 @@ core <- graph_from_data_frame(
 V(core)$type <- factor(V(core)$type, levels = type_levels)
 
 set.seed(204)
-# Layered (Sugiyama) layout instead of a force-directed one: it arranges the
-# dependency DAG into ranks, which is far more evenly spaced than "stress" and
-# gives a clear top-to-bottom reading order.
-layout <- create_layout(core, layout = "sugiyama")
-# Put the most *basic* results (roots of the DAG -- many descendants, few
-# ancestors) at the top by flipping the vertical axis.
-layout$y <- -layout$y
+# Stress layout (from graphlayouts, via ggraph) minimises a stress function so
+# connected nodes sit close together and nodes are distributed evenly across
+# the canvas — much less dead whitespace than the Sugiyama hierarchical layout.
+layout <- create_layout(core, layout = "stress")
 
 ggraph(layout) +
   geom_edge_link(
@@ -122,12 +119,9 @@ ggraph(layout) +
   scale_fill_manual(
     values = type_palette, labels = type_labels, name = "Type", drop = FALSE
   ) +
-  scale_size_continuous(range = c(3.0, 6.0), guide = "none") +
+  scale_size_continuous(range = c(4.0, 8.0), guide = "none") +
   theme_void() +
-  theme(
-    legend.position = "bottom",
-    text = element_text(family = "serif")
-  )
+  theme(legend.position = "bottom")
 ```
 
 Dependency structure of the definitions and results in the notes.
