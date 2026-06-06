@@ -105,7 +105,7 @@ and $\vx$ is constant with respect to $\vb$ (@def-constant-wrt-vector).
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#thm-deriv-lincom}
 
@@ -155,30 +155,22 @@ $$
 
 #### Product rule for dot-products
 
+If $\mathbf{a} = \mathbf{a}(\vx)$ and $\mathbf{b} = \mathbf{b}(\vx)$
+are differentiable $p \times 1$ vector functions of $\vx$, then:
+
 $$
 \ba
-\deriv{\ubf{\vx}{p \times 1}} \dpf{\ubf{a}{p \times 1}}{\ubf{b}{p \times 1}} 
-&=
-\paren{
-    \deriv{\ubf{\vx}{p \times 1}} \ubf{\tp{a}}{1 \times p}
-  }
-\ubf{b}{p \times 1} 
-+ 
-\paren{
-  \deriv{\ubf{\vx}{p \times 1}} \ubf{\tp{b}}{1 \times p}
-}
-\ubf{a}{p \times 1}
-\\
+\deriv{\ubf{\vx}{p \times 1}} \dpf{\ubf{a}{p \times 1}}{\ubf{b}{p \times 1}}
 &=
 \paren{
     \deriv{\ubf{\vx}{p \times 1}} \ubf{\tp{a}}{1 \times p}
   }
 \ubf{b}{p \times 1}
 +
-\ubf{\tp{a}}{1 \times p}
 \paren{
-  \ubf{b}{p \times 1} \deriv{\ubf{\tp{\vx}}{1 \times p}}
+  \deriv{\ubf{\vx}{p \times 1}} \ubf{\tp{b}}{1 \times p}
 }
+\ubf{a}{p \times 1}
 \ea
 $$
 
@@ -197,6 +189,60 @@ $$
   + \left[\paren{\deriv{\vx} \tp{\mathbf{b}}}\mathbf{a}\right]_i
 \ea
 $$
+
+:::
+
+:::{#exm-deriv-dot-product}
+#### Example of the dot-product rule
+
+Let $\vx = \tp{(\beta_1, \beta_2)}$,
+$\mathbf{a}(\vx) = \tp{(\beta_1, \beta_1\beta_2)}$,
+and $\mathbf{b}(\vx) = \tp{(\beta_2, \beta_1)}$.
+Then:
+
+$$
+\mathbf{a} \cdot \mathbf{b}
+= \beta_1 \cdot \beta_2 + \beta_1\beta_2 \cdot \beta_1
+= \beta_1\beta_2 + \beta_1^2\beta_2
+$$
+
+By direct calculation:
+
+$$
+\underbrace{\deriv{\vx}(\mathbf{a} \cdot \mathbf{b})}_{2 \times 1}
+= \deriv{\vx}(\beta_1\beta_2 + \beta_1^2\beta_2)
+= \begin{pmatrix} \beta_2 + 2\beta_1\beta_2 \\ \beta_1 + \beta_1^2 \end{pmatrix}
+$$
+
+By the product rule (@thm-deriv-dot-product),
+using
+$\underbrace{\deriv{\vx}\tp{\mathbf{a}}}_{2 \times 2}
+= \begin{pmatrix}1 & \beta_2 \\ 0 & \beta_1\end{pmatrix}$
+and
+$\underbrace{\deriv{\vx}\tp{\mathbf{b}}}_{2 \times 2}
+= \begin{pmatrix}0 & 1 \\ 1 & 0\end{pmatrix}$:
+
+$$
+\ba
+\underbrace{\deriv{\vx}(\mathbf{a} \cdot \mathbf{b})}_{2 \times 1}
+&=
+\underbrace{\begin{pmatrix}1 & \beta_2 \\ 0 & \beta_1\end{pmatrix}}_{2 \times 2}
+\underbrace{\begin{pmatrix}\beta_2 \\ \beta_1\end{pmatrix}}_{2 \times 1}
++
+\underbrace{\begin{pmatrix}0 & 1 \\ 1 & 0\end{pmatrix}}_{2 \times 2}
+\underbrace{\begin{pmatrix}\beta_1 \\ \beta_1\beta_2\end{pmatrix}}_{2 \times 1}
+\\
+&=
+\begin{pmatrix}\beta_2 + \beta_1\beta_2 \\ \beta_1^2\end{pmatrix}
++
+\begin{pmatrix}\beta_1\beta_2 \\ \beta_1\end{pmatrix}
+\\
+&=
+\begin{pmatrix}\beta_2 + 2\beta_1\beta_2 \\ \beta_1^2 + \beta_1\end{pmatrix}
+\ea
+$$
+
+Both methods agree. ✓
 
 :::
 
@@ -236,7 +282,7 @@ $$
 :::
 
 :::{#exm-deriv-linear-map}
-#### Example: derivative of linear map
+#### Derivative of a linear map
 
 Let $A = \begin{pmatrix} 2 & 3 \end{pmatrix}$ ($1 \times 2$) and $\vb = \tp{(\beta_1, \beta_2)}$.
 Then $A\vb = 2\beta_1 + 3\beta_2$, and by @thm-deriv-linear-map:
@@ -250,7 +296,7 @@ $$
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#thm-deriv-matrix-vector}
 
@@ -267,13 +313,13 @@ $$
 \underbrace{\tp{A}}_{q \times m}
 $$
 
-:::
-
-::: notes
+:::: notes
 This generalizes @thm-deriv-linear-map,
 which is the special case $\vecf{v} = \vb$
 (so that $\deriv{\vb} \vb = \matr{I}$
 and $\deriv{\vb} (A\vb) = \tp{A}$).
+::::
+
 :::
 
 ::: proof
@@ -295,7 +341,7 @@ $$
 :::
 
 :::{#exm-deriv-matrix-vector}
-#### Example: vector-derivative of matrix-vector product
+#### Vector-derivative of a matrix-vector product
 
 Let $A = \begin{pmatrix} 2 & 3 \end{pmatrix}$ ($1 \times 2$, constant)
 and $\vecf{v}(\vb) = \tp{(\beta_1^2, \beta_2^2)}$.
@@ -316,7 +362,7 @@ $$
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#cor-deriv-lincom-tp}
 
@@ -375,7 +421,7 @@ $$
 :::
 
 :::{#exm-deriv-lincom-tp}
-#### Example: derivative of transpose product
+#### Derivative of a transpose product
 
 Let $\vx = \tp{(3, 5)}$ and $\vb = \tp{(\beta_1, \beta_2)}$.
 Then $\tp{\vx}\vb = 3\beta_1 + 5\beta_2$, and by @cor-deriv-lincom-tp:
