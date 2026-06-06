@@ -386,6 +386,12 @@ jobs:
               (`issue_comment` fires for both issues and PRs; this
               flag disambiguates without you guessing.)
             - Entity number: `${{ github.event.issue.number || github.event.pull_request.number }}`
+            - Session-start SHA (the tip of the branch when your
+              session started): `${{ steps.head_before.outputs.sha || steps.issue_branch.outputs.starting_sha }}`
+              For PR triggers this is the PR head before you ran; for
+              issue triggers it's the tip of the freshly-created
+              `claude/issue-N-<timestamp>` branch. Use it as the base
+              for the step-5 commit-presence check below.
 
             - **PR triggers** (`issue_comment` on a PR,
               `pull_request_review`, `pull_request_review_comment`):
@@ -500,22 +506,24 @@ jobs:
                someone pushed by hand.
 
             5. **Pre-finish self-check (mandatory).** Immediately
-               before you stop, run these and verify the output:
+               before you stop, run these and verify the output
+               (substitute the Session-start SHA from the context
+               block above for `<START>`):
 
                ```
-               git status --porcelain   # MUST be empty
-               git log --oneline -5     # confirm your commits are present
+               git status --porcelain         # MUST be empty
+               git log --oneline <START>..HEAD   # check whether you committed
                ```
 
                If `git status --porcelain` shows ANY output, you have
                uncommitted edits — stage and commit them before
-               stopping. If you intended to make code changes but
-               `git log` shows no new commits on top of the branch
-               you started on, you have NOT done the task — the
-               edits live only in the working tree and will be
-               discarded. Treat this as a task failure: commit the
-               work, or if you've decided not to change anything,
-               say so explicitly in your final comment ("no changes
+               stopping. If you intended to make code changes but the
+               `git log <START>..HEAD` range is empty, you have NOT
+               done the task — the edits live only in the working
+               tree and will be discarded. Treat this as a task
+               failure: commit the work, or if you've decided not to
+               change anything, say so explicitly in your final
+               comment ("no changes
                needed because X") rather than describing edits that
                weren't committed.
 
