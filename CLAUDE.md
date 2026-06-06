@@ -68,9 +68,10 @@ Before committing any `.qmd`, `.R`, or config file change:
 
 ### Pull Requests
 - Remove existing review requests immediately when starting work on a PR
-- Ensure branch is up to date with `main` before requesting review
+- Always merge `main` into the feature branch before pushing — not just before requesting review
 - Verify all changed hyperlinks before requesting review
 - If any `_subfiles/` were edited, add the "clear freezer" label
+- Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
 
 ## Workflow Responsibility
 
