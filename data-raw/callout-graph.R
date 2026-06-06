@@ -58,7 +58,7 @@ extract_callout_graph <- function(root) {
           if (j > n || str_trim(lines[j]) != "") {
             hm <- str_match(lines[j], head_re)
             if (!is.na(hm[1, 1])) {
-              title <- gsub("\\\\index\\{[^}]*\\}", "", hm[1, 2])
+              title <- str_trim(gsub("\\\\index\\{[^}]*\\}", "", hm[1, 2]))
             }
             break
           }
@@ -124,7 +124,10 @@ extract_callout_graph <- function(root) {
     }
   }
 
-  nodes <- do.call(rbind, nodes)
+  nodes <- if (length(nodes)) do.call(rbind, nodes) else
+    data.frame(id = character(), type = character(),
+               title = character(), file = character(),
+               stringsAsFactors = FALSE)
   rownames(nodes) <- NULL
   edges <- if (length(edges)) unique(do.call(rbind, edges)) else
     data.frame(from = character(), to = character())
