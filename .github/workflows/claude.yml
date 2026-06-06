@@ -386,6 +386,12 @@ jobs:
               (`issue_comment` fires for both issues and PRs; this
               flag disambiguates without you guessing.)
             - Entity number: `${{ github.event.issue.number || github.event.pull_request.number }}`
+            - Session-start SHA (the tip of the branch when your
+              session started): `${{ steps.head_before.outputs.sha || steps.issue_branch.outputs.starting_sha }}`
+              For PR triggers this is the PR head before you ran; for
+              issue triggers it's the tip of the freshly-created
+              `claude/issue-N-<timestamp>` branch. Use it as the base
+              for the step-5 commit-presence check below.
 
             - **PR triggers** (`issue_comment` on a PR,
               `pull_request_review`, `pull_request_review_comment`):
@@ -470,13 +476,24 @@ jobs:
                so and exit, and the next workflow run will pick up
                from there via the serialize-per-PR concurrency group.
 
-            4. Commit all changes before finishing. `git add`,
-               `git commit`, `git rm`, and read-only git inspection
-               commands are in your allowed-tools list; `git push`
-               is NOT. A post-Claude workflow step pushes:
-               - For PR triggers, your commits are already on the
-                 PR's head branch — the post-step re-requests review
-                 and dispatches code review when the head SHA moves.
+            4. **Commit all changes before finishing — this is the
+               single most common way these runs silently fail.**
+               Editing files with Edit/Write changes the working tree
+               but does NOT change the git history; only `git add` +
+               `git commit` does. If you describe work as "done" in a
+               comment but never committed, the post-step sees the
+               PR head SHA unchanged and your work is lost when the
+               runner is reclaimed. The user has no way to recover it.
+
+               `git add`, `git commit`, `git rm`, and read-only git
+               inspection commands are in your allowed-tools list;
+               `git push` is NOT, and any attempt to call it will
+               fail with a permission denial. **Do not attempt
+               `git push`** — a post-Claude workflow step performs
+               the push for you:
+               - For PR triggers, your commits go on the PR's head
+                 branch — the post-step re-requests review and
+                 dispatches code review when the head SHA moves.
                - For issue triggers, the workflow pre-creates a
                  `claude/issue-N-<timestamp>` branch and checks it
                  out before your session starts; the post-step
@@ -487,6 +504,27 @@ jobs:
                The concurrency group guarantees no parallel session
                is racing yours, so the push should succeed unless
                someone pushed by hand.
+
+            5. **Pre-finish self-check (mandatory).** Immediately
+               before you stop, run these and verify the output
+               (substitute the Session-start SHA from the context
+               block above for `<START>`):
+
+               ```
+               git status --porcelain         # MUST be empty
+               git log --oneline <START>..HEAD   # check whether you committed
+               ```
+
+               If `git status --porcelain` shows ANY output, you have
+               uncommitted edits — stage and commit them before
+               stopping. If you intended to make code changes but the
+               `git log <START>..HEAD` range is empty, you have NOT
+               done the task — the edits live only in the working
+               tree and will be discarded. Treat this as a task
+               failure: commit the work, or if you've decided not to
+               change anything, say so explicitly in your final
+               comment ("no changes needed because X") rather than
+               describing edits that weren't committed.
 
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
