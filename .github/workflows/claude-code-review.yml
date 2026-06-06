@@ -129,7 +129,18 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ env.PR_NUMBER }}'
+          prompt: |
+            /code-review:code-review ${{ github.repository }}/pull/${{ env.PR_NUMBER }} --comment
+
+            The `--comment` flag above is the plugin's documented switch for
+            inline posting; the prose below is belt-and-suspenders in case the
+            plugin drives inline mode off the tool calls rather than the flag.
+
+            **Post line-specific findings as inline review comments** anchored
+            to the relevant line(s) — use the inline-comment tool, not a prose
+            list in the summary. Reserve the top-level summary comment for a
+            brief overall verdict plus any finding not tied to a specific line;
+            don't restate each inline comment there.
           # Force tag mode (anthropics/claude-code-action src/modes/detector.ts).
           # In the default agent mode for pull_request events, the action never
           # posts any non-inline PR comment by itself (src/modes/agent/index.ts:
