@@ -249,10 +249,16 @@ jobs:
           # HTTP-method filtering. The ultimate bound on what's
           # possible is `GITHUB_TOKEN`'s scopes (`contents: write`,
           # `pull-requests: write`, `issues: write`), not this
-          # allowlist. `Bash(gh pr view:*)` and `Bash(gh issue view:*)`
-          # are strict subsets (the CLI commands hit the same API
-          # internally), so they're omitted.
-          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*)"
+          # allowlist.
+          #
+          # The `gh pr/issue/run` read-only CLI patterns below mirror
+          # the committed `.claude/settings.json` allowlist so the CI
+          # agent and local sessions grant the same inspection commands
+          # (these CLI subcommands hit the same API as `gh api` but
+          # under different command strings, so the `gh api repos/*`
+          # entry alone doesn't cover them). Kept to `view`/`list`
+          # (read-only) — no `gh pr merge`/`close`/`edit` etc.
+          GH_TOOLS="Bash(gh api repos/${{ github.repository }}/*),Bash(gh pr view *),Bash(gh pr list *),Bash(gh issue view *),Bash(gh issue list *),Bash(gh run view *),Bash(gh run list *)"
           # Git commands Claude needs to commit work in agent mode.
           # In tag mode the action auto-injects these; in agent mode
           # (which we're in whenever `prompt:` is set) it doesn't, and
@@ -281,10 +287,34 @@ jobs:
           #   (allowed below) already reports the current branch name,
           #   covering the only legitimate read-only use case.
           GIT_TOOLS="Bash(git add *),Bash(git commit *),Bash(git rm *),Bash(git mv *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git show*),Bash(git restore *),Bash(git checkout -- *)"
+          # File-editing tools. claude-code-action ALREADY allows file
+          # reads/edits by default (see the action's configuration docs:
+          # "By default, Claude only has access to: File operations
+          # (reading, committing, editing files, ...)"), and `claude_args
+          # --allowed-tools` is ADDITIVE to that default rather than a
+          # replacement — which is why prior @claude runs committed file
+          # edits fine (e.g. claude[bot] commit 05318e02 on PR #843).
+          #
+          # We still list the file tools explicitly because a session
+          # that inspects its own --allowed-tools string and sees only
+          # Bash/gh/git/WebFetch entries can wrongly conclude file
+          # editing is disallowed and bail out — posting its diff as a
+          # comment instead of committing it (PR #843 run 27032044840,
+          # 2026-06-05: a 27-min session designed probability-based
+          # example rewrites, then declined to apply them claiming
+          # "Edit/Write require approval not configured in the current
+          # session's --allowed-tools list"). Naming the tools here makes
+          # the grant unambiguous in the string the agent can see, and
+          # guards against the action's additive behaviour ever changing.
+          # Read/Glob/Grep are listed alongside the write tools so the
+          # same allowlist-inspection logic can't talk a session out of
+          # reading or searching files either (they're read-only and,
+          # like the edit tools, already allowed by default).
+          FILE_TOOLS="Read,Glob,Grep,Edit,Write,MultiEdit"
           if [ -n "$WEBFETCH" ]; then
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${FILE_TOOLS},${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${FILE_TOOLS},${GH_TOOLS},${GIT_TOOLS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -324,6 +354,23 @@ jobs:
             You were triggered by an @claude mention in
             ${{ github.event_name }}. Address the request in that
             comment/issue/review.
+
+            **If your reply is prose (a question answered, a
+            recommendation, a design discussion) rather than a code
+            change**, write your final assistant message as if you
+            were posting a reply on the triggering PR/issue thread —
+            because that's what happens: a post-Claude workflow step
+            takes your last assistant message and posts it back to
+            the source thread when you didn't commit any code. (When
+            you DO commit code, the commits themselves are the
+            deliverable and the post-step skips posting your text to
+            avoid noise.) Don't write it as an internal log
+            ("Investigated foo, found bar, will do baz") — write it
+            as the actual reply you want the requester to read. When the
+            trigger was an inline review comment on the diff (a
+            `pull_request_review_comment`), your reply is posted as a threaded
+            reply to that exact comment — keep it focused on the line(s) that
+            comment is about.
 
             **Before declaring the task complete, check for additional
             @claude requests that arrived after the triggering event.**
@@ -366,10 +413,15 @@ jobs:
                `issues` triggers — the GitHub-Actions expression
                `${{ github.event.issue.number || github.event.pull_request.number }}`
                is already substituted in below):
+               (the URLs are NOT quoted — they contain no shell-special
+               characters after substitution, and the allowed-tools pattern
+               `Bash(gh api repos/<repo>/*)` only matches the unquoted form;
+               a leading quote like `gh api 'repos/...` fails the match and
+               the call is denied — see PR #806 comment 4539906359):
                ```
-               gh api 'repos/${{ github.repository }}/issues/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate
-               gh api 'repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/comments' --paginate   # PRs only
-               gh api 'repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/reviews'  --paginate   # PRs only
+               gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number || github.event.pull_request.number }}/comments --paginate
+               gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/comments --paginate   # PRs only
+               gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number || github.event.pull_request.number }}/reviews  --paginate   # PRs only
                ```
 
             2. From the combined response, identify entries where ALL of:
@@ -477,16 +529,313 @@ jobs:
           # for every host in the shared stats-allowlist.
           claude_args: '--allowed-tools "${{ steps.tools.outputs.allowed }}"'
 
+      # Fetch the PR's head SHA once, post-Claude, for the two
+      # downstream steps that both need it: the prose-post step's
+      # COMMITTED check and the "Re-request review" step's
+      # SHA_AFTER comparison. Without this shared step each would
+      # call `gh api pulls/$N` independently — two round-trips per
+      # PR-trigger run where one suffices. PR-context only (mirrors
+      # the "Capture PR head SHA before Claude" step above).
+      - name: Capture PR head SHA after Claude
+        id: head_after
+        if: always() && (github.event.pull_request.number || github.event.issue.pull_request)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
+          SHA=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      # Post Claude's final assistant message back to the source thread
+      # when no code was committed.
+      #
+      # Background: claude-code-action runs in `agent` mode whenever
+      # `prompt:` is set (we set it for the late-comment polling loop
+      # above). Agent mode skips the action's built-in machinery that
+      # tag mode uses to surface Claude's final response as a sticky
+      # GitHub comment — the action just runs the agent and assumes
+      # the workflow author handles output surfacing. We already added
+      # explicit pre/post steps for the analogous setup-branch +
+      # git-push gap (#788 / #794); this step closes the remaining
+      # gap for **prose** responses, where Claude's deliverable is
+      # text rather than commits and there's nothing else to surface.
+      # See PR #755 comment 4530859000 (2026-05-25): a math question
+      # ran a successful 60s / 16-turn Claude session that produced
+      # ~$0.19 of thinking and zero visible output, because the
+      # response lived in /home/runner/work/_temp/claude-execution-output.json
+      # until the runner tore down.
+      #
+      # When Claude HAS committed code, the commits themselves convey
+      # the work and the existing `Re-request review` / `Push branch
+      # and open draft PR` steps surface it; in that case posting
+      # Claude's running text on top would be noise — skipped via
+      # the COMMITTED check below.
+      - name: Post Claude's response if no code was committed
+        # The `steps.claude.outcome == 'success'` guard is deliberate:
+        # we only surface a *completed* session's response. A
+        # cancelled session (concurrency preemption — another run is
+        # taking over and will post its own response) or a timed-out
+        # one (partial, possibly-misleading output) is intentionally
+        # NOT posted. If surfacing partial output on cancellation
+        # ever proves useful, broaden to `!= 'skipped'` with a
+        # "(session interrupted)" footer.
+        #
+        # Skip on `@claude review` triggers that have PR context — the
+        # dispatch step below will fire claude-code-review.yml, which
+        # posts its own sticky review comment. Posting Claude's
+        # agent-session prose on top would double-comment the PR
+        # (the agent's internal "I'll review this PR" monologue, then
+        # the real review).
+        #
+        # The PR-context guard (`pull_request.number || issue.pull_request`)
+        # is load-bearing: without it, `@claude review` on a plain
+        # *issue* would skip the prose-post AND skip the dispatch
+        # (which has its own PR-context guard), losing the response
+        # entirely — the exact bug this PR fixes, re-introduced for
+        # this one trigger pattern. With the guard, plain-issue
+        # triggers fall through to the prose-post regardless of body.
+        #
+        # The `@claude review` predicate MUST stay in sync with the
+        # dispatch step's `if:` predicate. Note: `contains()` is
+        # case-sensitive, so `@Claude review` would not match here
+        # (or in the dispatch step). Standard GitHub `@`-mentions
+        # are lowercase so this matches the common case.
+        if: |
+          always() &&
+          steps.claude.outcome == 'success' &&
+          !(
+            (
+              contains(github.event.comment.body, '@claude review') ||
+              contains(github.event.review.body, '@claude review')
+            ) &&
+            (github.event.pull_request.number || github.event.issue.pull_request)
+          )
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENTITY_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+          ISSUE_BRANCH_STARTING_SHA: ${{ steps.issue_branch.outputs.starting_sha }}
+          PR_HEAD_BEFORE: ${{ steps.head_before.outputs.sha }}
+          PR_HEAD_AFTER: ${{ steps.head_after.outputs.sha }}
+        run: |
+          # Did Claude commit anything? Two cases:
+          #   - Issue triggers: the pre-step put us on a fresh
+          #     `claude/issue-N-*` branch and recorded its tip in
+          #     ISSUE_BRANCH_STARTING_SHA. Local HEAD vs. that SHA
+          #     tells us whether Claude committed.
+          #   - PR triggers: PR_HEAD_BEFORE captured the PR's remote
+          #     head SHA pre-Claude; PR_HEAD_AFTER (from the shared
+          #     "Capture PR head SHA after Claude" step) is the head
+          #     now. If they differ, Claude pushed. (Local HEAD is
+          #     `main` on PR triggers — actions/checkout pulls the
+          #     default branch for `issue_comment` events — so the
+          #     local-SHA check from the issue branch doesn't apply
+          #     here.)
+          COMMITTED=false
+          if [ -n "$ISSUE_BRANCH_STARTING_SHA" ]; then
+            CURRENT_LOCAL=$(git rev-parse HEAD)
+            if [ "$CURRENT_LOCAL" != "$ISSUE_BRANCH_STARTING_SHA" ]; then
+              COMMITTED=true
+            fi
+          fi
+          # Require a non-empty PR_HEAD_AFTER: if the "Capture PR head
+          # SHA after Claude" step's `gh api` failed (transient 5xx,
+          # rate limit), its output is "". Without the `-n` guard,
+          # "" != "$PR_HEAD_BEFORE" would be true and we'd wrongly
+          # conclude Claude committed and SKIP posting the prose —
+          # the exact data-loss this step exists to prevent. Defaulting
+          # to "not committed" on an unknown AFTER SHA errs toward
+          # posting (safe) rather than swallowing (lossy).
+          if [ -n "$PR_HEAD_BEFORE" ] && [ -n "$PR_HEAD_AFTER" ] && [ "$PR_HEAD_AFTER" != "$PR_HEAD_BEFORE" ]; then
+            COMMITTED=true
+          fi
+          if [ "$COMMITTED" = "true" ]; then
+            echo "Claude committed code; commits are the deliverable, skipping response-text post."
+            exit 0
+          fi
+
+          # Locate the execution-output JSON. Prefer the action's
+          # exported step output; fall back to the known default path
+          # in case the action version changes the output name.
+          FILE="${EXECUTION_FILE:-/home/runner/work/_temp/claude-execution-output.json}"
+          if [ ! -f "$FILE" ]; then
+            echo "::warning::No Claude execution output found at $FILE; nothing to post."
+            exit 0
+          fi
+
+          # Extract the assistant events from the execution-output JSON.
+          #
+          # Format robustness: the action's execution_file is a single
+          # JSON array of event objects (`[{...},{...}]`), NOT
+          # newline-delimited JSON as an earlier version of this step
+          # assumed. With `jq -s` (slurp), a single-array file becomes
+          # `[[...]]`, so a bare `.[] | select(.type==...)` indexes the
+          # inner *array* with `.type` and dies with "Cannot index array
+          # with string" (see run 26417479726, the first real run of
+          # this step after #805 merged). `flatten(1)` collapses that
+          # outer wrap so we iterate event objects either way — and it
+          # also tolerates true NDJSON (slurps to a flat array,
+          # flatten is a no-op) and a stray array element. The
+          # `type=="object"` guard then skips any non-object entry
+          # before `.type` is accessed (jq's `and` short-circuits).
+          # The same `flatten(1) | select(type=="object" ...)` prelude
+          # is repeated in the RESPONSE filter below — keep them in sync.
+
+          # Sanity-check that the file actually contains assistant-typed
+          # events. If it doesn't, the likely cause is an upstream
+          # schema change (the action renaming the event type), not a
+          # genuinely empty session — surface that distinctly rather
+          # than silently posting nothing.
+          ASSISTANT_COUNT=$(jq -rs 'flatten(1) | [.[] | select(type == "object" and .type == "assistant")] | length' < "$FILE")
+          if [ "$ASSISTANT_COUNT" = "0" ]; then
+            echo "::warning::No assistant-typed events in $FILE — the action's output schema may have changed (expected .type == \"assistant\"). Nothing to post."
+            exit 0
+          fi
+
+          # Grab the LAST assistant message's text-typed content blocks
+          # (a single message may interleave text and tool_use blocks;
+          # we want only the prose).
+          RESPONSE=$(jq -rs '
+            flatten(1)
+            | [.[] | select(type == "object" and .type == "assistant")]
+            | last
+            | (.message.content // [])
+            | map(select(.type == "text") | .text)
+            | join("\n\n")
+          ' < "$FILE")
+
+          if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
+            echo "::warning::Assistant events present but no text content; nothing to post."
+            exit 0
+          fi
+
+          # GitHub comment bodies are capped at 65,536 *bytes* in the
+          # stored value, so truncate by bytes (not characters). 60k
+          # leaves ~5.5k headroom for the footer.
+          #
+          # Both the guard AND the truncation are byte-based:
+          # - Guard: `wc -c` counts bytes. Bash's `${#var}` counts
+          #   characters under UTF-8 locales (the default on GitHub
+          #   runners), so a response with 30k Chinese characters
+          #   (~90k bytes) would not trip a 60k character guard,
+          #   and the truncation below would never fire — but the
+          #   subsequent `gh issue comment` would 422 on the
+          #   oversized body. Counting bytes here closes that hole.
+          # - Truncation: `head -c` is strictly byte-based, so the
+          #   cut respects the 65,536-byte cap.
+          # Caveat: a byte cut may slice the final character mid-
+          # codepoint, producing a garbled trailing byte sequence
+          # right before the footer. Acceptable for a corner case
+          # (responses >60k bytes are rare); the footer still
+          # renders and the full text is one click away in the
+          # workflow run log.
+          MAX_LEN=60000
+          BYTE_LEN=$(printf '%s' "$RESPONSE" | wc -c)
+          if [ "$BYTE_LEN" -gt "$MAX_LEN" ]; then
+            RESPONSE="$(printf '%s' "$RESPONSE" | head -c "$MAX_LEN")
+
+          … (response truncated at ${MAX_LEN} bytes; full text in the [workflow run](${RUN_URL}))"
+          fi
+
+          BODY="$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")"
+          # When the trigger was an inline review comment, reply IN-THREAD to
+          # it (pulls/.../comments/<id>/replies) so the conversation stays
+          # anchored to the diff line. Every other trigger gets a top-level
+          # `gh issue comment` (issue and PR-conversation comments share the
+          # same endpoint). Fall back to top-level if the reply API fails
+          # (e.g. the parent review comment was deleted).
+          #
+          # The /replies endpoint requires the THREAD-ROOT comment id; a
+          # reply id returns 422. When the trigger is itself a reply,
+          # `in_reply_to_id` holds the root id (it is null at the thread
+          # root), so prefer it and fall back to `comment.id`.
+          REPLY_TARGET_ID="${{ github.event.comment.in_reply_to_id || github.event.comment.id }}"
+          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+            if jq -n --arg b "$BODY" '{body: $b}' \
+                 | gh api --method POST "repos/${{ github.repository }}/pulls/$ENTITY_NUMBER/comments/$REPLY_TARGET_ID/replies" --input - >/dev/null; then
+              exit 0
+            fi
+            echo "::warning::In-thread reply failed; falling back to a top-level comment."
+          fi
+          gh issue comment "$ENTITY_NUMBER" --body "$BODY" \
+            || echo "::warning::Could not post Claude's response back to the source thread."
+
+      # Dispatch the dedicated reviewer workflow when the triggering
+      # comment looks like an explicit review request.
+      #
+      # Background: `claude-code-review.yml` is the dedicated reviewer
+      # (sticky-comment + delete-prior-sticky pattern, inline review
+      # threads, etc.) and only triggers on `pull_request` events
+      # (opened/synchronize/ready_for_review/reopened) and explicit
+      # `workflow_dispatch`. `issue_comment` is NOT in its trigger
+      # list. So when a user types "@claude review" on a PR, the
+      # event fires *this* workflow (an agent-mode run that emits
+      # prose via the post-step above) rather than the reviewer.
+      # See PR #802 comment 4530845824 (2026-05-25): "@claude review"
+      # produced a 125s agent session with no visible review output
+      # — nothing was dispatched, nothing was posted.
+      #
+      # The earlier `Re-request review and dispatch code review if
+      # Claude pushed commits` step below dispatches the reviewer
+      # only when Claude pushes new commits — useful for the
+      # iterate-on-the-diff loop, but it doesn't cover the case where
+      # the user just wants a fresh review without code changing
+      # hands. This step closes that gap by dispatching the reviewer
+      # whenever the triggering comment body literally contains
+      # `@claude review`. Both paths can fire on the same run if a
+      # `@claude review` comment also produces commits; the
+      # reviewer's own concurrency group cancels the duplicate so
+      # only the freshest diff is reviewed.
+      #
+      # `contains()` is a SUBSTRING match (not word-boundary): bodies
+      # like `@claude review again` or `@claude reviewer` also match.
+      # That's intentionally lenient — the cost of a spurious match is
+      # one extra reviewer run, which the reviewer's concurrency group
+      # cancels. Do NOT tighten this to `startsWith` or a word-boundary
+      # check without re-checking the paired skip-predicate on the
+      # prose-post step above, which must stay in sync.
+      #
+      # No `steps.claude.outcome == 'success'` guard here (unlike the
+      # prose-post step): a review dispatch doesn't depend on the
+      # agent session's output, so we want it to fire on `@claude
+      # review` even if the agent step was skipped or cancelled
+      # (e.g., a concurrency cancellation). The reviewer reviews the
+      # PR's current diff regardless of what the agent run did.
+      - name: Dispatch claude-code-review.yml on @claude review comment
+        if: |
+          always() &&
+          (github.event.pull_request.number || github.event.issue.pull_request) &&
+          (
+            contains(github.event.comment.body, '@claude review') ||
+            contains(github.event.review.body, '@claude review')
+          )
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
+          echo "Dispatching claude-code-review.yml for PR #$PR_NUMBER (@claude review comment)."
+          gh workflow run claude-code-review.yml -f pr_number="$PR_NUMBER" \
+            || echo "::warning::Could not dispatch claude-code-review.yml; review will not auto-run."
+
       - name: Re-request review and dispatch code review if Claude pushed commits
         if: always() && (github.event.pull_request.number || github.event.issue.pull_request) && steps.head_before.outputs.sha != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SHA_BEFORE: ${{ steps.head_before.outputs.sha }}
+          # Reuse the SHA already fetched by "Capture PR head SHA after
+          # Claude" rather than calling `gh api pulls/$N` a second time.
+          SHA_AFTER: ${{ steps.head_after.outputs.sha }}
         run: |
           PR_NUMBER="${{ github.event.pull_request.number || github.event.issue.number }}"
-          SHA_AFTER=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER" --jq '.head.sha')
           echo "before=$SHA_BEFORE  after=$SHA_AFTER"
-          if [ "$SHA_AFTER" != "$SHA_BEFORE" ]; then
+          # Require a non-empty SHA_AFTER: if "Capture PR head SHA
+          # after Claude" failed, its output is "" and a bare
+          # `"" != "$SHA_BEFORE"` would be true, dispatching a
+          # spurious review against an unchanged diff. Defaulting to
+          # "no new commits" on an unknown AFTER SHA errs toward not
+          # dispatching (cheap miss) rather than a wasted review run.
+          if [ -n "$SHA_AFTER" ] && [ "$SHA_AFTER" != "$SHA_BEFORE" ]; then
             echo "Claude pushed new commits; re-requesting review and dispatching code review."
             gh api -X POST \
               "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
@@ -523,6 +872,14 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          # Sweep changes Claude staged or left untracked but didn't commit, so the HEAD-unchanged check below doesn't drop them.
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "claude[bot]"
+            git config user.email "claude[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: auto-commit residual staged/untracked changes from @claude session" \
+              || { echo "::error::auto-commit of residual @claude changes failed"; exit 1; }
+          fi
           CURRENT_SHA=$(git rev-parse HEAD)
           if [ "$CURRENT_SHA" = "$STARTING_SHA" ]; then
             echo "No new commits on $BRANCH — Claude produced no changes; skipping push/PR."

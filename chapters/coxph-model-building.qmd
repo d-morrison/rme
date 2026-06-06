@@ -30,6 +30,7 @@
 #| label: load-hodg
 library(dplyr)
 library(survival)
+library(survminer)
 data(hodg, package = "KMsurv")
 hodg2 <- hodg |>
   as_tibble() |>
@@ -484,36 +485,47 @@ vector: $\ell'(\beta;y_i)$
     residual, which like the score residual is a vector.
 :::
 
+{{< include _subfiles/proportional-hazards-models/_def-estimated-risk-score.qmd >}}
+
 ### Schoenfeld residuals
 
--   There is a Schoenfeld residual for each subject $i$ with an event
-    (not censored) and for each predictor $x_{k}$.
+:::{#def-schoenfeld-residual}
 
--   At the event time $t$ for that subject, there is a risk set $R$, and
-    each subject $j$ in the risk set has a risk coefficient $\theta_j$
-    and also a value $x_{jk}$ of the predictor.
+#### Schoenfeld Residual
 
--   The Schoenfeld residual is the difference between $x_{ik}$ and the
-    risk-weighted average of all the $x_{jk}$ over the risk set.
+For each subject $i$ who experienced an event (not censored)
+and for each predictor $k$,
+the **Schoenfeld residual** is defined as [@grambsch1994proportional]:
 
 $$
-r^S_{ik} = 
-x_{ik}-\frac{\sum_{k\in R}x_{jk}\theta_k}{\sum_{k\in R}\theta_k}
+r^S_{ik} =
+x_{ik}-\frac{\sum_{j\in \risksetf{t_i}} x_{jk}\,\hth\paren{\vx_j}}{\sum_{j\in \risksetf{t_i}} \hth\paren{\vx_j}}
 $$
 
-This residual measures how typical the individual subject is with
-respect to the covariate at the time of the event. Since subjects should
-fail more or less uniformly according to risk, the Schoenfeld residuals
-should be approximately level over time, not increasing or decreasing.
+where $\risksetf{t_i}$ is the [risk set](intro-to-survival-analysis.qmd#def-risk-set) at event time $t_i$ of subject $i$,
+$x_{jk}$ is the value of predictor $k$ for subject $j$,
+and $\hth\paren{\vx_j}$ is the estimated risk score (@def-estimated-risk-score) for subject $j$.
 
-We can test this with the correlation with time on some scale, which
-could be the time itself, the log time, or the rank in the set of
-failure times.
+:::
 
-The default is to use the KM curve as a transform, which is similar to
-the rank but deals better with censoring.
+::: notes
+Intuitively,
+$r^S_{ik}$ measures how unusual subject $i$'s covariate value is,
+relative to the risk-weighted average among those at risk when subject $i$ failed.
+If the proportional hazards assumption holds,
+these residuals should show no systematic trend over time.
+A trend signals non-proportionality.
+:::
 
-The `cox.zph()` function implements a score test proposed in  @grambsch1994proportional.
+{{< slidebreak >}}
+
+::: notes
+We can test for such a trend
+with the correlation between Schoenfeld residuals and a function of time.
+The default in `cox.zph()` uses the KM survival curve as a transform,
+which handles censoring better than raw ranks.
+The `cox.zph()` function implements a score test proposed in @grambsch1994proportional.
+:::
 
 ```{r}
 hodg_zph <- cox.zph(hodg_cox1)
@@ -651,34 +663,58 @@ we don't see lack of fit using this procedure.
 
 ## Martingale Residuals
 
-The **martingale residuals** are a slight modification of the Cox-Snell
-residuals. If the censoring indicator is $\delta_i$, then
-$$r^M_i=\delta_i-r^{CS}_i$$ These residuals can be interpreted as an
-estimate of the excess number of events seen in the data but not
-predicted by the model. We will use these to examine the functional
-forms of continuous covariates.
+:::{#def-martingale-residual}
 
-::: content-hidden
-### Martingale
+#### Martingale Residual
 
-Originally, a martingale referred to a betting strategy where you bet
-\$1 on the first play, then you double the bet if you lose and continue
-until you win. This seems like a sure thing, because at the end of each
-series when you finally win, you are up \$1. For example,
-$-1-2-4-8+16=1$. But this assumes that you have infinite resources.
-Really, you have a large probability of winning \$1, and a small
-probability of losing everything you have, kind of the opposite of a
-lottery.
+The **martingale residual** for subject $i$ is:
+
+$$r^M_i = \delta_i - r^{CS}_i$$
+
+where $\delta_i = 1$ if subject $i$ experienced the event ($0$ if censored)
+and $r^{CS}_i = \hat{\cuhaz}(t_i \mid \vx_i)$ is the Cox-Snell residual
+(@def-CS-resid) [@klein2003survival, §11.3].
+
+:::
+
+::: {.callout-note}
+Martingale residuals estimate the excess number of events in the data
+relative to what the model predicted.
+They are bounded above by $1$
+(a subject who died very early has residual close to $1 - 0 = 1$)
+but unbounded below
+(a long-lived censored subject in a high-risk group can have a very large negative residual).
+This asymmetry makes it harder to spot unexpectedly early deaths,
+motivating the deviance residual.
+
+We will use martingale residuals to examine the functional forms of continuous covariates.
+:::
+
+::: {.callout-note}
+
+#### The Martingale Connection
+
+Originally, a martingale referred to a betting strategy
+where you bet \$1 on the first play,
+then you double the bet if you lose
+and continue until you win.
+This seems like a sure thing,
+because at the end of each series when you finally win, you are up \$1.
+For example, $-1-2-4-8+16=1$.
+But this assumes that you have infinite resources.
+Really, you have a large probability of winning \$1,
+and a small probability of losing everything you have,
+kind of the opposite of a lottery.
 
 martingale
 
 :   In probability, a **martingale** is a sequence of random variables
-    such that the expected value of the next event at any time is the
-    present observed value, and that no better predictor can be derived
-    even with all past values of the series available. At least to a
-    close approximation, the stock market is a martingale. Under the
-    assumptions of the proportional hazards model, the martingale
-    residuals ordered in time form a martingale.
+    such that the expected value of the next event at any time is the present observed value,
+    and that no better predictor can be derived even with all past values of the series available.
+    At least to a close approximation, the stock market is a martingale.
+    Under the assumptions of the proportional hazards model,
+    the martingale residuals ordered in time form a martingale.
+
 :::
 
 ### Using Martingale Residuals
@@ -796,14 +832,33 @@ way to linear regression, logistic regression, or Poisson regression.
 
 ### Deviance Residuals
 
+:::{#def-deviance-residual}
+
+#### Deviance Residual
+
+The **deviance residual** for subject $i$ is defined as
+[@klein2003survival, §11.3]:
+
 $$
-\begin{aligned}
-r_i^D &= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(\delta_i-r_i^M)  \right]}\\
-r_i^D &= \textrm{sign}(r_i^M)\sqrt{-2\left[ r_i^M+\delta_i\ln(r_i^{CS})  \right]}
-\end{aligned}
+\ba
+r_i^D &= \signf{r_i^M}\sqrt{-2\sb{r_i^M+\delta_i\ln\paren{\delta_i-r_i^M}}}\\
+      &= \signf{r_i^M}\sqrt{-2\sb{r_i^M+\delta_i\ln\paren{r_i^{CS}}}}
+\ea
 $$
 
-Roughly centered on 0 with approximate standard deviation 1.
+where $\signf{\cdot}$ is the sign function,
+$r_i^M$ is the martingale residual (@def-martingale-residual),
+and $r_i^{CS}$ is the Cox-Snell residual (@def-CS-resid).
+
+:::
+
+::: notes
+Deviance residuals are roughly centered on 0 with approximate standard deviation 1.
+By symmetrizing the skewed martingale residuals,
+they make it equally easy to identify
+unexpectedly early events (large positive $r^D_i$)
+and unexpectedly long survival (large negative $r^D_i$).
+:::
 
 ### Computing residuals
 
@@ -815,42 +870,74 @@ hodg_preds <- predict(hodg_cox2) # linear predictor
 ```
 
 ```{r}
+#| label: fig-martingale-lp
 #| fig-cap: "Martingale Residuals vs. Linear Predictor"
-plot(hodg_preds,
-  hodg_mart,
-  xlab = "Linear Predictor",
-  ylab = "Martingale Residual"
-)
+#| code-fold: true
+data.frame(lp = hodg_preds, martingale = hodg_mart) |>
+  ggplot(aes(x = lp, y = martingale)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  xlab("Linear Predictor") +
+  ylab("Martingale Residual")
 ```
 
-The smallest three martingale residuals in order are observations 1, 29,
-and 18.
+The smallest three martingale residuals in order are observations 1, 29, and 18.
 
 ```{r}
+#| label: fig-deviance-lp
 #| fig-cap: "Deviance Residuals vs. Linear Predictor"
-plot(
-  hodg_preds, hodg_dev,
-  xlab = "Linear Predictor",
-  ylab = "Deviance Residual"
-)
+#| code-fold: true
+data.frame(lp = hodg_preds, deviance = hodg_dev) |>
+  ggplot(aes(x = lp, y = deviance)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  xlab("Linear Predictor") +
+  ylab("Deviance Residual")
 ```
 
-The two largest deviance residuals are observations 1 and 29. Worth
-examining.
+The two largest deviance residuals are observations 1 and 29.
+Worth examining.
 
 ### dfbeta
 
--   dfbeta is the approximate change in the coefficient vector if that
-    observation were dropped
+:::{#def-dfbeta}
 
--   dfbetas is the approximate change in the coefficients, scaled by the
-    standard error for the coefficients.
+#### dfbeta and dfbetas
+
+-   **dfbeta** for observation $i$ is the approximate change in the
+    coefficient vector $\hvb$ if subject $i$ were removed from the data:
+    $$\text{dfbeta}_i \approx \hvb - \hvb_{(-i)}$$
+    computed via a one-step Newton approximation rather than a full refit
+    [@klein2003survival, §11.4].
+
+-   **dfbetas** for observation $i$ standardizes by the estimated standard
+    error of each coefficient:
+    $$\text{dfbetas}_{ik} = \text{dfbeta}_{ik} / \hse{\hb_k}$$
+
+:::
+
+::: notes
+A useful rule of thumb is to examine the observations whose dfbeta values
+stand out from the rest — those whose removal would shift a coefficient
+the most — analogous to influence diagnostics such as Cook's distance in
+linear regression.
+:::
 
 #### Graft type
 
 ```{r}
+#| label: fig-dfbeta-gtype
 #| fig-cap: "dfbeta Values by Observation Order for Graft Type"
-plot(hodg_dfb[, 1], xlab = "Observation Order", ylab = "dfbeta for Graft Type")
+#| code-fold: true
+data.frame(obs = seq_len(nrow(hodg_dfb)), dfbeta = hodg_dfb[, 1]) |>
+  ggplot(aes(x = obs, y = dfbeta)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  xlab("Observation Index") +
+  ylab("dfbeta for Graft Type")
 ```
 
 The smallest dfbeta for graft type is observation 1.
@@ -858,56 +945,74 @@ The smallest dfbeta for graft type is observation 1.
 #### Disease type
 
 ```{r}
+#| label: fig-dfbeta-dtype
 #| fig-cap: "dfbeta Values by Observation Order for Disease Type"
-plot(hodg_dfb[, 2],
-  xlab = "Observation Order",
-  ylab = "dfbeta for Disease Type"
-)
+#| code-fold: true
+data.frame(obs = seq_len(nrow(hodg_dfb)), dfbeta = hodg_dfb[, 2]) |>
+  ggplot(aes(x = obs, y = dfbeta)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  xlab("Observation Index") +
+  ylab("dfbeta for Disease Type")
 ```
 
-The smallest two dfbeta values for disease type are observations 1 and
-16.
+The smallest two dfbeta values for disease type are observations 1 and 16.
 
 #### Karnofsky score
 
 ```{r}
+#| label: fig-dfbeta-score
 #| fig-cap: "dfbeta Values by Observation Order for Karnofsky Score"
-plot(hodg_dfb[, 3],
-  xlab = "Observation Order",
-  ylab = "dfbeta for Karnofsky Score"
-)
+#| code-fold: true
+data.frame(obs = seq_len(nrow(hodg_dfb)), dfbeta = hodg_dfb[, 3]) |>
+  ggplot(aes(x = obs, y = dfbeta)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  xlab("Observation Index") +
+  ylab("dfbeta for Karnofsky Score")
 ```
 
-The two highest dfbeta values for score are observations 1 and 18. The
-next three are observations 17, 29, and 19. The smallest value is
-observation 2.
+The two highest dfbeta values for score are observations 1 and 18.
+The next three are observations 17, 29, and 19.
+The smallest value is observation 2.
 
 #### Waiting time (dichotomized)
 
 ```{r}
+#| label: fig-dfbeta-wt2
 #| fig-cap: "dfbeta Values by Observation Order for Waiting Time (dichotomized)"
-plot(
-  hodg_dfb[, 4],
-  xlab = "Observation Order",
-  ylab = "dfbeta for `Waiting Time < 80`"
-)
+#| code-fold: true
+data.frame(obs = seq_len(nrow(hodg_dfb)), dfbeta = hodg_dfb[, 4]) |>
+  ggplot(aes(x = obs, y = dfbeta)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  xlab("Observation Index") +
+  ylab("dfbeta for Waiting Time < 80")
 ```
 
-The two large values of dfbeta for dichotomized waiting time are
-observations 15 and 16. This may have to do with the discretization of
-waiting time.
+The two large values of dfbeta for dichotomized waiting time are observations 15 and 16.
+This may have to do with the discretization of waiting time.
 
 #### Interaction: graft type and disease type
 
 ```{r}
+#| label: fig-dfbeta-interaction
 #| fig-cap: "dfbeta Values by Observation Order for dtype:gtype"
-plot(hodg_dfb[, 5],
-  xlab = "Observation Order",
-  ylab = "dfbeta for dtype:gtype"
-)
+#| code-fold: true
+data.frame(obs = seq_len(nrow(hodg_dfb)), dfbeta = hodg_dfb[, 5]) |>
+  ggplot(aes(x = obs, y = dfbeta)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  xlab("Observation Index") +
+  ylab("dfbeta for dtype:gtype")
 ```
 
-The two largest values are observations 1 and 16. The smallest value is observation 35.
+The two largest values are observations 1 and 16.
+The smallest value is observation 35.
 
 
 | Diagnostic                 | Observations to Examine |
@@ -992,6 +1097,169 @@ hodg_cox2 |>
 
 For Non-Hodgkin's, the allogenic graft is better. For Hodgkin's, the
 autologous graft is much better.
+
+## Addressing Diagnostic Issues Through Model Modification
+
+::: notes
+The diagnostics above reveal two key concerns:
+
+1. **Non-proportionality** of the `gtype:dtype` interaction and `score`,
+   flagged by `cox.zph` on the original model `hodg_cox1`.
+2. **Influential observations** (from the `hodg_cox2` dfbeta diagnostics):
+   subjects 1, 15, 16, 18, and 29 have large dfbeta values for specific coefficients.
+
+This section illustrates how to address the non-proportionality finding
+and verifies that the revision actually helps.
+:::
+
+
+### Checking PH for `hodg_cox2`
+
+::: notes
+Let's verify whether non-proportionality persists in `hodg_cox2`
+(which already dichotomized `wtime`):
+:::
+
+```{r}
+#| label: zph-hodg-cox2-print
+hodg_cox2_zph <- cox.zph(hodg_cox2)
+print(hodg_cox2_zph)
+```
+
+```{r}
+#| label: fig-zph-hodg-cox2
+#| fig-cap: "Scaled Schoenfeld residuals for hodg_cox2"
+#| code-fold: true
+ggcoxzph(hodg_cox2_zph)
+```
+
+### Strategy: stratify by disease type
+
+::: notes
+The diagnostics suggest that the hazard-ratio profile for disease type
+(and its interaction with graft type) is not constant over time.
+One remedy is a **stratified Cox model**
+that allows separate baseline hazards for each disease type,
+absorbing between-disease trajectory differences into two free baseline functions,
+while still estimating proportional effects of graft type, Karnofsky score, and waiting time.
+:::
+
+```{r}
+#| label: hodg-cox3-summary
+hodg_cox3 <- coxph(
+  formula = surv ~ gtype + score + wt2 + strata(dtype),
+  data = hodg2
+)
+summary(hodg_cox3)
+```
+
+### Verifying the fix: `cox.zph` on the stratified model
+
+```{r}
+#| label: zph-hodg-cox3-print
+hodg_cox3_zph <- cox.zph(hodg_cox3)
+print(hodg_cox3_zph)
+```
+
+```{r}
+#| label: fig-zph-hodg-cox3
+#| fig-cap: "Scaled Schoenfeld residuals for stratified model hodg_cox3"
+#| code-fold: true
+ggcoxzph(hodg_cox3_zph)
+```
+
+::: notes
+Stratifying by disease type removes the between-disease baseline difference
+from the proportional-hazards stratum,
+so the remaining terms should satisfy PH more closely.
+:::
+
+### Verifying the fix: residual diagnostics
+
+```{r}
+#| label: compute-hodg3-resid
+hodg3_dev <- residuals(hodg_cox3, type = "deviance")
+hodg3_dfb <- residuals(hodg_cox3, type = "dfbeta")
+hodg3_lp  <- predict(hodg_cox3)
+```
+
+```{r}
+#| label: fig-deviance-hodg3
+#| fig-cap: "Deviance residuals vs. linear predictor, `hodg_cox3`"
+#| code-fold: true
+data.frame(lp = hodg3_lp, deviance = hodg3_dev) |>
+  ggplot(aes(x = lp, y = deviance)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  xlab("Linear Predictor") +
+  ylab("Deviance Residual")
+```
+
+```{r}
+#| label: fig-dfbeta-hodg3
+#| fig-cap: "dfbeta values for stratified model hodg_cox3"
+#| code-fold: true
+hodg3_dfb_mat <- as.matrix(hodg3_dfb)
+colnames(hodg3_dfb_mat) <- names(coef(hodg_cox3))
+data.frame(
+  obs = rep(seq_len(nrow(hodg3_dfb_mat)), times = ncol(hodg3_dfb_mat)),
+  coefficient = rep(colnames(hodg3_dfb_mat), each = nrow(hodg3_dfb_mat)),
+  dfbeta = as.vector(hodg3_dfb_mat)
+) |>
+  ggplot(aes(x = obs, y = dfbeta)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~coefficient, scales = "free_y") +
+  theme_bw() +
+  xlab("Observation Index") +
+  ylab("dfbeta")
+```
+
+::: notes
+Comparing these panels with the subjects flagged earlier from the
+`hodg_cox2` diagnostics (1, 15, 16, 18, and 29):
+subjects 1 and 18 remain the most influential observations for the
+Karnofsky `score` coefficient, and subject 15 is still the most
+influential for dichotomized waiting time,
+so stratifying by disease type did not neutralize their leverage on the
+terms that remain in the model.
+Subject 16, by contrast, is no longer prominent:
+its earlier influence acted largely through the graft-by-disease-type
+interaction, which the stratified model absorbs into the
+disease-specific baseline hazards.
+:::
+
+### Comparing models
+
+```{r}
+#| label: tbl-model-compare
+#| tbl-cap: "Comparison of unstratified and stratified Cox PH models"
+#| code-fold: true
+data.frame(
+  Model = c(
+    "hodg_cox2: gtype*dtype + score + wt2",
+    "hodg_cox3: gtype + score + wt2 + strata(dtype)"
+  ),
+  Parameters = c(length(coef(hodg_cox2)), length(coef(hodg_cox3)))
+) |>
+  knitr::kable(digits = 2)
+```
+
+::: notes
+We deliberately omit log-likelihood and AIC from this comparison:
+the partial likelihood of the stratified model `hodg_cox3`
+is computed within disease-type strata and excludes the between-stratum
+comparisons that `hodg_cox2`'s partial likelihood includes,
+so the two are not on a common scale and their AIC values are not comparable.
+
+The stratified model resolves the PH violation
+by allowing disease-specific baseline hazards.
+The trade-off: we can no longer directly estimate a disease-type hazard ratio,
+as that effect is absorbed into the baseline functions.
+The graft-type coefficient remains interpretable as the
+within-stratum hazard ratio comparing autologous to allogeneic grafts.
+:::
 
 ## Stratified survival models
 

@@ -330,12 +330,21 @@ At 5 years, 8% of participants had experienced the event.
 Compute the values in a code chunk (using `#| include: false` if needed),
 then reference them with inline `` `r expr` `` expressions.
 
-## Parentheticals and Asides in Quarto
+## Notes Divs in Quarto Slides
 
-When parenthetical references or short asides are supplementary
-(for example, `c.f. @dunn2018generalized §2.10.3`),
-place them in a `::: notes` div
-instead of leaving them inline in the main narrative.
+Wrap content in `::: notes` divs in two situations:
+
+1. **Parenthetical references and short asides** that are supplementary
+   (for example, `c.f. @dunn2018generalized §2.10.3`) —
+   place them in a `::: notes` div
+   instead of leaving them inline in the main narrative.
+
+2. **Large explanatory text blocks** — multi-sentence prose that provides
+   intuition, context, or derivation details —
+   should be wrapped in `::: notes` when the surrounding content is
+   structured for slide presentation.
+   Use `::: notes` for any block that would overflow or distract on a slide;
+   leave brief one- or two-line slide headers and summary bullet points unwrapped.
 
 ## Fenced Divs and List Indentation in Quarto
 
@@ -603,6 +612,21 @@ Residual and deviation helper macros include:
   (e.g., `\vxs` expands to `{{\vec{x}^*}}` which has `^*`), wrap it in parentheses first:
   use `\tp{(\vxs)}` not `\tp{\vxs}`.
   This avoids LaTeX "Double superscript" errors.
+
+**Ratio vs. factor macros**:
+
+- **Ratios** compare two quantities. Use the *generic* `\ratio` / `\ratiof` macro when the
+  inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — the type of ratio
+  is clear from the inputs. For example, an odds ratio of two odds is `\ratio(\odds_1, \odds_2)`,
+  **not** `\ror(\odds_1, \odds_2)`.
+- Use the *type-subscripted* ratio macros (`\ror` for odds ratios, `\hazratio`/`\hr` for hazard
+  ratios, and `\rateratio`, `\riskratio`, `\prevratio`, `\cuhazratio`, …) only when the inputs are
+  **covariate patterns** (e.g. `\ror(\vx, \vxs)`, `\hr(t \mid \vx : \vxs)`), where the subscript
+  is needed to indicate which kind of ratio it is.
+- **Factors** compare **one** covariate pattern to the implicit baseline pattern. Use the
+  type-subscripted factor macros (`\hazfactor`, `\oddsfactor`, …; function forms `\hazfactorf` /
+  `\hazff`, …) — e.g. the Cox risk score `\hazfactor(\vx)`. Factors always take a covariate
+  pattern, so they keep their subscript.
 
 **Vector–scalar product ordering** (for dimensional clarity):
 
@@ -992,3 +1016,4 @@ spelling::spell_check_files("path/to/modified/file.qmd")
 - **If it's your responsibility**: Fix the issue and re-run the workflow
 - **If it's NOT your responsibility**: Document it in your PR description and notify the repository maintainer
 - **Never** fix unrelated pre-existing issues - focus on your changes only
+

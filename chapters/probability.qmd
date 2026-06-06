@@ -71,6 +71,7 @@ and underpins the @thm-total-prob for countable partitions.
 ---
 
 :::{#thm-prob-subset}
+#### Probability of a subset's intersection
 If $A$ and $B$ are statistical events and $A\subseteq B$, then $\Pr(A \cap B) = \Pr(A)$.
 :::
 
@@ -83,6 +84,7 @@ Left to the reader for now.
 ---
 
 :::{#thm-total-prob-1}
+#### An event and its complement sum to 1
 $$\Pr(A) + \Pr(\neg A) = 1$$
 :::
 
@@ -95,6 +97,7 @@ By properties 2 and 3 of @def-probability.
 ---
 
 :::{#cor-p-neg0}
+#### Complement rule
 $$\Pr(\neg A) = 1 - \Pr(A)$$
 :::
 
@@ -107,6 +110,7 @@ By @thm-total-prob-1 and algebra.
 ---
 
 :::{#cor-p-neg}
+#### Complement rule in probability ($\pi$) notation
 
 If the probability of an outcome $A$ is $\Pr(A)=\pi$,
 then the probability that $A$ does not occur is:
@@ -452,6 +456,61 @@ $$
 
 {{< include _subfiles/probability/_thm-surv-mean.qmd >}}
 
+::: proof
+
+We prove the continuous case, in which $T$ has a density $\pdf$.
+The result follows from applying Tonelli's
+theorem (hypothesis (a) of
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli)) to the function
+$g(t, u) = \pdf(u) \cdot \indicp{0 \le t \le u}$ on the product space
+$[0, \infty) \times [0, \infty)$: $g$ is nonnegative everywhere and
+vanishes outside the (unbounded) triangular region
+$D = \{(t, u) : 0 \le t \le u < \infty\}$, so the iterated integrals
+over $D$ are exchangeable.
+
+Since $\pdf(u) \ge 0$, hypothesis (a) of
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli)
+(the nonnegative case, **Tonelli's theorem**) applies, and we may
+exchange the order of integration over $D$:
+
+$$
+\ba
+\E{T}
+&= \int_{u=0}^{\infty} u\,\pdf(u)\,du\\
+&= \int_{u=0}^{\infty}\paren{\int_{t=0}^{u} 1\,dt}\pdf(u)\,du\\
+&= \int_{u=0}^{\infty}\int_{t=0}^{u} \pdf(u)\,dt\,du\\
+&= \int_{t=0}^{\infty}\int_{u=t}^{\infty} \pdf(u)\,du\,dt\\
+&= \int_{t=0}^{\infty}\P(T>t)\,dt\\
+&= \int_{t=0}^{\infty}\surv(t)\,dt.
+\ea
+$$
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-fubini-survfn}
+
+#### Mean of an exponential random variable via survival function
+
+Let $T \sim \mathrm{Exponential}(\lambda)$, so $\surv(t) = \ef{-\lambda t}$
+for $t \ge 0$.
+By @thm-surv-mean:
+
+$$
+\ba
+\E{T}
+&= \int_0^\infty \surv(t)\,dt\\
+&= \int_0^\infty \ef{-\lambda t}\,dt\\
+&= \sb{-\frac{1}{\lambda}\ef{-\lambda t}}_0^\infty\\
+&= \frac{1}{\lambda},
+\ea
+$$
+
+confirming the standard result $\E{T} = 1/\lambda$.
+
+:::
+
 ---
 
 :::{#thm-lotus}
@@ -561,40 +620,417 @@ $\E{Y \mid X} = g(X)$ where $g(x) \eqdef \E{Y \mid X = x}$.
 
 :::
 
----
+## Fubini–Tonelli for expectations
 
-:::{#thm-fubini}
+The [Riemann version of Fubini's theorem](math-prereqs.qmd#thm-fubini),
+stated in the math-prereqs chapter,
+lets us switch the order of integration for
+continuous integrands on simple regions.
+For expectations against probability measures we use its
+[measure-theoretic form](math-prereqs.qmd#thm-fubini-tonelli),
+which holds on any σ-finite measure space.
+The σ-finiteness hypothesis is automatic for probability measures
+(every probability measure is finite, hence σ-finite),
+so [Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli)
+yields the corollary below directly.
 
-### Fubini-Tonelli theorem
+{{< slidebreak >}}
 
-Let $A, B \subseteq \mathbb{R}$ be (possibly unbounded) intervals,
-and let $f : A \times B \to \mathbb{R}$ be a measurable function.
+:::{#cor-fubini-joint}
+
+### Joint-distribution form (without independence; corollary of Fubini–Tonelli)
+
+Let $(X, Y)$ be jointly distributed random variables
+whose joint distribution has a density $f_{X,Y}$
+with respect to a product of σ-finite reference measures
+$\mu_X \otimes \mu_Y$ on $\rangef{X} \times \rangef{Y}$,
+and let $h : \rangef{X} \times \rangef{Y} \to \mathbb{R}$ be measurable.
 If either
 
-(a) $f(x, y) \ge 0$ for all $(x, y) \in A \times B$ (**Tonelli's theorem**), or
+(a) $h(X, Y) \ge 0$ almost surely, or
 
-(b) $\iint_{A \times B} \abs{f(x, y)}\,dx\,dy < \infty$ (**Fubini's theorem**),
+(b) $\E{\abs{h(X, Y)}} < \infty$,
 
-then both iterated integrals are equal to the double integral:
+then the expectation of $h(X, Y)$ can be written as an iterated integral
+against $f_{X,Y}$, with the order of integration exchangeable:
 
-$$\int_A \paren{\int_B f(x, y)\,dy}\,dx
-= \int_B \paren{\int_A f(x, y)\,dx}\,dy
-= \iint_{A \times B} f(x, y)\,dx\,dy.$$
+$$
+\ba
+\E{h(X, Y)}
+&= \int_{\rangef{X}}\paren{\int_{\rangef{Y}} h(x, y)\,f_{X,Y}(x, y)\,d\mu_Y(y)}\,d\mu_X(x)
+\\&= \int_{\rangef{Y}}\paren{\int_{\rangef{X}} h(x, y)\,f_{X,Y}(x, y)\,d\mu_X(x)}\,d\mu_Y(y).
+\ea
+$$
 
-In particular, suppose $D \subseteq \mathbb{R}^2$ can be written as both
-$D = \{(x, y) : a \le x \le b,\; g_1(x) \le y \le g_2(x)\}$
-and $D = \{(x, y) : c \le y \le d,\; h_1(y) \le x \le h_2(y)\}$
-(with $a, b, c, d$ possibly infinite).
-Extend $f$ by zero outside $D$ to the enclosing rectangle $[a, b] \times [c, d]$,
-so the main statement applies on a product domain.
-Then, under either hypothesis above applied to $f$ on $D$:
+The choice of reference measures covers three cases:
 
-$$\int_{a}^{b}\int_{g_1(x)}^{g_2(x)} f(x, y)\,dy\,dx
-= \int_{c}^{d}\int_{h_1(y)}^{h_2(y)} f(x, y)\,dx\,dy.$$
-
-[@fubini1907; @billingsley1995probability, Theorem 18.3; @gut2013, Theorem 9.1, p. 65; @wp:fubini]
+- **Both continuous:** $\mu_X = \mu_Y = \text{Lebesgue measure}$;
+  $f_{X,Y}$ is the joint probability density function (PDF),
+  and $\int g(x)\,d\mu_X(x) = \int g(x)\,dx$.
+- **Both discrete:** $\mu_X = \mu_Y = \text{counting measure}$;
+  $f_{X,Y}(x,y) = \P(X = x,\, Y = y)$ is the joint probability mass function (PMF),
+  and $\int g(x)\,d\mu_X(x) = \sum_{x \in \rangef{X}} g(x)$.
+- **Mixed** (one continuous, one discrete):
+  one reference measure is Lebesgue and the other is counting;
+  $f_{X,Y}(x,y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$
+  (or $\P(X = x \mid Y = y)\,f_Y(y)$ if $X$ is discrete and $Y$ continuous),
+  and the iterated integrals combine an ordinary integral with a sum.
 
 :::
+
+::: proof
+Apply [Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) with
+$\mu_1 = \mu_X$ and $\mu_2 = \mu_Y$ to the integrand
+$h(x,y)\,f_{X,Y}(x,y)$ on $\rangef{X} \times \rangef{Y}$.
+Lebesgue measure and counting measure on a countable set are each
+σ-finite, so $\mu_X \otimes \mu_Y$ is σ-finite in all three cases.
+The relevant hypothesis is (a) when $h \ge 0$ and
+(b) when $\E{\abs{h(X, Y)}} < \infty$.
+Independence is not required.
+When $X$ and $Y$ are independent,
+$f_{X,Y}(x,y) = f_X(x)\,f_Y(y)$
+(or $\P(X=x,Y=y) = \P(X=x)\,\P(Y=y)$ in the discrete case),
+and the iterated integrals factor into separate integrals over the marginals.
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-fubini-prob}
+
+#### Expectation of a product of independent variables
+
+Let $X \sim \mathrm{Uniform}(0, 1)$ and $Y \sim \mathrm{Uniform}(0, 2)$,
+independently distributed.
+Compute $\E{XY}$.
+
+We apply @cor-fubini-joint (both-continuous case) with $h(x, y) = xy$.
+Since $X$ and $Y$ are independent with densities $f_X(x) = 1$ on $[0,1]$
+and $f_Y(y) = \tfrac{1}{2}$ on $[0,2]$,
+the joint density factors as $f_{X,Y}(x,y) = f_X(x)\,f_Y(y) = \tfrac{1}{2}$,
+and $\mu_X = \mu_Y = \text{Lebesgue measure}$:
+
+$$
+\ba
+\E{XY}
+&= \int_0^1 \paren{\int_0^2 xy \cd \tfrac{1}{2}\,dy}\,dx
+\\&= \int_0^1 x\paren{\frac{1}{2}\int_0^2 y\,dy}\,dx
+\\&= \int_0^1 x \cd \frac{1}{2} \cd \sb{\frac{y^2}{2}}_0^2\,dx
+\\&= \int_0^1 x \cd \frac{1}{2} \cd 2\,dx
+\\&= \int_0^1 x\,dx
+\\&= \frac{1}{2}
+\ea
+$$
+
+As a check: $\E{X} = \tfrac{1}{2}$, $\E{Y} = 1$, and $\E{X}\E{Y} = \tfrac{1}{2}$.
+
+:::
+
+{{< slidebreak >}}
+
+::::{#exm-fubini-prob-fail}
+
+#### When independence fails: a counterexample
+
+Correctly applying @cor-fubini-joint requires the *actual* joint density $f_{X,Y}$
+— not the product of marginals $f_X(x)\,f_Y(y)$, which is valid only when $X$ and $Y$
+are independent. Using the wrong joint density gives the wrong answer.
+
+Let $X \sim \mathrm{Uniform}(0, 1)$ and set $Y = X$
+(so $X$ and $Y$ are perfectly correlated and **not** independent).
+
+**True expectation:**
+
+$$
+\E{XY} = \E{X \cd X} = \E{X^2} = \int_0^1 x^2\,dx = \frac{1}{3}
+$$
+
+**Erroneously applying the product-measure formula:**
+
+Note that Fubini–Tonelli's own conditions still hold here ($h(x,y) = xy$
+is nonnegative and integrable), so the error is not a failure of
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli).
+Rather, the error is using the *wrong measure*: the joint distribution
+of $(X, X)$ is concentrated on the diagonal
+$\{(x, x) : x \in [0, 1]\} \subset [0, 1]^2$,
+which has Lebesgue measure zero in $\mathbb{R}^2$.
+The joint distribution is therefore **not** absolutely continuous with
+respect to two-dimensional Lebesgue measure, so **no joint density
+$f_{X,Y}$ on $[0, 1]^2$ exists**, which is the reference density
+@cor-fubini-joint requires.
+
+The calculation below is what someone would *erroneously* write if
+they assumed independence and used $f_X(x)\,f_Y(y)$ as a "joint
+density" — a function that does not in fact correspond to the joint
+distribution of $(X, X)$. The marginals
+$X \sim \mathrm{Uniform}(0,1)$ and $Y \sim \mathrm{Uniform}(0,1)$
+do have densities $f_X = f_Y = 1$, but the *product*
+$f_X(x)\,f_Y(y) = 1$ on $[0, 1]^2$ is the density of an *independent*
+pair, not of $(X, X)$:
+
+$$
+\ba
+\int_0^1\!\int_0^1 xy \cd f_X(x) \cd f_Y(y)\,dy\,dx
+&= \int_0^1\!\int_0^1 xy\,dy\,dx
+\\&= \int_0^1 x\paren{\int_0^1 y\,dy}\,dx
+\\&= \int_0^1 x \cd \frac{1}{2}\,dx
+\\&= \frac{1}{4}
+\ea
+$$
+
+This recovers $\E{XY}$ for *independent* uniforms ($\tfrac{1}{4}$),
+not $\E{XX}$ for the perfectly correlated pair ($\tfrac{1}{3}$).
+The lesson is that @cor-fubini-joint requires the *actual* joint density
+$f_{X,Y}$. For independent $(X, Y)$, this factors as $f_X(x)\,f_Y(y)$;
+for dependent $(X, Y)$, $f_{X,Y}$ need not factor — and for $(X, X)$,
+no joint density on $\mathbb{R}^2$ exists at all, so @cor-fubini-joint
+simply does not apply.
+
+:::{#fig-fubini-prob-fail}
+
+```{r}
+#| code-fold: true
+#| message: false
+set.seed(204)
+n <- 400
+x_dep <- runif(n)
+y_dep <- x_dep
+x_ind <- runif(n)
+y_ind <- runif(n)
+
+plotly::plot_ly() |>
+  plotly::add_trace(
+    type = "scatter", mode = "markers",
+    x = x_ind, y = y_ind,
+    name = "Assumed independent (X<sub>1</sub>, X<sub>2</sub>)",
+    marker = list(size = 5, color = "#999999", opacity = 0.5)
+  ) |>
+  plotly::add_trace(
+    type = "scatter", mode = "markers",
+    x = x_dep, y = y_dep,
+    name = "Actual (X, X) on diagonal",
+    marker = list(size = 6, color = "#b40426")
+  ) |>
+  plotly::layout(
+    xaxis = list(title = "x", range = c(0, 1), scaleanchor = "y"),
+    yaxis = list(title = "y", range = c(0, 1)),
+    legend = list(orientation = "h", y = -0.2)
+  )
+```
+
+Samples from the joint distribution of $(X, X)$ (red, on the diagonal)
+versus an independent pair $(X_1, X_2)$ with the same marginals (grey,
+scattered over $[0, 1]^2$). The actual joint mass for $(X, X)$ is
+concentrated on a 1-dimensional diagonal — a set of Lebesgue measure
+zero in $\mathbb{R}^2$ — so no joint density on $[0, 1]^2$ exists, and
+the "$f_X(x)\,f_Y(y) = 1$" calculation integrates against the wrong
+measure (the grey distribution).
+
+:::
+
+::::
+
+{{< slidebreak >}}
+
+::::{#exm-fubini-joint}
+
+#### Both-continuous case: joint PDF on a non-rectangular support
+
+Let $(X, Y)$ have joint density
+$f_{X,Y}(x, y) = 2$ for $0 \le x \le y \le 1$
+(and $0$ otherwise).
+Compute $\E{X + Y}$.
+
+By @cor-fubini-joint:
+
+$$
+\ba
+\E{X + Y}
+&= \int_0^1\!\int_0^y (x + y) \cd 2\,dx\,dy
+\\&= 2\int_0^1 \sb{\frac{x^2}{2} + xy}_{x=0}^{x=y}\,dy
+\\&= 2\int_0^1 \paren{\frac{y^2}{2} + y^2}\,dy
+\\&= 2\int_0^1 \frac{3y^2}{2}\,dy
+\\&= 3\int_0^1 y^2\,dy
+\\&= 3 \cd \frac{1}{3}
+\\&= 1
+\ea
+$$
+
+:::{#fig-fubini-joint}
+
+```{r}
+#| code-fold: true
+#| message: false
+n_grid <- 51
+x_seq <- seq(0, 1, length.out = n_grid)
+y_seq <- seq(0, 1, length.out = n_grid)
+
+z_mat <- outer(x_seq, y_seq, function(x, y) {
+  z <- rep(2, length(x))
+  z[x > y] <- NA
+  z
+})
+
+plotly::plot_ly(x = ~x_seq, y = ~y_seq, z = ~t(z_mat)) |>
+  plotly::add_surface(showscale = FALSE) |>
+  plotly::layout(scene = list(
+    xaxis = list(title = "x"),
+    yaxis = list(title = "y"),
+    zaxis = list(title = "f(x, y)", range = c(0, 2.5)),
+    camera = list(eye = list(x = 1.6, y = -1.6, z = 0.8))
+  ))
+```
+
+Joint density $f_{X,Y}(x, y) = 2$ on the triangular support
+$\{(x, y) : 0 \le x \le y \le 1\}$, and zero elsewhere. The total
+"volume" under the density is $2 \cdot \tfrac{1}{2} = 1$, as required.
+
+:::
+
+::::
+
+{{< slidebreak >}}
+
+::::{#exm-fubini-joint-disc}
+
+#### Both-discrete case: joint PMF
+
+Let $(X, Y)$ be discrete with joint probability mass function:
+
+| | $Y = 0$ | $Y = 1$ |
+|:---:|:---:|:---:|
+| $X = 0$ | $0.2$ | $0.3$ |
+| $X = 1$ | $0.1$ | $0.4$ |
+
+Compute $\E{X + Y}$ using @cor-fubini-joint with
+$\mu_X = \mu_Y = \text{counting measure}$ and $h(x,y) = x + y$.
+
+By @cor-fubini-joint (both-discrete case):
+
+$$
+\ba
+\E{X + Y}
+&= \sum_{x \in \{0,1\}} \sum_{y \in \{0,1\}} (x + y)\,\P(X = x,\, Y = y) \\
+&= (0{+}0)(0.2) + (0{+}1)(0.3) + (1{+}0)(0.1) + (1{+}1)(0.4) \\
+&= 0 + 0.3 + 0.1 + 0.8 \\
+&= 1.2
+\ea
+$$
+
+As a check: $\E{X} = 0(0.5) + 1(0.5) = 0.5$ and
+$\E{Y} = 0(0.3) + 1(0.7) = 0.7$,
+so $\E{X + Y} = \E{X} + \E{Y} = 1.2$.
+
+Note that $X$ and $Y$ are **not** independent here:
+$\P(X = 0, Y = 0) = 0.2 \neq 0.15 = \P(X = 0)\,\P(Y = 0)$.
+@cor-fubini-joint applies regardless, since it requires only the
+*actual* joint mass function, not independence.
+
+:::{#fig-fubini-joint-disc}
+
+```{r}
+#| code-fold: true
+#| message: false
+
+x_labs <- c("X=0", "X=0", "X=1", "X=1")
+y_labs <- c("Y=0", "Y=1", "Y=0", "Y=1")
+probs <- c(0.2, 0.3, 0.1, 0.4)
+
+plotly::plot_ly(
+  x = ~y_labs, y = ~probs, color = ~x_labs,
+  colors = c("steelblue", "tomato"),
+  type = "bar"
+) |>
+  plotly::layout(
+    barmode = "group",
+    xaxis = list(title = "Y"),
+    yaxis = list(title = "P(X = x, Y = y)", range = c(0, 0.5)),
+    legend = list(title = list(text = "X value"))
+  )
+```
+
+Joint probability mass function $\P(X = x, Y = y)$.
+Marginal totals: $\P(X = 0) = 0.5$, $\P(X = 1) = 0.5$,
+$\P(Y = 0) = 0.3$, $\P(Y = 1) = 0.7$.
+
+:::
+
+::::
+
+{{< slidebreak >}}
+
+::::{#exm-fubini-joint-mixed}
+
+#### Mixed case: one continuous variable, one discrete variable
+
+Let $Y \sim \mathrm{Bernoulli}(0.6)$ and,
+given $Y = y$, let $X \mid Y = y \sim \mathrm{Uniform}(0,\, y + 1)$.
+Compute $\E{X}$ using @cor-fubini-joint with $\mu_X = \text{Lebesgue measure}$,
+$\mu_Y = \text{counting measure}$, and $h(x, y) = x$.
+
+The joint density w.r.t. Lebesgue $\times$ counting measure is
+$f_{X,Y}(x, y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$:
+
+$$
+\ba
+f_{X,Y}(x,\, 0) &= 1 \cdot 0.4 = 0.4 &&\text{ for } x \in [0,1];\\
+f_{X,Y}(x,\, 1) &= \tfrac{1}{2} \cdot 0.6 = 0.3 &&\text{ for } x \in [0,2].
+\ea
+$$
+
+By @cor-fubini-joint (mixed case):
+
+$$
+\ba
+\E{X}
+&= \sum_{y \in \{0,1\}} \int_0^{y+1} x\,f_{X,Y}(x,\, y)\,dx \\
+&= \int_0^1 x \cdot 0.4\,dx
+   + \int_0^2 x \cdot 0.3\,dx \\
+&= 0.4 \cdot \frac{1}{2} + 0.3 \cdot 2 \\
+&= 0.2 + 0.6 = 0.8
+\ea
+$$
+
+As a check using the law of total expectation:
+$\E{X \mid Y = 0} = \tfrac{1}{2}$ and $\E{X \mid Y = 1} = 1$, so
+$\E{X} = \tfrac{1}{2}(0.4) + 1(0.6) = 0.2 + 0.6 = 0.8$.
+
+:::{#fig-fubini-joint-mixed}
+
+```{r}
+#| code-fold: true
+#| message: false
+
+x_fine <- seq(0, 2, by = 0.005)
+df <- data.frame(
+  x = c(x_fine[x_fine <= 1], x_fine),
+  density = c(rep(0.4, sum(x_fine <= 1)), rep(0.3, length(x_fine))),
+  label = c(
+    rep("Y = 0  (P = 0.4)", sum(x_fine <= 1)),
+    rep("Y = 1  (P = 0.6)", length(x_fine))
+  )
+)
+
+plotly::plot_ly(
+  df, x = ~x, y = ~density, color = ~label,
+  colors = c("steelblue", "tomato")
+) |>
+  plotly::add_lines() |>
+  plotly::layout(
+    xaxis = list(title = "x"),
+    yaxis = list(title = "f<sub>X,Y</sub>(x, y)", range = c(0, 0.55)),
+    legend = list(title = list(text = "Y value"))
+  )
+```
+
+Joint density $f_{X,Y}(x, y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$
+for each value of the discrete variable $Y$.
+The area under each component integrates to $\P(Y = y)$:
+$0.4 \cdot 1 = 0.4$ (blue) and $0.3 \cdot 2 = 0.6$ (red),
+summing to 1.
+
+:::
+
+::::
 
 ---
 
@@ -655,9 +1091,11 @@ $$
 \ea
 $$
 
-where the third equality exchanges the order of integration by Fubini's theorem
-(the absolute-integrability case of @thm-fubini; this requires $\E{\abs{Y}} < \infty$,
-which is implicit in $\E{Y}$ being defined),
+where the third equality exchanges the order of integration by
+hypothesis (b) of
+[Fubini–Tonelli](math-prereqs.qmd#thm-fubini-tonelli) (the absolute-integrability
+case, **Fubini's theorem**); this requires $\E{\abs{Y}} < \infty$,
+which is implicit in $\E{Y}$ being defined,
 and the fourth equality uses
 $\int_{x} \p(Y=y \mid X=x) \cd \p(X=x)\, dx = \int_{x} \p(X=x, Y=y)\, dx = \p(Y=y)$
 (marginalization of the joint density).
@@ -997,6 +1435,7 @@ $$\Cov{X,Y} \eqdef \Expf{(X - \E X)(Y - \E Y)}$$
 ---
 
 :::{#thm-alt-cov}
+#### Alternative formula for covariance
 $$\Cov{X,Y}= \E{XY} - \E{X} \E{Y}$$
 :::
 
@@ -1209,6 +1648,7 @@ Left to the reader...
 ---
 
 :::{#cor-var-lincom2}
+#### Variance of a sum of two random variables
 
 For any two random variables $X$ and $Y$ and scalars $a$ and $b$:
 
@@ -1323,7 +1763,7 @@ A set of random variables $\dsn{X}$ are **independent and identically distribute
 
 ---
 
-:::{#def-iid}
+:::{#def-ciid}
 ### Conditionally independent and identically distributed
 
 A set of random variables $\dsn{Y}$ are **conditionally independent and identically distributed** (shorthand: "$Y_i | X_i\ \ciid$" or just "$Y_i |X_i\ \iid$") given a set of covariates $\dsn{X}$
