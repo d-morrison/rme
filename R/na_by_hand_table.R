@@ -7,12 +7,23 @@
 #' @param data A data frame with columns `time` (numeric) and `death`
 #'   (0/1 integer or logical).
 #'
+#' @details
+#' The "NA Survival" column is rendered with the `\expf` macro from the
+#' book's `latex-macros/macros.qmd`, so this function is intended for use
+#' inside the `rme` book render pipeline. Outside that environment (a bare
+#' `knitr` document or `pkgdown` page) define `\expf` or that column will
+#' show an undefined control sequence.
+#'
 #' @returns A `knitr_kable` object (LaTeX/HTML math strings, `escape = FALSE`).
 #' @export
+#' @examples
+#' d <- data.frame(time = c(1, 2, 3, 3, 5), death = c(1, 0, 1, 1, 0))
+#' na_by_hand_table(d)
 na_by_hand_table <- function(data) {
   stopifnot(
     "data must have a 'time' column"  = "time"  %in% names(data),
-    "data must have a 'death' column" = "death" %in% names(data)
+    "data must have a 'death' column" = "death" %in% names(data),
+    "'death' must be 0/1 or logical"  = all(data$death %in% c(0, 1))
   )
 
   time   <- data$time
@@ -26,6 +37,13 @@ na_by_hand_table <- function(data) {
       a   <- tmp
     }
     a
+  }
+
+  # `format()` falls back to scientific notation for small values (e.g.
+  # `format(1e-6)` -> "1e-06"), which is invalid inside a `$...$` math
+  # environment; this always produces fixed-point output.
+  fmt_dec <- function(x) {
+    formatC(x, format = "f", digits = 4, drop0trailing = TRUE)
   }
 
   df <- dplyr::tibble(time = time, status = status) |>
@@ -42,12 +60,15 @@ na_by_hand_table <- function(data) {
   left_before <- cumsum(c(0L, utils::head(df$deaths + df$censored, -1L)))
   df$n_risk   <- n - left_before
 
-  cum_haz_n   <- 0L
-  cum_haz_d   <- 1L
+  # Running cumulative-hazard numerator/denominator are doubles so that
+  # whole-number products beyond .Machine$integer.max stay exact instead
+  # of overflowing.
+  cum_haz_n   <- 0
+  cum_haz_d   <- 1
   cum_haz_str <- "0"
 
   tbl <- dplyr::tibble(
-    `Time-point`        = integer(nrow(df)),
+    `Time-point`        = numeric(nrow(df)),
     `Risk set`          = integer(nrow(df)),
     `Hazard increment`  = character(nrow(df)),
     `Cumulative hazard` = character(nrow(df)),
@@ -73,7 +94,7 @@ na_by_hand_table <- function(data) {
       cum_haz_n <- new_num %/% g
       cum_haz_d <- new_den %/% g
 
-      cum_haz_str <- if (cum_haz_d == 1L) {
+      cum_haz_str <- if (cum_haz_d == 1) {
         as.character(cum_haz_n)
       } else {
         sprintf("\\frac{%d}{%d}", cum_haz_n, cum_haz_d)
@@ -91,7 +112,7 @@ na_by_hand_table <- function(data) {
     surv_cell <- sprintf(
       "$\\expf{-%s} \\approx %s$",
       cum_haz_str,
-      format(surv_val)
+      fmt_dec(surv_val)
     )
 
     tbl$`Time-point`[i]        <- df$time[i]

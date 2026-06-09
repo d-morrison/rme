@@ -18,3 +18,7 @@ Takes a data frame with \code{time} and \code{death} columns and returns a
 \code{knitr_kable} table showing the time-point, risk set, contribution, and
 survival estimate at each event or censoring time.
 }
+\examples{
+d <- data.frame(time = c(1, 2, 3, 3, 5), death = c(1, 0, 1, 1, 0))
+km_by_hand_table(d)
+}

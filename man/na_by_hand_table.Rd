@@ -18,3 +18,14 @@ Takes a data frame with \code{time} and \code{death} columns and returns a
 \code{knitr_kable} table showing the time-point, risk set, hazard increment,
 cumulative hazard, and Nelson-Aalen survival estimate at each time point.
 }
+\details{
+The "NA Survival" column is rendered with the \verb{\\expf} macro from the
+book's \code{latex-macros/macros.qmd}, so this function is intended for use
+inside the \code{rme} book render pipeline. Outside that environment (a bare
+\code{knitr} document or \code{pkgdown} page) define \verb{\\expf} or that column will
+show an undefined control sequence.
+}
+\examples{
+d <- data.frame(time = c(1, 2, 3, 3, 5), death = c(1, 0, 1, 1, 0))
+na_by_hand_table(d)
+}
