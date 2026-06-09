@@ -81,6 +81,12 @@ You are responsible for fixing failures caused by your changes only.
 Do not fix pre-existing lint/spell errors in code you didn't modify.
 If a failure is not caused by your changes, document it in the PR description.
 
+## Reporting
+
+When summarizing PRs, issues, workflow runs, or jobs, always include the
+GitHub URL alongside the reference (e.g.,
+[#897](https://github.com/d-morrison/rme/pull/897), not just "#897").
+
 ## External Resources Available in This Session
 
 - `$EPI202_TOKEN` — fine-grained PAT with read access to
