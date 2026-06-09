@@ -1,0 +1,71 @@
+### Stratified regression for `hers` data {.smaller}
+
+::: notes
+As an alternative to the age–BMI models above,
+we can model LDL as a function of BMI,
+stratifying by statin use
+(i.e., fitting a separate intercept and BMI slope
+for each statin group):
+:::
+
+$$
+\E{LDL|B=b, U=u} =
+\beta_{no} (1-v) + \beta_{no,B}\, b(1-v) +
+\beta_{yes} v + \beta_{yes,B}\, bv
+$$ {#eq-hers-strat}
+
+:::: {.columns}
+
+::: {.column width=45%}
+
+::: {#tbl-hers-lm-strat}
+
+```{r}
+hers_lm_strat <-
+  hers |>
+  lm(
+    formula = LDL ~ statins + statins:BMI - 1,
+    data = _
+  )
+
+hers_lm_strat |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+Stratified regression estimates for `hers` data ([Model @eq-hers-strat])
+
+:::
+
+:::
+
+:::{.column width=10%}
+:::
+
+:::{.column width=45%}
+
+::: {#tbl-hers-lm-statin-interact}
+
+```{r}
+hers_lm_statins_interact <- lm(
+  LDL ~ statins + BMI + statins:BMI,
+  data = hers,
+  na.action = na.exclude
+)
+
+hers_lm_statins_interact |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+Statin interaction model estimates
+
+:::
+
+:::
+
+::::
