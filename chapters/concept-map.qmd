@@ -84,10 +84,13 @@ core <- graph_from_data_frame(
 V(core)$type <- factor(V(core)$type, levels = type_levels)
 
 set.seed(204)
-# Stress layout (from graphlayouts, via ggraph) minimises a stress function so
-# connected nodes sit close together and nodes are distributed evenly across
-# the canvas — much less dead whitespace than the Sugiyama hierarchical layout.
-layout <- create_layout(core, layout = "stress")
+# Fruchterman-Reingold applies repulsion between all node pairs (not just
+# connected ones), spreading nodes more evenly across the canvas. Normalise
+# axes afterwards to fill the full canvas and eliminate edge whitespace.
+layout <- create_layout(core, layout = "fr", niter = 2000)
+norm_axis <- function(x) (x - min(x)) / diff(range(x)) * 2 - 1
+layout$x <- norm_axis(layout$x)
+layout$y <- norm_axis(layout$y)
 
 ggraph(layout) +
   geom_edge_link(
