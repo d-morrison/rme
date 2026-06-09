@@ -1,0 +1,149 @@
+Note that these risk differences and risk ratios are **conditional** on the covariate value $z$.
+In many applications,
+we want to summarize the effect across the population,
+which requires computing a **marginal** risk difference or risk ratio.
+
+{{< slidebreak >}}
+
+:::{#def-observed-marginal-risk}
+
+#### Observed marginal risk
+
+The **observed marginal risk** under exposure level $A = a$ is:
+
+$$\pi(a) \eqdef \Pr(Y = 1 \mid A = a)$$
+
+:::
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_thm-observed-marginal-risk.qmd >}}
+
+{{< slidebreak >}}
+
+:::{#def-observed-marginal-rd}
+
+#### Observed marginal risk difference
+
+$$
+\text{Observed Marginal RD} \eqdef \pi(1) - \pi(0)
+$$
+
+:::
+
+In causal inference,
+[potential outcomes](causal-inference.qmd#def-potential-outcomes) $Y^a$
+represent the outcome each unit would have under exposure level $a$.
+Population-level causal estimands summarize these potential outcomes:
+
+{{< slidebreak >}}
+
+:::{#def-potential-mean}
+
+#### Potential mean
+
+The **potential mean** under treatment $A = a$ is:
+
+$$\mu_a \eqdef \E{Y^a}$$
+
+This is the expected value of the potential outcome $Y^a$,
+representing what the average outcome would be
+if the entire population were assigned treatment $a$.
+
+:::
+
+{{< slidebreak >}}
+
+:::{#def-potential-probability}
+
+#### Potential probability
+
+For a binary outcome $Y \in \{0, 1\}$,
+the **potential probability** under treatment $A = a$ is:
+
+$$\pi_a \eqdef \Pr(Y^a = 1) = \E{Y^a}$$
+
+This is a special case of the potential mean (@def-potential-mean):
+since $Y$ is binary, the expectation equals the probability.
+
+:::
+
+{{< slidebreak >}}
+
+:::{#def-causal-marginal-risk}
+
+#### Causal marginal risk
+
+The **causal marginal risk** (also: **potential marginal risk**)
+under exposure level $a$ is the potential probability (@def-potential-probability):
+
+$$\pi_a = \Pr(Y^a = 1)$$
+
+:::
+
+We use the term **causal marginal risk** throughout.
+
+Under causal identification assumptions
+(see [Consistency](causal-inference.qmd#def-consistency),
+[Exchangeability](causal-inference.qmd#def-exchangeability),
+and [Positivity](causal-inference.qmd#def-positivity)),
+the causal marginal risk $\pi_a$ (@def-causal-marginal-risk)
+can be expressed in terms of observed data:
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_thm-causal-marginal-risk.qmd >}}
+
+{{< slidebreak >}}
+
+:::{#def-causal-marginal-rd}
+
+#### Causal marginal risk difference
+
+$$
+\text{Causal Marginal RD} \eqdef \pi_1 - \pi_0
+$$
+
+:::
+
+{{< slidebreak >}}
+
+:::{#def-g-computation}
+
+#### G-computation
+
+**G-computation** (also called the **g-formula** or **standardization**)
+is a procedure for estimating the causal marginal risk $\pi_a$
+(@def-causal-marginal-risk) from observed data:
+
+1. Fit a regression model for $\hat\pi(a, z) = \widehat{\Pr}(Y = 1 \mid A = a, Z = z)$
+2. For each observation $i$, predict the risk under exposure level $a$: $\hat\pi(a, z_i)$
+3. Average the predicted risks over the observed covariate distribution:
+
+$$\hat\pi_a = \frac{1}{n}\sumin \hat\pi(a, z_i)$$
+
+Under identification assumptions (@thm-causal-marginal-risk),
+$\hat\pi_a$ consistently estimates $\pi_a = \E{\pi(a, Z)}$.
+
+:::
+
+{{< slidebreak >}}
+
+:::{#def-predictive-margins}
+
+#### Predictive margins
+
+**Predictive margins** are model-predicted probabilities averaged over a
+covariate distribution.
+
+- Averaged over the **full sample** distribution of $Z$:
+  estimates the causal marginal risk $\pi_a$ (@def-causal-marginal-risk)
+  — equivalent to g-computation (@def-g-computation)
+- Averaged over the **subgroup** with $A_i = a$:
+  estimates the observed marginal risk $\pi(a)$ (@def-observed-marginal-risk)
+  (under correct model specification)
+
+The term "predictive margins" is commonly used in social science
+and in Stata's `margins` command.
+
+:::

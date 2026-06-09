@@ -1,0 +1,61 @@
+::: notes
+
+**Important considerations when computing marginal effects:**
+
+1. **Target population**:
+   The marginal effect is specific to the covariate distribution
+   in your sample.
+   If your sample is not representative of your target population,
+   you may want to use standardization or weighting.
+
+2. **Collapsibility** (see @def-collapsibility):
+   Risk differences are **collapsible**:
+   the causal marginal RD ($\pi_1 - \pi_0$) equals the average
+   of stratum-specific causal RDs ($\pi(1,z) - \pi(0,z)$)
+   weighted by the marginal distribution $f_Z$,
+
+   $$\pi_1 - \pi_0
+     = \E{\pi(1, Z)} - \E{\pi(0, Z)}
+     = \E{\pi(1, Z) - \pi(0, Z)}
+     = \E{\text{RD}(Z)},$$
+
+   so there is no collapsibility bias from averaging over a covariate $Z$.
+   Risk ratios are also called collapsible in the sense that they do not
+   exhibit the strong collapsibility bias that odds ratios do:
+   the marginal OR can differ from every conditional OR
+   even when there is no confounding (see @exm-collapsibility).
+   However, the marginal RR is **not** in general
+   a weighted average of conditional RRs --
+   because a ratio of expectations is not the same as an expectation of ratios:
+
+   $$\frac{\pi_1}{\pi_0}
+     = \frac{\E{\pi(1, Z)}}{\E{\pi(0, Z)}}
+     \neq \E{\frac{\pi(1, Z)}{\pi(0, Z)}}
+     = \E{\text{RR}(Z)}.$$
+
+   Odds ratios do not have either form of collapsibility:
+   the marginal OR is not in general
+   any weighted average of stratum-specific odds ratios
+   (see @exm-collapsibility).
+
+3. **Bootstrap sample size**:
+   Use at least 1000 bootstrap iterations for standard errors,
+   and at least 2000 for confidence intervals.
+   More iterations provide more stable estimates
+   but take longer to compute.
+
+4. **Alternative methods**:
+   The multivariate delta method can also be used
+   to compute standard errors analytically,
+   but the formulas are complex.
+   The [`margins`](https://cran.r-project.org/package=margins) package in R
+   provides implementations of the delta method
+   for marginal effects.
+
+5. **Case-control studies**:
+   These methods are **not valid** for case-control studies,
+   where sampling is stratified by outcome.
+   In case-control designs,
+   only odds ratios can be estimated consistently.
+
+:::

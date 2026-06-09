@@ -1,0 +1,108 @@
+:::{#exm-marginal-point-estimate}
+
+#### Numerical point-estimate example
+
+Using the WCGS data setup and model,
+we can estimate the **causal marginal risks**
+(i.e., potential probabilities @def-potential-probability)
+via g-computation (@def-g-computation),
+by averaging model predictions over the observed covariate distribution:
+
+```{r}
+#| label: wcgs-data-load-and-model-fit
+#| echo: false
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(haven)
+library(ggplot2)
+
+# Load and prepare WCGS data
+wcgs_path <- here::here("Data", "wcgs.rda")
+if (!file.exists(wcgs_path)) {
+  stop(
+    "Could not find WCGS data file at: ", wcgs_path,
+    ". This file should be in the repository's Data directory. ",
+    paste0(
+      "Run this chapter from the repository root and verify ",
+      "that Data/wcgs.rda is present."
+    )
+  )
+}
+wcgs_env <- new.env(parent = emptyenv())
+invisible(load(wcgs_path, envir = wcgs_env))
+wcgs <- wcgs_env$wcgs
+
+wcgs_clean <- wcgs |>
+  mutate(
+    dibpat = dibpat |>
+      as_factor() |>
+      relevel(ref = "Type B"),
+    chd69_binary = as.numeric(chd69 == "Yes"),
+    across(where(is.labelled), haven::as_factor)
+  ) |>
+  filter(!is.na(chd69_binary), !is.na(dibpat), !is.na(age))
+
+fit <- glm(
+  chd69_binary ~ dibpat + age,
+  data = wcgs_clean,
+  family = binomial(link = "logit")
+)
+
+dibpat_levels <- levels(wcgs_clean$dibpat)
+wcgs_counterfactual_a <- wcgs_clean |>
+  mutate(
+    dibpat = factor("Type A", levels = dibpat_levels)
+  )
+wcgs_counterfactual_b <- wcgs_clean |>
+  mutate(
+    dibpat = factor("Type B", levels = dibpat_levels)
+  )
+
+pi1_hat <- mean(
+  predict(fit, newdata = wcgs_counterfactual_a, type = "response")
+)
+pi0_hat <- mean(
+  predict(fit, newdata = wcgs_counterfactual_b, type = "response")
+)
+rd_hat <- pi1_hat - pi0_hat
+
+pi1_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type A"])
+pi0_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type B"])
+```
+
+The **observed marginal risks**
+$\hat\pi(a) = \Pr(Y=1 \mid A=a)$
+estimated directly from the data are:
+
+$$
+\hat\pi(1) = `r round(pi1_obs, 3)`, \quad
+\hat\pi(0) = `r round(pi0_obs, 3)`
+$$
+
+The **causal marginal risks**
+$\hat\pi_a = \frac{1}{n}\sumin \hat\pi(a, z_i)$
+standardized over the full covariate distribution are:
+
+$$
+\hat\pi_1 = `r round(pi1_hat, 3)`, \quad
+\hat\pi_0 = `r round(pi0_hat, 3)`
+$$
+
+Note that $\hat\pi(1) \neq \hat\pi_1$ and $\hat\pi(0) \neq \hat\pi_0$:
+because age is associated with behavioral pattern (Type A and Type B men
+have different age distributions), the observed marginal and causal marginal
+risks differ.
+Standardization via g-computation adjusts for this difference.
+
+The causal marginal risk difference estimate is:
+
+$$
+\widehat{\text{Causal Marginal RD}} =
+\hat\pi_1 - \hat\pi_0 =
+`r round(pi1_hat, 3)` - `r round(pi0_hat, 3)` =
+`r round(rd_hat, 3)`
+$$
+
+:::
