@@ -1,10 +1,8 @@
-:::: {.content-hidden}
 ::: callout-warning
 This section is illustrative only — the dataset is a built-in R
 example, not an Epi 204 case study. Replace with a course-appropriate
 exposure when the chapter is finalized.
 :::
-::::
 
 We'll fit a GAM to the built-in `MASS::Pima.tr` dataset, predicting
 diabetes status (`type`) from continuous risk factors. The exposures
@@ -13,7 +11,8 @@ age (`age`).
 
 ## Setup {.unnumbered}
 
-```r
+```{r}
+#| eval: false
 library(MASS)        # Pima.tr dataset
 library(mgcv)        # gam(), s()
 library(ggplot2)
@@ -38,7 +37,8 @@ Pima.tr$diabetes <- as.integer(Pima.tr$type == "Yes")
 
 Start with an ordinary logistic GLM as a baseline:
 
-```r
+```{r}
+#| eval: false
 m_lin <- glm(
   diabetes ~ bmi + glu + age,
   family = binomial(), data = Pima.tr
@@ -55,7 +55,8 @@ age, where diabetes risk is well known to be nonlinear.
 
 Now refit with smooths on each continuous predictor:
 
-```r
+```{r}
+#| eval: false
 m_gam <- gam(
   diabetes ~ s(bmi) + s(glu) + s(age),
   family = binomial(),
@@ -85,7 +86,8 @@ For each smooth, ask:
 If `gam.check(m_gam)` flags any smooth as having `edf` close to
 `k'`, bump `k` up:
 
-```r
+```{r}
+#| eval: false
 m_gam2 <- gam(
   diabetes ~ s(bmi) + s(glu, k = 20) + s(age),
   family = binomial(),
@@ -96,7 +98,8 @@ m_gam2 <- gam(
 
 ## Plotting partial-effect curves {.unnumbered}
 
-```r
+```{r}
+#| eval: false
 plot(m_gam, pages = 1, shade = TRUE, seWithMean = TRUE)
 ```
 
@@ -112,7 +115,8 @@ figure.
 For a cleaner ggplot rendering, `gratia::draw()` is a one-line
 alternative:
 
-```r
+```{r}
+#| eval: false
 gratia::draw(m_gam)
 ```
 
@@ -123,7 +127,8 @@ binary). To plot predicted probability vs a single predictor, hold
 the others at typical values, build the Wald CI on the **link** scale,
 then back-transform with `plogis()`:
 
-```r
+```{r}
+#| eval: false
 typical <- data.frame(
   bmi = median(Pima.tr$bmi),
   glu = median(Pima.tr$glu),
@@ -160,7 +165,8 @@ the middle), which is the right qualitative shape for a probability.
 
 ## Comparing GLM and GAM {.unnumbered}
 
-```r
+```{r}
+#| eval: false
 # Refit the GAM with method = "ML" for AIC comparison.
 # REML and ML likelihoods are on different scales; comparing AIC
 # from glm() (always ML) with a REML-fitted gam() mixes criteria.
