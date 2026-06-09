@@ -39,9 +39,15 @@ on:
 # SAME expression as the job `if:`: a run only cancels in-progress
 # peers when it would itself actually run. (Keep this expression in
 # sync with the job `if:` below.)
+#
+# Note: the job `if:` now also runs on Claude-bot pushes (actor
+# `claude` / `claude[bot]`) — see the rationale on the job below.
+# Those runs therefore legitimately cancel an in-progress peer so the
+# freshest diff wins; this is recursion-safe because the reviewer is
+# review-only and can never push a `synchronize`-triggering commit.
 concurrency:
   group: claude-review-${{ github.event.pull_request.number || inputs.pr_number }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]')) }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]')) || github.actor == 'claude' || github.actor == 'claude[bot]' }}
 
 jobs:
   claude-review:
@@ -53,12 +59,35 @@ jobs:
     # stuck on whatever verdict was generated when they were first opened.
     # See d-morrison/rme#801 for the original symptom report.
     #
+    # Exception to the bot-actor filter: a push from the Claude bot
+    # SHOULD be reviewed. Claude Code on the web and the @claude agent
+    # commit under the `claude` user account (login `claude`, id 81847,
+    # noreply@anthropic.com); pushes made through the Claude GitHub App
+    # surface as actor `claude[bot]`. Either way these are AI-authored
+    # commits — exactly the ones we most want a second pass over — yet
+    # the generic `endsWith(actor, '[bot]')` / `sender.type == 'Bot'`
+    # rule above was silently skipping them. The two clauses added below
+    # opt those pushes back in.
+    #
+    # This is safe from the self-trigger / frozen-comment recursion that
+    # originally motivated skipping bot pushes (see the concurrency
+    # comment above re: PR #809). This workflow is review-ONLY: the
+    # `--disallowedTools "Bash(git commit:*)" …` list on the review step
+    # means the reviewer can never commit, hence never push, hence never
+    # fire a `synchronize` event that would re-trigger itself. And the
+    # @claude agent's own commits are pushed with GITHUB_TOKEN, which by
+    # design does not fire `synchronize` at all (claude.yml dispatches us
+    # explicitly via workflow_dispatch instead), so this clause does not
+    # double-review those.
+    #
     # The `concurrency.cancel-in-progress` expression above mirrors this
     # condition — keep the two in sync so a run that skips here never
     # cancels an in-progress peer on its way out.
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]'))
+      (github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]')) ||
+      github.actor == 'claude' ||
+      github.actor == 'claude[bot]'
     # Optional: Filter by PR author
     # if: |
     #   github.event.pull_request.user.login == 'external-contributor' ||
