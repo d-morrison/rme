@@ -157,7 +157,9 @@ jobs:
 
       - name: Stage site for upload
         if: github.event.action != 'closed'
-        run: cp -r _site/. _preview_upload/site/
+        run: |
+          mkdir -p _preview_upload/site/
+          cp -r _site/. _preview_upload/site/
 
       - name: Upload preview artifact (deploy)
         if: github.event.action != 'closed'
@@ -172,5 +174,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pr-preview-site
-          path: _preview_upload/meta/
+          path: _preview_upload/
           retention-days: 1
