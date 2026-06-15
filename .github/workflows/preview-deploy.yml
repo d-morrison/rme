@@ -5,6 +5,13 @@ on:
     workflows: ["Quarto Preview Build"]
     types: [completed]
 
+# Serialize deploys for the same PR branch so two back-to-back build
+# completions don't race on gh-pages. cancel-in-progress: false queues
+# rather than kills — a mid-push cancel could corrupt gh-pages.
+concurrency:
+  group: preview-deploy-${{ github.event.workflow_run.head_repository.id }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -70,7 +77,7 @@ jobs:
 
       - name: Remove preview comment
         uses: marocchino/sticky-pull-request-comment@v3
-        if: steps.meta.outputs.action == 'remove'
+        if: steps.meta.outputs.action == 'remove' && steps.preview-remove.outputs.deployment-action == 'remove'
         continue-on-error: true
         with:
           header: pr-preview
