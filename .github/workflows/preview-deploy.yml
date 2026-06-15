@@ -13,7 +13,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Cheap gate: verify the build job actually ran (vs. being skipped due to
+  # an unrecognized label). When all jobs in a workflow are skipped GitHub
+  # still reports conclusion == 'success', which would otherwise cause the
+  # deploy job to fire and fail on artifact download.
+  gate:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    if: github.event.workflow_run.conclusion == 'success'
+    outputs:
+      has-artifact: ${{ steps.check.outputs.found }}
+    steps:
+      - name: Check artifact exists
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh api \
+            "repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" \
+            --jq '[.artifacts[] | select(.name == "pr-preview-site")] | length')
+          echo "found=$([ "$count" -gt 0 ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+
   deploy:
+    needs: gate
+    if: needs.gate.outputs.has-artifact == 'true'
     runs-on: ubuntu-latest
     # This job runs in the base-repo context (not the fork), so the
     # GITHUB_TOKEN has write access to push to gh-pages and comment on PRs.
@@ -21,7 +45,6 @@ jobs:
       contents: write
       pull-requests: write
       actions: read  # needed to download artifacts from the triggering run
-    if: github.event.workflow_run.conclusion == 'success'
 
     steps:
       - name: Check out repository
