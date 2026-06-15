@@ -1,0 +1,92 @@
+name: Quarto Preview Deploy
+
+on:
+  workflow_run:
+    workflows: ["Quarto Preview Build"]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # This job runs in the base-repo context (not the fork), so the
+    # GITHUB_TOKEN has write access to push to gh-pages and comment on PRs.
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read  # needed to download artifacts from the triggering run
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Download preview artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-preview-site
+          path: _preview_download/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read PR metadata
+        id: meta
+        run: |
+          echo "pr-number=$(cat _preview_download/meta/pr-number.txt)" >> "$GITHUB_OUTPUT"
+          echo "action=$(cat _preview_download/meta/action.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy PR Preview
+        if: steps.meta.outputs.action == 'deploy'
+        uses: rossjrw/pr-preview-action@v1
+        id: preview
+        with:
+          source-dir: _preview_download/site/
+          pr-number: ${{ steps.meta.outputs.pr-number }}
+          comment: false
+          action: deploy
+
+      - name: Remove PR Preview
+        if: steps.meta.outputs.action == 'remove'
+        uses: rossjrw/pr-preview-action@v1
+        id: preview-remove
+        with:
+          pr-number: ${{ steps.meta.outputs.pr-number }}
+          comment: false
+          action: remove
+
+      - name: Delete old preview comment
+        uses: marocchino/sticky-pull-request-comment@v3
+        if: steps.meta.outputs.action == 'deploy' && steps.preview.outputs.deployment-action == 'deploy'
+        continue-on-error: true
+        with:
+          header: pr-preview
+          number: ${{ steps.meta.outputs.pr-number }}
+          delete: true
+
+      - name: Comment with preview link
+        uses: marocchino/sticky-pull-request-comment@v3
+        if: steps.meta.outputs.action == 'deploy' && steps.preview.outputs.deployment-action == 'deploy'
+        continue-on-error: true
+        with:
+          header: pr-preview
+          number: ${{ steps.meta.outputs.pr-number }}
+          recreate: true
+          message: |
+            [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview.outputs.action-version }}
+            :---:
+            :rocket: **Preview available at:** ${{ steps.preview.outputs.preview-url }}
+
+            <sub>Built to branch [`gh-pages`](${{ github.server_url }}/${{ github.repository }}/tree/gh-pages) at ${{ steps.preview.outputs.action-start-time }}.</sub>
+
+      - name: Remove preview comment
+        uses: marocchino/sticky-pull-request-comment@v3
+        if: steps.meta.outputs.action == 'remove'
+        continue-on-error: true
+        with:
+          header: pr-preview
+          number: ${{ steps.meta.outputs.pr-number }}
+          message: |
+            [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview-remove.outputs.action-version }}
+            :---:
+            Preview removed because the pull request was closed.
+
+            <sub>${{ steps.preview-remove.outputs.action-start-time }}</sub>

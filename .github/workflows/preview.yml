@@ -1,4 +1,4 @@
-name: Quarto Preview
+name: Quarto Preview Build
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ on:
       - '_extensions/**'
       - '_quarto*.yml'
       - '.github/workflows/preview.yml'
-      - '.github/workflows/publish.yml'
+      - '.github/workflows/preview-deploy.yml'
       - '*.qmd'
       - 'chapters/**/*.qmd'
       - '_subfiles/**'
@@ -32,19 +32,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-deploy:
-    if: github.event_name != 'pull_request' || github.event.action != 'labeled' || contains(fromJSON('["clear freezer", "preview:pdf", "preview:docx", "preview:revealjs"]'), github.event.label.name)
+  build:
+    # Run for all events except unrecognised labels.
+    if: github.event.action != 'labeled' || contains(fromJSON('["clear freezer", "preview:pdf", "preview:docx", "preview:revealjs"]'), github.event.label.name)
     runs-on: ubuntu-latest
+    # Read-only: this job runs in the fork's restricted context and must
+    # never write to the base repo. All writes are handled by preview-deploy.yml
+    # which runs in the base-repo context via workflow_run.
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
+
     steps:
+      - name: Save PR metadata
+        run: |
+          mkdir -p _preview_upload/meta
+          echo "${{ github.event.pull_request.number }}" > _preview_upload/meta/pr-number.txt
+          echo "${{ github.event.action == 'closed' && 'remove' || 'deploy' }}" > _preview_upload/meta/action.txt
+
       - name: Check out repository
+        if: github.event.action != 'closed'
         uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - name: Set up Quarto
+        if: github.event.action != 'closed'
         uses: quarto-dev/quarto-actions/setup@v2
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,11 +64,13 @@ jobs:
           tinytex: false
 
       - uses: r-lib/actions/setup-r@v2
+        if: github.event.action != 'closed'
         with:
           r-version: '4.6.0'
           use-public-rspm: true
 
       - name: Install system dependencies
+        if: github.event.action != 'closed'
         run: |
           sudo apt-get update
           # `libglpk-dev` is required for the igraph/ggdag/ggraph dependency stack.
@@ -67,20 +81,21 @@ jobs:
           # `libx11-dev`, and `pandoc`),
           # so the full list here is intentionally broader than publish/lint.
           sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev libglpk-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libtiff5-dev libwebp-dev libnode109 cmake libgit2-dev libnode-dev libx11-dev pandoc
-          
 
       - name: Setup Chrome
+        if: github.event.action != 'closed'
         uses: browser-actions/setup-chrome@v1
-  
+
       - uses: r-lib/actions/setup-renv@v2
+        if: github.event.action != 'closed'
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         with:
           bypass-cache: never
 
       - name: Install local package
-        run: |
-          R CMD INSTALL .
+        if: github.event.action != 'closed'
+        run: R CMD INSTALL .
 
       - name: Set up TinyTeX
         if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
@@ -121,10 +136,10 @@ jobs:
         run: quarto render --profile website --to revealjs --no-clean
 
       - name: Render html (website profile)
-        if: github.event.action != 'closed' # skip the build if the PR has been closed
+        if: github.event.action != 'closed'
         run: quarto render --profile website --to html --no-clean
 
-      - name: list files
+      - name: List files
         if: github.event.action != 'closed'
         shell: bash
         run: |
@@ -139,46 +154,23 @@ jobs:
         with:
           path: _freeze
           key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.event.pull_request.head.sha }}-${{ github.run_attempt }}
-      
-      - name: Deploy PR Preview
-        uses: rossjrw/pr-preview-action@v1
-        id: preview
+
+      - name: Stage site for upload
+        if: github.event.action != 'closed'
+        run: cp -r _site/. _preview_upload/site/
+
+      - name: Upload preview artifact (deploy)
+        if: github.event.action != 'closed'
+        uses: actions/upload-artifact@v4
         with:
-          source-dir: _site/
-          comment: false
-          action: ${{ github.event.action != 'closed' && 'deploy' || 'remove' }}
-      
-      - name: Delete old preview comment
-        uses: marocchino/sticky-pull-request-comment@v3
-        if: steps.preview.outputs.deployment-action == 'deploy'
-        continue-on-error: true
+          name: pr-preview-site
+          path: _preview_upload/
+          retention-days: 1
+
+      - name: Upload preview artifact (remove)
+        if: github.event.action == 'closed'
+        uses: actions/upload-artifact@v4
         with:
-          header: pr-preview
-          delete: true
-      
-      - name: Comment with preview link
-        uses: marocchino/sticky-pull-request-comment@v3
-        if: steps.preview.outputs.deployment-action == 'deploy'
-        continue-on-error: true
-        with:
-          header: pr-preview
-          recreate: true
-          message: |
-            [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview.outputs.action-version }}
-            :---:
-            :rocket: **Preview available at:** ${{ steps.preview.outputs.preview-url }}
-            
-            <sub>Built to branch [`gh-pages`](${{ github.server_url }}/${{ github.repository }}/tree/gh-pages) at ${{ steps.preview.outputs.action-start-time }}.</sub>
-      
-      - name: Remove preview comment
-        uses: marocchino/sticky-pull-request-comment@v3
-        if: steps.preview.outputs.deployment-action == 'remove'
-        continue-on-error: true
-        with:
-          header: pr-preview
-          message: |
-            [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview.outputs.action-version }}
-            :---:
-            Preview removed because the pull request was closed.
-            
-            <sub>${{ steps.preview.outputs.action-start-time }}</sub>
+          name: pr-preview-site
+          path: _preview_upload/meta/
+          retention-days: 1
