@@ -287,10 +287,34 @@ jobs:
           #   (allowed below) already reports the current branch name,
           #   covering the only legitimate read-only use case.
           GIT_TOOLS="Bash(git add *),Bash(git commit *),Bash(git rm *),Bash(git mv *),Bash(git status*),Bash(git diff*),Bash(git log*),Bash(git show*),Bash(git restore *),Bash(git checkout -- *)"
+          # File-editing tools. claude-code-action ALREADY allows file
+          # reads/edits by default (see the action's configuration docs:
+          # "By default, Claude only has access to: File operations
+          # (reading, committing, editing files, ...)"), and `claude_args
+          # --allowed-tools` is ADDITIVE to that default rather than a
+          # replacement — which is why prior @claude runs committed file
+          # edits fine (e.g. claude[bot] commit 05318e02 on PR #843).
+          #
+          # We still list the file tools explicitly because a session
+          # that inspects its own --allowed-tools string and sees only
+          # Bash/gh/git/WebFetch entries can wrongly conclude file
+          # editing is disallowed and bail out — posting its diff as a
+          # comment instead of committing it (PR #843 run 27032044840,
+          # 2026-06-05: a 27-min session designed probability-based
+          # example rewrites, then declined to apply them claiming
+          # "Edit/Write require approval not configured in the current
+          # session's --allowed-tools list"). Naming the tools here makes
+          # the grant unambiguous in the string the agent can see, and
+          # guards against the action's additive behaviour ever changing.
+          # Read/Glob/Grep are listed alongside the write tools so the
+          # same allowlist-inspection logic can't talk a session out of
+          # reading or searching files either (they're read-only and,
+          # like the edit tools, already allowed by default).
+          FILE_TOOLS="Read,Glob,Grep,Edit,Write,MultiEdit"
           if [ -n "$WEBFETCH" ]; then
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${FILE_TOOLS},${GH_TOOLS},${GIT_TOOLS},${WEBFETCH}" >> "$GITHUB_OUTPUT"
           else
-            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${GH_TOOLS},${GIT_TOOLS}" >> "$GITHUB_OUTPUT"
+            echo "allowed=Bash(Rscript *),Bash(quarto *),Bash(curl *),${FILE_TOOLS},${GH_TOOLS},${GIT_TOOLS}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Claude Code
@@ -342,7 +366,11 @@ jobs:
             deliverable and the post-step skips posting your text to
             avoid noise.) Don't write it as an internal log
             ("Investigated foo, found bar, will do baz") — write it
-            as the actual reply you want the requester to read.
+            as the actual reply you want the requester to read. When the
+            trigger was an inline review comment on the diff (a
+            `pull_request_review_comment`), your reply is posted as a threaded
+            reply to that exact comment — keep it focused on the line(s) that
+            comment is about.
 
             **Before declaring the task complete, check for additional
             @claude requests that arrived after the triggering event.**
@@ -358,6 +386,12 @@ jobs:
               (`issue_comment` fires for both issues and PRs; this
               flag disambiguates without you guessing.)
             - Entity number: `${{ github.event.issue.number || github.event.pull_request.number }}`
+            - Session-start SHA (the tip of the branch when your
+              session started): `${{ steps.head_before.outputs.sha || steps.issue_branch.outputs.starting_sha }}`
+              For PR triggers this is the PR head before you ran; for
+              issue triggers it's the tip of the freshly-created
+              `claude/issue-N-<timestamp>` branch. Use it as the base
+              for the step-5 commit-presence check below.
 
             - **PR triggers** (`issue_comment` on a PR,
               `pull_request_review`, `pull_request_review_comment`):
@@ -442,13 +476,24 @@ jobs:
                so and exit, and the next workflow run will pick up
                from there via the serialize-per-PR concurrency group.
 
-            4. Commit all changes before finishing. `git add`,
-               `git commit`, `git rm`, and read-only git inspection
-               commands are in your allowed-tools list; `git push`
-               is NOT. A post-Claude workflow step pushes:
-               - For PR triggers, your commits are already on the
-                 PR's head branch — the post-step re-requests review
-                 and dispatches code review when the head SHA moves.
+            4. **Commit all changes before finishing — this is the
+               single most common way these runs silently fail.**
+               Editing files with Edit/Write changes the working tree
+               but does NOT change the git history; only `git add` +
+               `git commit` does. If you describe work as "done" in a
+               comment but never committed, the post-step sees the
+               PR head SHA unchanged and your work is lost when the
+               runner is reclaimed. The user has no way to recover it.
+
+               `git add`, `git commit`, `git rm`, and read-only git
+               inspection commands are in your allowed-tools list;
+               `git push` is NOT, and any attempt to call it will
+               fail with a permission denial. **Do not attempt
+               `git push`** — a post-Claude workflow step performs
+               the push for you:
+               - For PR triggers, your commits go on the PR's head
+                 branch — the post-step re-requests review and
+                 dispatches code review when the head SHA moves.
                - For issue triggers, the workflow pre-creates a
                  `claude/issue-N-<timestamp>` branch and checks it
                  out before your session starts; the post-step
@@ -459,6 +504,27 @@ jobs:
                The concurrency group guarantees no parallel session
                is racing yours, so the push should succeed unless
                someone pushed by hand.
+
+            5. **Pre-finish self-check (mandatory).** Immediately
+               before you stop, run these and verify the output
+               (substitute the Session-start SHA from the context
+               block above for `<START>`):
+
+               ```
+               git status --porcelain         # MUST be empty
+               git log --oneline <START>..HEAD   # check whether you committed
+               ```
+
+               If `git status --porcelain` shows ANY output, you have
+               uncommitted edits — stage and commit them before
+               stopping. If you intended to make code changes but the
+               `git log <START>..HEAD` range is empty, you have NOT
+               done the task — the edits live only in the working
+               tree and will be discarded. Treat this as a task
+               failure: commit the work, or if you've decided not to
+               change anything, say so explicitly in your final
+               comment ("no changes needed because X") rather than
+               describing edits that weren't committed.
 
           # Optional: Add claude_args to customize behavior and configuration
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
@@ -679,11 +745,27 @@ jobs:
           … (response truncated at ${MAX_LEN} bytes; full text in the [workflow run](${RUN_URL}))"
           fi
 
-          # `gh issue comment` works for both issues and PRs (both
-          # post to the same `/repos/{owner}/{repo}/issues/{N}/comments`
-          # endpoint internally), so we don't need to branch on
-          # PR-vs-issue here.
-          gh issue comment "$ENTITY_NUMBER" --body "$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")" \
+          BODY="$(printf '%s\n\n<sub>— posted by @claude post-step from [workflow run](%s)</sub>\n' "$RESPONSE" "$RUN_URL")"
+          # When the trigger was an inline review comment, reply IN-THREAD to
+          # it (pulls/.../comments/<id>/replies) so the conversation stays
+          # anchored to the diff line. Every other trigger gets a top-level
+          # `gh issue comment` (issue and PR-conversation comments share the
+          # same endpoint). Fall back to top-level if the reply API fails
+          # (e.g. the parent review comment was deleted).
+          #
+          # The /replies endpoint requires the THREAD-ROOT comment id; a
+          # reply id returns 422. When the trigger is itself a reply,
+          # `in_reply_to_id` holds the root id (it is null at the thread
+          # root), so prefer it and fall back to `comment.id`.
+          REPLY_TARGET_ID="${{ github.event.comment.in_reply_to_id || github.event.comment.id }}"
+          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+            if jq -n --arg b "$BODY" '{body: $b}' \
+                 | gh api --method POST "repos/${{ github.repository }}/pulls/$ENTITY_NUMBER/comments/$REPLY_TARGET_ID/replies" --input - >/dev/null; then
+              exit 0
+            fi
+            echo "::warning::In-thread reply failed; falling back to a top-level comment."
+          fi
+          gh issue comment "$ENTITY_NUMBER" --body "$BODY" \
             || echo "::warning::Could not post Claude's response back to the source thread."
 
       # Dispatch the dedicated reviewer workflow when the triggering

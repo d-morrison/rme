@@ -36,6 +36,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 ### File Structure
 - Subfiles (`_subfiles/`) must NOT begin with a section heading — place headings in the parent `.qmd`
 - Link to `.qmd` source files, not rendered `.html` files
+- Aim to keep `.qmd` source files under ~100 lines; split longer files into named subfiles in `_subfiles/`
 - `_extensions/` is vendored third-party code — do not review or modify it
 
 ### Quarto
@@ -50,6 +51,10 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
 - Include every intermediate step in derivations — do not skip steps
 - Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
+- Ratios vs. factors:
+  - Use the generic `\ratio`/`\ratiof` macro when a ratio's inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — e.g. `\ratio(\odds_1, \odds_2)`, **not** `\ror(\odds_1, \odds_2)` — because the type of ratio is clear from the inputs.
+  - Use the type-subscripted ratio macros (`\ror` for odds ratios, `\hazratio`/`\hr` for hazard ratios, `\rateratio`, `\riskratio`, `\prevratio`, `\cuhazratio`, …) only when the inputs are **covariate patterns** (e.g. `\ror(\vx,\vxs)`, `\hr(t\mid\vx:\vxs)`), where the subscript is needed to say which kind of ratio it is.
+  - Factors compare **one** covariate pattern to the implicit baseline pattern (e.g. the Cox risk score `\hazfactor(\vx)`); always use the subscripted factor macros (`\hazfactor`, `\oddsfactor`, …; function forms `\hazfactorf`/`\hazff`, …).
 
 ### Citations
 - Always use BibTeX keys with `@citekey` Pandoc syntax — never plaintext author-date
@@ -64,15 +69,23 @@ Before committing any `.qmd`, `.R`, or config file change:
 
 ### Pull Requests
 - Remove existing review requests immediately when starting work on a PR
-- Ensure branch is up to date with `main` before requesting review
+- Always merge `main` into the feature branch when starting or resuming work on it
+- Merge `main` again before pushing — not just before requesting review
 - Verify all changed hyperlinks before requesting review
 - If any `_subfiles/` were edited, add the "clear freezer" label
+- Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
 
 ## Workflow Responsibility
 
 You are responsible for fixing failures caused by your changes only.
 Do not fix pre-existing lint/spell errors in code you didn't modify.
 If a failure is not caused by your changes, document it in the PR description.
+
+## Reporting
+
+When summarizing PRs, issues, workflow runs, or jobs, always include the
+GitHub URL alongside the reference (e.g.,
+[#897](https://github.com/d-morrison/rme/pull/897), not just "#897").
 
 ## External Resources Available in This Session
 
