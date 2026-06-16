@@ -69,6 +69,17 @@ jobs:
     # rule above was silently skipping them. The two clauses added below
     # opt those pushes back in.
     #
+    # Of the two clauses, `github.actor == 'claude[bot]'` is the
+    # load-bearing one: App-mediated pushes present as a Bot actor
+    # ending in `[bot]`, which the middle clause rejects, so without it
+    # those pushes would still be skipped. `github.actor == 'claude'`
+    # is deliberate belt-and-suspenders, NOT the thing that enables
+    # review of Claude pushes: the `claude` user (id 81847) is a regular
+    # User account, so its pushes already satisfy the middle clause
+    # (`sender.type != 'Bot' && !endsWith(actor, '[bot]')`) and are
+    # admitted without this clause. It is kept only to stay correct if
+    # that account is ever reclassified as a Bot.
+    #
     # This is safe from the self-trigger / frozen-comment recursion that
     # originally motivated skipping bot pushes (see the concurrency
     # comment above re: PR #809). This workflow is review-ONLY: the
@@ -219,6 +230,12 @@ jobs:
           # wins even though tag mode adds them. `git commit:*` is the
           # load-bearing entry (no commit -> nothing to push); the rest are
           # belt-and-suspenders in case the action's mechanics change.
+          # This disallow is ALSO load-bearing for review-loop prevention:
+          # the job `if:` Claude-bot clause (actor `claude[bot]`) above
+          # only stays recursion-safe because this reviewer cannot commit
+          # or push, so it can never fire a self-triggering `synchronize`.
+          # If you loosen this list, revisit that `if:` clause — the two
+          # are coupled.
           #
           # --append-system-prompt makes the reviewer review-ONLY at the
           # instruction level, not just the tool level. Disallowing the git
