@@ -36,6 +36,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 ### File Structure
 - Subfiles (`_subfiles/`) must NOT begin with a section heading — place headings in the parent `.qmd`
 - Link to `.qmd` source files, not rendered `.html` files
+- Aim to keep source files under ~100 lines; split longer files into named subfiles
 - `_extensions/` is vendored third-party code — do not review or modify it
 
 ### Quarto
