@@ -23,7 +23,8 @@ na_by_hand_table <- function(data) {
   stopifnot(
     "data must have a 'time' column"  = "time"  %in% names(data),
     "data must have a 'death' column" = "death" %in% names(data),
-    "'death' must be 0/1 or logical"  = all(data$death %in% c(0, 1))
+    "'death' must be 0/1 or logical"  = all(data$death %in% c(0, 1)),
+    "'time' must not contain NA"       = !anyNA(data$time)
   )
 
   time   <- data$time
@@ -95,9 +96,9 @@ na_by_hand_table <- function(data) {
       cum_haz_d <- new_den %/% g
 
       cum_haz_str <- if (cum_haz_d == 1) {
-        as.character(cum_haz_n)
+        sprintf("%.0f", cum_haz_n)
       } else {
-        sprintf("\\frac{%d}{%d}", cum_haz_n, cum_haz_d)
+        sprintf("\\frac{%.0f}{%.0f}", cum_haz_n, cum_haz_d)
       }
 
       cum_haz_cell <- sprintf(

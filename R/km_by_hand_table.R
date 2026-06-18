@@ -16,7 +16,8 @@ km_by_hand_table <- function(data) {
   stopifnot(
     "data must have a 'time' column"  = "time"  %in% names(data),
     "data must have a 'death' column" = "death" %in% names(data),
-    "'death' must be 0/1 or logical"  = all(data$death %in% c(0, 1))
+    "'death' must be 0/1 or logical"  = all(data$death %in% c(0, 1)),
+    "'time' must not contain NA"       = !anyNA(data$time)
   )
 
   time   <- data$time
@@ -96,7 +97,7 @@ km_by_hand_table <- function(data) {
     } else if (c_n == 0) {
       "0"
     } else {
-      sprintf("\\frac{%d}{%d}", c_n, c_d)
+      sprintf("\\frac{%.0f}{%.0f}", c_n, c_d)
     }
 
     contrib_cell <- if (di == 0L) {
@@ -111,7 +112,7 @@ km_by_hand_table <- function(data) {
       )
     } else {
       sprintf(
-        "$\\left(1 - \\frac{%d}{%d}\\right) = \\frac{%d}{%d} = %s$",
+        "$\\left(1 - \\frac{%d}{%d}\\right) = \\frac{%.0f}{%.0f} = %s$",
         di, ni, c_n, c_d, fmt_dec(c_n / c_d)
       )
     }
@@ -122,7 +123,7 @@ km_by_hand_table <- function(data) {
       sprintf("$%s \\times %s = 0$", prev_surv_str, frac_str)
     } else {
       sprintf(
-        "$%s \\times %s = \\frac{%d}{%d} = %s$",
+        "$%s \\times %s = \\frac{%.0f}{%.0f} = %s$",
         prev_surv_str, frac_str, surv_n, surv_d, fmt_dec(surv_n / surv_d)
       )
     }
@@ -131,7 +132,7 @@ km_by_hand_table <- function(data) {
       prev_surv_str <- if (surv_n == 0) {
         "0"
       } else {
-        sprintf("\\frac{%d}{%d}", surv_n, surv_d)
+        sprintf("\\frac{%.0f}{%.0f}", surv_n, surv_d)
       }
     }
 
