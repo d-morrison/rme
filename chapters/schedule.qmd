@@ -2,8 +2,6 @@
 title: "Schedule"
 format:
   html: default
-  revealjs:
-    output-file: schedule-slides.html
   pdf:
     output-file: schedule-handout.pdf
   docx:
@@ -52,18 +50,18 @@ combine_readings <- function(...) {
 
 ## Class sessions
 
+::: {#tbl-schedule}
+
 ```{r}
-#| label: tbl-schedule
-#| tbl-cap: "Tentative schedule of class sessions (Spring 2026)."
 #| echo: false
 
 class_schedule <-
   readxl::read_excel(schedule_path, sheet = "Schedule") |>
   # Drop footnote rows and the tentative "Skipped?" row (no real session date).
   filter(!is.na(Date)) |>
+  mutate(Date = format(as.Date(Date), "%b %d")) |>
   rowwise() |>
   mutate(
-    Date = format(as.Date(Date), "%b %d"),
     Readings = combine_readings(
       `Dunn & Smyth sections`, `Dobson sections`,
       `Vittinghoff sections`, `Lecture notes **`
@@ -94,11 +92,14 @@ class_schedule |>
   )
 ```
 
+Tentative schedule of class sessions (Spring 2026).
+:::
+
 ## Assignments and exams
 
+::: {#tbl-assignments}
+
 ```{r}
-#| label: tbl-assignments
-#| tbl-cap: "Homework assignments and exams (Spring 2026)."
 #| echo: false
 
 readxl::read_excel(schedule_path, sheet = "Homework and Exams") |>
@@ -119,3 +120,6 @@ readxl::read_excel(schedule_path, sheet = "Homework and Exams") |>
   gt::opt_row_striping() |>
   gt::tab_options(table.font.size = gt::pct(85))
 ```
+
+Homework assignments and exams (Spring 2026).
+:::
