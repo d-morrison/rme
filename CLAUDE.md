@@ -36,6 +36,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 ### File Structure
 - Subfiles (`_subfiles/`) must NOT begin with a section heading — place headings in the parent `.qmd`
 - Link to `.qmd` source files, not rendered `.html` files
+- Aim to keep `.qmd` source files under ~100 lines; split longer files into named subfiles in `_subfiles/`
 - `_extensions/` is vendored third-party code — do not review or modify it
 
 ### Quarto
@@ -73,7 +74,8 @@ Before committing any `.qmd`, `.R`, or config file change:
 
 ### Pull Requests
 - Remove existing review requests immediately when starting work on a PR
-- Always merge `main` into the feature branch before pushing — not just before requesting review
+- Always merge `main` into the feature branch when starting or resuming work on it
+- Merge `main` again before pushing — not just before requesting review
 - Verify all changed hyperlinks before requesting review
 - If any `_subfiles/` were edited, add the "clear freezer" label
 - Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
