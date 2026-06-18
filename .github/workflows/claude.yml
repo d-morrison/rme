@@ -59,10 +59,13 @@ jobs:
     # `issue_comment`, so guarding on the token kind is not enough; we guard
     # on the author. `github.event.sender` is the actor that raised the
     # event (comment/review author or issue opener) for all four trigger
-    # types; this mirrors the `sender.type != 'Bot'` filter in
-    # claude-code-review.yml.
+    # types; this mirrors the `sender.type != 'Bot' && !endsWith(actor,
+    # '[bot]')` double guard in claude-code-review.yml. The second clause
+    # is belt-and-suspenders: it also blocks a bot actor whose
+    # `sender.type` is somehow not reported as 'Bot' (old/misconfigured
+    # integrations), and keeps the two workflows idiomatically identical.
     if: |
-      github.event.sender.type != 'Bot' && (
+      github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]') && (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
