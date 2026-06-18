@@ -189,14 +189,14 @@ rownames(cg$edges) <- NULL
 ig <- graph_from_data_frame(cg$edges, vertices = cg$nodes, directed = TRUE)
 cg$nodes$n_desc <- vapply(
   cg$nodes$id,
-  function(v) length(subcomponent(ig, v, mode = "out")) - 1L,
+  function(v) length(bfs(ig, v, mode = "out", unreachable = FALSE)$order) - 1L,
   integer(1)
 )
 cg$nodes$n_direct <- as.integer(degree(ig, mode = "out")[cg$nodes$id])
 
 cg$descendants <- lapply(stats::setNames(cg$nodes$id, cg$nodes$id), function(v) {
   direct <- setdiff(names(which(distances(ig, v, mode = "out")[1, ] == 1)), v)
-  reach  <- setdiff(subcomponent(ig, v, mode = "out")$name, v)
+  reach  <- setdiff(names(bfs(ig, v, mode = "out", unreachable = FALSE)$order), v)
   list(direct = sort(direct), indirect = sort(setdiff(reach, direct)))
 })
 
