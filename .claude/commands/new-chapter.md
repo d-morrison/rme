@@ -17,6 +17,9 @@ Steps:
 2. Register the chapter in the `book.chapters:` list in `_quarto-book.yml` at a logical position (read the file first). If it belongs to an existing `part:`, nest it under that part. **Also** add an entry to the appropriate navbar dropdown (`Chapters` or `Appendices`) in `_quarto-website.yml`, and ensure the file is in the `render:` list. The navbar is NOT auto-generated from `_quarto-book.yml` -- manual addition is required.
 3. If the chapter is long, you may split content into includes under `chapters/_subfiles/<slug>/`. Subfiles must NOT start with a heading and must NOT contain a references section.
 4. Confirm it renders: `quarto render chapters/<slug>.qmd --to html`.
+5. If the chapter contains `def`/`thm`/`lem`/`cor`/`prp` callout divs,
+   re-run `Rscript data-raw/callout-graph.R` to refresh
+   `inst/extdata/callout-graph.rds` and keep the concept map current.
 
 Style rules (see `.github/instructions/`):
 
