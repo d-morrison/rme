@@ -42,17 +42,27 @@ jobs:
       contents: read
 
     steps:
-      - name: Save PR metadata
-        run: |
-          mkdir -p _preview_upload/meta
-          echo "${{ github.event.pull_request.number }}" > _preview_upload/meta/pr-number.txt
-          echo "${{ github.event.action == 'closed' && 'remove' || 'deploy' }}" > _preview_upload/meta/action.txt
-
       - name: Check out repository
         if: github.event.action != 'closed'
         uses: actions/checkout@v5
         with:
           submodules: recursive
+
+      # IMPORTANT: write the metadata AFTER checkout. actions/checkout runs
+      # `git clean -ffdx` (clean: true is the default), which deletes any
+      # untracked files already in the workspace — including a
+      # `_preview_upload/` directory created beforehand. With the metadata
+      # written before checkout, `_preview_upload/meta/` was wiped and never
+      # reached the artifact, so preview-deploy.yml read an empty pr-number,
+      # the deploy step's `action == 'deploy'` guard was false, and every
+      # deploy-path preview was silently skipped (the job still passed).
+      # For the 'closed'/remove event the checkout step is skipped, but this
+      # step is unguarded and still runs, so the remove path is unaffected.
+      - name: Save PR metadata
+        run: |
+          mkdir -p _preview_upload/meta
+          echo "${{ github.event.pull_request.number }}" > _preview_upload/meta/pr-number.txt
+          echo "${{ github.event.action == 'closed' && 'remove' || 'deploy' }}" > _preview_upload/meta/action.txt
 
       - name: Set up Quarto
         if: github.event.action != 'closed'
