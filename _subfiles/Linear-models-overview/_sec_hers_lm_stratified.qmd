@@ -3,11 +3,14 @@ As an alternative to the age–BMI models above,
 we can model LDL as a function of BMI,
 stratifying by statin use
 (i.e., fitting a separate intercept and BMI slope
-for each statin group):
+for each statin group).
+We omit age from this stratified specification
+to keep it simple and focus on how the BMI–LDL relationship differs by statin use;
+age could be added back as an additional covariate if desired.
 :::
 
 $$
-\E{LDL|B=b, U=u} =
+\E{LDL|B=b, V=v} =
 \beta_{no} (1-v) + \beta_{no,B}\, b(1-v) +
 \beta_{yes} v + \beta_{yes,B}\, bv
 $$ {#eq-hers-strat}
@@ -19,6 +22,7 @@ $$ {#eq-hers-strat}
 ::: {#tbl-hers-lm-strat}
 
 ```{r}
+#| code-fold: true
 hers_lm_strat <-
   hers |>
   lm(
@@ -47,6 +51,7 @@ Stratified regression estimates for `hers` data ([Model @eq-hers-strat])
 ::: {#tbl-hers-lm-statin-interact}
 
 ```{r}
+#| code-fold: true
 hers_lm_statins_interact <- lm(
   LDL ~ statins + BMI + statins:BMI,
   data = hers,
