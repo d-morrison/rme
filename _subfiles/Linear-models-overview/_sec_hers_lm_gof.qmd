@@ -12,8 +12,15 @@ lower deviance indicates a better-fitting model (at the cost of more parameters)
 
 ```{r}
 #| code-fold: true
-AIC(hers_lm1, hers_lm2)
-BIC(hers_lm1, hers_lm2)
+aic <- AIC(hers_lm1, hers_lm2)
+bic <- BIC(hers_lm1, hers_lm2)
+data.frame(
+  df  = aic$df,
+  AIC = aic$AIC,
+  BIC = bic$BIC,
+  row.names = rownames(aic)
+) |>
+  knitr::kable()
 ```
 
 AIC and BIC for the `hers` parallel-planes (`hers_lm1`) and interaction (`hers_lm2`) models
@@ -31,8 +38,11 @@ a smaller value for the parallel-planes model would favor the simpler specificat
 
 ```{r}
 #| code-fold: true
-deviance(hers_lm1)
-deviance(hers_lm2)
+data.frame(
+  deviance = c(deviance(hers_lm1), deviance(hers_lm2)),
+  row.names = c("hers_lm1", "hers_lm2")
+) |>
+  knitr::kable()
 ```
 
 Deviance for the `hers` parallel-planes (`hers_lm1`) and interaction (`hers_lm2`) models
@@ -40,5 +50,5 @@ Deviance for the `hers` parallel-planes (`hers_lm1`) and interaction (`hers_lm2`
 :::
 
 Lower deviance indicates a closer fit to the data; the interaction model uses one more parameter.
-The likelihood ratio test below provides a formal comparison of whether the improvement justifies the added complexity.
+The likelihood ratio test in @tbl-hers-lrt provides a formal comparison of whether the improvement justifies the added complexity.
 
