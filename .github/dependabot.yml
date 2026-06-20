@@ -1,4 +1,4 @@
-# Keep git submodules up to date automatically.
+# Keep git submodules and pinned GitHub Actions up to date automatically.
 #
 # This repo embeds the shared `macros` repo as a git submodule (at
 # `latex-macros/`, tracking `main`). Dependabot's `gitsubmodule` updater opens a
@@ -18,3 +18,13 @@ updates:
     # PR needs the Quarto freeze cache cleared; this label keeps that visible.
     labels:
       - "clear freezer"
+
+  # Also keep pinned GitHub Actions current. Dependabot scans .github/workflows/
+  # and opens a PR when a newer release of a pinned action is available;
+  # unversioned @HEAD / @main pins are left untouched.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(actions)"
