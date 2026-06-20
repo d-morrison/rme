@@ -46,6 +46,11 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Use div format (`:::{#fig-...}`) for figures and tables, not chunk-option `fig-cap`/`tbl-cap`
 - Do not indent `:::` fenced div markers inside lists
 - One source line per major phrase in prose — keeps git diffs readable and review easier
+- **Theorem-div headings** (`:::{#exm-...}`, `:::{#def-...}`, etc.): use `####` (level 4) or deeper for the name heading inside the div — using `##` or `###` creates numbered section headings that disrupt document structure and break example/definition numbering.
+
+### Cross-references
+- **Within-chapter** (`@id`): use Pandoc `@id` syntax for any element in the same rendered `.html` file — includes the parent chapter and all its `{{< include >}}`d subfiles.
+- **Cross-chapter** (`other-chapter.qmd`): this is a Quarto `website` project (not `book`), so `@id` does **not** resolve across `.html` files. For elements in other chapters use an explicit relative link: `[text](other-chapter.qmd#id)`.
 
 ### Math Notation
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
@@ -67,6 +72,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Factual claims must have a specific citation
 - Variable definitions in exercises: use bullet points/table with symbol, meaning, and dataset column
 - After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div
+- Clearly distinguish **model structure** (how the data relate to the parameters — distributional family, link function, random effects, hierarchies, …) from **inference method** (how the parameters are estimated — MLE, Bayes, GEE, method of moments, …). The two are orthogonal: any model structure can be paired with any compatible inference method (e.g. a random-effects model can be fit by maximum likelihood *or* by Bayesian MCMC). Never write as if a structure belonged to one inference paradigm (avoid e.g. "the Bayesian version of random effects"); instead name the inference method being applied to the structure.
 
 ### Pull Requests
 - Remove existing review requests immediately when starting work on a PR
@@ -76,6 +82,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - If any `_subfiles/` were edited, add the "clear freezer" label
 - Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
 - This checkout is often shared by concurrent agent sessions — the branch can switch under you, and commits land on PR branches from other sessions or the `@claude` bot. Work in an isolated `git worktree`: for **new** work `git worktree add -b <branch> <dir> origin/main`; to **resume** an existing PR branch `git worktree add -b <branch> <dir> origin/<branch>` (the `origin/<branch>` start point picks up the PR rather than starting a fresh branch from `main`). Then run `git submodule update --init` in the new worktree. Before every push, `git fetch` and reconcile `origin/<branch>` (merge or rebase) — another session may have already pushed the same change
+- After opening (or when asked to watch) a PR, subscribe to its activity and keep watching until it is merged or closed: confirm CI results, surface review comments, and catch merge conflicts; re-arm a periodic check-in and only ping when something needs the author. Stop immediately if the author asks you to back off.
 
 ## Workflow Responsibility
 
