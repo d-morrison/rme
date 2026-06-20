@@ -5,7 +5,7 @@ the original profile-likelihood argument is due to @johansen1983extension.
 
 Assume, as in the partial-likelihood proof, that there are no tied event times,
 so each ordered event time $t_i$ corresponds to exactly one event.
-Let $D$ denote the number of distinct event times $t_1 < \cdots < t_D$.
+Let $K$ denote the number of distinct event times $t_1 < \cdots < t_K$.
 
 The full censored-data likelihood for the proportional-hazards model is
 
@@ -55,7 +55,7 @@ that places point masses only at the observed event times:
 
 $$
 \haz_0(t) = \begin{cases}
-h_{0i}, & t = t_i \text{ for some } i \in \set{1, \dots, D},\\
+h_{0i}, & t = t_i \text{ for some } i \in \set{1, \dots, K},\\
 0,      & \text{otherwise},
 \end{cases}
 $$
@@ -92,7 +92,7 @@ $$
 &= \prod_{j:\,\delta_j=1} \haz_0(\tilde{T}_j)\,\hazfactor(\vx_j)
    && \text{(terms with } \delta_j = 0 \text{ equal } 1\text{, dropped)}
 \\
-&= \prod_{i=1}^D h_{0i}\,\hazfactor(\vx_{(i)}).
+&= \prod_{i=1}^K h_{0i}\,\hazfactor(\vx_{(i)}).
    && \text{(}\haz_0(\tilde{T}_j) = h_{0i} \text{ for event } j \text{ at event time } t_i\text{)}
 \ea
 $$
@@ -102,11 +102,11 @@ and combining factor-by-factor with the hazard-density product:
 
 $$
 \ba
-\Lik\sb{\b,\,h_{01},\dots,h_{0D}}
-&= \underbrace{\prod_{i=1}^{D} h_{0i}\,\hazfactor(\vx_{(i)})}_{\text{hazard-density}}
-   \cdot \underbrace{\prod_{i=1}^{D} \expf{-h_{0i}\,S_i}}_{\text{survival}}
+\Lik\sb{\b,\,h_{01},\dots,h_{0K}}
+&= \underbrace{\prod_{i=1}^{K} h_{0i}\,\hazfactor(\vx_{(i)})}_{\text{hazard-density}}
+   \cdot \underbrace{\prod_{i=1}^{K} \expf{-h_{0i}\,S_i}}_{\text{survival}}
 \\
-&= \prod_{i = 1}^{D}
+&= \prod_{i = 1}^{K}
     h_{0i}\;\hazfactor(\vx_{(i)})\;
     \expf{-h_{0i}\,S_i}.
 \ea
@@ -115,9 +115,9 @@ $$
 The log-likelihood is separable in the $h_{0i}$ (each summand $\log h_{0i} - h_{0i}\,S_i$ involves only $h_{0i}$):
 
 $$
-\loglik\sb{\b,\,h_{01},\dots,h_{0D}}
-= \sum_{i = 1}^{D} \log\hazfactor(\vx_{(i)})
-  + \sum_{i = 1}^{D}
+\loglik\sb{\b,\,h_{01},\dots,h_{0K}}
+= \sum_{i = 1}^{K} \log\hazfactor(\vx_{(i)})
+  + \sum_{i = 1}^{K}
     \cb{\log h_{0i} - h_{0i}\,S_i}.
 $$
 
@@ -149,34 +149,34 @@ Substituting $\hat h_{0i}$ back into the profile likelihood:
 
 $$
 \ba
-\Lik\sb{\b,\,\hat h_{01},\dots,\hat h_{0D}}
-&= \prod_{i = 1}^{D}
+\Lik\sb{\b,\,\hat h_{01},\dots,\hat h_{0K}}
+&= \prod_{i = 1}^{K}
     \hat h_{0i}\;\hazfactor(\vx_{(i)})\;
     \expf{-\hat h_{0i}\,S_i}
 \\
-&= \prod_{i = 1}^{D}
+&= \prod_{i = 1}^{K}
     \frac{\hazfactor(\vx_{(i)})}{S_i}\;
     \expf{-S_i / S_i}
     && \text{(substituting } \hat h_{0i} = 1/S_i\text{)}
 \\
-&= \prod_{i = 1}^{D}
+&= \prod_{i = 1}^{K}
     \frac{\hazfactor(\vx_{(i)})}{S_i}\;
     e^{-1}
     && \text{(since } S_i/S_i = 1\text{)}
 \\
-&= e^{-D}
-   \cdot \prod_{i = 1}^{D} \frac{\hazfactor(\vx_{(i)})}{S_i}.
+&= e^{-K}
+   \cdot \prod_{i = 1}^{K} \frac{\hazfactor(\vx_{(i)})}{S_i}.
 \ea
 $$
 
 Under the no-ties assumption each event time $t_i$ has $d_i = 1$, so
-$\prod_{i=1}^D \frac{\hazfactor(\vx_{(i)})}{S_i}$
+$\prod_{i=1}^K \frac{\hazfactor(\vx_{(i)})}{S_i}$
 equals the partial likelihood $\Lik^*(\b)$ of @def-ph-partial-lik.
 Hence
 
-$$\Lik\sb{\b,\,\hat h_{01},\dots,\hat h_{0D}} = e^{-D}\,\Lik^*(\b).$$
+$$\Lik\sb{\b,\,\hat h_{01},\dots,\hat h_{0K}} = e^{-K}\,\Lik^*(\b).$$
 
-The factor $e^{-D}$ does not depend on $\b$,
+The factor $e^{-K}$ does not depend on $\b$,
 so the profile likelihood is proportional to the partial likelihood $\Lik^*(\b)$.
 This proportionality justifies treating the partial likelihood as a profile likelihood
 for $\b$, with $\haz_0(\cdot)$ concentrated out.
