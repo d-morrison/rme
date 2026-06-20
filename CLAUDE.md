@@ -40,7 +40,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - `_extensions/` is vendored third-party code — do not review or modify it
 - New book pages must be wired into each render profile that should include them — the profiles keep independent page lists, so a page added to only one is missing from the others:
   - `_quarto-website.yml` — the default profile (`profile.default: website` in `_quarto.yml`): add to the `render:` list **and** the navbar
-  - `_quarto-book.yml` — the book/PDF TOC, incl. its `part:` groupings
+  - `_quarto-book.yml` — the book/PDF TOC: add to `book.chapters:` (directly or inside a `part:` grouping)
   - `_quarto-handout.yml` — a curated PDF-handout subset with its own `render:` list; add the page here too if it belongs in the handouts
 
 ### Quarto
