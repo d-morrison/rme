@@ -1,0 +1,52 @@
+<script>
+  // Mobile within-chapter table of contents.
+  //
+  // Quarto hides the right "On this page" TOC below its `md` breakpoint
+  // (max-width: 767.98px) and offers no built-in mobile replacement, so phone
+  // readers lose within-chapter navigation. This clones the existing TOC into a
+  // collapsible <details> at the top of the page content; the matching rules in
+  // custom.scss reveal it only on narrow screens. Desktop is untouched.
+  (function () {
+    function buildMobileToc() {
+      var toc = document.querySelector("nav#TOC");
+      var content = document.querySelector("main#quarto-document-content");
+      if (!toc || !content) {
+        return;
+      }
+
+      var list = toc.querySelector("ul");
+      if (!list) {
+        return;
+      }
+
+      var details = document.createElement("details");
+      details.className = "mobile-toc";
+
+      var summary = document.createElement("summary");
+      var titleEl = toc.querySelector("#toc-title");
+      summary.textContent = titleEl ? titleEl.textContent : "On this page";
+      details.appendChild(summary);
+
+      // Clone only the list (not the heading) so no element ids are duplicated.
+      var nav = document.createElement("nav");
+      nav.setAttribute("role", "doc-toc");
+      nav.appendChild(list.cloneNode(true));
+      details.appendChild(nav);
+
+      // Collapse the menu once the reader taps through to a section.
+      nav.addEventListener("click", function (event) {
+        if (event.target.closest("a")) {
+          details.open = false;
+        }
+      });
+
+      content.insertBefore(details, content.firstChild);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", buildMobileToc);
+    } else {
+      buildMobileToc();
+    }
+  })();
+</script>
