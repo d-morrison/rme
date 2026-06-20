@@ -1,0 +1,272 @@
+When the posterior distribution has a known closed form,
+we can sample from it directly and compute summaries analytically.
+In most real-world models, however,
+the normalizing constant $p(\vy)$ is intractable,
+making direct sampling and closed-form summaries impossible.
+**Markov Chain Monte Carlo (MCMC)** methods provide a practical solution:
+instead of sampling independent draws from the exact posterior,
+they generate a *correlated* sequence of draws whose long-run distribution
+converges to the posterior [@dobson4e, Chapter 13, p. 287].
+
+## Why the normalizing constant is computationally challenging
+
+The posterior is $p(\vth \mid \vy) \propto p(\vy \mid \vth)\, p(\vth)$.
+The normalizing constant is
+
+$$p(\vy) = \int p(\vy \mid \vth)\, p(\vth)\, d\vth,$$
+
+a high-dimensional integral that typically has no closed form.
+Computing it numerically becomes infeasible as the dimension of $\vth$ grows
+[@dobson4e, Chapter 13, p. 287].
+
+MCMC sidesteps this problem:
+many algorithms require only the *ratio*
+$p(\vth^* \mid \vy) / p(\vth \mid \vy)$,
+in which the normalizing constant cancels.
+
+## Monte Carlo integration
+
+Before introducing Markov chains,
+it helps to understand **Monte Carlo integration**
+[@dobson4e, Chapter 13, p. 290].
+If we could draw $M$ independent samples
+$\vth^{(1)}, \ldots, \vth^{(M)} \siid p(\vth \mid \vy)$,
+we could approximate any posterior expectation:
+
+$$\E{g(\vth) \mid \vy} \approx \frac{1}{M} \sum_{m=1}^{M} g\!\left(\vth^{(m)}\right).$$
+
+In particular, the posterior mean,
+posterior variance,
+and credible-interval endpoints
+are all special cases of this formula.
+
+:::{#exm-mc-bernoulli}
+#### Monte Carlo posterior summaries for a Bernoulli model
+
+Recall the Beta-Bernoulli model of
+[the conjugate-prior example](intro-bayes.qmd#exm-beta-bernoulli),
+with $n = 91$ observations and $r = 55$ successes.
+The posterior is $\pi \mid \vy \sim \operatorname{Beta}(56, 37)$.
+We draw $M = 5{,}000$ samples and compare Monte Carlo summaries with exact values.
+
+```{r}
+#| code-fold: show
+#| label: exm-mc-bernoulli-code
+set.seed(42)
+n_obs <- 91L
+r_obs <- 55L
+a_post <- 1L + r_obs
+b_post <- 1L + n_obs - r_obs
+M <- 5000L
+pi_mc <- rbeta(n = M, shape1 = a_post, shape2 = b_post)
+round(c(
+  exact_mean  = a_post / (a_post + b_post),
+  mc_mean     = mean(pi_mc),
+  exact_lower = qbeta(0.025, a_post, b_post),
+  mc_lower    = unname(quantile(pi_mc, 0.025)),
+  exact_upper = qbeta(0.975, a_post, b_post),
+  mc_upper    = unname(quantile(pi_mc, 0.975))
+), 4)
+```
+:::
+
+## Markov chains
+
+A **Markov chain** is a sequence of random variables
+$\vth^{(1)}, \vth^{(2)}, \ldots$ such that
+the distribution of $\vth^{(t+1)}$ depends only on $\vth^{(t)}$
+(the *Markov property*).
+
+:::{#def-markov-chain}
+#### Markov chain
+
+A sequence of random variables $\vth^{(1)}, \vth^{(2)}, \ldots$
+is a **Markov chain** if, for all $t$,
+
+$$p(\vth^{(t+1)} \mid \vth^{(t)}, \vth^{(t-1)}, \ldots, \vth^{(1)}) =
+p(\vth^{(t+1)} \mid \vth^{(t)}).$$
+:::
+
+Under mild conditions,
+a Markov chain converges to a unique **stationary distribution**.
+MCMC algorithms are designed so that the stationary distribution
+is the target posterior $p(\vth \mid \vy)$
+[@dobson4e, Chapter 13, p. 291].
+
+## The Metropolis--Hastings algorithm
+
+The **Metropolis--Hastings (MH) algorithm** is the most general MCMC method
+[@dobson4e, Chapter 13, p. 293].
+At each iteration $t$:
+
+1. Propose a new value $\vth^*$ from a **proposal distribution** $q(\vth^* \mid \vth^{(t)})$.
+2. Compute the **acceptance ratio**
+
+$$\alpha = \frac{p(\vy \mid \vth^*)\, p(\vth^*)}{p(\vy \mid \vth^{(t)})\, p(\vth^{(t)})}
+\cdot \frac{q(\vth^{(t)} \mid \vth^*)}{q(\vth^* \mid \vth^{(t)})}.$$
+
+3. Accept the proposal with probability $\min(1, \alpha)$:
+   if accepted, set $\vth^{(t+1)} = \vth^*$.
+   otherwise set $\vth^{(t+1)} = \vth^{(t)}$.
+
+Because the normalizing constant $p(\vy)$ appears in both numerator and denominator,
+it cancels in the ratio,
+so only the unnormalized posterior is needed.
+
+:::{#def-mh}
+#### Metropolis--Hastings algorithm
+
+Given a target posterior $p(\vth \mid \vy) \propto p(\vy \mid \vth)\, p(\vth)$
+and a proposal distribution $q(\cdot \mid \vth)$,
+one step of the **MH algorithm** proceeds as:
+
+1. Draw $\vth^* \sim q(\cdot \mid \vth^{(t)})$.
+2. Compute $\alpha = \min\!\left(1,\,
+   \frac{p(\vy \mid \vth^*)\, p(\vth^*)}{p(\vy \mid \vth^{(t)})\, p(\vth^{(t)})}
+   \cdot \frac{q(\vth^{(t)} \mid \vth^*)}{q(\vth^* \mid \vth^{(t)})}\right)$.
+3. Set $\vth^{(t+1)} = \vth^*$ with probability $\alpha$,
+   else $\vth^{(t+1)} = \vth^{(t)}$.
+:::
+
+:::{#exm-mh-bernoulli}
+#### Metropolis--Hastings for a Bernoulli model
+
+We implement the MH algorithm for the same Beta-Bernoulli model
+as in @exm-mc-bernoulli.
+We use a normal random-walk proposal $\pi^* = \pi^{(t)} + \varepsilon$,
+$\varepsilon \sim \ndist{0, \sigma^2}$.
+
+```{r}
+#| code-fold: show
+#| label: exm-mh-bernoulli-code
+log_post_unnorm <- function(pi, r, n) {
+  if (pi <= 0 || pi >= 1) return(-Inf)
+  r * log(pi) + (n - r) * log(1 - pi)
+}
+
+mh_bernoulli <- function(n_iter, r, n, pi_init = 0.5, sigma = 0.05) {
+  chain <- numeric(n_iter)
+  chain[1] <- pi_init
+  for (i in seq(2, n_iter)) {
+    pi_curr <- chain[i - 1]
+    pi_prop <- pi_curr + rnorm(1, sd = sigma)
+    log_alpha <- log_post_unnorm(pi_prop, r, n) -
+      log_post_unnorm(pi_curr, r, n)
+    chain[i] <- if (log(runif(1)) < log_alpha) pi_prop else pi_curr
+  }
+  chain
+}
+
+set.seed(1)
+mh_chain <- mh_bernoulli(n_iter = 5000L, r = 55L, n = 91L)
+```
+:::
+
+## The Gibbs sampler
+
+The **Gibbs sampler** is a special case of the MH algorithm
+for multiparameter models
+[@dobson4e, Chapter 13, p. 300].
+When $\vth = (\theta_1, \ldots, \theta_K)$,
+each component is updated in turn by sampling from its
+**full conditional distribution**
+$p(\theta_k \mid \theta_{-k}, \vy)$,
+where $\theta_{-k}$ denotes all components except $\theta_k$.
+The resulting proposal is always accepted (acceptance probability 1).
+Gibbs sampling requires that the full conditionals are available in closed form.
+JAGS (Just Another Gibbs Sampler) automates this approach for a wide class of models
+[@dobson4e, Chapter 13].
+
+## Burn-in {#sec-burnin}
+
+:::{#def-burnin}
+#### burn-in
+
+The **burn-in** period is the initial segment of an MCMC chain
+that is discarded before posterior summaries are computed.
+During burn-in, the chain is moving toward the stationary distribution
+and does not yet represent draws from the posterior
+[@dobson4e, Chapter 13, p. 301].
+:::
+
+The length of the burn-in period is chosen by inspection of trace plots.
+A common default is to discard the first 10--20% of iterations.
+
+## Convergence diagnostics {#sec-mcmc-diagnostics}
+
+Because MCMC chains are correlated and may take time to reach stationarity,
+we must assess whether the chain has converged before using it for inference
+[@dobson4e, Chapter 13, p. 302].
+
+### Trace plots
+
+A **trace plot** graphs the sampled value $\vth^{(t)}$ against iteration $t$.
+A well-mixed chain shows rapid oscillation around a stable mean,
+with no obvious trends or stuck regions.
+
+:::{#exm-trace-plot}
+#### Trace plot for MH chain
+
+:::{#fig-trace-mh}
+```{r}
+#| code-fold: show
+burnin <- 500L
+df_chain <- data.frame(iteration = seq_along(mh_chain), pi = mh_chain)
+ggplot(df_chain, aes(x = iteration, y = pi)) +
+  geom_line(linewidth = 0.2, alpha = 0.7) +
+  geom_vline(xintercept = burnin, linetype = "dashed", colour = "red") +
+  labs(x = "Iteration", y = expression(pi)) +
+  theme_bw()
+```
+MH chain trace plot; dashed line marks end of burn-in.
+:::
+:::
+
+### Autocorrelation function (ACF)
+
+Because successive draws in an MCMC chain are correlated,
+the **effective sample size** (ESS) is less than the number of iterations.
+The autocorrelation function (ACF) quantifies this dependence.
+A rapidly decaying ACF indicates good mixing.
+
+### Multiple chains and the Gelman--Rubin statistic
+
+Running multiple chains from different starting points
+provides a stronger convergence check than a single chain.
+The **Gelman--Rubin statistic** $\hR$
+compares within-chain and between-chain variance.
+$\hR \approx 1$ indicates convergence
+[@dobson4e, Chapter 13, p. 304].
+A common rule of thumb is $\hR < 1.1$.
+
+## Posterior inference from MCMC samples
+
+After discarding burn-in,
+the remaining chain $\vth^{(B+1)}, \ldots, \vth^{(T)}$
+is treated as a (correlated) sample from the posterior.
+Posterior summaries are computed as sample statistics:
+
+- **Posterior mean**: $\hmu = \frac{1}{T - B} \sum_{t=B+1}^{T} \vth^{(t)}$
+- **Credible interval**: sample quantiles of the chain after burn-in
+
+[@dobson4e, Chapter 13, p. 305].
+
+:::{#exm-post-summary-mh}
+#### Posterior summaries from MH chain
+
+Using the chain from @exm-mh-bernoulli,
+we discard the first 500 iterations as burn-in
+and compute posterior summaries.
+
+```{r}
+#| code-fold: show
+#| label: exm-post-summary-mh-code
+burnin <- 500L
+post_chain <- mh_chain[seq(burnin + 1L, length(mh_chain))]
+round(c(
+  mean  = mean(post_chain),
+  lower = unname(quantile(post_chain, 0.025)),
+  upper = unname(quantile(post_chain, 0.975))
+), 4)
+```
+:::
