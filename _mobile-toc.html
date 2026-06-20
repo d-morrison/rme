@@ -19,6 +19,11 @@
         return;
       }
 
+      // Guard against firing twice (e.g. Quarto live-preview hot-reload).
+      if (content.querySelector(".mobile-toc")) {
+        return;
+      }
+
       var details = document.createElement("details");
       details.className = "mobile-toc";
 
@@ -40,7 +45,10 @@
         }
       });
 
-      content.insertBefore(details, content.firstChild);
+      // Place the menu just below the chapter title, not above it.
+      var titleBlock = content.querySelector("header#title-block-header");
+      var insertBeforeEl = titleBlock ? titleBlock.nextSibling : content.firstChild;
+      content.insertBefore(details, insertBeforeEl);
     }
 
     if (document.readyState === "loading") {
