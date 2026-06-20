@@ -38,6 +38,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Link to `.qmd` source files, not rendered `.html` files
 - Aim to keep `.qmd` source files under ~100 lines; split longer files into named subfiles in `_subfiles/`
 - `_extensions/` is vendored third-party code — do not review or modify it
+- New book pages must be wired into **both** `_quarto-book.yml` (book/PDF TOC, incl. its `part:` groupings) **and** `_quarto-website.yml` (the default website profile: the `render:` list **and** the navbar) — the two profiles keep independent page lists, so a page added to only one is missing from the other build
 
 ### Quarto
 - Use `{{< slidebreak >}}` instead of `---` for slide breaks
@@ -74,6 +75,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Verify all changed hyperlinks before requesting review
 - If any `_subfiles/` were edited, add the "clear freezer" label
 - Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
+- This checkout is often shared by concurrent agent sessions — the branch can switch under you, and commits land on PR branches from other sessions or the `@claude` bot. Work in an isolated `git worktree` off `origin/main` (`git worktree add -b <branch> <dir> origin/main`; then `git submodule update --init`), and `git fetch` + reconcile `origin/<branch>` before every push (another session may have already pushed the same change)
 
 ## Workflow Responsibility
 
