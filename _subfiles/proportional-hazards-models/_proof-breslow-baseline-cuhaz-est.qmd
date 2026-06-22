@@ -72,18 +72,20 @@ $$
 \ba
 \sum_j \blue{\cuhaz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}
 &= \sum_j \red{\hazfactor(\vx_j)} \sum_{i:\ t_i \le \tilde{T}_j} \blue{h_{0i}}
+&& \text{(expand } \blue{\cuhaz_0(\tilde{T}_j)} \text{ as point masses)}
 \\
 &= \sum_i \blue{h_{0i}} \sum_{j:\ \tilde{T}_j \ge t_i} \red{\hazfactor(\vx_j)}
+&& \text{(swap the order of summation)}
 \\
 &= \sum_i \blue{h_{0i}} \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)},
+&& \text{(}R(t_i) = \{j : \tilde{T}_j \ge t_i\}\text{)}
 \ea
 $$
 
-where the second equality swaps the order of summation,
-and the third uses $R(t_i) = \{j : \tilde{T}_j \ge t_i\}$
-(see the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set); this definition uses the "at risk *at* $t_i$" convention with the
-$\ge$ boundary — a subject censored exactly at $t_i$ is in $R(t_i)$
-and contributes $\blue{h_{0i}}$ to $\blue{\cuhaz_0(\tilde{T}_j)}$).
+Here $R(t_i)$ uses the "at risk *at* $t_i$" convention
+(the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set))
+with the $\ge$ boundary — a subject censored exactly at $t_i$ is in
+$R(t_i)$ and contributes $\blue{h_{0i}}$ to $\blue{\cuhaz_0(\tilde{T}_j)}$.
 Collecting the inner sum into the **risk-set score total**
 $\red{S_i} \eqdef \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)}$
 — the same piece defined in the partial-likelihood proof
@@ -134,8 +136,10 @@ Differentiating with respect to $h_{0i}$ and setting the derivative to zero:
 $$
 \ba
 \frac{1}{\blue{h_{0i}}} - \red{S_i} &= 0
+&& \text{(stationarity condition)}
 \\
 \Longrightarrow\quad \blue{\hat h_{0i}} &= \frac{1}{\red{S_i}}.
+&& \text{(solve for } \blue{\hat h_{0i}} \text{)}
 \ea
 $$
 
@@ -148,12 +152,14 @@ $$
 \ba
 \blue{\hat \cuhaz_0(t)}
 &= \sum_{t_i \le t} \blue{\hat h_{0i}}
+&& \text{(sum the estimated point masses up to } t \text{)}
 \\
-&= \sum_{t_i \le t} \frac{1}{\red{S_i}}
-\quad\text{where } \red{S_i} = \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)}.
+&= \sum_{t_i \le t} \frac{1}{\red{S_i}}.
+&& \text{(substitute } \blue{\hat h_{0i}} = 1/\red{S_i} \text{)}
 \ea
 $$
 
+where $\red{S_i} = \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)}$ as before.
 With tied event times, the numerator generalizes to $d_i$,
 the number of events at $t_i$
 (see [@klein2003survival, §8.8] for the tie-handling adjustments).
