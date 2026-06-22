@@ -56,7 +56,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
 - Use `\eqdef` instead of `=` for any equality that holds **by definition** — both the defining equation in a `{#def-...}` div and the first introduction of new local notation (e.g. the step in a proof where a symbol is first defined). When an equality holds by definition, annotate it with `\eqdef` even inside a proof.
-- Include every intermediate step in derivations — do not skip steps
+- Include every intermediate step in derivations — do not skip steps. Give each algebraic step its own aligned line (one operation per step — distribution, substitution, cancellation, approximation), and annotate each step with a short parenthetical explanation of the rule, definition, or approximation it uses (e.g. a trailing `&& \text{(...)}` column in an aligned block, as in `@eq-ph-surv-discretized`). Default to this level of explicitness for all derivations.
 - Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
 - Ratios vs. factors:
   - Use the generic `\ratio`/`\ratiof` macro when a ratio's inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — e.g. `\ratio(\odds_1, \odds_2)`, **not** `\ror(\odds_1, \odds_2)` — because the type of ratio is clear from the inputs.

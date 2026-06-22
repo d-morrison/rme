@@ -73,20 +73,32 @@ every factor in this proof is a product of $q_j(\tau)$'s and $(1 - q_j(\tau))$'s
 and we manipulate these pieces directly instead of re-expanding the
 hazard at each step.
 
-Writing the survival function as the exponential of the negative
-cumulative hazard,
-$\surv(t \mid \vx) = \expf{-\int_0^{t} \haz(u \mid \vx)\,du}$
-(see the [survival/cumulative hazard relationship](intro-to-survival-analysis.qmd#cor-surv-int-haz)),
-and approximating the integral by its left Riemann sum over the grid,
+Write the survival function as the exponential of the negative
+cumulative hazard
+(the [survival/cumulative hazard relationship](intro-to-survival-analysis.qmd#cor-surv-int-haz)),
+expand the cumulative hazard as its defining integral, and
+approximate that integral by a left Riemann sum over the grid:
 
 $$
 \ba
 \surv(Y_j \mid \vx_j)
-&\approx \expf{-\!\!\sum_{\tau < Y_j} q_j(\tau)}
+&= \expf{-\cuhaz(Y_j \mid \vx_j)}
+&& \text{(survival/cumulative-hazard relationship)}
+\\
+&= \expf{-\!\int_0^{Y_j} \haz(u \mid \vx_j)\,du}
+&& \text{(definition of the cumulative hazard)}
+\\
+&\approx \expf{-\!\!\sum_{\tau < Y_j} \haz(\tau \mid \vx_j)\,\Delta t}
+&& \text{(left Riemann sum over the grid)}
+\\
+&= \expf{-\!\!\sum_{\tau < Y_j} q_j(\tau)}
+&& \text{(definition of } q_j(\tau) \text{)}
 \\
 &= \prod_{\tau < Y_j} \expf{-q_j(\tau)}
+&& \text{(exponential of a sum is a product)}
 \\
 &\approx \prod_{\tau < Y_j}\paren{1 - q_j(\tau)}.
+&& \text{(}\expf{-x} \approx 1 - x\text{)}
 \ea
 $$ {#eq-ph-surv-discretized}
 
