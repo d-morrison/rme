@@ -55,7 +55,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 ### Math Notation
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
-- Use `\eqdef` instead of `=` for the defining equation in any `{#def-...}` div
+- Use `\eqdef` instead of `=` for any equality that holds **by definition** — both the defining equation in a `{#def-...}` div and the first introduction of new local notation (e.g. the step in a proof where a symbol is first defined). When an equality holds by definition, annotate it with `\eqdef` even inside a proof.
 - Include every intermediate step in derivations — do not skip steps
 - Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
 - Ratios vs. factors:
