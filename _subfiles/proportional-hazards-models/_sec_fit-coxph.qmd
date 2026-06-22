@@ -7,15 +7,19 @@ How do we fit a proportional hazards regression model? We need to
 estimate the coefficients of the covariates, and we need to estimate the
 base hazard $\haz_0(t)$. For the covariates, supposing for simplicity that
 there are no tied event times, let the event times for the whole data
-set be $t_1, t_2,\ldots,t_D$. Let the risk set at time $t_i$ be $R(t_i)$
+set be $t_1, t_2,\ldots,t_K$. Let the risk set at time $t_i$ be $R(t_i)$
 and
 :::
 
 $$
 \ba
-\eta(\vx) &= \beta_1x_{1}+\cdots+\beta_p x_{p}\\
-\hazfactor(\vx) &= \expf{\eta(\vx)}\\
-\haz(t|\vx)&= \haz_0(t)\expf{\eta(\vx)}=\hazfactor(\vx) \haz_0(t)
+\eta(\vx) &= \beta_1x_{1}+\cdots+\beta_p x_{p}
+\\
+\hazfactor(\vx) &= \expf{\eta(\vx)}
+\\
+\haz(t|\vx) &= \blue{\haz_0(t)}\,\red{\expf{\eta(\vx)}}
+\\
+&= \red{\hazfactor(\vx)}\,\blue{\haz_0(t)}
 \ea
 $$
 
@@ -29,8 +33,9 @@ event is due to subject $f\in R(t)$ is approximately
 $$
 \ba
 \Pr(f \text{ fails}|\text{1 failure at } t)
-&= \frac{\haz_0(t)\expf{\eta(\vx_f)}}{\sum_{k \in R(t)}\haz_0(t)\expf{\eta(\vx_k)}}\\
-&=\frac{\hazfactor(\vx_f)}{\sum_{k \in R(t)} \hazfactor(\vx_k)}
+&= \frac{\blue{\haz_0(t)}\,\red{\expf{\eta(\vx_f)}}}{\sum_{k \in R(t)}\blue{\haz_0(t)}\,\red{\expf{\eta(\vx_k)}}}
+\\
+&= \frac{\red{\hazfactor(\vx_f)}}{\sum_{k \in R(t)} \red{\hazfactor(\vx_k)}}
 \ea
 $$
 
