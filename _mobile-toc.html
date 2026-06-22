@@ -3,14 +3,15 @@
   //
   // Quarto hides the right "On this page" TOC below its `md` breakpoint
   // (max-width: 767.98px) and offers no built-in mobile replacement, so phone
-  // readers lose within-chapter navigation. This clones the existing TOC into a
-  // collapsible <details> at the top of the page content; the matching rules in
-  // custom.scss reveal it only on narrow screens. Desktop is untouched.
+  // readers lose within-chapter navigation. This injects a "Contents" button
+  // into the navbar and a dropdown panel (cloned from nav#TOC) just below it.
+  // Living inside #quarto-header, the button and panel ride Quarto's headroom:
+  // they hide on scroll-down and reappear on scroll-up with the navbar. The
+  // matching rules in custom.scss show them only on narrow screens.
   (function () {
     function buildMobileToc() {
       var toc = document.querySelector("nav#TOC");
-      var content = document.querySelector("main#quarto-document-content");
-      if (!toc || !content) {
+      if (!toc) {
         return;
       }
 
@@ -19,39 +20,117 @@
         return;
       }
 
-      // Guard against firing twice (e.g. Quarto live-preview hot-reload).
-      if (content.querySelector(".mobile-toc")) {
+      var header = document.querySelector("#quarto-header");
+      var navContainer = header
+        ? header.querySelector(".navbar-container")
+        : null;
+      if (!header || !navContainer) {
         return;
       }
 
-      var details = document.createElement("details");
-      details.className = "mobile-toc";
+      // Guard against firing twice (e.g. Quarto live-preview hot-reload).
+      if (header.querySelector(".mobile-toc-toggle")) {
+        return;
+      }
 
-      var summary = document.createElement("summary");
       var titleEl = toc.querySelector("#toc-title");
-      summary.textContent = titleEl ? titleEl.textContent : "On this page";
-      details.appendChild(summary);
+      var label = titleEl ? titleEl.textContent : "On this page";
+
+      var button = buildToggleButton(label);
+      var panel = buildPanel(list, label);
+
+      wireToggle(button, panel);
+
+      // Place the button before the navbar hamburger when present.
+      var hamburger = navContainer.querySelector(".navbar-toggler");
+      if (hamburger) {
+        navContainer.insertBefore(button, hamburger);
+      } else {
+        navContainer.appendChild(button);
+      }
+      header.appendChild(panel);
+    }
+
+    function buildToggleButton(label) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "mobile-toc-toggle btn";
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-controls", "mobile-toc-panel");
+      button.setAttribute("aria-label", label);
+
+      var icon = document.createElement("i");
+      icon.className = "bi bi-list-nested";
+      icon.setAttribute("aria-hidden", "true");
+      button.appendChild(icon);
+
+      var text = document.createElement("span");
+      text.className = "mobile-toc-toggle-text";
+      text.textContent = "Contents";
+      button.appendChild(text);
+
+      return button;
+    }
+
+    function buildPanel(list, label) {
+      var panel = document.createElement("div");
+      panel.id = "mobile-toc-panel";
+      panel.className = "mobile-toc-panel";
 
       // Clone only the list (not the heading) so no element ids are duplicated.
-      // Use a plain labelled <nav> rather than role="doc-toc": Quarto hides
-      // every nav[role=doc-toc] on mobile, which would hide this menu too.
       var nav = document.createElement("nav");
-      nav.setAttribute("aria-label", summary.textContent);
+      nav.setAttribute("aria-label", label);
       nav.appendChild(list.cloneNode(true));
-      details.appendChild(nav);
+      panel.appendChild(nav);
 
-      // Collapse the menu once the reader taps through to a section.
-      nav.addEventListener("click", function (event) {
+      return panel;
+    }
+
+    function wireToggle(button, panel) {
+      var close = function () {
+        panel.classList.remove("show");
+        button.setAttribute("aria-expanded", "false");
+      };
+
+      button.addEventListener("click", function () {
+        var open = panel.classList.toggle("show");
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+
+      // Collapse once the reader taps through to a section.
+      panel.addEventListener("click", function (event) {
         var target = event.target;
         if (target instanceof Element && target.closest("a")) {
-          details.open = false;
+          close();
         }
       });
 
-      // Place the menu just below the chapter title, not above it.
-      var titleBlock = content.querySelector("header#title-block-header");
-      var insertBeforeEl = titleBlock ? titleBlock.nextSibling : content.firstChild;
-      content.insertBefore(details, insertBeforeEl);
+      // Collapse on scroll so the bar behaves like the navbar: it reappears
+      // closed on scroll-up rather than re-opening the menu.
+      window.addEventListener(
+        "scroll",
+        function () {
+          if (panel.classList.contains("show")) {
+            close();
+          }
+        },
+        { passive: true }
+      );
+
+      // Collapse on a tap outside the button or panel.
+      document.addEventListener("click", function (event) {
+        if (!panel.classList.contains("show")) {
+          return;
+        }
+        var target = event.target;
+        if (
+          target instanceof Element &&
+          (button.contains(target) || panel.contains(target))
+        ) {
+          return;
+        }
+        close();
+      });
     }
 
     if (document.readyState === "loading") {
