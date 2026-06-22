@@ -38,7 +38,10 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Link to `.qmd` source files, not rendered `.html` files
 - Aim to keep `.qmd` source files under ~100 lines; split longer files into named subfiles in `_subfiles/`
 - `_extensions/` is vendored third-party code — do not review or modify it
-- New book pages must be wired into **both** `_quarto-book.yml` (book/PDF TOC, incl. its `part:` groupings) **and** `_quarto-website.yml` (the default website profile: the `render:` list **and** the navbar) — the two profiles keep independent page lists, so a page added to only one is missing from the other build
+- New book pages must be wired into each render profile that should include them — the profiles keep independent page lists, so a page added to only one is missing from the others:
+  - `_quarto-website.yml` — the default profile (`profile.default: website` in `_quarto.yml`): add to the `render:` list, and to the navbar if it's a primary/navigable chapter (supplemental pages like appendices can stay in `render:` without a navbar entry)
+  - `_quarto-book.yml` — the book/PDF TOC: add to `book.chapters:` (directly or inside a `part:` grouping)
+  - `_quarto-handout.yml` — a curated PDF-handout subset with its own `render:` list; add the page here too if it belongs in the handouts
 
 ### Quarto
 - Use `{{< slidebreak >}}` instead of `---` for slide breaks
