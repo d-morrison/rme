@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Download preview artifact
         uses: actions/download-artifact@v4
@@ -60,9 +60,15 @@ jobs:
 
       - name: Read PR metadata
         id: meta
+        # Fail loudly if the metadata is missing. A bare `$(cat missing)`
+        # inside `echo` yields empty output and exit 0, so the step would
+        # "pass" with empty pr-number/action and the deploy would silently
+        # skip (the regression this workflow pair just recovered from).
         run: |
-          echo "pr-number=$(cat _preview_download/meta/pr-number.txt)" >> "$GITHUB_OUTPUT"
-          echo "action=$(cat _preview_download/meta/action.txt)" >> "$GITHUB_OUTPUT"
+          pr_number=$(cat _preview_download/meta/pr-number.txt) || { echo "::error::Missing pr-number.txt in preview artifact"; exit 1; }
+          action=$(cat _preview_download/meta/action.txt) || { echo "::error::Missing action.txt in preview artifact"; exit 1; }
+          echo "pr-number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "action=$action" >> "$GITHUB_OUTPUT"
 
       - name: Deploy PR Preview
         if: steps.meta.outputs.action == 'deploy'
