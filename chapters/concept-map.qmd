@@ -30,7 +30,6 @@ re-titled** to refresh the diagram and table below.
 
 library(igraph)
 library(ggraph)
-library(ggrepel)
 
 cg <- readRDS(here::here("inst/extdata/callout-graph.rds"))
 
@@ -59,8 +58,9 @@ Color encodes the type of result.
 Results with no detected dependency links are omitted from the diagram.
 Node labels are larger for results with more total descendants,
 so the most foundational results are visually prominent.
+The most foundational results (most descendants) appear near the center;
+peripheral results have no or few descendants.
 Zoom in with Ctrl+scroll (or pinch on mobile) to read individual labels.
-Lines from labels to dots indicate where ggrepel moved a label to avoid overlap.
 
 :::{#fig-concept-map}
 
@@ -83,17 +83,19 @@ core <- graph_from_data_frame(
 V(core)$type <- factor(V(core)$type, levels = type_levels)
 
 set.seed(204)
-# Fruchterman-Reingold applies repulsion between all node pairs (not just
-# connected ones), spreading nodes more evenly across the canvas. Normalise
-# axes afterwards to fill the full canvas and eliminate edge whitespace.
-layout <- create_layout(core, layout = "fr", niter = 2000)
-norm_axis <- function(x) {
-  r <- diff(range(x))
-  if (r == 0) return(x)
-  (x - min(x)) / r * 2 - 1
-}
-layout$x <- norm_axis(layout$x)
-layout$y <- norm_axis(layout$y)
+# Use Fruchterman-Reingold for angular arrangement (connected nodes cluster
+# together), then override each node's radius to be inversely proportional to
+# its descendant count so the most foundational nodes land near the center.
+fr_layout <- create_layout(core, layout = "fr", niter = 2000)
+n_desc_vals <- V(core)$n_desc
+max_desc <- max(n_desc_vals, 1L)
+fr_angle <- atan2(fr_layout$y, fr_layout$x)
+# sqrt transform spreads the radial distribution: n_desc = max_desc → r ≈ 0
+# (center), n_desc = 0 → r = 1 (periphery).
+target_r <- sqrt(1 - n_desc_vals / max_desc)
+layout <- fr_layout
+layout$x <- target_r * cos(fr_angle)
+layout$y <- target_r * sin(fr_angle)
 
 ggraph(layout) +
   geom_edge_link(
@@ -101,26 +103,14 @@ ggraph(layout) +
     end_cap = circle(2, "mm"),
     edge_alpha = 0.25, edge_width = 0.3
   ) +
-  geom_node_point(color = "grey60", size = 0.8, alpha = 0.7) +
-  geom_label_repel(
-    data = as.data.frame(layout),
-    aes(x = x, y = y, label = title, fill = type, size = n_desc),
-    inherit.aes = FALSE,
+  geom_node_label(
+    aes(label = title, fill = type, size = n_desc),
     color = "white",
     fontface = "bold",
-    max.overlaps = Inf,
-    force = 3,
-    force_pull = 0.5,
-    box.padding = unit(0.25, "lines"),
     label.padding = unit(0.1, "lines"),
     label.r = unit(0.05, "lines"),
     label.size = 0.1,
-    alpha = 0.88,
-    segment.color = "grey60",
-    segment.alpha = 0.6,
-    segment.size = 0.3,
-    min.segment.length = 0,
-    seed = 204
+    alpha = 0.88
   ) +
   scale_fill_manual(
     values = type_palette, labels = type_labels, name = "Type", drop = FALSE
@@ -133,7 +123,8 @@ ggraph(layout) +
 Dependency structure of the definitions and results in the notes.
 An arrow points from a result to each result that uses it.
 Color indicates result type (see legend).
-Label font size is proportional to the number of total descendants.
+Label font size is proportional to the number of total descendants;
+results with more descendants appear closer to the center.
 
 :::
 
