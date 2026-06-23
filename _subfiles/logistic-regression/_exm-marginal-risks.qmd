@@ -1,24 +1,19 @@
-:::{#exm-marginal-point-estimate}
+:::{#exm-marginal-risks}
 
-#### Numerical point-estimate example
+#### Estimated marginal risks
 
-Using the WCGS data setup and model,
-we can estimate the **causal marginal risks**
-(i.e., potential probabilities @def-potential-probability)
-via g-computation (@def-g-computation),
-by averaging model predictions over the observed covariate distribution:
+Using the WCGS data with `dibpat` (behavior pattern) as the exposure
+and `chd69` (coronary heart disease by 1969) as the outcome,
+adjusted for `age`:
 
 ```{r}
-#| label: wcgs-data-load-and-model-fit
+#| label: wcgs-marginal-setup
 #| code-fold: true
 #| message: false
 #| warning: false
-
 library(dplyr)
 library(haven)
-library(ggplot2)
 
-# Load and prepare WCGS data
 wcgs_path <- here::here("Data", "wcgs.rda")
 if (!file.exists(wcgs_path)) {
   stop(
@@ -49,34 +44,6 @@ fit <- glm(
   data = wcgs_clean,
   family = binomial(link = "logit")
 )
-
-dibpat_levels <- levels(wcgs_clean$dibpat)
-wcgs_counterfactual_a <- wcgs_clean |>
-  mutate(
-    dibpat = factor("Type A", levels = dibpat_levels)
-  )
-wcgs_counterfactual_b <- wcgs_clean |>
-  mutate(
-    dibpat = factor("Type B", levels = dibpat_levels)
-  )
-
-pi1_hat <- mean(
-  predict(fit, newdata = wcgs_counterfactual_a, type = "response")
-)
-pi0_hat <- mean(
-  predict(fit, newdata = wcgs_counterfactual_b, type = "response")
-)
-rd_hat <- pi1_hat - pi0_hat
-
-pi1_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type A"])
-pi0_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type B"])
-
-# Observed marginal risks via predictive margins:
-# average the model's fitted risks within each observed exposure subgroup
-# (keeping each person's own covariates and observed exposure)
-fitted_risk <- predict(fit, type = "response")
-pi1_obs_pm <- mean(fitted_risk[wcgs_clean$dibpat == "Type A"])
-pi0_obs_pm <- mean(fitted_risk[wcgs_clean$dibpat == "Type B"])
 ```
 
 The **observed marginal risks**
@@ -84,6 +51,12 @@ $\hat\pi(a) = \Pr(Y=1 \mid A=a)$
 can be estimated in two equivalent ways.
 
 Directly, as the sample proportion of events within each exposure group:
+
+```{r}
+#| label: wcgs-obs-marginal-risks-direct
+pi1_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type A"])
+pi0_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type B"])
+```
 
 $$
 \hat\pi(1) = `r round(pi1_obs, 3)`, \quad
@@ -93,6 +66,13 @@ $$
 Or via **predictive margins** (@def-predictive-margins):
 average the model's fitted risks over the **subgroup** actually exposed to $A = a$,
 keeping each man's own covariates and observed exposure:
+
+```{r}
+#| label: wcgs-obs-marginal-risks-pm
+fitted_risk <- predict(fit, type = "response")
+pi1_obs_pm <- mean(fitted_risk[wcgs_clean$dibpat == "Type A"])
+pi0_obs_pm <- mean(fitted_risk[wcgs_clean$dibpat == "Type B"])
+```
 
 $$
 \hat\pi(1) = `r round(pi1_obs_pm, 3)`, \quad
@@ -110,7 +90,28 @@ the raw proportions here.
 
 The **causal marginal risks**
 $\hat\pi_a = \frac{1}{n}\sumin \hat\pi(a, z_i)$
-standardized over the full covariate distribution are:
+standardized over the full covariate distribution
+(@def-g-computation):
+
+```{r}
+#| label: wcgs-causal-marginal-risks
+dibpat_levels <- levels(wcgs_clean$dibpat)
+wcgs_counterfactual_a <- wcgs_clean |>
+  mutate(
+    dibpat = factor("Type A", levels = dibpat_levels)
+  )
+wcgs_counterfactual_b <- wcgs_clean |>
+  mutate(
+    dibpat = factor("Type B", levels = dibpat_levels)
+  )
+
+pi1_hat <- mean(
+  predict(fit, newdata = wcgs_counterfactual_a, type = "response")
+)
+pi0_hat <- mean(
+  predict(fit, newdata = wcgs_counterfactual_b, type = "response")
+)
+```
 
 $$
 \hat\pi_1 = `r round(pi1_hat, 3)`, \quad
@@ -122,18 +123,5 @@ because age is associated with behavioral pattern (Type A and Type B men
 have different age distributions), the observed marginal and causal marginal
 risks differ.
 Standardization via g-computation adjusts for this difference.
-
-The causal marginal risk difference estimate is:
-
-$$
-\ba
-\widehat{\text{Causal Marginal RD}}
-&= \hat\pi_1 - \hat\pi_0
-\\
-&= `r round(pi1_hat, 3)` - `r round(pi0_hat, 3)`
-\\
-&= `r round(rd_hat, 3)`
-\ea
-$$
 
 :::
