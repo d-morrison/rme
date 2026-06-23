@@ -30,6 +30,7 @@ re-titled** to refresh the diagram and table below.
 
 library(igraph)
 library(ggraph)
+library(ggrepel)
 
 cg <- readRDS(here::here("inst/extdata/callout-graph.rds"))
 
@@ -62,6 +63,8 @@ The most foundational results (most descendants) appear near the center;
 peripheral results have no or few descendants.
 Long names are abbreviated in the diagram;
 the table below gives each result's full name.
+Labels are shifted to avoid overlap;
+a grey line connects a shifted label to its node position.
 Zoom in with Ctrl+scroll (or pinch on mobile) to read individual labels.
 
 :::{#fig-concept-map}
@@ -120,14 +123,28 @@ ggraph(layout) +
     end_cap = circle(2, "mm"),
     edge_alpha = 0.25, edge_width = 0.3
   ) +
-  geom_node_label(
-    aes(label = label, fill = type, size = n_desc),
+  geom_label_repel(
+    data = as.data.frame(layout),
+    aes(x = x, y = y, label = label, fill = type, size = n_desc),
+    inherit.aes = FALSE,
+    # point.size = NA: suppress the dot so the label itself is the node;
+    # ggrepel still repels labels away from each other to avoid overlap.
+    point.size = NA,
     color = "white",
     fontface = "bold",
+    max.overlaps = Inf,
+    force = 3,
+    force_pull = 1,
+    box.padding = unit(0.15, "lines"),
     label.padding = unit(0.1, "lines"),
     label.r = unit(0.05, "lines"),
     label.size = 0.1,
-    alpha = 0.88
+    alpha = 0.88,
+    segment.color = "grey60",
+    segment.alpha = 0.5,
+    segment.size = 0.3,
+    min.segment.length = unit(0.5, "lines"),
+    seed = 204
   ) +
   scale_fill_manual(
     values = type_palette, labels = type_labels, name = "Type", drop = FALSE
