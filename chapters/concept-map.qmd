@@ -94,15 +94,12 @@ set.seed(204)
 fr_layout <- create_layout(core, layout = "fr", niter = 2000)
 n_desc_vals <- V(core)$n_desc
 fr_angle <- atan2(fr_layout$y, fr_layout$x)
-# Treat descendant count as ordinal, not numeric: the distribution is highly
-# skewed (one hub has many descendants, most results have very few), so a
-# numeric radius crushes nearly every node onto the outer rim. Instead, map the
-# *distinct* descendant counts to evenly spaced rings -- highest count -> center
-# (r = 0), lowest count -> periphery (r = 1).
-desc_levels <- sort(unique(n_desc_vals))
-level_idx <- match(n_desc_vals, desc_levels)
-n_levels <- length(desc_levels)
-target_r <- if (n_levels > 1) 1 - (level_idx - 1) / (n_levels - 1) else 0
+# log1p radius: nodes with more descendants land closer to center (r = 0);
+# nodes with 0 descendants land at the periphery (r = 1). The log scale
+# compresses the high end so the few top hubs don't crowd the center, and
+# pulls nodes with even a handful of descendants well off the outer rim.
+max_desc <- max(n_desc_vals)
+target_r <- 1 - log1p(n_desc_vals) / log1p(max_desc)
 layout <- fr_layout
 layout$x <- target_r * cos(fr_angle)
 layout$y <- target_r * sin(fr_angle)
