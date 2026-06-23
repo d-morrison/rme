@@ -1,0 +1,128 @@
+:::{.callout-tip}
+This section is adapted from @dobson4e [§6.3].
+:::
+
+Residuals and leverage each capture one aspect of an observation's influence on the model fit.
+Cook's distance [@cook1977detection] combines them into a single diagnostic.
+
+{{< slidebreak >}}
+
+:::{#def-cooks-distance}
+#### Cook's distance
+
+For ordinary least squares with $p$ parameters,
+the **Cook's distance** for observation $i$ is
+
+$$
+D_i
+= \frac{\tp{(\hvb_{(-i)} - \hvb)}
+\tp{\mX}\mX
+(\hvb_{(-i)} - \hvb)}{p\,\hs^2}
+$$ {#eq-cooks-distance-def}
+
+where $\hvb_{(-i)}$ is the least-squares estimate obtained after deleting observation $i$.
+:::
+
+{{< slidebreak >}}
+
+Because refitting the model $n$ times is expensive,
+@eq-cooks-distance-def has an equivalent closed-form expression
+that uses only quantities from the full-data fit:
+
+$$
+D_i = \frac{(\stdresid_i)^2}{p} \cdot \frac{h_{ii}}{1-h_{ii}}
+$$ {#eq-cooks-distance-formula}
+
+where $\stdresid_i$ is the standardized residual (@def-stred)
+and $h_{ii}$ is the leverage (diagonal of the hat matrix, @def-hat-matrix).
+
+{{< slidebreak >}}
+
+:::{#exm-cooks-distance}
+Consider a regression with $p = 2$ parameters.
+Suppose observation $i$ has standardized residual $\stdresid_i = 2$ and leverage $h_{ii} = 0.3$.
+Applying @eq-cooks-distance-formula,
+
+$$
+D_i = \frac{(2)^2}{2} \cdot \frac{0.3}{1 - 0.3} = 2 \cdot 0.43 \approx 0.86.
+$$
+:::
+
+{{< slidebreak >}}
+
+@eq-cooks-distance-formula shows that influence has two ingredients:
+
+- **Residual size** ($(\stdresid_i)^2$):
+  a poorly fitted observation pushes $D_i$ up regardless of its leverage.
+- **Leverage** ($h_{ii}/(1-h_{ii})$):
+  high leverage amplifies the effect of even a moderate residual.
+
+An observation must be both unusual in its predictor values *and* poorly fitted to have a large Cook's distance.
+
+{{< slidebreak >}}
+
+#### Cook's distance plot
+
+::: notes
+We can visualize Cook's distances for all observations using `autoplot` with `which = 4` (@fig-bw-cooks-distance).
+:::
+
+:::{#fig-bw-cooks-distance}
+
+```{r}
+#| code-fold: true
+autoplot(bw_lm2, which = 4, ncol = 1) |> print()
+```
+
+Cook's distance for `birthweight` model with interactions (@eq-BW-lm-interact)
+:::
+
+{{< slidebreak >}}
+
+::: notes
+A commonly cited rule of thumb [@dobson4e, §6.3]
+flags observation $i$ as influential if
+
+$$D_i > 1$$
+
+A more conservative threshold is $D_i > 4/n$ [@bollen1990regression].
+
+Observations above either threshold warrant closer inspection:
+check whether they represent genuine data or recording errors,
+and consider refitting the model with and without them to assess sensitivity.
+:::
+
+{{< slidebreak >}}
+
+::: notes
+The residuals-versus-leverage plot (@fig-bw_lm2_resid-vs-leverage)
+also displays Cook's distance contours as curved dashed lines.
+An observation lying near or beyond a contour line has substantial influence on the fit.
+:::
+
+{{< slidebreak >}}
+
+Computing Cook's distances in R:
+
+```{r}
+cooks.distance(bw_lm2)
+```
+
+{{< slidebreak >}}
+
+:::{#exr-cooks-d-formula}
+Verify @eq-cooks-distance-formula for the observations in `bw_lm2`:
+compute $D_i$ using the standardized residuals and leverage values,
+and check that the result matches `cooks.distance(bw_lm2)`.
+:::
+
+:::{.solution}
+```{r}
+r_prime <- rstandard(bw_lm2)
+h <- hatvalues(bw_lm2)
+p <- length(coef(bw_lm2))
+
+D_manual <- (r_prime^2 / p) * (h / (1 - h))
+cbind(manual = D_manual, builtin = cooks.distance(bw_lm2)) |> head(3)
+```
+:::
