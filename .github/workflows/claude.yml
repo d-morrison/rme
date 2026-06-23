@@ -46,18 +46,48 @@ concurrency:
 
 jobs:
   claude:
+    # Only a HUMAN @claude mention should invoke the agent. Skip events
+    # whose sender is a bot, otherwise the agent self-triggers: a comment
+    # posted by claude[bot] (the agent's own GitHub App identity) that
+    # merely *contains* `@claude` — quoting a prior `@claude ...` command,
+    # or a "posted by @claude" signature — re-fires this workflow, which
+    # posts another such comment, which re-fires it again, unbounded
+    # (observed on PR #900, 2026-06-16). The `Acknowledge @claude mention`
+    # ack below is posted via GITHUB_TOKEN (github-actions[bot]), and
+    # GITHUB_TOKEN-authored events cannot trigger workflows — but claude[bot]
+    # comments are posted with the Claude GitHub App token, which DOES fire
+    # `issue_comment`, so guarding on the token kind is not enough; we guard
+    # on the author. `github.event.sender` is the actor that raised the
+    # event (comment/review author or issue opener) for all four trigger
+    # types; this mirrors the `sender.type != 'Bot' && !endsWith(actor,
+    # '[bot]')` double guard in claude-code-review.yml. The second clause
+    # is belt-and-suspenders: it also blocks a bot actor whose
+    # `sender.type` is somehow not reported as 'Bot' (old/misconfigured
+    # integrations), and keeps the two workflows idiomatically identical.
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]') && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
       issues: write
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
+      # `write` (not `read`) is required: besides letting Claude read CI
+      # results on PRs, the post-Claude steps below call `gh workflow run
+      # claude-code-review.yml` (the workflow_dispatch REST endpoint
+      # `POST /actions/workflows/{id}/dispatches`), which GITHUB_TOKEN can
+      # only reach with `actions: write`. With `actions: read` every
+      # dispatch 403s ("Resource not accessible by integration") and is
+      # swallowed by the `|| echo "::warning::"` fallback, so the
+      # code-review never auto-runs (observed on PR #900, run
+      # 27598978484: the @claude-review dispatch 403'd silently). `write`
+      # is a superset of `read`, so CI reads still work.
+      actions: write
     # Expose the ucdavis/epi202 and ucdavis/epi204 fine-grained PATs to
     # every step in this job, including the Claude action's subprocess.
     # See .github/copilot-instructions.md ("Accessing the private
@@ -90,7 +120,7 @@ jobs:
             --body ":eyes: Picked up by [workflow run #${{ github.run_id }}]($RUN_URL). R/Quarto/renv setup runs first (~3-5 min); Claude itself responds after that."
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -847,11 +877,13 @@ jobs:
             gh api -X POST \
               "repos/${{ github.repository }}/pulls/$PR_NUMBER/requested_reviewers" \
               -f "reviewers[]=d-morrison" || true
-            # Fire claude-code-review.yml via workflow_dispatch. The default
-            # GITHUB_TOKEN is permitted to trigger workflow_dispatch (unlike
-            # push, which is blocked to avoid recursion), and the review
-            # workflow's own `concurrency` group will cancel any in-flight
-            # review for this PR so the freshest diff wins.
+            # Fire claude-code-review.yml via workflow_dispatch. GITHUB_TOKEN
+            # may trigger workflow_dispatch (unlike push, which is blocked to
+            # avoid recursion) — but ONLY with `actions: write` in this job's
+            # `permissions:` (see the note there); with `actions: read` the
+            # dispatch 403s silently. The review workflow's own `concurrency`
+            # group then cancels any in-flight review for this PR so the
+            # freshest diff wins.
             gh workflow run claude-code-review.yml -f pr_number="$PR_NUMBER" || \
               echo "::warning::Could not dispatch claude-code-review.yml; review will not auto-run."
           else

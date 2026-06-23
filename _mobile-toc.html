@@ -1,0 +1,152 @@
+<script>
+  // Mobile within-chapter table of contents.
+  //
+  // Quarto hides the right "On this page" TOC below its `md` breakpoint
+  // (max-width: 767.98px) and offers no built-in mobile replacement, so phone
+  // readers lose within-chapter navigation. This injects a "Contents" button
+  // into the navbar and a dropdown panel (cloned from nav#TOC) just below it.
+  // Living inside #quarto-header, the button and panel ride Quarto's headroom:
+  // they hide on scroll-down and reappear on scroll-up with the navbar. The
+  // matching rules in custom.scss show them only on narrow screens.
+  (function () {
+    function buildMobileToc() {
+      var toc = document.querySelector("nav#TOC");
+      if (!toc) {
+        return;
+      }
+
+      var list = toc.querySelector("ul");
+      if (!list) {
+        return;
+      }
+
+      var header = document.querySelector("#quarto-header");
+      var navContainer = header
+        ? header.querySelector(".navbar-container")
+        : null;
+      if (!header || !navContainer) {
+        return;
+      }
+
+      // Guard against firing twice (e.g. Quarto live-preview hot-reload).
+      if (header.querySelector(".mobile-toc-toggle")) {
+        return;
+      }
+
+      var titleEl = toc.querySelector("#toc-title");
+      var label = titleEl ? titleEl.textContent : "On this page";
+
+      var button = buildToggleButton();
+      var panel = buildPanel(list, label);
+
+      wireToggle(button, panel);
+
+      // Place the button before the navbar hamburger when present.
+      var hamburger = navContainer.querySelector(".navbar-toggler");
+      if (hamburger) {
+        navContainer.insertBefore(button, hamburger);
+      } else {
+        navContainer.appendChild(button);
+      }
+      header.appendChild(panel);
+    }
+
+    function buildToggleButton() {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "mobile-toc-toggle btn";
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-controls", "mobile-toc-panel");
+      // No aria-label: the accessible name comes from the visible "Contents"
+      // text, so it matches what voice-control users say (WCAG 2.5.3).
+
+      var icon = document.createElement("i");
+      icon.className = "bi bi-list-nested";
+      icon.setAttribute("aria-hidden", "true");
+      button.appendChild(icon);
+
+      var text = document.createElement("span");
+      text.className = "mobile-toc-toggle-text";
+      text.textContent = "Contents";
+      button.appendChild(text);
+
+      return button;
+    }
+
+    function buildPanel(list, label) {
+      var panel = document.createElement("div");
+      panel.id = "mobile-toc-panel";
+      panel.className = "mobile-toc-panel";
+
+      // Clone only the list (not the heading) so no element ids are duplicated.
+      var nav = document.createElement("nav");
+      nav.setAttribute("aria-label", label);
+      nav.appendChild(list.cloneNode(true));
+      panel.appendChild(nav);
+
+      return panel;
+    }
+
+    function wireToggle(button, panel) {
+      var close = function () {
+        panel.classList.remove("show");
+        button.setAttribute("aria-expanded", "false");
+      };
+
+      button.addEventListener("click", function () {
+        var open = panel.classList.toggle("show");
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+
+      // Collapse once the reader taps through to a section.
+      panel.addEventListener("click", function (event) {
+        var target = event.target;
+        if (target instanceof Element && target.closest("a")) {
+          close();
+        }
+      });
+
+      // Collapse on scroll so the bar behaves like the navbar: it reappears
+      // closed on scroll-up rather than re-opening the menu.
+      window.addEventListener(
+        "scroll",
+        function () {
+          if (panel.classList.contains("show")) {
+            close();
+          }
+        },
+        { passive: true }
+      );
+
+      // Collapse on a tap outside the button or panel.
+      document.addEventListener("click", function (event) {
+        if (!panel.classList.contains("show")) {
+          return;
+        }
+        var target = event.target;
+        if (
+          target instanceof Element &&
+          (button.contains(target) || panel.contains(target))
+        ) {
+          return;
+        }
+        close();
+      });
+
+      // Collapse on Escape and return focus to the button (ARIA disclosure
+      // pattern), so keyboard users can dismiss the menu without navigating.
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && panel.classList.contains("show")) {
+          close();
+          button.focus();
+        }
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", buildMobileToc);
+    } else {
+      buildMobileToc();
+    }
+  })();
+</script>
