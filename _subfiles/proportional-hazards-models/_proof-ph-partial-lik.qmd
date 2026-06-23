@@ -1,16 +1,3 @@
-:::{#def-ph-interval-fail-prob}
-#### Interval failure probability
-
-Fix an interval width $\Delta t$ and grid points $\tau$.
-For subject $j$, the **interval failure probability** at $\tau$ is the
-conditional probability that $j$ fails during $[\tau, \tau + \Delta t)$,
-given that $j$ is still at risk at $\tau$:
-
-$$
-q_j(\tau) \eqdef \Pr\sb{j \text{ fails in } [\tau,\, \tau + \Delta t) \mid j \text{ at risk at } \tau}.
-$$
-:::
-
 ::: proof
 
 Adapted from [@klein2003survival, §8.3, Theoretical Note 1, p. 257].
@@ -57,22 +44,12 @@ partial likelihood and a discarded remainder.
 
 **Discretize the survival factors over a time grid.**
 Partition $[0, \max_j Y_j]$ into intervals of width $\Delta t$ with left
-endpoints $\tau$, and recall the interval failure probability
-$q_j(\tau)$ (@def-ph-interval-fail-prob).
-By the [hazard definition](intro-to-survival-analysis.qmd#def-hazard),
-$q_j(\tau)$ is, to first order in $\Delta t$, the hazard times the
-interval width; the proportional-hazards decomposition
-(@thm-ph-haz-decomp) then splits it into baseline and covariate factors:
+endpoints $\tau$, and recall from @def-ph-interval-fail-prob the interval
+failure probability $q_j(\tau)$ and its first-order approximation
+$q^*_j(\tau)$:
 
 $$
-\ba
-q_j(\tau)
-&\approx \haz(\tau \mid \vx_j)\,\Delta t
-&& \text{(first-order hazard approximation)}
-\\
-&= \dblue{\haz_0(\tau)\,\Delta t}\;\red{\hazfactor(\vx_j)}.
-&& \text{(proportional-hazards decomposition)}
-\ea
+q_j(\tau) \approx q^*_j(\tau) = \dblue{\haz_0(\tau)\,\Delta t}\;\red{\hazfactor(\vx_j)} .
 $$ {#eq-ph-interval-fail-approx}
 
 To track how this piece fits into the larger products, we color the
@@ -80,8 +57,9 @@ $\dblue{\text{baseline-hazard factor }\haz_0(\cdot)\,\Delta t}$ — shared
 by everyone at risk at a given time, and ultimately discarded — and the
 $\red{\text{subject-specific hazard ratio }\hazfactor(\vx)}$ — the focal
 quantity the partial likelihood isolates.
-We treat $q_j(\tau)$ as the basic building block from here on:
-every factor in this proof is a product of $q_j(\tau)$'s and $(1 - q_j(\tau))$'s.
+The exact $q_j(\tau)$ is the basic building block of the likelihood —
+every factor in this proof is a product of $q_j(\tau)$'s and $(1 - q_j(\tau))$'s —
+while the approximation $q^*_j(\tau)$ enters only when we invoke the hazard.
 
 Survival to $Y_j$ factors *exactly* into the per-interval conditional
 survival probabilities — survival is multiplicative over a partition —
@@ -92,7 +70,7 @@ $$
 $$ {#eq-ph-surv-discretized}
 
 When $D_j = 1$, the failure contributes the same building block for its
-final interval, $q_j(Y_j) \approx \haz(Y_j \mid \vx_j)\,\Delta t$.
+final interval, $q_j(Y_j) \approx q^*_j(Y_j)$.
 Substituting @eq-ph-surv-discretized into @eq-ph-obs-lik
 (and absorbing the constant $\Delta t^{D_j}$, which does not depend
 on $\b$ or $\haz_0$),
@@ -168,8 +146,11 @@ $$
 &= q_j(t_i)
 && \text{(definition of } q_j(t_i) \text{)}
 \\
-&\approx \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_j)},
+&\approx q^*_j(t_i)
 && \text{(first-order hazard approximation)}
+\\
+&= \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_j)},
+&& \text{(definition of } q^*_j(t_i) \text{)}
 \ea
 $$ {#eq-ph-single-subj}
 
@@ -188,8 +169,11 @@ $$
 &= \Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}
 && \text{(definition of } q_{(i)}(t_i) \text{)}
 \\
-&\approx \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_{(i)})}.
+&\approx q^*_{(i)}(t_i)
 && \text{(first-order hazard approximation)}
+\\
+&= \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_{(i)})}.
+&& \text{(definition of } q^*_{(i)}(t_i) \text{)}
 \ea
 $$ {#eq-ph-fail-interval-approx}
 
@@ -210,7 +194,7 @@ splits the event factor @eq-ph-fail-interval-approx into a
 $$
 \ba
 \underbrace{\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}}
-          _{=\ q_{(i)}(t_i)\ \approx\ \dblue{\haz_0(t_i)\,\Delta t}\,\red{\hazfactor(\vx_{(i)})}}
+          _{=\ q_{(i)}(t_i)\ \approx\ q^*_{(i)}(t_i)\ =\ \dblue{\haz_0(t_i)\,\Delta t}\,\red{\hazfactor(\vx_{(i)})}}
 &= \underbrace{\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}}
              _{\text{which subject fails}}
 \\
@@ -258,8 +242,16 @@ $$
 && \text{(sum of single-subject probabilities)}
 \\
 &\approx
+\sum_{k \in R(t_i)} q^*_k(t_i)
+&& \text{(first-order hazard approximation)}
+\\
+&=
+\sum_{k \in R(t_i)} \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_k)}
+&& \text{(definition of } q^*_k(t_i) \text{)}
+\\
+&=
 \dblue{\haz_0(t_i)\,\Delta t}\sum_{k \in R(t_i)} \red{\hazfactor(\vx_k)}
-&& \text{(each } q_k \approx \text{ baseline} \times \text{ ratio)}
+&& \text{(factor out the shared baseline)}
 \\
 &=
 \dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}.
@@ -284,9 +276,12 @@ $$
 &\approx \frac{q_{(i)}(t_i)}{\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
 && \text{(substitute the two factors)}
 \\
-&\approx \frac{\dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_{(i)})}}
-         {\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
+&\approx \frac{q^*_{(i)}(t_i)}{\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
 && \text{(first-order hazard approximation)}
+\\
+&= \frac{\dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_{(i)})}}
+         {\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
+&& \text{(definition of } q^*_{(i)}(t_i) \text{)}
 \\
 &= \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}
 && \text{(cancel the shared } \dblue{\haz_0(t_i)\,\Delta t} \text{)}

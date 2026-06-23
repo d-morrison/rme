@@ -1,0 +1,50 @@
+:::{#def-ph-interval-fail-prob}
+#### Interval failure probability
+
+Fix an interval width $\Delta t$ and grid points $\tau$.
+For subject $j$, the **interval failure probability** at $\tau$ is the
+conditional probability that $j$ fails during $[\tau, \tau + \Delta t)$,
+given that $j$ is still at risk at $\tau$:
+
+$$
+q_j(\tau) \eqdef \Pr\sb{j \text{ fails in } [\tau,\, \tau + \Delta t) \mid j \text{ at risk at } \tau}.
+$$
+
+To first order in $\Delta t$, this probability is the hazard times the interval width.
+We give that approximation its own symbol, the **first-order interval failure probability**,
+and split it into baseline and covariate factors via the proportional-hazards decomposition (@thm-ph-haz-decomp):
+
+$$
+q^*_j(\tau) \eqdef \haz(\tau \mid \vx_j)\,\Delta t = \dblue{\haz_0(\tau)\,\Delta t}\;\red{\hazfactor(\vx_j)},
+$$
+
+so that
+
+$$
+q_j(\tau) \approx q^*_j(\tau).
+$$
+:::
+
+:::{#exm-ph-interval-fail-prob}
+#### Interval failure probability: numerical illustration
+
+Suppose subject $j$ has constant hazard $\haz(t \mid \vx_j) = 0.1$ per year,
+and consider the half-year interval $[4.0,\, 4.5)$, so $\Delta t = 0.5$ years.
+The first-order approximation to the probability that $j$ fails in this interval, given survival to year $4$, is
+
+$$
+\ba
+q^*_j(4.0)
+&= \haz(4.0 \mid \vx_j)\,\Delta t
+&& \text{(definition of } q^*_j \text{)}
+\\
+&= 0.1 \times 0.5
+&& \text{(substitute } \haz = 0.1,\ \Delta t = 0.5\text{)}
+\\
+&= 0.05 ,
+&& \text{(arithmetic)}
+\ea
+$$
+
+so $q_j(4.0) \approx q^*_j(4.0) = 0.05$ — about a $5\%$ chance of failing in this half-year window.
+:::
