@@ -60,6 +60,8 @@ Node labels are larger for results with more total descendants,
 so the most foundational results are visually prominent.
 The most foundational results (most descendants) appear near the center;
 peripheral results have no or few descendants.
+Long names are abbreviated in the diagram;
+the table below gives each result's full name.
 Zoom in with Ctrl+scroll (or pinch on mobile) to read individual labels.
 
 :::{#fig-concept-map}
@@ -84,18 +86,33 @@ V(core)$type <- factor(V(core)$type, levels = type_levels)
 
 set.seed(204)
 # Use Fruchterman-Reingold for angular arrangement (connected nodes cluster
-# together), then override each node's radius to be inversely proportional to
-# its descendant count so the most foundational nodes land near the center.
+# together), then override each node's radius so the most foundational nodes
+# land near the center.
 fr_layout <- create_layout(core, layout = "fr", niter = 2000)
 n_desc_vals <- V(core)$n_desc
-max_desc <- max(n_desc_vals, 1L)
 fr_angle <- atan2(fr_layout$y, fr_layout$x)
-# sqrt transform spreads the radial distribution: n_desc = max_desc → r ≈ 0
-# (center), n_desc = 0 → r = 1 (periphery).
-target_r <- sqrt(1 - n_desc_vals / max_desc)
+# Treat descendant count as ordinal, not numeric: the distribution is highly
+# skewed (one hub has many descendants, most results have very few), so a
+# numeric radius crushes nearly every node onto the outer rim. Instead, map the
+# *distinct* descendant counts to evenly spaced rings -- highest count -> center
+# (r = 0), lowest count -> periphery (r = 1).
+desc_levels <- sort(unique(n_desc_vals))
+level_idx <- match(n_desc_vals, desc_levels)
+n_levels <- length(desc_levels)
+target_r <- if (n_levels > 1) 1 - (level_idx - 1) / (n_levels - 1) else 0
 layout <- fr_layout
 layout$x <- target_r * cos(fr_angle)
 layout$y <- target_r * sin(fr_angle)
+
+# Abbreviate long node labels for the diagram only (the descendants table below
+# keeps the full titles). First drop synonym lists -- the text after the first
+# comma -- so e.g. "Expectation, expected value, population mean" -> "Expectation".
+# Then apply curated short forms for the few names that are still long; extend
+# this map as needed.
+layout$label <- sub(",.*$", "", layout$title)
+short_forms <- c("def-hazard" = "Hazard")
+hit <- match(layout$name, names(short_forms))
+layout$label <- ifelse(is.na(hit), layout$label, short_forms[hit])
 
 ggraph(layout) +
   geom_edge_link(
@@ -104,7 +121,7 @@ ggraph(layout) +
     edge_alpha = 0.25, edge_width = 0.3
   ) +
   geom_node_label(
-    aes(label = title, fill = type, size = n_desc),
+    aes(label = label, fill = type, size = n_desc),
     color = "white",
     fontface = "bold",
     label.padding = unit(0.1, "lines"),
