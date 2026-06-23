@@ -1,323 +1,34 @@
 ::: proof
 
 Adapted from [@klein2003survival, §8.3, Theoretical Note 1, p. 257].
+This proof assembles the lemmas above.
 
-Assume that the censoring is noninformative
+Assume noninformative censoring
 (conditional on $\vx$, censoring times are independent of event times)
-and that there are no tied event times.
-For subject $j$, let $T_j$ be the event time, $C_j$ the censoring time,
-$Y_j = \min(T_j, C_j)$ the observed follow-up time, and
-$D_j = \1{T_j \le C_j}$ the event indicator (exit reason),
-matching the $Y$, $D$ notation of the
-[censored-data likelihood](intro-to-survival-analysis.qmd#sec-likelihood-with-censoring).
-Let $R(t) = \{j : Y_j \ge t\}$ be the risk set at $t$
-(the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set)),
-let $t_1 < \dots < t_K$ be the $K$ distinct observed failure times, and
-let $(i)$ denote the subject who fails at $t_i$
-(unique under the no-ties assumption).
+and no tied event times.
+Let $t_1 < \cdots < t_K$ be the distinct observed failure times,
+and let $(i)$ be the subject who fails at $t_i$ (unique under the no-ties assumption).
 
-**The full joint likelihood of the observed data.**
-The observed data set is $\{(Y_j, D_j, \vx_j)\}_{j=1}^n$.
-As derived for the
-[censored-data likelihood](intro-to-survival-analysis.qmd#sec-likelihood-with-censoring),
-a subject observed to fail ($D_j = 1$) contributes the event-time
-density $\haz(Y_j \mid \vx_j)\,\surv(Y_j \mid \vx_j)$, while a
-subject still censored ($D_j = 0$) contributes the survival
-probability $\surv(Y_j \mid \vx_j)$; under noninformative
-censoring the two cases combine into the single contribution
-$\surv(Y_j \mid \vx_j)\,\haz(Y_j \mid \vx_j)^{D_j}$.
-Subjects are independent, so the full likelihood of the entire observed
-data set is the product
-
-$$
-\Lik(\b, \haz_0)
-= \prod_{j=1}^{n}
-\surv(Y_j \mid \vx_j)\,
-\haz(Y_j \mid \vx_j)^{D_j}.
-$$ {#eq-ph-obs-lik}
-
-No risk set appears yet: @eq-ph-obs-lik conditions on nothing but the
-covariates. The rest of the proof rewrites it as a product over short
-time intervals, regroups those factors by interval to make the risk
-sets emerge, and only then decomposes each event's factor into the
-partial likelihood and a discarded remainder.
-
-**Discretize the survival factors over a time grid.**
-Partition $[0, \max_j Y_j]$ into intervals of width $\Delta t$ with left
-endpoints $\tau$, and recall from @def-ph-interval-fail-prob the interval
-failure probability $q_j(\tau)$ and its first-order approximation
-$q^*_j(\tau)$:
-
-$$
-q_j(\tau) \approx q^*_j(\tau) = \dblue{\haz_0(\tau)\,\Delta t}\;\red{\hazfactor(\vx_j)} .
-$$ {#eq-ph-interval-fail-approx}
-
-To track how this piece fits into the larger products, we color the
-$\dblue{\text{baseline-hazard factor }\haz_0(\cdot)\,\Delta t}$ — shared
-by everyone at risk at a given time, and ultimately discarded — and the
-$\red{\text{subject-specific hazard ratio }\hazfactor(\vx)}$ — the focal
-quantity the partial likelihood isolates.
-The exact $q_j(\tau)$ is the basic building block of the likelihood —
-every factor in this proof is a product of $q_j(\tau)$'s and $(1 - q_j(\tau))$'s —
-while the approximation $q^*_j(\tau)$ enters only when we invoke the hazard.
-
-Survival to $Y_j$ factors *exactly* into the per-interval conditional
-survival probabilities — survival is multiplicative over a partition —
-and each factor is $1 - q_j(\tau)$:
-
-$$
-\surv(Y_j \mid \vx_j) = \prod_{\tau < Y_j} \paren{1 - q_j(\tau)}.
-$$ {#eq-ph-surv-discretized}
-
-When $D_j = 1$, the failure contributes the same building block for its
-final interval, $q_j(Y_j) \approx q^*_j(Y_j)$.
-Substituting @eq-ph-surv-discretized into @eq-ph-obs-lik
-(and absorbing the constant $\Delta t^{D_j}$, which does not depend
-on $\b$ or $\haz_0$),
-
-$$
-\Lik(\b, \haz_0)
-\approx
-\prod_{j=1}^{n}
-\sb{
-q_j(Y_j)^{D_j}
-\prod_{\tau < Y_j}\paren{1 - q_j(\tau)}
-}.
-$$ {#eq-ph-lik-by-subject}
-
-**Regroup the factors by interval — the risk sets emerge.**
-Each factor in @eq-ph-lik-by-subject is indexed by a (subject, interval)
-pair: subject $j$ contributes one factor to every interval $\tau$ in
-which it is still at risk, i.e. every $\tau$ with $j \in R(\tau)$.
-Grouping the double product by interval instead, interval $\tau$ collects one
-factor from every member $m \in R(\tau)$ — a failure factor for the one
-subject (if any) who fails in $\tau$, and a survival factor for each
-subject who does not:
-
-$$
-\Lik(\b, \haz_0)
-\approx
-\prod_{\tau} \Lik_\tau,
-\qquad
-\Lik_\tau
-= \prod_{m \in R(\tau)}
-\begin{cases}
-q_m(\tau), & m \text{ fails in interval } \tau,\\[2pt]
-1 - q_m(\tau), & \text{otherwise.}
-\end{cases}
-$$ {#eq-ph-lik-by-interval}
-
-By construction $\Lik_\tau$ is the joint probability, *given the risk set
-$R(\tau)$*, of the outcomes observed in interval $\tau$. Under the
-no-ties assumption an interval holds at most one failure, so the
-intervals split into two kinds.
-
-For an interval $\tau$ with no failure, every at-risk subject survives it:
-
-$$
-\Lik_\tau^{\text{no failure}}
-= \prod_{m \in R(\tau)} \paren{1 - q_m(\tau)}.
-$$ {#eq-ph-nofail-interval}
-
-For the interval containing event time $t_i$, subject $(i)$ fails and
-every other member of $R(t_i)$ survives:
-
-$$
-\Lik_{t_i}^{\text{failure}}
-= q_{(i)}(t_i)
-\prod_{m \in R(t_i),\, m \ne (i)} \paren{1 - q_m(t_i)}.
-$$ {#eq-ph-fail-interval}
-
-**A single subject's failure probability.**
-To evaluate @eq-ph-fail-interval we need the per-subject failure
-probability inside a risk set.
-For any $j \in R(t_i)$, since $j \in R(t_i)$ means
-$Y_j = \min(T_j,\,C_j) \ge t_i$, we have both $T_j \ge t_i$ and
-$C_j \ge t_i$; under noninformative censoring the event $C_j \ge t_i$
-carries no information about $T_j$ given $\vx_j$, so conditioning on
-$j \in R(t_i)$ is equivalent to conditioning on $T_j \ge t_i$ alone.
-This conditional failure probability is exactly the interval failure
-probability (@def-ph-interval-fail-prob) evaluated at $t_i$, to which the
-first-order hazard approximation then applies:
-
-$$
-\ba
-\Pr\sb{j \text{ fails at } t_i \mid j \in R(t_i)}
-&= q_j(t_i)
-&& \text{(definition of } q_j(t_i) \text{)}
-\\
-&\approx q^*_j(t_i)
-&& \text{(first-order hazard approximation)}
-\\
-&= \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_j)},
-&& \text{(definition of } q^*_j(t_i) \text{)}
-\ea
-$$ {#eq-ph-single-subj}
-
-with the $\dblue{\haz_0(t_i)\,\Delta t}$ factor shared by every subject in
-the risk set and only the $\red{\hazfactor(\vx_j)}$ factor varying with
-$j$.
-In particular the survival factors in @eq-ph-fail-interval are each
-$1 - O(\Delta t)$, so to first order
-
-$$
-\ba
-\Lik_{t_i}^{\text{failure}}
-&\approx q_{(i)}(t_i)
-&& \text{(other members survive, each } 1 - O(\Delta t) \text{)}
-\\
-&= \Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}
-&& \text{(definition of } q_{(i)}(t_i) \text{)}
-\\
-&\approx q^*_{(i)}(t_i)
-&& \text{(first-order hazard approximation)}
-\\
-&= \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_{(i)})}.
-&& \text{(definition of } q^*_{(i)}(t_i) \text{)}
-\ea
-$$ {#eq-ph-fail-interval-approx}
-
-**Split each event factor into which-subject and whether-a-failure.**
-Apply the chain rule
-$\Pr(A \mid C) = \Pr(A \mid B \cap C)\,\Pr(B \mid C)$
-with
-
-- $A$ = "subject $(i)$ fails at $t_i$",
-- $B$ = "exactly one failure occurs at $t_i$",
-- $C$ = "the risk set at $t_i$ is $R(t_i)$".
-
-Under the no-ties assumption $A \subset B$ (subject $(i)$ failing at
-$t_i$ is automatically a one-failure event), so the rule is valid and
-splits the event factor @eq-ph-fail-interval-approx into a
-*which-subject-fails* factor and a *whether-a-failure-occurs* factor:
-
-$$
-\ba
-\underbrace{\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}}
-          _{=\ q_{(i)}(t_i)\ \approx\ q^*_{(i)}(t_i)\ =\ \dblue{\haz_0(t_i)\,\Delta t}\,\red{\hazfactor(\vx_{(i)})}}
-&= \underbrace{\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}}
-             _{\text{which subject fails}}
-\\
-&\quad \times\
-\underbrace{\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
-          _{\text{whether a failure occurs}}.
-\ea
-$$ {#eq-ph-chain-rule}
-
-**The whether-a-failure-occurs factor.**
-Treating subjects' failure events as conditionally independent given
-$R(t_i)$ (the Cox-model assumption used throughout;
-see [@klein2003survival, §8.3]),
-the probability of exactly one failure in $[t_i, t_i + \Delta t)$
-is, by inclusion-exclusion,
-
-$$
-\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
-= \sum_{k \in R(t_i)}
-    \Pr\sb{k \text{ fails} \mid R(t_i)}
-    \prod_{m \in R(t_i),\, m \ne k} \Pr\sb{m \text{ survives} \mid R(t_i)}.
-$$
-
-By @eq-ph-single-subj,
-$\Pr\sb{m \text{ fails} \mid R(t_i)} = q_m(t_i) = O(\Delta t)$,
-so each product $\prod_{m \ne k} \Pr\sb{m \text{ survives} \mid R(t_i)} = \prod_{m \ne k}(1 - O(\Delta t)) = 1 - O(\Delta t)$,
-and dropping $O(\Delta t^2)$ cross-terms (each pair of co-failures has
-probability $O(\Delta t^2)$) leaves the sum of the single-subject pieces.
-To pull the shared baseline factor out of that sum, define the
-**risk-set score total**
-
-$$
-S_i \eqdef \sum_{k \in R(t_i)} \hazfactor(\vx_k),
-$$ {#eq-ph-risk-set-score}
-
-the total of the subject-specific hazard ratios $\red{\hazfactor(\vx_k)}$
-over everyone at risk at $t_i$.
-Then the shared $\dblue{\haz_0(t_i)\,\Delta t}$ factors out of the sum:
-
-$$
-\ba
-\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
-&\approx
-\sum_{k \in R(t_i)} q_k(t_i)
-&& \text{(sum of single-subject probabilities)}
-\\
-&\approx
-\sum_{k \in R(t_i)} q^*_k(t_i)
-&& \text{(first-order hazard approximation)}
-\\
-&=
-\sum_{k \in R(t_i)} \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_k)}
-&& \text{(definition of } q^*_k(t_i) \text{)}
-\\
-&=
-\dblue{\haz_0(t_i)\,\Delta t}\sum_{k \in R(t_i)} \red{\hazfactor(\vx_k)}
-&& \text{(factor out the shared baseline)}
-\\
-&=
-\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}.
-&& \text{(definition of } \red{S_i} \text{)}
-\ea
-$$ {#eq-ph-one-failure}
-
-**The which-subject-fails factor.**
-Solving @eq-ph-chain-rule for the conditional probability and
-substituting the numerator $q_{(i)}(t_i)$ from @eq-ph-single-subj and the
-denominator $\dblue{\haz_0(t_i)\,\Delta t}\,\red{S_i}$ from
-@eq-ph-one-failure, the shared $\dblue{\haz_0(t_i)\,\Delta t}$ factor
-cancels between numerator and denominator:
-
-$$
-\ba
-\Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}
-&= \frac{\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}}
-         {\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
-&& \text{(rearrange the chain rule)}
-\\
-&\approx \frac{q_{(i)}(t_i)}{\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
-&& \text{(substitute the two factors)}
-\\
-&\approx \frac{q^*_{(i)}(t_i)}{\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
-&& \text{(first-order hazard approximation)}
-\\
-&= \frac{\dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_{(i)})}}
-         {\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
-&& \text{(definition of } q^*_{(i)}(t_i) \text{)}
-\\
-&= \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}
-&& \text{(cancel the shared } \dblue{\haz_0(t_i)\,\Delta t} \text{)}
-\\
-&= \Lik^*_i(\b).
-&& \text{(definition of } \Lik^*_i(\b) \text{)}
-\ea
-$$ {#eq-ph-which-subject}
-
-The $\approx$ inherits the first-order hazard approximation
-$\Pr\{T_j \in [t_i, t_i + \Delta t) \mid T_j \ge t_i\} \approx \haz(t_i \mid \vx_j)\,\Delta t$
-(the *conditional* probability — the hazard's defining quantity, given
-the subject has survived to $t_i$).
-The final $=$ is exact: the $\dblue{\haz_0(t_i)\,\Delta t}$ factors cancel
-algebraically, leaving a ratio that is independent of $\Delta t$
-altogether, so the $\Delta t \to 0$ limit is trivial and the
-which-subject factor equals the partial-likelihood contribution
-$\Lik^*_i(\b)$ of @def-ph-partial-lik.
-
-**Factor the full likelihood.**
-Return to the interval product @eq-ph-lik-by-interval and separate the
-$K$ failure intervals from the rest.
-Using @eq-ph-fail-interval-approx and then @eq-ph-chain-rule on each
-failure interval,
+By @lem-ph-lik-by-interval the likelihood factors over intervals,
+$\Lik(\b, \haz_0) \approx \prod_\tau \Lik_\tau$.
+Separate the $K$ intervals that contain a failure from the rest.
+A no-failure interval contributes
+$\Lik_\tau^{\text{no failure}} = \prod_{m \in R(\tau)}\paren{1 - q_m(\tau)}$;
+the interval containing $t_i$ contributes the event factor
+$\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}$ times the survival of the other members,
+which to first order is just the event factor itself, since each other member survives with probability $1 - O(\Delta t)$.
+Applying @lem-ph-event-chain-rule to each event factor,
+and then @lem-ph-whether-failure and @lem-ph-which-subject to its two pieces,
 
 $$
 \ba
 \Lik(\b, \haz_0)
 &\approx
-\paren{\prod_{i=1}^{K} \Lik_{t_i}^{\text{failure}}}
-\paren{\prod_{\tau\,:\,\text{no failure}} \Lik_\tau^{\text{no failure}}}
-\\
-&= \paren{\prod_{i=1}^{K}
+\paren{\prod_{i=1}^{K}
    \Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}\,
    \Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
    \paren{\prod_{\tau\,:\,\text{no failure}} \Lik_\tau^{\text{no failure}}}
+&& \text{(@lem-ph-event-chain-rule)}
 \\
 &\approx
 \underbrace{\paren{\prod_{i=1}^{K} \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}}}
@@ -326,45 +37,42 @@ $$
 \underbrace{
 \sb{\prod_{i=1}^{K} \dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
 \sb{\prod_{\tau\,:\,\text{no failure}} \prod_{m \in R(\tau)} \paren{1 - q_m(\tau)}}}
-          _{\mathcal{B}(\b,\,\haz_0)\ \text{(discarded)}}.
+          _{\mathcal{B}(\b,\,\haz_0)\ \text{(discarded)}} .
+&& \text{(@lem-ph-whether-failure, @lem-ph-which-subject)}
 \ea
 $$ {#eq-ph-factored-lik}
 
 Under the no-ties assumption each event time has $d_i = 1$
-(where $d_i$ is the number of events at distinct event time $t_i$),
-so the kept
-product $\prod_{i=1}^{K}(\cdots) = \prod_{\{i:\,d_i=1\}}(\cdots)$ matches
-the form of $\Lik^*(\b)$ in @def-ph-partial-lik.
+(where $d_i$ is the number of events at $t_i$),
+so the kept product $\prod_{i=1}^{K}(\cdots) = \prod_{\set{i:\ d_i = 1}}(\cdots)$
+matches the form of $\Lik^*(\b)$ in @def-ph-partial-lik.
 
-The partial likelihood keeps the first product, $\Lik^*(\b)$, and drops
-the second, $\mathcal{B}(\b, \haz_0)$.
+The partial likelihood keeps the first product, $\Lik^*(\b)$,
+and drops the second, $\mathcal{B}(\b, \haz_0)$.
 The discarded factor $\mathcal{B}(\b, \haz_0)$ collects both the
-whether-a-failure-occurs factors and the entire between-event survival
-background, and it is the only place the baseline hazard
-$\dblue{\haz_0(\cdot)}$ appears — equivalently, the shared
-$\dblue{\haz_0(t_i)\,\Delta t}$ cancels from each kept factor in
-@eq-ph-which-subject — which is why maximizing $\Lik^*(\b)$ alone frees
-the estimator from $\haz_0(\cdot)$.
+whether-a-failure-occurs factors and the entire between-event survival background,
+and it is the only place the baseline hazard $\dblue{\haz_0(\cdot)}$ appears —
+equivalently, the shared $\dblue{\haz_0(t_i)\,\Delta t}$ cancels from each kept factor
+in @eq-ph-which-subject — which is why maximizing $\Lik^*(\b)$ alone
+frees the estimator from $\haz_0(\cdot)$.
 The discarded factor is **not** free of $\b$, however:
-it still depends on $\b$ through the risk-set score totals $\red{S_i}$
-and the survival background.
+it still depends on $\b$ through the risk-set score totals $\red{S_i}$ and the survival background.
 Dropping it therefore sacrifices the information about $\b$ carried by
 *when* (and within how large a risk set) failures occur,
 retaining only the information in *which* subject fails at each event time.
 
 The factorization in @eq-ph-factored-lik is a *construction* rather than
-an exact decomposition of the joint probability: the factors are not
-formally independent (the risk set $R(t_{i+1})$ depends on who failed
-and was censored before $t_{i+1}$, and the discretization is exact only
-in the $\Delta t \to 0$ limit),
+an exact decomposition of the joint probability:
+the factors are not formally independent
+(the risk set $R(t_{i+1})$ depends on who failed and was censored before $t_{i+1}$,
+and the discretization is exact only in the $\Delta t \to 0$ limit),
 but Cox showed that treating $\Lik^*(\b)$ as a likelihood — i.e.,
 maximizing it as a function of $\b$ — yields estimators with the
-usual large-sample properties (consistency, asymptotic normality,
-the standard score and information identities;
+usual large-sample properties
+(consistency, asymptotic normality, the standard score and information identities;
 see also [@klein2003survival, §8.3, Theoretical Note 1]).
-Under noninformative censoring, each kept factor depends on the observed
-history only through $R(t_i)$ and $\{\vx_j\}_{j \in R(t_i)}$, and
-@eq-ph-which-subject gives exactly the
-partial likelihood $\Lik^*(\b)$ of @def-ph-partial-lik.
+Under noninformative censoring, each kept factor depends on the observed history
+only through $R(t_i)$ and $\set{\vx_j}_{j \in R(t_i)}$,
+and @eq-ph-which-subject gives exactly the partial likelihood $\Lik^*(\b)$ of @def-ph-partial-lik.
 
 :::

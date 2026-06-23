@@ -1,0 +1,78 @@
+:::{#lem-ph-lik-by-interval}
+#### Likelihood regrouped by interval
+
+Substituting @eq-ph-surv-discretized into @eq-ph-obs-lik
+and regrouping the factors by interval,
+
+$$
+\Lik(\b, \haz_0)
+\approx
+\prod_{\tau} \Lik_\tau,
+\qquad
+\Lik_\tau
+= \prod_{m \in R(\tau)}
+\begin{cases}
+q_m(\tau), & m \text{ fails in interval } \tau,\\[2pt]
+1 - q_m(\tau), & \text{otherwise,}
+\end{cases}
+$$ {#eq-ph-lik-by-interval}
+
+so each interval $\tau$ contributes one factor per member of its risk set $R(\tau)$.
+Under the no-ties assumption each interval holds at most one failure.
+:::
+
+---
+
+::: {.proof}
+By @lem-ph-censored-lik and @lem-ph-surv-discretized,
+substituting the discretized survival factor into the likelihood
+and approximating the failure subject's density factor by its interval
+failure probability, $\haz(Y_j \mid \vx_j)\,\Delta t \approx q_j(Y_j)$
+(and absorbing the constant $\Delta t^{D_j}$, which depends on neither $\b$ nor $\haz_0$),
+
+$$
+\Lik(\b, \haz_0)
+\approx
+\prod_{j=1}^{n}
+\sb{
+q_j(Y_j)^{D_j}
+\prod_{\tau < Y_j}\paren{1 - q_j(\tau)}
+}.
+$$ {#eq-ph-lik-by-subject}
+
+Each factor in @eq-ph-lik-by-subject is indexed by a (subject, interval) pair:
+subject $j$ contributes one factor to every interval $\tau$ with $j \in R(\tau)$ —
+a failure factor $q_j(\tau)$ if $j$ fails in $\tau$,
+and a survival factor $1 - q_j(\tau)$ otherwise.
+Reindexing the double product by interval instead of by subject
+collects, for each $\tau$, exactly one factor from every member $m \in R(\tau)$,
+which is @eq-ph-lik-by-interval.
+The $\approx$ is inherited from the density approximation in @eq-ph-lik-by-subject;
+the regrouping itself is an exact reindexing of the same factors.
+:::
+
+:::{#exm-ph-lik-by-interval}
+#### Regrouping a two-subject likelihood
+
+Take two subjects at risk over two intervals with left endpoints $\tau = 0$ and $\tau = 1$.
+Subject $1$ survives interval $0$ and fails in interval $1$;
+subject $2$ survives both intervals.
+Grouping the factors **by subject** (@eq-ph-lik-by-subject) gives
+
+$$
+\underbrace{\paren{1 - q_1(0)}\,q_1(1)}_{\text{subject 1}}
+\;\times\;
+\underbrace{\paren{1 - q_2(0)}\paren{1 - q_2(1)}}_{\text{subject 2}} ,
+$$
+
+while grouping the *same* factors **by interval** (@eq-ph-lik-by-interval) gives
+
+$$
+\underbrace{\paren{1 - q_1(0)}\paren{1 - q_2(0)}}_{\tau = 0,\ \text{no failure}}
+\;\times\;
+\underbrace{q_1(1)\paren{1 - q_2(1)}}_{\tau = 1,\ \text{subject 1 fails}} .
+$$
+
+The two products contain identical factors;
+regrouping only changes the order of multiplication, which is why it is exact.
+:::
