@@ -74,7 +74,9 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Introduce concepts before using them — no forward references
 - Factual claims must have a specific citation
 - Variable definitions in exercises: use bullet points/table with symbol, meaning, and dataset column
-- After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div
+- After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div; if a counterexample is feasible, include one immediately after the example
+- After every theoretical claim (thm, cor, lem): when a proof is feasible and in scope, (1) immediately follow with a proof, then (2) immediately follow with an example utilizing the claim; when a proof is non-elementary or out of scope (e.g., `@thm-fubini`, `@thm-fubini-tonelli`), omit the proof block and proceed directly to the example
+- Always arrange divs and sections so that related items are adjacent: theorem → proof → example(s) → counterexample(s)
 - Clearly distinguish **model structure** (how the data relate to the parameters — distributional family, link function, random effects, hierarchies, …) from **inference method** (how the parameters are estimated — MLE, Bayes, GEE, method of moments, …). The two are orthogonal: any model structure can be paired with any compatible inference method (e.g. a random-effects model can be fit by maximum likelihood *or* by Bayesian MCMC). Never write as if a structure belonged to one inference paradigm (avoid e.g. "the Bayesian version of random effects"); instead name the inference method being applied to the structure.
 
 ### Pull Requests
