@@ -5,12 +5,19 @@
 {{< slidebreak >}}
 
 ::: notes
-How do we fit a proportional hazards regression model? We need to
-estimate the coefficients of the covariates, and we need to estimate the
-base hazard $\haz_0(t)$. For the covariates, supposing for simplicity that
-there are no tied event times, let the event times for the whole data
-set be $t_1, t_2,\ldots,t_K$. Let the risk set at time $t_i$ be $R(t_i)$
-and
+Fitting a proportional hazards model means estimating two pieces:
+the coefficients $\b = (\beta_1, \ldots, \beta_p)$ that govern the covariate effects,
+and the baseline hazard $\haz_0(t)$.
+We estimate them in two stages:
+
+1. estimate $\b$ by maximizing a *partial likelihood* in which the unknown baseline $\haz_0(t)$ cancels out,
+   so the covariate effects can be fit without committing to a shape for the baseline;
+2. then, with $\hat\b$ in hand, estimate the baseline cumulative hazard $\cuhaz_0(t)$ by the Breslow estimator.
+
+Throughout, assume for simplicity that there are no tied event times;
+let $t_1 < t_2 < \cdots < t_K$ be the distinct event times for the whole data set,
+and let $R(t_i)$ be the risk set at time $t_i$.
+Recall the model:
 :::
 
 $$
@@ -28,69 +35,64 @@ $$
 {{< slidebreak >}}
 
 ::: notes
-Conditional on a single failure at time $t$, the probability that the
-event is due to subject $f\in R(t)$ is approximately
+**Stage 1: estimating the coefficients $\b$.**
+The key idea is to condition on *when* the failures happen and ask only *which* at-risk subject failed at each event time.
+Over a short interval of width $\Delta t$,
+the probability that an at-risk subject $j$ fails at $t_i$ is approximately its hazard times the interval width,
+$\haz(t_i \mid \vx_j)\,\Delta t = \dblue{\haz_0(t_i)\,\Delta t}\,\red{\hazfactor(\vx_j)}$.
+So, conditional on exactly one failure at $t_i$ among the risk set $R(t_i)$,
+the probability that the subject who failed is subject $(i)$ is that subject's share of the total —
+and the shared baseline factor $\dblue{\haz_0(t_i)\,\Delta t}$ cancels:
 :::
 
 $$
 \ba
-\Pr(f \text{ fails}|\text{1 failure at } t)
-&= \frac{\dblue{\haz_0(t)}\,\red{\expf{\eta(\vx_f)}}}{\sum_{k \in R(t)}\dblue{\haz_0(t)}\,\red{\expf{\eta(\vx_k)}}}
+\Pr(\text{subject } (i) \text{ fails} \mid \text{1 failure at } t_i)
+&= \frac{\dblue{\haz_0(t_i)\,\Delta t}\,\red{\hazfactor(\vx_{(i)})}}{\sum_{k \in R(t_i)}\dblue{\haz_0(t_i)\,\Delta t}\,\red{\hazfactor(\vx_k)}}
 \\
-&= \frac{\red{\hazfactor(\vx_f)}}{\sum_{k \in R(t)} \red{\hazfactor(\vx_k)}}
+&= \frac{\red{\hazfactor(\vx_{(i)})}}{\sum_{k \in R(t_i)} \red{\hazfactor(\vx_k)}}
 \ea
 $$
 
 ::: notes
-The logic behind this approximation has several steps.
-We first fix (ex post) the failure times
-and note that in this discrete context,
-the probability $p_j$ that a subject $j$ in the risk set fails at time $t$
-is just the hazard of that subject at that time.
+Because the baseline factor cancels, this conditional probability depends only on $\b$.
+Multiplying these probabilities across the $K$ event times gives the **partial likelihood**:
 :::
-
-If all of the $p_j$ are small,
-the chance that exactly one subject fails
-is
-
-
-$$
-\sum_{k\in R(t)}p_k\left[\prod_{m\in R(t), m\ne k} (1-p_m)\right]\approx\sum_{k\in R(t)}p_k
-$$
 
 {{< slidebreak >}}
 
-::: notes
-If subject $i$ is the one who experiences the event of interest at time
-$t_i$,
-then the **partial likelihood** is
-:::
-
 {{< include _subfiles/proportional-hazards-models/_def-ph-partial-lik.qmd >}}
+
+::: notes
+The proof fills in the steps just sketched —
+discretizing time, regrouping the contributions by risk set, and showing the baseline cancels —
+and confirms that the product is free of $\haz_0$.
+:::
 
 {{< include _subfiles/proportional-hazards-models/_proof-ph-partial-lik.qmd >}}
 
 ::: notes
-and we can numerically maximize this partial likelihood with respect to the coefficients
-$\vec{\beta}$ that specify
-$\eta(\vec{x}) = \vec{x}'\vec{\beta}$.
-When there are tied event times adjustments need to be made,
-but the likelihood is still similar.
-Note that we don't need to know the base hazard to solve
-for the coefficients.
+We maximize this partial likelihood numerically with respect to $\b$
+(which determines $\eta(\vx) = \tp{\vx}\b$ and $\hazfactor(\vx) = \expf{\eta(\vx)}$).
+When there are tied event times some adjustments are needed, but the likelihood is similar.
+Crucially, the baseline hazard never enters, so we obtain $\hat\b$ without estimating $\haz_0$.
+:::
 
-Once we have coefficient estimates
-$\hat{\vec{\beta}} =(\hat \beta_1,\ldots,\hat\beta_p)$,
-these estimates also define $\hat\eta(x)$ and $\hat\hazfactor(x)$,
-and then the estimated base cumulative hazard function is given
-by the Breslow estimator (@def-breslow-baseline-cuhaz-est).
+{{< slidebreak >}}
+
+::: notes
+**Stage 2: estimating the baseline hazard.**
+Once we have the coefficient estimates $\hat\b = (\hat\beta_1, \ldots, \hat\beta_p)$ —
+and hence $\hat\eta(\vx)$ and $\hat\hazfactor(\vx)$ —
+the baseline cumulative hazard is estimated by the Breslow estimator:
 :::
 
 {{< include _subfiles/proportional-hazards-models/_def-breslow-baseline-cuhaz-est.qmd >}}
 
 ::: notes
-This estimator reduces to the Nelson-Aalen estimate when there are no covariates.
-There are numerous other estimates that have been proposed as well.
+This estimator reduces to the Nelson-Aalen estimator when there are no covariates;
+several other estimators have also been proposed.
+The proof derives it as a profile likelihood:
 :::
 
 {{< include _subfiles/proportional-hazards-models/_proof-breslow-baseline-cuhaz-est.qmd >}}
