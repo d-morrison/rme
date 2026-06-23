@@ -1,0 +1,103 @@
+{{< include latex-macros/macros.qmd >}}
+
+:::{#def-coef-interp-procedure}
+
+#### General procedure for interpreting a regression coefficient
+
+To derive the interpretation of coefficient $\b_j$
+in a model with linear predictor
+$\eta(\vx) = \eta(x_1, \ldots, x_p)$:
+
+1. **Write down the linear predictor** $\eta(x_1, \ldots, x_p)$.
+
+2. **Differentiate or difference** $\eta$ with respect to $x_j$:
+
+   a. If $x_j$ is **continuous**:
+      compute the partial derivative $\deriv{x_j}\eta(\vx)$.
+
+   b. If $x_j$ is **discrete**:
+      compute the one-unit difference
+      $\eta(\vx)\big|_{x_j = a+1} - \eta(\vx)\big|_{x_j = a}$.
+
+   For an **interaction coefficient** $\b_{jk}$
+   (multiplying the product $x_j \cdot x_k$),
+   apply this step twice in sequence:
+   first differentiate or difference $\eta$ with respect to $x_j$
+   to obtain the **slope of $x_j$** as a function of $x_k$;
+   then differentiate or difference that slope with respect to $x_k$
+   (choosing continuous/discrete as appropriate for $x_k$)
+   to obtain the **change in slopes**, which equals $\b_{jk}$.
+
+3. **If any covariates remain, set them to their reference levels**.
+   If covariates other than the one(s) used in step 2
+   still appear in the resulting expression,
+   substitute each covariate's reference level for it.
+   This eliminates the corresponding interaction terms
+   and isolates $\b_j$ alone on the right-hand side.
+
+4. **Identify $\b_j$**: the expression from the previous steps equals $\b_j$;
+   write $\b_j = \cdots$ to state the interpretation explicitly.
+
+**Special case --- intercept ($\b_0$):**
+If the coefficient of interest is the intercept $\b_0$,
+skip step 2.
+Apply step 3 directly by setting all covariates to their reference levels:
+$\b_0 = \eta(\text{reference pattern})$.
+
+:::
+
+::: notes
+This procedure gives the interpretation on the **linear predictor scale**.
+For Gaussian linear regression (identity link),
+$\eta(\vx) = \E{Y|\vx}$,
+so the resulting interpretation is directly on the mean outcome scale.
+For other GLMs and for proportional hazards models,
+the linear predictor is a transformed version of the mean
+(e.g., the log-odds for logistic regression,
+the log-rate for Poisson regression,
+or the log-hazard for Cox models),
+so an additional step --- applying the inverse link or exponentiating ---
+translates the interpretation to the scale of the outcome.
+
+The reference covariate pattern used in step 3 is not arbitrary:
+setting remaining covariates to $0$ is correct when $0$ is
+their reference level (as coded in the model).
+If the reference level for some covariate is not $0$,
+substitute the actual reference value instead.
+:::
+
+:::{#exm-coef-interp-procedure}
+
+#### Applying the procedure to [Model @eq-lm-parallel]
+
+For the birthweight parallel-lines model
+$$\E{Y|M=m, A=a} = \b_0 + \b_M m + \b_A a,$$
+where $M \in \{0,1\}$ (sex; $1$ = male, $0$ = female)
+and $A$ is gestational age (weeks):
+
+**$\b_A$ (gestational age, continuous):**
+$\deriv{a}\eta(m,a) = \b_A$,
+so $\b_A = \deriv{a}\E{Y|M=m, A=a}$.
+(Step 3 not needed: no remaining covariates appear after differentiating.)
+
+**$\b_M$ (sex, discrete):**
+
+$$
+\ba
+\eta(m,a)\big|_{m=1} - \eta(m,a)\big|_{m=0}
+&= (\b_0 + \b_M + \b_A a) - (\b_0 + \b_A a)
+\\
+&= \b_M,
+\ea
+$$
+
+so $\b_M = \E{Y|M=1, A=a} - \E{Y|M=0, A=a}$.
+(Step 3 not needed: $a$ cancels in the differencing, so the result holds for all values of $A$.)
+
+**$\b_0$ (intercept, special case):**
+Skip step 2;
+set $m=0$ and $a=0$ (the reference levels) in step 3:
+$\b_0 = \eta(0,0) = \E{Y|M=0, A=0}$.
+
+:::
+
