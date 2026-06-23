@@ -70,16 +70,43 @@ rd_hat <- pi1_hat - pi0_hat
 
 pi1_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type A"])
 pi0_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type B"])
+
+# Observed marginal risks via predictive margins:
+# average the model's fitted risks within each observed exposure subgroup
+# (keeping each person's own covariates and observed exposure)
+fitted_risk <- predict(fit, type = "response")
+pi1_obs_pm <- mean(fitted_risk[wcgs_clean$dibpat == "Type A"])
+pi0_obs_pm <- mean(fitted_risk[wcgs_clean$dibpat == "Type B"])
 ```
 
 The **observed marginal risks**
 $\hat\pi(a) = \Pr(Y=1 \mid A=a)$
-estimated directly from the data are:
+can be estimated in two equivalent ways.
+
+Directly, as the sample proportion of events within each exposure group:
 
 $$
 \hat\pi(1) = `r round(pi1_obs, 3)`, \quad
 \hat\pi(0) = `r round(pi0_obs, 3)`
 $$
+
+Or via **predictive margins** (@def-predictive-margins):
+average the model's fitted risks over the **subgroup** actually exposed to $A = a$,
+keeping each man's own covariates and observed exposure:
+
+$$
+\hat\pi(1) = `r round(pi1_obs_pm, 3)`, \quad
+\hat\pi(0) = `r round(pi0_obs_pm, 3)`
+$$
+
+The two estimates agree exactly (to displayed precision).
+This is not a coincidence:
+because the model includes `dibpat` as a covariate,
+the maximum-likelihood score equations force
+the mean fitted risk within each `dibpat` group
+to equal that group's observed event proportion.
+Predictive margins over the exposure subgroup therefore reproduce
+the raw proportions here.
 
 The **causal marginal risks**
 $\hat\pi_a = \frac{1}{n}\sumin \hat\pi(a, z_i)$
@@ -99,10 +126,14 @@ Standardization via g-computation adjusts for this difference.
 The causal marginal risk difference estimate is:
 
 $$
-\widehat{\text{Causal Marginal RD}} =
-\hat\pi_1 - \hat\pi_0 =
-`r round(pi1_hat, 3)` - `r round(pi0_hat, 3)` =
-`r round(rd_hat, 3)`
+\ba
+\widehat{\text{Causal Marginal RD}}
+&= \hat\pi_1 - \hat\pi_0
+\\
+&= `r round(pi1_hat, 3)` - `r round(pi0_hat, 3)`
+\\
+&= `r round(rd_hat, 3)`
+\ea
 $$
 
 :::
