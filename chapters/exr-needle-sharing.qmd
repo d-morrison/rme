@@ -125,7 +125,7 @@ library(ggdag)
 library(dplyr)
 
 # This is a cross-sectional study: every covariate is measured at a single
-# interview, so we cannot causally order the *current* covariates among
+# interview, so we cannot causally order the time-varying covariates among
 # themselves. We draw their mutual associations -- from shared, unobserved
 # earlier circumstances -- as non-directional (bidirected) edges, instead of
 # giving each covariate its own separate latent "past state" node.
@@ -134,7 +134,7 @@ covariates <- c(
   "homeless", "polydrug", "hivstat", "sexabuse", "dprsn_dx", "hplsns"
 )
 
-# every unordered pair of current covariates gets a bidirected edge
+# every unordered pair of time-varying covariates gets a bidirected edge
 covariate_pairs <- utils::combn(covariates, 2)
 bidirected_edges <- paste(covariate_pairs[1, ], "<->", covariate_pairs[2, ])
 demographic_edges <- as.vector(
@@ -142,12 +142,14 @@ demographic_edges <- as.vector(
 )
 
 needles_dag <- dagitty(paste0("dag {", paste(c(
-  # birth-fixed demographics cause the current states and the outcome
+  # birth-fixed demographics cause the current states, injection frequency,
+  # and the outcome
   demographic_edges,
+  paste(demographics, "-> nivdu"),
   paste(demographics, "-> shared_syr"),
-  # current covariates are mutually associated, with no causal ordering
+  # time-varying covariates are mutually associated, with no causal ordering
   bidirected_edges,
-  # each current covariate can affect injection frequency and the outcome
+  # each time-varying covariate can affect injection frequency and the outcome
   paste(covariates, "-> nivdu"),
   paste(covariates, "-> shared_syr"),
   # injecting is the only mediator: sharing a syringe requires injecting
@@ -181,7 +183,7 @@ needles_tidy <- needles_dag |>
     name == "nivdu" ~ "mediator",
     name == "selected" ~ "study inclusion (conditioned on)",
     name %in% demographics ~ "demographic (birth-fixed)",
-    TRUE ~ "current covariate"
+    TRUE ~ "time-varying covariate (current/recent status)"
   ))
 
 # split edges so associations and causal arrows can be styled separately
@@ -191,7 +193,7 @@ association_edges <- function(d) dplyr::filter(d, .data$direction == "<->")
 needles_tidy |>
   ggplot() +
   aes(x = x, y = y, xend = xend, yend = yend) +
-  # non-directional associations among current covariates: dashed grey arcs
+  # non-directional associations among time-varying covariates: dashed grey arcs
   geom_dag_edges_arc(
     data = association_edges, curvature = 0.4, arrow = NULL,
     edge_colour = "grey65", edge_linetype = "dashed", edge_width = 0.4,
@@ -207,12 +209,14 @@ needles_tidy |>
   scale_shape_manual(values = c(
     "exposure" = 16, "outcome" = 16, "mediator" = 16,
     "study inclusion (conditioned on)" = 15,
-    "demographic (birth-fixed)" = 16, "current covariate" = 16
+    "demographic (birth-fixed)" = 16,
+    "time-varying covariate (current/recent status)" = 16
   )) +
   scale_colour_manual(values = c(
     "exposure" = "#d73027", "outcome" = "#4575b4", "mediator" = "#1a9850",
     "study inclusion (conditioned on)" = "grey30",
-    "demographic (birth-fixed)" = "grey55", "current covariate" = "grey80"
+    "demographic (birth-fixed)" = "grey55",
+    "time-varying covariate (current/recent status)" = "grey80"
   )) +
   guides(colour = guide_legend(nrow = 2), shape = guide_legend(nrow = 2)) +
   theme_dag() +
@@ -226,12 +230,13 @@ and the outcome is the count of shared syringes (`shared_syr`, blue).
 Injection frequency (`nivdu`, green) is the one genuine mediator:
 sharing a syringe requires injecting.
 Demographic variables (`age`, `sex`, `ethn`, darker grey) are fixed at
-(or determined by) birth, so they sit upstream of everything else.
+(or determined by) birth, so they sit upstream of every other variable,
+with arrows into the time-varying covariates, injection frequency, and the outcome.
 Because every other covariate is measured at the same single interview,
-we cannot order the current covariates (lighter grey) causally among themselves;
+we cannot order the time-varying covariates (lighter grey) causally among themselves;
 their mutual associations — from shared, unobserved earlier circumstances —
 are drawn as dashed, non-directional edges.
-Each current covariate may still affect injection frequency and the 30-day
+Each time-varying covariate may still affect injection frequency and the 30-day
 outcome, shown as solid arrows into `nivdu` and `shared_syr`.
 The study-inclusion indicator (`selected`, square) is conditioned on by design;
 because several covariates influence who is sampled,
