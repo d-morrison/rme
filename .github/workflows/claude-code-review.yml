@@ -127,6 +127,20 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Permit github-actions[bot] to initiate this run. claude.yml
+          # re-dispatches a review via `gh workflow run` (workflow_dispatch),
+          # which runs as github-actions[bot]. In agent mode — which
+          # workflow_dispatch uses (track_progress is 'false' below for
+          # dispatched runs) — the action blocks bot actors by default and
+          # aborts with "Workflow initiated by non-human actor: github-actions
+          # ... Add bot to allowed_bots". Without this, every @claude-review
+          # re-dispatch (and the post-commit re-dispatch) dies before it can
+          # post a review (observed on PR #706 run 28257175025). The job-level
+          # `if:` already filters bots off the automatic pull_request path, so
+          # this only widens the dispatch path, itself reachable only via
+          # claude.yml's trusted-author gate. Mirrors the allowed-bots default
+          # in the canonical d-morrison/gha reusable workflow.
+          allowed_bots: "github-actions[bot]"
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
           prompt: |
