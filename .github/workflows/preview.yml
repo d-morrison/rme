@@ -7,11 +7,15 @@
 # IMPORTANT: keep this workflow's `name:` in sync with the `workflows:` list in
 # preview-deploy.yml — that is how the deploy half finds this run.
 #
-# Every input of the reusable workflow defaults to exactly what rme needs (path
-# '.', r-version 4.6.0, the shared renv apt stack, use-renv, install-package,
-# setup-chrome, submodules recursive, render-profile website), so no `with:`
-# overrides are required. The `preview:pdf` / `preview:docx` / `preview:revealjs`
-# and `clear freezer` labels are handled inside the reusable workflow.
+# `r-version` is pinned explicitly because rme's renv.lock is built against it:
+# a silent drift in the reusable workflow's default R version could restore the
+# renv library against the wrong R and break the render, so that contract lives
+# here in-repo. The remaining inputs (apt stack, use-renv, install-package,
+# setup-chrome, submodules recursive, render-profile website) intentionally
+# inherit the reusable workflow's defaults, which already match rme's needs — a
+# drift there fails loudly at build time rather than silently changing output.
+# The `preview:pdf` / `preview:docx` / `preview:revealjs` and `clear freezer`
+# labels are handled inside the reusable workflow.
 name: Quarto Preview Build
 
 on:
@@ -35,3 +39,5 @@ jobs:
     permissions:
       contents: read
     uses: d-morrison/gha/.github/workflows/preview.yml@v1
+    with:
+      r-version: '4.6.0'
