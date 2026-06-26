@@ -1,13 +1,26 @@
+# Build half of the PR-preview family, delegated to the reusable workflow in
+# d-morrison/gha. Renders the Quarto site in the (possibly fork) PR context and
+# uploads it + PR metadata as an artifact; the deploy half (preview-deploy.yml)
+# publishes it to gh-pages. This job is read-only (contents: read) — it must
+# never write to the base repo.
+#
+# IMPORTANT: keep this workflow's `name:` in sync with the `workflows:` list in
+# preview-deploy.yml — that is how the deploy half finds this run.
+#
+# `r-version` is pinned explicitly because rme's renv.lock is built against it:
+# a silent drift in the reusable workflow's default R version could restore the
+# renv library against the wrong R and break the render, so that contract lives
+# here in-repo. The remaining inputs (apt stack, use-renv, install-package,
+# setup-chrome, submodules recursive, render-profile website) intentionally
+# inherit the reusable workflow's defaults, which already match rme's needs — a
+# drift there fails loudly at build time rather than silently changing output.
+# The `preview:pdf` / `preview:docx` / `preview:revealjs` and `clear freezer`
+# labels are handled inside the reusable workflow.
 name: Quarto Preview Build
 
 on:
   pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
-      - closed
+    types: [opened, reopened, synchronize, labeled, closed]
     paths:
       - 'man/**'
       - 'pkgdown/**'
@@ -21,167 +34,10 @@ on:
       - '*.scss'
       - 'latex-macros'
 
-# Cancel an in-progress preview build when a newer commit on the same
-# ref supersedes it. Without `cancel-in-progress: true` the default is
-# `false`, so a fresh push QUEUES behind the stale run and the
-# up-to-date preview is delayed until the obsolete one finishes
-# (see issue #812: PR #755 waited on an out-of-date preview run).
-concurrency:
-  group: preview-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
-    # Run for all events except unrecognised labels.
-    if: github.event.action != 'labeled' || contains(fromJSON('["clear freezer", "preview:pdf", "preview:docx", "preview:revealjs"]'), github.event.label.name)
-    runs-on: ubuntu-latest
-    # Read-only: this job runs in the fork's restricted context and must
-    # never write to the base repo. All writes are handled by preview-deploy.yml
-    # which runs in the base-repo context via workflow_run.
     permissions:
       contents: read
-
-    steps:
-      - name: Check out repository
-        if: github.event.action != 'closed'
-        uses: actions/checkout@v7
-        with:
-          submodules: recursive
-
-      # IMPORTANT: write the metadata AFTER checkout. actions/checkout runs
-      # `git clean -ffdx` (clean: true is the default), which deletes any
-      # untracked files already in the workspace — including a
-      # `_preview_upload/` directory created beforehand. With the metadata
-      # written before checkout, `_preview_upload/meta/` was wiped and never
-      # reached the artifact, so preview-deploy.yml read an empty pr-number,
-      # the deploy step's `action == 'deploy'` guard was false, and every
-      # deploy-path preview was silently skipped (the job still passed).
-      # For the 'closed'/remove event the checkout step is skipped, but this
-      # step is unguarded and still runs, so the remove path is unaffected.
-      - name: Save PR metadata
-        run: |
-          mkdir -p _preview_upload/meta
-          echo "${{ github.event.pull_request.number }}" > _preview_upload/meta/pr-number.txt
-          echo "${{ github.event.action == 'closed' && 'remove' || 'deploy' }}" > _preview_upload/meta/action.txt
-
-      - name: Set up Quarto
-        if: github.event.action != 'closed'
-        uses: quarto-dev/quarto-actions/setup@v2
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tinytex: false
-
-      - uses: r-lib/actions/setup-r@v2
-        if: github.event.action != 'closed'
-        with:
-          r-version: '4.6.0'
-          use-public-rspm: true
-
-      - name: Install system dependencies
-        if: github.event.action != 'closed'
-        run: |
-          sudo apt-get update
-          # `libglpk-dev` is required for the igraph/ggdag/ggraph dependency stack.
-          # Keep the shared renv-related system dependencies aligned with other workflows
-          # that restore/render the same renv set.
-          # This preview workflow also installs additional preview-specific tooling
-          # (for example, build helpers such as `cmake`, `libgit2-dev`, `libnode-dev`,
-          # `libx11-dev`, and `pandoc`),
-          # so the full list here is intentionally broader than publish/lint.
-          sudo apt-get install -y jags libcurl4-openssl-dev libpng-dev libfontconfig1-dev libjpeg-dev libglpk-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libtiff5-dev libwebp-dev libnode109 cmake libgit2-dev libnode-dev libx11-dev pandoc
-
-      - name: Setup Chrome
-        if: github.event.action != 'closed'
-        uses: browser-actions/setup-chrome@v2
-
-      - uses: r-lib/actions/setup-renv@v2
-        if: github.event.action != 'closed'
-        env:
-          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          bypass-cache: never
-
-      - name: Install local package
-        if: github.event.action != 'closed'
-        run: R CMD INSTALL .
-
-      - name: Set up TinyTeX
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
-        uses: quarto-dev/quarto-actions/setup@v2
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tinytex: true
-
-      - name: Install TinyTeX packages required for PDF rendering
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
-        run: |
-          Rscript -e "tinytex::tlmgr_repo('https://mirror.ctan.org/systems/texlive/tlnet')"
-          Rscript -e "tinytex::tlmgr_install(c('luacolor', 'lua-ul'))"
-
-      - name: Restore Quarto freeze
-        if: github.event.action != 'closed' && !contains(github.event.pull_request.labels.*.name, 'clear freezer')
-        uses: actions/cache/restore@v4
-        with:
-          path: _freeze
-          key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.event.pull_request.head.sha }}-${{ github.run_attempt }}
-          restore-keys: |
-            quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.event.pull_request.head.sha }}-
-            quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-main-
-            quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
-            quarto-freezer-${{ runner.os }}-
-
-      - name: Render pdf (website profile)
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:pdf')
-        run: quarto render --profile website --to pdf
-
-      - name: Render docx (website profile)
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:docx')
-        run: quarto render --profile website --to docx --no-clean
-
-      - name: Render revealjs (website profile)
-        if: github.event.action != 'closed' && contains(github.event.pull_request.labels.*.name, 'preview:revealjs')
-        run: quarto render --profile website --to revealjs --no-clean
-
-      - name: Render html (website profile)
-        if: github.event.action != 'closed'
-        run: quarto render --profile website --to html --no-clean
-
-      - name: List files
-        if: github.event.action != 'closed'
-        shell: bash
-        run: |
-          echo "contents of _site:"
-          ls _site/
-          echo "contents of .:"
-          ls .
-
-      - name: Save Quarto freeze
-        if: github.event.action != 'closed'
-        uses: actions/cache/save@v4
-        with:
-          path: _freeze
-          key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-${{ github.event.pull_request.head.sha }}-${{ github.run_attempt }}
-
-      - name: Stage site for upload
-        if: github.event.action != 'closed'
-        run: |
-          mkdir -p _preview_upload/site/
-          cp -r _site/. _preview_upload/site/
-
-      - name: Upload preview artifact (deploy)
-        if: github.event.action != 'closed'
-        uses: actions/upload-artifact@v7
-        with:
-          name: pr-preview-site
-          path: _preview_upload/
-          retention-days: 1
-
-      - name: Upload preview artifact (remove)
-        if: github.event.action == 'closed'
-        uses: actions/upload-artifact@v7
-        with:
-          name: pr-preview-site
-          path: _preview_upload/
-          retention-days: 1
+    uses: d-morrison/gha/.github/workflows/preview.yml@v1
+    with:
+      r-version: '4.6.0'
