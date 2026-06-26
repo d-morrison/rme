@@ -117,85 +117,104 @@ variables.
 
 ```{r}
 #| fig-width: 8.5
-#| fig-height: 6
+#| fig-height: 6.5
 #| code-fold: true
 
 library(dagitty)
 library(ggdag)
 library(dplyr)
 
-# This is a cross-sectional study: every covariate is measured at one interview,
-# so we cannot order the *current* covariates causally among themselves. The
-# only genuine mediator is injection frequency `nivdu` -- sharing a syringe
-# requires injecting, so a shared syringe is a subset of injections.
+# This is a cross-sectional study: every covariate is measured at a single
+# interview, so we cannot causally order the *current* covariates among
+# themselves. We draw their mutual associations -- from shared, unobserved
+# earlier circumstances -- as non-directional (bidirected) edges, instead of
+# giving each covariate its own separate latent "past state" node.
 demographics <- c("age", "sex", "ethn") # fixed at (or determined by) birth
-timevarying <- c(
+covariates <- c(
   "homeless", "polydrug", "hivstat", "sexabuse", "dprsn_dx", "hplsns"
 )
 
-# The real confounders are the *past* versions of the time-varying covariates
-# (a person's earlier circumstances), which we never observe. Each latent past
-# state `U_x` causes both its current measured proxy `x` and the 30-day outcome.
-past <- paste0("U_", timevarying)
+# every unordered pair of current covariates gets a bidirected edge
+covariate_pairs <- utils::combn(covariates, 2)
+bidirected_edges <- paste(covariate_pairs[1, ], "<->", covariate_pairs[2, ])
+demographic_edges <- as.vector(
+  outer(demographics, covariates, function(a, b) paste(a, "->", b))
+)
 
 needles_dag <- dagitty(paste0("dag {", paste(c(
-  # demographics cause the latent past states and the outcome directly
-  as.vector(outer(demographics, past, function(a, b) paste(a, "->", b))),
+  # birth-fixed demographics cause the current states and the outcome
+  demographic_edges,
   paste(demographics, "-> shared_syr"),
-  # each latent past state -> its current measured proxy, and -> the outcome
-  paste(past, "->", timevarying),
-  paste(past, "-> shared_syr"),
-  # the only mediator: past homelessness -> more injecting -> more sharing
-  "U_homeless -> nivdu", "nivdu -> shared_syr",
+  # current covariates are mutually associated, with no causal ordering
+  bidirected_edges,
+  # each current covariate can affect injection frequency and the outcome
+  paste(covariates, "-> nivdu"),
+  paste(covariates, "-> shared_syr"),
+  # injecting is the only mediator: sharing a syringe requires injecting
+  "nivdu -> shared_syr",
   # study inclusion is conditioned on; several covariates affect being sampled,
-  # conditioning on `selected` then induces associations (selection bias)
+  # so conditioning on `selected` induces associations (selection bias)
   paste(c(demographics, "homeless", "polydrug", "hivstat"), "-> selected")
 ), collapse = "; "), "}"))
 
-# layout: time flows left -> right (birth-fixed -> latent past -> current proxy)
-y6 <- seq(3.5, -3.5, length.out = 6)
+# layout: time flows left -> right (birth-fixed demographics -> current
+# covariates -> injection frequency -> shared syringes)
+y_cov <- seq(4, -4, length.out = length(covariates))
 coordinates(needles_dag) <- list(
   x = c(
     age = -1, sex = -1, ethn = -1,
-    setNames(rep(1, 6), past), setNames(rep(3, 6), timevarying),
-    nivdu = 4.3, shared_syr = 6, selected = 3
+    setNames(rep(2, length(covariates)), covariates),
+    nivdu = 5, shared_syr = 7, selected = 5
   ),
   y = c(
-    age = 1, sex = 0, ethn = -1,
-    setNames(y6, past), setNames(y6, timevarying),
-    nivdu = 2.4, shared_syr = 0, selected = -4.7
+    age = 2, sex = 0, ethn = -2,
+    setNames(y_cov, covariates),
+    nivdu = 3.2, shared_syr = 0, selected = -5.5
   )
 )
 
-needles_dag |>
+needles_tidy <- needles_dag |>
   tidy_dagitty() |>
   mutate(role = case_when(
     name == "homeless" ~ "exposure",
     name == "shared_syr" ~ "outcome",
     name == "nivdu" ~ "mediator",
     name == "selected" ~ "study inclusion (conditioned on)",
-    startsWith(name, "U_") ~ "latent past state (unobserved)",
-    TRUE ~ "measured covariate"
-  )) |>
+    name %in% demographics ~ "demographic (birth-fixed)",
+    TRUE ~ "current covariate"
+  ))
+
+# split edges so associations and causal arrows can be styled separately
+directed_edges <- function(d) dplyr::filter(d, .data$direction == "->")
+association_edges <- function(d) dplyr::filter(d, .data$direction == "<->")
+
+needles_tidy |>
   ggplot() +
   aes(x = x, y = y, xend = xend, yend = yend) +
-  geom_dag_edges(
-    start_cap = ggraph::circle(5, "mm"),
-    end_cap = ggraph::circle(5, "mm")
+  # non-directional associations among current covariates: dashed grey arcs
+  geom_dag_edges_arc(
+    data = association_edges, curvature = 0.4, arrow = NULL,
+    edge_colour = "grey65", edge_linetype = "dashed", edge_width = 0.4,
+    start_cap = ggraph::circle(5, "mm"), end_cap = ggraph::circle(5, "mm")
+  ) +
+  # causal (directed) edges: solid arrows
+  geom_dag_edges_link(
+    data = directed_edges, edge_width = 0.35, edge_colour = "grey20",
+    start_cap = ggraph::circle(5, "mm"), end_cap = ggraph::circle(5, "mm")
   ) +
   geom_dag_point(aes(colour = role, shape = role), size = 7) +
   geom_dag_text(colour = "black", size = 1.7) +
   scale_shape_manual(values = c(
     "exposure" = 16, "outcome" = 16, "mediator" = 16,
     "study inclusion (conditioned on)" = 15,
-    "latent past state (unobserved)" = 1, "measured covariate" = 16
+    "demographic (birth-fixed)" = 16, "current covariate" = 16
   )) +
   scale_colour_manual(values = c(
     "exposure" = "#d73027", "outcome" = "#4575b4", "mediator" = "#1a9850",
     "study inclusion (conditioned on)" = "grey30",
-    "latent past state (unobserved)" = "grey55",
-    "measured covariate" = "grey80"
+    "demographic (birth-fixed)" = "grey55", "current covariate" = "grey80"
   )) +
+  guides(colour = guide_legend(nrow = 2), shape = guide_legend(nrow = 2)) +
   theme_dag() +
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
@@ -204,16 +223,19 @@ Hypothesized causal structure for the needle-sharing example,
 drawn for a **cross-sectional** study.
 The exposure of interest is homelessness (`homeless`, red)
 and the outcome is the count of shared syringes (`shared_syr`, blue).
-Because every covariate is measured at a single interview,
-the current measured covariates (grey) cannot be ordered causally among
-themselves; each is a proxy for an unobserved **past state** (`U_…`, hollow)
-that is the actual cause of both the current measurement and the 30-day behaviour.
-The only genuine mediator is injection frequency (`nivdu`, green):
+Injection frequency (`nivdu`, green) is the one genuine mediator:
 sharing a syringe requires injecting.
-Demographic variables (`age`, `sex`, `ethn`) are fixed at (or determined by) birth.
+Demographic variables (`age`, `sex`, `ethn`, darker grey) are fixed at
+(or determined by) birth, so they sit upstream of everything else.
+Because every other covariate is measured at the same single interview,
+we cannot order the current covariates (lighter grey) causally among themselves;
+their mutual associations -- from shared, unobserved earlier circumstances --
+are drawn as dashed, non-directional edges.
+Each current covariate may still affect injection frequency and the 30-day
+outcome, shown as solid arrows into `nivdu` and `shared_syr`.
 The study-inclusion indicator (`selected`, square) is conditioned on by design;
 because several covariates influence who is sampled,
-conditioning on it induces associations among them (selection bias).
+conditioning on it can induce associations among them (selection bias).
 
 :::
 
@@ -233,10 +255,9 @@ We want the **total** effect of homelessness on needle-sharing.
 
 Because the study is **cross-sectional**,
 the remaining covariates are measured at the same interview as the exposure,
-so none of them can be ordered causally relative to `homeless`.
-We read each one as a proxy for an unobserved **past state** (`U_…`)
-that confounds the homelessness–sharing relationship,
-and we adjust for the measured proxies to control that confounding.
+so we cannot order them causally relative to `homeless` or to one another.
+We draw their mutual associations as non-directional (bidirected) edges
+and adjust for the measured covariates to control the confounding they carry.
 A single fitted coefficient is therefore an **adjusted association**,
 not an isolated causal effect.
 
@@ -260,6 +281,8 @@ split by the covariate subgroups (point size shows injection frequency).
 ```{r}
 #| fig-cap: "Needle-sharing counts by age"
 #| label: fig-needles
+#| fig-width: 8.5
+#| fig-height: 5
 library(ggplot2)
 
 needles |>
@@ -293,6 +316,8 @@ where every injection involves a shared syringe.
 
 ```{r}
 #| code-fold: true
+#| fig-width: 8.5
+#| fig-height: 5
 library(ggplot2)
 
 needles |>
@@ -320,11 +345,7 @@ needles |>
     x = "Number of injections (in 30 days)",
     y = "Number of shared syringes (in 30 days)"
   ) +
-  guides(
-    col = guide_legend(nrow = 2),
-    shape = guide_legend(nrow = 2)
-  ) +
-  theme(legend.position = "bottom", legend.box = "vertical")
+  theme(legend.position = "bottom")
 ```
 
 Number of shared syringes versus number of injections
@@ -369,8 +390,8 @@ and ask how it affects the **count** of shared syringes,
 using a Poisson regression (log link) rather than modeling a rate.
 The remaining covariates enter as adjustments for confounding
 (@fig-needles-dag): because the study is cross-sectional,
-each is read as a proxy for an unobserved past state
-that may influence both homelessness and sharing.
+they are mutually associated with homelessness through shared, unobserved
+earlier circumstances, which we cannot resolve into a causal order.
 
 **Why not use `nivdu` as an offset?**
 A Poisson *rate* model would add `offset(log(nivdu))`,
@@ -405,8 +426,8 @@ it is a mediator rather than an exposure window, and we model the count
 directly instead of dividing by it.
 :::
 
-We adjust for the measured covariates as proxies for the latent past
-confounders in @fig-needles-dag — demographic (`age`, `sex`, `ethn`),
+We adjust for the measured covariates to control the confounding they carry
+in @fig-needles-dag — demographic (`age`, `sex`, `ethn`),
 social (`polydrug`), serostatus (`hivstat`), and trauma/mental-health
 (`sexabuse`, hopelessness score `hplsns`) — using **main effects only**.
 We exclude the mediator `nivdu` (above) and the depression indicator
