@@ -1,244 +1,46 @@
+# Thin caller of the canonical d-morrison/gha reusable review workflow.
+#
+# Keep this file named claude-code-review.yml and keep the workflow_dispatch
+# `pr_number` input: claude.yml re-dispatches a review with
+# `gh workflow run claude-code-review.yml -f pr_number=<n>` after an @claude
+# run pushes commits. This stub only wires the triggers, secrets, and inputs;
+# all the review logic (reviewer stash/restore, tag-vs-agent mode gating,
+# inline-comment allowlist, read-only tool guard, allowed_bots for
+# bot-dispatched runs, the is_error guard) lives in the reusable workflow.
+# See d-morrison/gha examples/claude-code-review.yml for the upstream stub.
 name: Claude Code Review
 
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
-  # Allow claude.yml to dispatch a fresh review after the @claude run
-  # pushes commits. GITHUB_TOKEN-driven pushes don't fire `synchronize`,
-  # and even when they do the bot-actor filter below would skip the run,
-  # so we need an explicit dispatch path.
+  # Lets claude.yml re-dispatch a fresh review after an @claude run pushes
+  # commits (GITHUB_TOKEN pushes don't fire `synchronize`, and the reusable
+  # workflow's bot-actor filter would skip them anyway), and lets the
+  # @claude-review comment path fire a review on demand.
   workflow_dispatch:
     inputs:
       pr_number:
         description: 'Pull request number to review'
         required: true
-        type: number
-
-# Serialize runs per PR. The stash/restore reviewer dance below assumes
-# only one run is mutating the PR's reviewer list at a time; without
-# this, an overlapping second run reads an already-cleared list, stashes
-# [], and on restore wipes the original reviewers permanently. Cancel
-# the in-flight run on a new push so the freshest diff wins.
-#
-# BUT: `cancel-in-progress` must NOT fire for runs that the job-level
-# `if:` below will skip. This workflow can push fix commits in tag
-# mode (track_progress), and that push fires a `pull_request:
-# synchronize` event whose new run lands in this same group. GitHub
-# evaluates concurrency cancellation BEFORE the job `if:`, so without
-# the guard below that doomed-to-skip run would cancel the very run
-# that pushed the fix — mid-finalization, leaving a frozen tracking
-# comment (observed on PR #809 run 26423194992: it pushed 545a9c032,
-# then the resulting synchronize event cancelled it and then skipped
-# itself via the bot-actor `if:`). So gate cancel-in-progress on the
-# SAME expression as the job `if:`: a run only cancels in-progress
-# peers when it would itself actually run. (Keep this expression in
-# sync with the job `if:` below.)
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number || inputs.pr_number }}
-  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' || (github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]')) }}
+        type: string
 
 jobs:
-  claude-review:
-    # workflow_dispatch is only fired by claude.yml after it pushed commits,
-    # so we always want to run in that case; otherwise apply the usual
-    # bot-actor filter — but only on the *push* side. A human pushing a
-    # commit to a bot-authored PR (Dependabot/Copilot/anthropic-code-agent
-    # etc.) should still get a review fired; without this, those PRs are
-    # stuck on whatever verdict was generated when they were first opened.
-    # See d-morrison/rme#801 for the original symptom report.
-    #
-    # The `concurrency.cancel-in-progress` expression above mirrors this
-    # condition — keep the two in sync so a run that skips here never
-    # cancels an in-progress peer on its way out.
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.sender.type != 'Bot' && !endsWith(github.actor, '[bot]'))
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
-    runs-on: ubuntu-latest
-    env:
-      # Resolve PR number once per job — populated by the pull_request event
-      # in the normal flow, or by the workflow_dispatch input when claude.yml
-      # triggered us after pushing commits.
-      PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+  review:
     permissions:
       contents: read
       pull-requests: write
       issues: write
       id-token: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
-
-      # Initialize the latex-macros submodule so the reviewer can read its
-      # contents — without this, reviews of files that `{{< include >}}` or
-      # reference latex-macros report "the latex-macros submodule is not
-      # initialized in this environment" (see PR #806). Mirrors claude.yml's
-      # submodule step: the `insteadOf` rule authenticates the clone with
-      # SUBMODULES_TOKEN (a fine-grained PAT scoped to the submodule repos),
-      # since the default GITHUB_TOKEN can't read them.
-      - name: Checkout submodules
-        run: |
-          git config --global url."https://x-access-token:${{ secrets.SUBMODULES_TOKEN }}@github.com/".insteadOf "https://github.com/"
-          git submodule update --init --recursive --depth 1
-
-      # The reviewer stash/restore is a serialization signal: we clear the
-      # human reviewers before Claude runs so they aren't notified mid-run,
-      # then re-add them when Claude finishes so the re-add fires a fresh
-      # GitHub notification — letting the human see Claude's review before
-      # they start their own. The restore is load-bearing for that signal,
-      # so it must NOT silently swallow errors (see restore step below).
-      - name: Stash and clear all review requests while Claude reviews
-        id: stash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          REVIEWERS_JSON=$(gh api "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers")
-          USERS=$(echo "$REVIEWERS_JSON" | jq -c '[.users[].login]')
-          TEAMS=$(echo "$REVIEWERS_JSON" | jq -c '[.teams[].slug]')
-          echo "users=$USERS" >> "$GITHUB_OUTPUT"
-          echo "teams=$TEAMS" >> "$GITHUB_OUTPUT"
-          echo "Stashed users: $USERS"
-          echo "Stashed teams: $TEAMS"
-          if [ "$USERS" != "[]" ] || [ "$TEAMS" != "[]" ]; then
-            jq -n --argjson users "$USERS" --argjson teams "$TEAMS" \
-              '{reviewers: $users, team_reviewers: $teams}' \
-              | gh api -X DELETE \
-                  "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers" \
-                  --input - || true
-          fi
-
-      - name: Run Claude Code Review
-        id: claude-review
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: |
-            /code-review:code-review ${{ github.repository }}/pull/${{ env.PR_NUMBER }} --comment
-
-            The `--comment` flag above is the plugin's documented switch for
-            inline posting; the prose below is belt-and-suspenders in case the
-            plugin drives inline mode off the tool calls rather than the flag.
-
-            **Post line-specific findings as inline review comments** anchored
-            to the relevant line(s) — use the inline-comment tool, not a prose
-            list in the summary. Reserve the top-level summary comment for a
-            brief overall verdict plus any finding not tied to a specific line;
-            don't restate each inline comment there.
-          # Force tag mode (anthropics/claude-code-action src/modes/detector.ts).
-          # In the default agent mode for pull_request events, the action never
-          # posts any non-inline PR comment by itself (src/modes/agent/index.ts:
-          # "No tracking comment in agent mode", commentId: undefined). The
-          # code-review plugin will only post a top-level comment if it finds
-          # issues scoring >= 80, so silent runs are common on small/mechanical
-          # PRs. track_progress forces tag mode, which creates a tracking
-          # comment up front via createInitialComment() and updates it at the
-          # end — guaranteeing a PR comment regardless of plugin output.
-          #
-          # BUT the action rejects track_progress for workflow_dispatch
-          # ("track_progress is only supported for events: pull_request,
-          # issues, issue_comment, pull_request_review_comment,
-          # pull_request_review"), failing the whole step. Every
-          # workflow_dispatch of this workflow hit that — including the
-          # dispatch paths in claude.yml (the post-commit dispatch and
-          # the @claude-review dispatch), which were silently 100%
-          # failing (see issue #801 option 2; confirmed on run
-          # 26425354090). So gate it on event_name: keep tag mode for
-          # the pull_request path (where the guaranteed tracking comment
-          # matters), fall back to agent mode for dispatched runs.
-          # Caveat: dispatched runs may now be silent on small/mechanical
-          # PRs where the plugin scores <80 — acceptable vs. the
-          # dispatch path failing outright.
-          track_progress: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
-          # Post a fresh tracking comment on every run and leave prior ones in
-          # place, rather than reusing/editing one sticky. (Only consulted in
-          # tag mode.) With sticky enabled the action edits its existing
-          # comment in place, which GitHub can bury inside a folded "more
-          # comments" panel; posting anew keeps each review visible at the
-          # bottom and preserves the history of prior reviews.
-          use_sticky_comment: 'false'
-          # Also archive the formatted report to the Actions step summary page
-          # (does not affect PR comments).
-          display_report: 'true'
-          # Keep this a REVIEW-ONLY workflow: it should comment, never edit.
-          # track_progress (tag mode, above) is set purely to guarantee a
-          # tracking comment — but as a side effect tag mode hands the
-          # reviewer git add/commit/rm and the action's git-push.sh wrapper,
-          # and the action's default prompt tells it to commit+push any local
-          # changes. That let a review run push a fix commit to the PR branch
-          # (observed on PR #809 commit 00a880177), blurring the line with the
-          # @claude agent in claude.yml (the contents:write workflow that is
-          # actually meant to make edits). Strip the write tools so the
-          # reviewer physically cannot mutate the branch. Disallowed tools
-          # take precedence over the action's generated allow-list, so this
-          # wins even though tag mode adds them. `git commit:*` is the
-          # load-bearing entry (no commit -> nothing to push); the rest are
-          # belt-and-suspenders in case the action's mechanics change.
-          #
-          # --append-system-prompt makes the reviewer review-ONLY at the
-          # instruction level, not just the tool level. Disallowing the git
-          # tools alone isn't enough: tag mode's default prompt still tells
-          # the agent to "commit and push your changes", so it would attempt
-          # fixes, hit a wall of permission denials, and then post a
-          # confusing tracking comment claiming it made uncommitted changes
-          # and asking the user to grant git permissions (observed on PR #806
-          # review run 26427017500: 29 permission_denials and a "to commit,
-          # add Bash(git add *)..." comment that, if followed, would undo
-          # this very workflow's read-only guarantee). Telling it up front
-          # not to attempt edits stops the flailing and the misleading
-          # comment; it folds any would-be fix into its review instead.
-          claude_args: >-
-            --disallowedTools
-            "Bash(git add:*)"
-            "Bash(git commit:*)"
-            "Bash(git rm:*)"
-            "Bash(git push:*)"
-            "Bash(*git-push.sh*)"
-            --append-system-prompt
-            "This is a review-only run. Report every issue you find as part
-            of your review. Do NOT modify, stage, commit, or push files, and
-            do NOT attempt to — the git write tools are intentionally
-            disallowed. Never describe changes as 'uncommitted' or ask the
-            user to grant git/commit permissions; there is nothing for you to
-            commit. If you would have fixed something, describe the fix in
-            your review instead."
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-
-      - name: Restore review requests now that Claude is done
-        if: always() && steps.stash.outcome == 'success'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          USERS: ${{ steps.stash.outputs.users }}
-          TEAMS: ${{ steps.stash.outputs.teams }}
-        run: |
-          if [ "$USERS" = "[]" ] && [ "$TEAMS" = "[]" ]; then
-            echo "No reviewers were originally requested."
-            exit 0
-          fi
-          # Do NOT add `|| true` here. A failed restore means the human
-          # reviewer was silently dropped from the PR and never gets the
-          # post-Claude notification — fail loudly so it can be re-added
-          # manually instead of vanishing.
-          jq -n --argjson users "$USERS" --argjson teams "$TEAMS" \
-            '{reviewers: $users, team_reviewers: $teams}' \
-            | gh api -X POST \
-                "repos/$REPO/pulls/$PR_NUMBER/requested_reviewers" \
-                --input -
+      actions: read # lets the reviewer read CI status (github_ci MCP server)
+    uses: d-morrison/gha/.github/workflows/claude-code-review.yml@v1
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }} # for the private latex-macros submodule
+    with:
+      # Wire the workflow_dispatch input through so claude.yml can re-dispatch
+      # a review on Claude's commits; empty (and ignored) for pull_request runs.
+      pr-number: ${{ inputs.pr_number }}
+      # rme includes the latex-macros submodule; check it out so the reviewer
+      # can read macros the chapters reference instead of reporting them as
+      # "not initialized" (see PR #806).
+      checkout-submodules: true
