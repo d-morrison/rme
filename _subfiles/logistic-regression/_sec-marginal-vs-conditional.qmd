@@ -132,13 +132,15 @@ Two related procedures estimate these marginal risks from a fitted regression mo
 
 **G-computation** (also called the **g-formula** or **standardization**)
 is a procedure for estimating the causal marginal risk $\pi_a$
-(@def-causal-marginal-risk) from observed data:
+(@def-causal-marginal-risk) from observed data
+[@robins1986new; see also @hernan2020causal, Chapter 13]:
 
 1. Fit a regression model for $\hat\pi(a, z) = \widehat{\Pr}(Y = 1 \mid A = a, Z = z)$
-2. For each observation $i$, predict the risk under exposure level $a$: $\hat\pi(a, z_i)$
-3. Average the predicted risks over the observed covariate distribution:
+2. For each observation $i$, predict the risk under exposure level $a$,
+   writing $\hat\pi_{a,i} \eqdef \hat\pi(a, z_i)$ for short
+3. Average these predicted risks over the observed covariate distribution:
 
-$$\hat\pi_a = \frac{1}{n}\sumin \hat\pi(a, z_i)$$
+$$\hat\pi_a = \frac{1}{n}\sumin \hat\pi_{a,i}$$
 
 Under identification assumptions (@thm-causal-marginal-risk),
 $\hat\pi_a$ consistently estimates $\pi_a = \E{\pi(a, Z)}$.
@@ -151,15 +153,27 @@ $\hat\pi_a$ consistently estimates $\pi_a = \E{\pi(a, Z)}$.
 
 #### Predictive margins
 
-**Predictive margins** are model-predicted probabilities averaged over a
-covariate distribution.
+A **predictive margin** is the fitted risk $\hat\pi(a, z)$
+averaged over a chosen set of observations $S$
+[@lane1982analysis; @graubard1999predictive]:
 
-- Averaged over the **full sample** distribution of $Z$:
-  estimates the causal marginal risk $\pi_a$ (@def-causal-marginal-risk)
-  — equivalent to g-computation (@def-g-computation)
-- Averaged over the **subgroup** with $A_i = a$:
-  estimates the observed marginal risk $\pi(a)$ (@def-observed-marginal-risk)
-  (under correct model specification)
+$$
+\widehat{\text{PM}}(a \mid S) \eqdef \frac{1}{|S|} \sum_{i \in S} \hat\pi_{a,i}
+$$
+
+using the shorthand $\hat\pi_{a,i} = \hat\pi(a, z_i)$ from @def-g-computation,
+where $|S|$ is the number of observations in $S$.
+The choice of $S$ determines which estimand the margin targets:
+
+- Over the **full sample** $S = \{1, \dots, n\}$:
+  $\widehat{\text{PM}}(a) = \frac{1}{n}\sumin \hat\pi_{a,i} = \hat\pi_a$,
+  which estimates the causal marginal risk $\pi_a$ (@def-causal-marginal-risk)
+  — identical to g-computation (@def-g-computation)
+- Over the **exposed subgroup** $S = \{i : A_i = a\}$:
+  $\widehat{\text{PM}}(a) = \frac{1}{n_a} \sum_{i : A_i = a} \hat\pi_{a,i}$,
+  which estimates the observed marginal risk $\pi(a)$ (@def-observed-marginal-risk)
+  (under correct model specification),
+  where $n_a$ is the number of observations with $A_i = a$
 
 The term "predictive margins" is commonly used in social science
 and in Stata's `margins` command.
