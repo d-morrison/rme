@@ -1,3 +1,13 @@
+# Deploy half of the PR-preview family, delegated to the reusable workflow in
+# d-morrison/gha. Triggered when the build workflow finishes, it downloads the
+# build artifact and publishes the preview to gh-pages. This runs in the
+# BASE-repo context, so its token can write — keeping it separate from the
+# read-only build half is the trust boundary.
+#
+# NOTE: the `workflows:` value below MUST match the `name:` of the build
+# workflow (preview.yml). `workflow_run` triggers only fire when this file
+# lives on the default branch. The reusable workflow sets its own per-PR
+# deploy concurrency, so none is needed here.
 name: Quarto Preview Deploy
 
 on:
@@ -5,115 +15,10 @@ on:
     workflows: ["Quarto Preview Build"]
     types: [completed]
 
-# Serialize deploys for the same PR branch so two back-to-back build
-# completions don't race on gh-pages. cancel-in-progress: false queues
-# rather than kills — a mid-push cancel could corrupt gh-pages.
-concurrency:
-  group: preview-deploy-${{ github.event.workflow_run.head_repository.id }}-${{ github.event.workflow_run.head_branch }}
-  cancel-in-progress: false
-
 jobs:
-  # Cheap gate: verify the build job actually ran (vs. being skipped due to
-  # an unrecognized label). When all jobs in a workflow are skipped GitHub
-  # still reports conclusion == 'success', which would otherwise cause the
-  # deploy job to fire and fail on artifact download.
-  gate:
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-    if: github.event.workflow_run.conclusion == 'success'
-    outputs:
-      has-artifact: ${{ steps.check.outputs.found }}
-    steps:
-      - name: Check artifact exists
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          count=$(gh api \
-            "repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts" \
-            --jq '[.artifacts[] | select(.name == "pr-preview-site")] | length')
-          echo "found=$([ "$count" -gt 0 ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
-
   deploy:
-    needs: gate
-    if: needs.gate.outputs.has-artifact == 'true'
-    runs-on: ubuntu-latest
-    # This job runs in the base-repo context (not the fork), so the
-    # GITHUB_TOKEN has write access to push to gh-pages and comment on PRs.
     permissions:
-      contents: write
-      pull-requests: write
-      actions: read  # needed to download artifacts from the triggering run
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Download preview artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: pr-preview-site
-          path: _preview_download/
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Read PR metadata
-        id: meta
-        # Fail loudly if the metadata is missing. A bare `$(cat missing)`
-        # inside `echo` yields empty output and exit 0, so the step would
-        # "pass" with empty pr-number/action and the deploy would silently
-        # skip (the regression this workflow pair just recovered from).
-        run: |
-          pr_number=$(cat _preview_download/meta/pr-number.txt) || { echo "::error::Missing pr-number.txt in preview artifact"; exit 1; }
-          action=$(cat _preview_download/meta/action.txt) || { echo "::error::Missing action.txt in preview artifact"; exit 1; }
-          echo "pr-number=$pr_number" >> "$GITHUB_OUTPUT"
-          echo "action=$action" >> "$GITHUB_OUTPUT"
-
-      - name: Deploy PR Preview
-        if: steps.meta.outputs.action == 'deploy'
-        uses: rossjrw/pr-preview-action@v1
-        id: preview
-        with:
-          source-dir: _preview_download/site/
-          pr-number: ${{ steps.meta.outputs.pr-number }}
-          comment: false
-          action: deploy
-
-      - name: Remove PR Preview
-        if: steps.meta.outputs.action == 'remove'
-        uses: rossjrw/pr-preview-action@v1
-        id: preview-remove
-        with:
-          pr-number: ${{ steps.meta.outputs.pr-number }}
-          comment: false
-          action: remove
-
-      - name: Comment with preview link
-        uses: marocchino/sticky-pull-request-comment@v3
-        if: steps.meta.outputs.action == 'deploy' && steps.preview.outputs.deployment-action != 'none'
-        continue-on-error: true
-        with:
-          header: pr-preview
-          number: ${{ steps.meta.outputs.pr-number }}
-          recreate: true
-          message: |
-            [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview.outputs.action-version }}
-            :---:
-            :rocket: **Preview available at:** ${{ steps.preview.outputs.preview-url }}
-
-            <sub>Built to branch [`gh-pages`](${{ github.server_url }}/${{ github.repository }}/tree/gh-pages) at ${{ steps.preview.outputs.action-start-time }}.</sub>
-
-      - name: Remove preview comment
-        uses: marocchino/sticky-pull-request-comment@v3
-        if: steps.meta.outputs.action == 'remove' && steps.preview-remove.outputs.deployment-action == 'remove'
-        continue-on-error: true
-        with:
-          header: pr-preview
-          number: ${{ steps.meta.outputs.pr-number }}
-          message: |
-            [PR Preview Action](https://github.com/rossjrw/pr-preview-action) ${{ steps.preview-remove.outputs.action-version }}
-            :---:
-            Preview removed because the pull request was closed.
-
-            <sub>${{ steps.preview-remove.outputs.action-start-time }}</sub>
+      contents: write        # push to gh-pages
+      pull-requests: write   # post the preview-link comment
+      actions: read          # download the build artifact
+    uses: d-morrison/gha/.github/workflows/preview-deploy.yml@v2
