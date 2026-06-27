@@ -13,8 +13,6 @@
 library(igraph)
 library(stringr)
 
-`%||%` <- function(a, b) if (is.null(a)) b else a
-
 # Scan all `.qmd` files and return a list of `nodes` and `edges` data frames.
 #
 # A reference creates a dependency edge from the referenced result to the result
@@ -65,7 +63,7 @@ extract_callout_graph <- function(root) {
         }
         nodes[[full]] <- data.frame(
           id = full, type = type,
-          title = title %||% full,
+          title = if (is.na(title)) full else title,
           file = sub(paste0(root, "/"), "", f, fixed = TRUE),
           stringsAsFactors = FALSE
         )
