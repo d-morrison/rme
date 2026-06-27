@@ -593,8 +593,8 @@ Key macros to use:
   write `\hat{\vec{\mu}}`, not `\vec{\hat\mu}`. The hat sits on top of the
   already-vectorized symbol. Use `\v{}`, `\vec{}`, or `\vecf{}` — all three
   work. (`\v` was formerly broken because `\providecommand` could not override
-  the LaTeX built-in caron accent; it is now defined with `\def` in
-  `macros.qmd`.)
+  the LaTeX built-in caron accent; it is now defined with `\renewcommand`
+  in `macros.qmd`.)
 
 matrix-product helper macros:
 
