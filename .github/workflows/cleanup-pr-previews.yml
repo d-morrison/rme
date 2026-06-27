@@ -1,3 +1,7 @@
+# Housekeeping half of the PR-preview family, delegated to the reusable
+# workflow in d-morrison/gha. Periodically deletes gh-pages preview directories
+# for PRs that are no longer open. The calling job grants contents: write so the
+# reusable workflow can commit the deletions back to gh-pages.
 name: Clean up PR Previews
 
 on:
@@ -7,67 +11,7 @@ on:
 
 jobs:
   cleanup:
-    runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: read
-    steps:
-      - name: Check out gh-pages branch
-        uses: actions/checkout@v7
-        with:
-          ref: gh-pages
-
-      - name: Find and remove stale PR previews
-        id: cleanup
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          removed=0
-          if [ ! -d "pr-preview" ]; then
-            echo "No pr-preview directory found, nothing to clean up."
-          else
-            for dir in pr-preview/pr-*/; do
-              [ -d "$dir" ] || continue
-              pr_number=$(basename "$dir" | sed 's/pr-//')
-              echo "Checking PR #${pr_number}..."
-
-              gh_output=$(gh pr view "$pr_number" \
-                --repo "$GITHUB_REPOSITORY" \
-                --json state \
-                --jq '.state' 2>&1)
-              gh_exit=$?
-
-              if [ $gh_exit -ne 0 ]; then
-                # Distinguish "PR does not exist" from other failures
-                if echo "$gh_output" | grep -qi "could not resolve\|no pull requests found\|404\|not found"; then
-                  pr_state="NOT_FOUND"
-                else
-                  echo "Warning: could not query PR #${pr_number} (exit ${gh_exit}): ${gh_output}" >&2
-                  echo "Skipping PR #${pr_number} to avoid accidental deletion."
-                  continue
-                fi
-              else
-                pr_state="$gh_output"
-              fi
-
-              if [ "$pr_state" != "OPEN" ]; then
-                echo "PR #${pr_number} is ${pr_state} - removing preview at ${dir}"
-                rm -rf "$dir"
-                removed=$((removed + 1))
-              else
-                echo "PR #${pr_number} is still open - keeping preview"
-              fi
-            done
-          fi
-
-          echo "Removed ${removed} stale PR preview(s)."
-          echo "removed=${removed}" >> "$GITHUB_OUTPUT"
-
-      - name: Commit and push changes
-        if: steps.cleanup.outputs.removed != '0'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "chore: remove stale PR previews [skip ci]"
-          git push
+    uses: d-morrison/gha/.github/workflows/cleanup-pr-previews.yml@v2

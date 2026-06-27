@@ -1,46 +1,78 @@
 ```{r}
 library(tidyverse)
 library(haven)
-needles = 
-  here::here("inst/extdata/needle_sharing.dta") |> 
+needles <-
+  here::here("inst/extdata/needle_sharing.dta") |>
   read_dta() |>
   as_tibble() |>
   mutate(
-    hivstat =
-      hivstat |>
-      case_match(
-        1 ~ "HIV+",
-        0 ~ "HIV-") |> 
-      factor() |> 
+    hivstat = hivstat |>
+      case_match(1 ~ "HIV+", 0 ~ "HIV-") |>
+      factor() |>
       relevel(ref = "HIV-"),
-    polydrug =
-      polydrug |>
-      case_match(
-        1 ~ "multiple drugs used",
-        0 ~ "one drug used") |>
+    polydrug = polydrug |>
+      case_match(1 ~ "multiple drugs used", 0 ~ "one drug used") |>
       factor() |>
       relevel(ref = "one drug used"),
-    homeless = 
-      homeless |> 
-      case_match(
-        1 ~ "homeless", 
-        0 ~ "not homeless") |>
+    homeless = homeless |>
+      case_match(1 ~ "homeless", 0 ~ "not homeless") |>
       factor() |>
       relevel(ref = "not homeless"),
-    ethn = ethn |> factor() |> relevel(ref = "White"),
+    sexabuse = sexabuse |>
+      case_match(1 ~ "yes", 0 ~ "no") |>
+      factor() |>
+      relevel(ref = "no"),
+    ethn = ethn |>
+      factor() |>
+      forcats::fct_lump_min(min = 5, other_level = "Other") |>
+      relevel(ref = "White"),
     sex = sex |> factor() |> relevel(ref = "M")
-  ) |> 
+  ) |>
   labelled::set_variable_labels(
-    "sex" = "sex (reference = Male)",
-    "ethn" = "ethnicity (reference = White)",
-    "shsyryn"  = "shared syringe yes/no (1 = yes, 0 = no)",
+    "id" = "Participant identifier",
+    "sex" = "Biological sex (reference = Male)",
+    "ethn" = "Self-reported ethnicity (reference = White; n<5 lumped to Other)",
+    "age" = "Age at first interview (years)",
+    "dprsn_dx" = "Depression diagnosis indicator",
+    "sexabuse" = "History of sexual abuse (1 = yes, 0 = no)",
+    "shared_syr" = "Number of shared syringes (in 30 days)",
+    "hivstat" = "HIV serostatus (reference = HIV-)",
+    "hplsns" = "Hopelessness score",
+    "nivdu" = "Number of injections (in 30 days)",
+    "shsyryn" = "Shared syringe? (1 = yes, 0 = no)",
+    "sqrtnivd" = "sqrt(No. of injections in 30 days)",
     "logshsyr" = "log(No. of shared needles)",
-    "polydrug" = "how many drugs used?",
-    "sqrtninj" = "sqrt(No. of infections in 30 days)",
-    "homeless" = "Homeless (1 = yes, 0 = no)",
-    "hivstat" = "HIV status (reference = HIV-)"
+    "polydrug" = "Multiple non-injection drugs used?",
+    "sqrtninj" = "sqrt(No. of injections in 30 days); duplicate of sqrtnivd",
+    "homeless" = "Homeless? (reference = not homeless)",
+    "shsyr" = "Shared needles (30 days); sparse duplicate of shared_syr"
   )
 ```
+
+## Introduction
+
+This example, from @vittinghoff2e [§8.3.1],
+models *risky drug-use behavior* — needle sharing — among
+injection drug users (IDUs),
+a behavior of public-health interest because shared syringes can transmit
+blood-borne infections.
+We examine how needle-sharing frequency relates to participants' age, sex,
+ethnicity, housing status (homelessness), drug-use patterns, HIV serostatus,
+sexual-abuse history, and hopelessness score;
+injection frequency reflects how often each participant has the
+opportunity to share a syringe.
+
+These data are a sample of injection drug users
+distributed with @vittinghoff2e [§8.3.1]
+via the
+[UCSF companion website](https://regression.ucsf.edu/second-edition/data-examples-and-problems);
+the original study is not documented in the textbook or the companion materials.
+One possible (though unconfirmed) source is @tsui2009hcv,
+a study of injection-drug-using participants in San Francisco
+co-authored by one of the textbook's authors (E. Vittinghoff).
+There are $n = 128$ participants and 17 variables.
+Our outcome is `shared_syr`,
+the number of times a participant shared a syringe in the past 30 days.
 
 :::{#tbl-needles-data-dict}
 
@@ -59,6 +91,187 @@ Data dictionary for `needles` data
 
 ---
 
+@tbl-needles-demographics summarizes the demographic and behavioural
+variables for the participants.
+
+:::{#tbl-needles-demographics}
+
+```{r}
+#| code-fold: true
+needles |>
+  dplyr::select(-id) |>
+  gtsummary::tbl_summary()
+```
+
+Demographics and behavioural variables for the needle-sharing dataset
+(all participants).
+
+:::
+
+{{< slidebreak >}}
+
+Before modeling, we sketch a hypothesized causal structure for these
+variables.
+
+::: {#fig-needles-dag}
+
+```{r}
+#| fig-width: 8.5
+#| fig-height: 6.5
+#| code-fold: true
+
+library(dagitty)
+library(ggdag)
+library(dplyr)
+
+# This is a cross-sectional study: every covariate is measured at a single
+# interview, so we cannot causally order the time-varying covariates among
+# themselves. We draw their mutual associations -- from shared, unobserved
+# earlier circumstances -- as non-directional (bidirected) edges, instead of
+# giving each covariate its own separate latent "past state" node.
+demographics <- c("age", "sex", "ethn") # fixed at (or determined by) birth
+covariates <- c(
+  "homeless", "polydrug", "hivstat", "sexabuse", "dprsn_dx", "hplsns"
+)
+
+# every unordered pair of time-varying covariates gets a bidirected edge
+covariate_pairs <- utils::combn(covariates, 2)
+bidirected_edges <- paste(covariate_pairs[1, ], "<->", covariate_pairs[2, ])
+demographic_edges <- as.vector(
+  outer(demographics, covariates, function(a, b) paste(a, "->", b))
+)
+
+needles_dag <- dagitty(paste0("dag {", paste(c(
+  # birth-fixed demographics cause the current states, injection frequency,
+  # and the outcome
+  demographic_edges,
+  paste(demographics, "-> nivdu"),
+  paste(demographics, "-> shared_syr"),
+  # time-varying covariates are mutually associated, with no causal ordering
+  bidirected_edges,
+  # each time-varying covariate can affect injection frequency and the outcome
+  paste(covariates, "-> nivdu"),
+  paste(covariates, "-> shared_syr"),
+  # injecting is the only mediator: sharing a syringe requires injecting
+  "nivdu -> shared_syr",
+  # study inclusion is conditioned on; several covariates affect being sampled,
+  # so conditioning on `selected` induces associations (selection bias)
+  paste(c(demographics, "homeless", "polydrug", "hivstat"), "-> selected")
+), collapse = "; "), "}"))
+
+# layout: time flows left -> right (birth-fixed demographics -> current
+# covariates -> injection frequency -> shared syringes)
+y_cov <- seq(4, -4, length.out = length(covariates))
+coordinates(needles_dag) <- list(
+  x = c(
+    age = -1, sex = -1, ethn = -1,
+    setNames(rep(2, length(covariates)), covariates),
+    nivdu = 5, shared_syr = 7, selected = 5
+  ),
+  y = c(
+    age = 2, sex = 0, ethn = -2,
+    setNames(y_cov, covariates),
+    nivdu = 3.2, shared_syr = 0, selected = -5.5
+  )
+)
+
+needles_tidy <- needles_dag |>
+  tidy_dagitty() |>
+  mutate(role = case_when(
+    name == "homeless" ~ "exposure",
+    name == "shared_syr" ~ "outcome",
+    name == "nivdu" ~ "mediator",
+    name == "selected" ~ "study inclusion (conditioned on)",
+    name %in% demographics ~ "demographic (birth-fixed)",
+    TRUE ~ "time-varying covariate (current/recent status)"
+  ))
+
+# split edges so associations and causal arrows can be styled separately
+directed_edges <- function(d) dplyr::filter(d, .data$direction == "->")
+association_edges <- function(d) dplyr::filter(d, .data$direction == "<->")
+
+needles_tidy |>
+  ggplot() +
+  aes(x = x, y = y, xend = xend, yend = yend) +
+  # non-directional associations among time-varying covariates: dashed grey arcs
+  geom_dag_edges_arc(
+    data = association_edges, curvature = 0.4, arrow = NULL,
+    edge_colour = "grey65", edge_linetype = "dashed", edge_width = 0.4,
+    start_cap = ggraph::circle(5, "mm"), end_cap = ggraph::circle(5, "mm")
+  ) +
+  # causal (directed) edges: solid arrows
+  geom_dag_edges_link(
+    data = directed_edges, edge_width = 0.35, edge_colour = "grey20",
+    start_cap = ggraph::circle(5, "mm"), end_cap = ggraph::circle(5, "mm")
+  ) +
+  geom_dag_point(aes(colour = role, shape = role), size = 7) +
+  geom_dag_text(colour = "black", size = 1.7) +
+  scale_shape_manual(values = c(
+    "exposure" = 16, "outcome" = 16, "mediator" = 16,
+    "study inclusion (conditioned on)" = 15,
+    "demographic (birth-fixed)" = 16,
+    "time-varying covariate (current/recent status)" = 16
+  )) +
+  scale_colour_manual(values = c(
+    "exposure" = "#d73027", "outcome" = "#4575b4", "mediator" = "#1a9850",
+    "study inclusion (conditioned on)" = "grey30",
+    "demographic (birth-fixed)" = "grey55",
+    "time-varying covariate (current/recent status)" = "grey80"
+  )) +
+  guides(colour = guide_legend(nrow = 2), shape = guide_legend(nrow = 2)) +
+  theme_dag() +
+  theme(legend.position = "bottom", legend.title = element_blank())
+```
+
+Hypothesized causal structure for the needle-sharing example,
+drawn for a **cross-sectional** study.
+The exposure of interest is homelessness (`homeless`, red)
+and the outcome is the count of shared syringes (`shared_syr`, blue).
+Injection frequency (`nivdu`, green) is the one genuine mediator:
+sharing a syringe requires injecting.
+Demographic variables (`age`, `sex`, `ethn`, darker grey) are fixed at
+(or determined by) birth, so they sit upstream of every other variable,
+with arrows into the time-varying covariates, injection frequency, and the outcome.
+Because every other covariate is measured at the same single interview,
+we cannot order the time-varying covariates (lighter grey) causally among themselves;
+their mutual associations — from shared, unobserved earlier circumstances —
+are drawn as dashed, non-directional edges.
+Each time-varying covariate may still affect injection frequency and the 30-day
+outcome, shown as solid arrows into `nivdu` and `shared_syr`.
+The study-inclusion indicator (`selected`, square) is conditioned on by design;
+because several covariates influence who is sampled,
+conditioning on it can induce associations among them (selection bias).
+
+:::
+
+::: notes
+We treat **homelessness as the exposure of interest**
+and ask how it affects the number of shared syringes —
+following @vittinghoff2e [§8.3.1], who model this outcome on `homeless`.
+
+Injection frequency `nivdu` is a **mediator**:
+a shared syringe is necessarily one of the injections,
+so homelessness can raise sharing partly by raising how often a person injects.
+Because `nivdu` lies *on* the causal path from `homeless` to `shared_syr`,
+we do **not** adjust for it
+(neither as a covariate nor as an offset);
+doing so would block that path and estimate only a partial effect.
+We want the **total** effect of homelessness on needle-sharing.
+
+Because the study is **cross-sectional**,
+the remaining covariates are measured at the same interview as the exposure,
+so we cannot order them causally relative to `homeless` or to one another.
+We draw their mutual associations as non-directional (bidirected) edges
+and adjust for the measured covariates to control the confounding they carry.
+A single fitted coefficient is therefore an **adjusted association**,
+not an isolated causal effect.
+
+Conditioning on study inclusion (`selected`) is unavoidable —
+we only observe people who were sampled —
+but because several covariates influence who is sampled,
+it can induce **selection bias** that no covariate adjustment removes.
+:::
+
 ```{r}
 #| tbl-cap: "Needle-sharing data"
 #| label: tbl-needle-data
@@ -67,40 +280,95 @@ needles
 
 ---
 
+@fig-needles plots the shared-syringe counts against age,
+split by the covariate subgroups (point size shows injection frequency).
+
 ```{r}
-#| fig-cap: "Rates of needle sharing"
+#| fig-cap: "Needle-sharing counts by age"
 #| label: fig-needles
+#| fig-width: 8.5
+#| fig-height: 5
 library(ggplot2)
 
-needles |> 
-  ggplot(
-    aes(
-      x = age,
-      y = shsyryn,
-      shape = sex,
-      col = ethn
-    )
-  ) + 
-  geom_point(
-    aes(size = nivdu), 
-    alpha = .5) +
+needles |>
+  ggplot() +
+  aes(
+    x = age,
+    y = shared_syr,
+    shape = sex,
+    col = hivstat
+  ) +
+  geom_point(aes(size = nivdu), alpha = .5) +
   scale_size_area(max_size = 4) +
-  facet_grid(
-    cols = vars(polydrug), 
-    rows = vars(homeless)) +
+  scale_y_continuous(
+    transform = "pseudo_log",
+    breaks = c(0, 1, 3, 10, 30, 60)
+  ) +
+  facet_grid(cols = vars(polydrug), rows = vars(homeless)) +
+  labs(y = "Number of shared syringes (30 days)") +
   theme(legend.position = "bottom")
 ```
 
----
 
-#### Covariate counts
+{{< slidebreak >}}
+
+@fig-needles-raw shows the underlying counts:
+the number of shared syringes against the number of injections,
+with a dashed $y = x$ line marking the ceiling
+where every injection involves a shared syringe.
+
+::: {#fig-needles-raw}
 
 ```{r}
-#| tbl-cap: "Counts of observations in `needles` dataset by sex, unhoused status, and multiple drug use"
+#| code-fold: true
+#| fig-width: 8.5
+#| fig-height: 5
+library(ggplot2)
+
+needles |>
+  ggplot() +
+  aes(
+    x = nivdu,
+    y = shared_syr,
+    shape = sex,
+    col = hivstat
+  ) +
+  geom_point(alpha = .5) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", alpha = .5) +
+  # both axes are counts, so pseudo-log both: a shared transform keeps the
+  # y = x reference line straight (data diagonal -> panel diagonal)
+  scale_x_continuous(
+    transform = "pseudo_log",
+    breaks = c(0, 3, 10, 30, 100, 300, 900)
+  ) +
+  scale_y_continuous(
+    transform = "pseudo_log",
+    breaks = c(0, 1, 3, 10, 30, 60)
+  ) +
+  facet_grid(cols = vars(polydrug), rows = vars(homeless)) +
+  labs(
+    x = "Number of injections (in 30 days)",
+    y = "Number of shared syringes (in 30 days)"
+  ) +
+  theme(legend.position = "bottom")
+```
+
+Number of shared syringes versus number of injections
+(raw counts, 30-day window).
+The dashed line marks $y = x$ (every injection involves a shared syringe).
+
+:::
+
+---
+
+## Covariate counts
+
+```{r}
+#| tbl-cap: "Counts in `needles` by sex, housing status, and multiple drug use"
 #| label: tbl-count-needles
 #| code-fold: show
-needles |> 
-  dplyr::select(sex, homeless, polydrug) |> 
+needles |>
+  dplyr::select(sex, homeless, polydrug) |>
   summary()
 ```
 
@@ -113,23 +381,77 @@ We will remove that individual:
 ```{r}
 #| label: remove-trans-obs
 #| code-summary: 'remove singleton observation with sex == Trans'
-needles = needles |> filter(sex != "Trans")
+needles <- needles |> filter(sex != "Trans")
 
 ```
 
 ---
 
-### Model {.smaller}
+## Model {.smaller}
+
+Following @vittinghoff2e [§8.3.1],
+we take **homelessness as the exposure of interest**
+and ask how it affects the **count** of shared syringes,
+using a Poisson regression (log link) rather than modeling a rate.
+The remaining covariates enter as adjustments for confounding
+(@fig-needles-dag): because the study is cross-sectional,
+they are mutually associated with homelessness through shared, unobserved
+earlier circumstances, which we cannot resolve into a causal order.
+
+:::{#exr-nivdu-offset}
+A Poisson *rate* model would add `offset(log(nivdu))`,
+forcing the expected count to be proportional to injection frequency
+(the coefficient of `log(nivdu)` fixed at exactly 1).
+Why not use `nivdu` as an offset here?
+:::
+
+{{< slidebreak >}}
+
+:::{#sol-nivdu-offset}
+We avoid an offset here for two reasons:
+
+- **`nivdu` is a mediator, not an exposure window.**
+An offset is appropriate when its variable is a known denominator —
+person-time or population at risk — that is external to the causal
+question. Injection frequency is instead on the causal path from
+homelessness to sharing (@fig-needles-dag): being homeless can raise
+sharing partly by raising how often a person injects. Conditioning on it
+(whether as an offset or as a covariate) would block that path and estimate
+only a partial effect. We want the *total* effect of homelessness on
+needle-sharing.
+- **It imposes an untested proportionality assumption.**
+Fixing the `log(nivdu)` coefficient at 1 assumes sharing scales
+one-for-one with injecting, which the data need not support.
+:::
+
+Vittinghoff's analysis uses neither an offset nor `nivdu` as a covariate.
+
+::: {.callout-tip title="Rule of thumb"}
+An offset's exposure is usually something fixed by the *study design* —
+person-time of follow-up, population at risk, area surveyed, number of
+trials — a known denominator that is *exogenous* to the question
+(not caused by the predictors of interest).
+When the candidate denominator is instead something the participants
+*did*, and the predictors also influence it (here, how often they inject),
+it is a mediator rather than an exposure window, and we model the count
+directly instead of dividing by it.
+:::
+
+We adjust for the measured covariates to control the confounding they carry
+in @fig-needles-dag — demographic (`age`, `sex`, `ethn`),
+social (`polydrug`), serostatus (`hivstat`), and trauma/mental-health
+(`sexabuse`, hopelessness score `hplsns`) — using **main effects only**.
+We exclude the mediator `nivdu` (above) and the depression indicator
+`dprsn_dx`, whose `1`/`5` coding is undocumented in the source data and
+so cannot be interpreted.
 
 ```{r}
-glm1 = 
-  needles |> 
-  dplyr::filter(nivdu > 0) |> 
-  glm(
-    offset = log(nivdu),
-    family = stats::poisson,
-    formula = shared_syr ~ age + sex + homeless*polydrug
-  )
+glm1 <- glm(
+  formula = shared_syr ~ homeless +
+    age + sex + ethn + polydrug + hivstat + sexabuse + hplsns,
+  family = stats::poisson,
+  data = needles
+)
 library(equatiomatic)
 equatiomatic::extract_eq(glm1)
 ```
@@ -137,27 +459,139 @@ equatiomatic::extract_eq(glm1)
 ---
 
 ```{r}
-#| tbl-cap: "Poisson model for needle-sharing data"
+#| tbl-cap: "Poisson count model for needle-sharing data"
 #| label: tbl-needles-pois
 
 
 library(parameters)
-glm1 |> parameters(exponentiate = TRUE) |> 
+glm1 |>
+  parameters(exponentiate = TRUE) |>
   print_md()
 ```
 
 ---
 
 ```{r}
-#| tbl-cap: "fitted Poisson model for needle-sharing data"
+#| fig-cap: "Fitted Poisson model: expected sharing by age and housing status"
 #| label: fig-needles-pois
-library(sjPlot)
-glm1 |> 
-  sjPlot::plot_model(
-    type = "pred",
-    terms = c("age", "sex", "homeless", "polydrug"),
-    show.data = TRUE
+#| code-fold: true
+library(ggplot2)
+
+# Predicted expected counts across age for the two homelessness groups,
+# holding the other covariates at their reference levels (hplsns at its
+# median). The model has no offset, so predict(type = "response") returns
+# the expected number of shared syringes directly.
+ref_lvl <- function(v) levels(glm1$model[[v]])[1]
+pred_grid <- expand.grid(
+  age = seq(min(glm1$model$age), max(glm1$model$age), length.out = 100),
+  homeless = levels(glm1$model$homeless),
+  sex = ref_lvl("sex"),
+  ethn = ref_lvl("ethn"),
+  polydrug = ref_lvl("polydrug"),
+  hivstat = ref_lvl("hivstat"),
+  sexabuse = ref_lvl("sexabuse"),
+  hplsns = median(glm1$model$hplsns)
+)
+pred_grid$shared_syr <- predict(glm1, newdata = pred_grid, type = "response")
+
+ggplot(glm1$model) +
+  aes(x = age, y = shared_syr, colour = homeless) +
+  geom_point(alpha = 0.4) +
+  geom_line(data = pred_grid, linewidth = 1) +
+  scale_y_continuous(
+    transform = "pseudo_log",
+    breaks = c(0, 1, 3, 10, 30, 60)
   ) +
+  labs(
+    y = "Number of shared syringes (30 days)",
+    colour = "Housing status"
+  ) +
+  theme_bw() +
   theme(legend.position = "bottom")
 ```
+
+## Interpreting the coefficients {.smaller}
+
+For a Poisson model with a log link,
+exponentiating a coefficient turns it into a *ratio of expected counts*
+(an **incidence rate ratio**, IRR, in @vittinghoff2e's terminology):
+$\exp{\b_j}$ is the multiplicative change in the expected number of
+shared syringes per one-unit increase in $x_j$,
+holding the other covariates fixed.
+Our **focal estimate is the IRR for homelessness**;
+the remaining coefficients are adjustments for confounding,
+not effects of separate interest.
+Because we do not condition on the mediator `nivdu`,
+the homelessness IRR is a *total* effect.
+The fitted ratios are reported in @tbl-needles-pois.
+
+```{r}
+#| code-fold: true
+irr <- exp(coef(glm1))
+```
+
+**Baseline (intercept).**
+$\exp{\hat\b_0} = `r round(irr[["(Intercept)"]], 3)`$
+is the expected count of shared syringes for the reference participant
+(male, not homeless, White, one drug used, HIV-negative,
+no sexual-abuse history, hopelessness score 0), extrapolated to age 0.
+Age 0 is outside the data, so the intercept is a mathematical anchor
+rather than a directly interpretable quantity.
+
+**Age.**
+$\exp{\hat\b_{\text{age}}} = `r round(irr[["age"]], 3)`$ per year:
+essentially no association between age and the expected count.
+
+**Sex.**
+$\exp{\hat\b_{\text{sexF}}} = `r round(irr[["sexF"]], 2)`$:
+women's expected count of shared syringes is about
+`r round(irr[["sexF"]], 2)` times men's,
+adjusting for the other covariates.
+
+**Homelessness (the focal exposure).**
+$\exp{\hat\b_{\text{homeless}}} = `r round(irr[["homelesshomeless"]], 2)`$:
+homeless participants share syringes about
+`r round(irr[["homelesshomeless"]], 2)` times as often as the non-homeless,
+adjusting for the other covariates.
+@vittinghoff2e [§8.3.1] reports an *unadjusted* IRR of about 3.3
+for homelessness in a single-predictor model;
+adjusting for the confounder-proxies here moves the estimate
+to about `r round(irr[["homelesshomeless"]], 1)`.
+
+**Multiple-drug use.**
+$\exp{\hat\b_{\text{polydrug}}} = `r round(irr[["polydrugmultiple drugs used"]], 2)`$:
+multiple-drug users have a *lower* expected count than single-drug users,
+though only `r sum(glm1$model[["polydrug"]] == "multiple drugs used")`
+participants used multiple drugs, so this estimate is imprecise.
+
+**HIV serostatus.**
+$\exp{\hat\b_{\text{hivstatHIV+}}} = `r round(irr[["hivstatHIV+"]], 2)`$:
+HIV-positive participants have a lower expected count of shared syringes
+than HIV-negative participants, adjusting for the other covariates.
+Only `r sum(glm1$model[["hivstat"]] == "HIV+")` participants are HIV+
+in this sample, so this estimate is imprecise.
+
+**Ethnicity.**
+The `ethn` coefficients compare each retained group to the White reference
+(small groups were lumped into "Other"); they adjust for any confounding
+of the homelessness effect by ethnicity but are not of separate interest.
+
+**Sexual-abuse history.**
+$\exp{\hat\b_{\text{sexabuse}}} = `r round(irr[["sexabuseyes"]], 2)`$:
+participants with a history of sexual abuse share syringes about
+`r round(irr[["sexabuseyes"]], 2)` times as often as those without,
+adjusting for the other covariates.
+
+**Hopelessness.**
+$\exp{\hat\b_{\text{hplsns}}} = `r round(irr[["hplsns"]], 2)`$ per point:
+each one-point increase in the hopelessness score multiplies the expected
+count by `r round(irr[["hplsns"]], 2)`,
+adjusting for the other covariates.
+
+::: {.callout-warning title="Overdispersion caveat"}
+These data are highly overdispersed — the variance far exceeds the mean —
+so the model-based Poisson standard errors are too small.
+@vittinghoff2e [§8.3.1] recommends robust standard errors or a
+negative-binomial model for this example.
+:::
 
