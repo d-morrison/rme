@@ -588,6 +588,13 @@ Key macros to use:
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
 - **Deviation/error notation**: Use `\erf{...}` for deviations of estimates/estimators from their estimands; use `\devn(...)` for all other deviations (e.g., observations from population means)
+- **Estimators of vector estimands**: the estimator symbol (e.g. `\hat`,
+  `\bar`, `\tilde`) goes on top of the vector symbol, not inside it —
+  write `\hat{\vec{\mu}}`, not `\vec{\hat\mu}`. The hat sits on top of the
+  already-vectorized symbol. Use `\vec{}` or `\vecf{}`, **not** `\v{}`: `\v`
+  is a LaTeX built-in (the caron accent), so `\providecommand{\v}{...}` in
+  `macros.qmd` is a no-op and `\hat{\v{\mu}}` renders as a broken red `\v`
+  in MathJax.
 
 matrix-product helper macros:
 

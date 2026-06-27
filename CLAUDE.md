@@ -64,6 +64,12 @@ Before committing any `.qmd`, `.R`, or config file change:
 - **Annotate matrix dimensions with underbraces** in display math: use `\underbrace{M}_{m \times n}` for each matrix or vector
 - **Zero matrices**: never write bare `\mathbf{0}` in a matrix equation -- subscript dimensions: `\mathbf{0}_{m \times n}`
 - **Jacobian**: `\deriv{\vb} \vx` where both are p-vectors produces a p × p Jacobian matrix (not a vector)
+- Estimators of vector estimands: the estimator symbol (e.g. `\hat`) goes
+  on top of the vector symbol, not inside it — write `\hat{\vec{\mu}}`, not
+  `\vec{\hat\mu}`. (Same for `\bar`, `\tilde`, etc.) Use `\vec{}` or `\vecf{}`,
+  **not** `\v{}`: `\v` is a LaTeX built-in (the caron accent), so
+  `\providecommand{\v}{...}` in `macros.qmd` is a no-op and `\hat{\v{\mu}}`
+  renders as a broken red `\v` in MathJax.
 - Ratios vs. factors:
   - Use the generic `\ratio`/`\ratiof` macro when a ratio's inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — e.g. `\ratio(\odds_1, \odds_2)`, **not** `\ror(\odds_1, \odds_2)` — because the type of ratio is clear from the inputs.
   - Use the type-subscripted ratio macros (`\ror` for odds ratios, `\hazratio`/`\hr` for hazard ratios, `\rateratio`, `\riskratio`, `\prevratio`, `\cuhazratio`, …) only when the inputs are **covariate patterns** (e.g. `\ror(\vx,\vxs)`, `\hr(t\mid\vx:\vxs)`), where the subscript is needed to say which kind of ratio it is.

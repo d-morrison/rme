@@ -1,26 +1,55 @@
 
 ### Confidence intervals for regression coefficients and rate ratios
 
-As usual:
+A Wald 95% confidence interval for a single coefficient $\beta_j$ is:
 
 $$
-\beta \in \left[\ci \right]
+\beta_j \in \sb{\hat\beta_j \pm \ciradf{\hat\beta_j}}
 $$
 
-Rate ratios: exponentiate CI endpoints
+where $z_{1-\alpha/2} \approx 1.96$ for $\alpha = 0.05$.
+
+Because the log-rate scale is related to the rate scale by exponentiation,
+we obtain a confidence interval for the rate ratio $e^{\beta_j}$
+by exponentiating both endpoints:
 
 $$
-\exp{\beta} \in \left[\exp{\ci} \right]
+e^{\beta_j} \in
+  \sb{
+    \exp{\hat\beta_j - \ciradf{\hat\beta_j}},\;
+    \exp{\hat\beta_j + \ciradf{\hat\beta_j}}
+  }
 $$
 
 ### Hypothesis tests for regression coefficients
 
+To test $H_0: \beta_j = \beta_0$ against a one- or two-sided alternative,
+compute the Wald $z$-statistic:
+
 $$
-z = \frac{\hat \beta - \beta_0}{\hse{\hb}}
+z = \frac{\hat \beta_j - \beta_0}{\hse{\hat\beta_j}}
 $$
 
-Compare $z$ or $|z|$ to the tails of the standard Gaussian distribution, according to the null hypothesis.
+and compare $z$ (one-sided) or $|z|$ (two-sided) to the tails of the
+standard Gaussian distribution.
+The most common null hypothesis is $H_0: \beta_j = 0$,
+i.e., that covariate $j$ has no association with the outcome rate.
 
 ### Comparing nested models
 
-log(likelihood ratio) tests, as usual.
+To compare a smaller model $M_0$ (with $p_0$ parameters) to a larger model
+$M_1$ (with $p_1 > p_0$ parameters), use the likelihood ratio test statistic:
+
+$$
+G^2 = 2\bigl[\hat\ell_1 - \hat\ell_0\bigr]
+$$
+
+where $\hat\ell_1$ and $\hat\ell_0$ are the maximized log-likelihoods
+of $M_1$ and $M_0$ respectively.
+(Here the subscripts index the two *models*; they are unrelated to the
+scalar null value $\beta_0$ used in the Wald test above.)
+
+Under $H_0$ that the additional $p_1 - p_0$ parameters are all zero,
+$G^2 \dsim \chi^2_{p_1 - p_0}$.
+
+See @dobson4e [Chapter 9] and @vittinghoff2e [§8.1] for details.
