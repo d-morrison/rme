@@ -1,0 +1,210 @@
+---
+title: "Concept Map: Definitions and Results"
+---
+
+{{< include shared-config.qmd >}}
+
+This appendix shows how the definitions and results
+(`def`, `thm`, `lem`, `cor`, `prp` callouts)
+in the notes depend on one another.
+
+We say result $B$ is a **descendant** of result $A$
+if $A$ is referenced inside the statement or proof of $B$
+(directly, or transitively through a chain of intermediate results).
+The more descendants a result has,
+the more of the rest of the notes rests on it ---
+so descendant count is a rough measure of how foundational a result is.
+
+The dependency graph is built by `data-raw/callout-graph.R`,
+which scans the source `.qmd` files and saves the result to
+`inst/extdata/callout-graph.rds`.
+This appendix reads that saved file rather than re-scanning the notes on
+every render, so **re-run that script whenever divs are added, removed, or
+re-titled** to refresh the diagram and table below.
+
+```{r}
+#| label: load-concept-graph
+#| code-fold: true
+#| message: false
+#| warning: false
+
+library(igraph)
+library(ggraph)
+library(ggrepel)
+
+cg <- readRDS(here::here("inst/extdata/callout-graph.rds"))
+
+type_levels <- c("def", "thm", "lem", "cor", "prp")
+type_labels <- c(
+  def = "Definition", thm = "Theorem", lem = "Lemma",
+  cor = "Corollary", prp = "Proposition"
+)
+type_palette <- c(
+  def = "#1b9e77", thm = "#d95f02", lem = "#7570b3",
+  cor = "#e7298a", prp = "#66a61e"
+)
+```
+
+There are `r nrow(cg$nodes)` labeled definitions and results in the notes,
+connected by `r nrow(cg$edges)` direct dependency links.
+
+## Dependency diagram
+
+::: {.content-visible unless-format="pdf"}
+::: {.content-visible unless-format="docx"}
+
+@fig-concept-map shows the results that participate in at least one
+dependency link, laid out so that connected results sit near each other.
+Color encodes the type of result.
+Results with no detected dependency links are omitted from the diagram.
+Node labels are larger for results with more total descendants,
+so the most foundational results are visually prominent.
+The most foundational results (most descendants) appear near the center;
+peripheral results have no or few descendants.
+Long names are abbreviated in the diagram;
+the table below gives each result's full name.
+Labels are shifted to avoid overlap;
+a grey line connects a shifted label to its node position.
+Zoom in with Ctrl+scroll (or pinch on mobile) to read individual labels.
+
+:::{#fig-concept-map}
+
+```{r}
+#| label: concept-map-ggraph
+#| code-fold: true
+#| message: false
+#| warning: false
+#| fig-width: 50
+#| fig-height: 50
+#| out-width: "100%"
+#| fig-format: "svg"
+
+connected <- cg$nodes$id[cg$nodes$id %in% c(cg$edges$from, cg$edges$to)]
+core <- graph_from_data_frame(
+  cg$edges,
+  vertices = cg$nodes[cg$nodes$id %in% connected, ],
+  directed = TRUE
+)
+V(core)$type <- factor(V(core)$type, levels = type_levels)
+
+set.seed(204)
+# Use Fruchterman-Reingold for angular arrangement (connected nodes cluster
+# together), then override each node's radius so the most foundational nodes
+# land near the center.
+fr_layout <- create_layout(core, layout = "fr", niter = 2000)
+n_desc_vals <- V(core)$n_desc
+fr_angle <- atan2(fr_layout$y, fr_layout$x)
+# log1p radius: nodes with more descendants land closer to center (r = 0);
+# nodes with 0 descendants land at the periphery (r = 1). The log scale
+# compresses the high end so the few top hubs don't crowd the center, and
+# pulls nodes with even a handful of descendants well off the outer rim.
+max_desc <- max(n_desc_vals)
+target_r <- 1 - log1p(n_desc_vals) / log1p(max_desc)
+layout <- fr_layout
+layout$x <- target_r * cos(fr_angle)
+layout$y <- target_r * sin(fr_angle)
+
+# Abbreviate long node labels for the diagram only (the descendants table below
+# keeps the full titles). First drop synonym lists -- the text after the first
+# comma -- so e.g. "Expectation, expected value, population mean" becomes
+# "Expectation". Then apply curated short forms for the few names that are
+# still long; extend this map as needed.
+layout$label <- sub(",.*$", "", layout$title)
+short_forms <- c("def-hazard" = "Hazard")
+hit <- match(layout$name, names(short_forms))
+layout$label <- ifelse(is.na(hit), layout$label, short_forms[hit])
+layout$label <- stringr::str_wrap(layout$label, width = 15)
+
+ggraph(layout) +
+  geom_edge_link(
+    arrow = arrow(length = unit(1.8, "mm"), type = "closed"),
+    end_cap = circle(2, "mm"),
+    edge_alpha = 0.25, edge_width = 0.3
+  ) +
+  geom_label_repel(
+    data = as.data.frame(layout),
+    aes(x = x, y = y, label = label, fill = type, size = n_desc),
+    inherit.aes = FALSE,
+    # point.size = NA: suppress the dot so the label itself is the node;
+    # ggrepel still repels labels away from each other to avoid overlap.
+    point.size = NA,
+    color = "white",
+    fontface = "bold",
+    max.overlaps = Inf,
+    force = 3,
+    force_pull = 1,
+    box.padding = unit(0.15, "lines"),
+    label.padding = unit(0.1, "lines"),
+    label.r = unit(0.05, "lines"),
+    label.size = 0.1,
+    alpha = 0.88,
+    segment.color = "grey60",
+    segment.alpha = 0.5,
+    segment.size = 0.3,
+    min.segment.length = unit(0.5, "lines"),
+    seed = 204
+  ) +
+  scale_fill_manual(
+    values = type_palette, labels = type_labels, name = "Type", drop = FALSE
+  ) +
+  scale_size_continuous(range = c(8.0, 16.0), guide = "none") +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+
+Dependency structure of the definitions and results in the notes.
+An arrow points from a result to each result that uses it.
+Color indicates result type (see legend).
+Label font size is proportional to the number of total descendants;
+results with more descendants appear closer to the center.
+
+:::
+
+:::
+:::
+
+::: {.content-visible when-format="pdf"}
+
+The dependency diagram is only available in the
+[HTML version of the notes](https://d-morrison.github.io/rme/chapters/concept-map.html).
+
+:::
+
+::: {.content-visible when-format="docx"}
+
+The dependency diagram is only available in the
+[HTML version of the notes](https://d-morrison.github.io/rme/chapters/concept-map.html).
+
+:::
+
+## Descendants of each result {#sec-descendants-table}
+
+@tbl-descendants lists every result that has at least one descendant,
+sorted by the number of total descendants (direct or transitive).
+
+::: {#tbl-descendants}
+
+```{r}
+#| label: descendants-table-build
+#| code-fold: true
+#| message: false
+#| warning: false
+
+ranked <- cg$nodes[cg$nodes$n_desc >= 1, ]
+ranked <- ranked[order(-ranked$n_desc, ranked$id), ]
+
+descendant_table <- data.frame(
+  Result               = ranked$title,
+  Type                 = type_labels[ranked$type],
+  `Direct descendants`  = ranked$n_direct,
+  `Total descendants`   = ranked$n_desc,
+  check.names = FALSE, row.names = NULL, stringsAsFactors = FALSE
+)
+
+knitr::kable(descendant_table, format = "pipe", align = "llrr")
+```
+
+All results with at least one descendant,
+sorted by number of total descendants (most-foundational first).
+
+:::
