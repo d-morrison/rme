@@ -1,0 +1,73 @@
+:::{#lem-ph-whether-failure}
+#### The whether-a-failure-occurs factor
+
+To first order in $\Delta t$, the probability of exactly one failure
+in the interval at $t_i$ is the shared baseline factor times the
+risk-set score total $\red{S_i}$ (@def-ph-risk-set-score):
+
+$$
+\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
+\approx
+\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}.
+$$ {#eq-ph-one-failure}
+:::
+
+{{< slidebreak >}}
+
+::: {.proof}
+Treating subjects' failure events as conditionally independent given $R(t_i)$
+(the Cox-model assumption used throughout; see [@klein2003survival, §8.3]),
+the probability of exactly one failure is, by inclusion-exclusion,
+
+$$
+\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
+= \sum_{k \in R(t_i)}
+    \Pr\sb{k \text{ fails} \mid R(t_i)}
+    \prod_{m \in R(t_i),\, m \ne k} \Pr\sb{m \text{ survives} \mid R(t_i)}.
+$$
+
+By @lem-ph-single-subj-fail, $\Pr\sb{m \text{ fails} \mid R(t_i)} = q_m(t_i) = O(\Delta t)$,
+so each surviving product is $\prod_{m \ne k}(1 - O(\Delta t)) = 1 - O(\Delta t)$,
+and dropping the $O(\Delta t^2)$ cross-terms (each pair of co-failures has probability $O(\Delta t^2)$)
+leaves the sum of the single-subject pieces.
+Factoring out the shared baseline,
+
+$$
+\ba
+\Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}
+&\approx
+\sum_{k \in R(t_i)} q_k(t_i)
+&& \text{(drop } O(\Delta t^2) \text{ cross-terms)}
+\\
+&\approx
+\sum_{k \in R(t_i)} q^*_k(t_i)
+&& \text{(first-order hazard approximation)}
+\\
+&=
+\sum_{k \in R(t_i)} \dblue{\haz_0(t_i)\,\Delta t}\;\red{\hazfactor(\vx_k)}
+&& \text{(definition of } q^*_k(t_i) \text{)}
+\\
+&=
+\dblue{\haz_0(t_i)\,\Delta t}\sum_{k \in R(t_i)} \red{\hazfactor(\vx_k)}
+&& \text{(factor out the shared baseline)}
+\\
+&=
+\dblue{\haz_0(t_i)\,\Delta t}\;\red{S_i}.
+&& \text{(definition of } \red{S_i},\ \text{@def-ph-risk-set-score)}
+\ea
+$$
+:::
+
+:::{#exm-ph-whether-failure}
+#### One-failure probability in the three-subject risk set
+
+Continue the running scenario of @exm-ph-single-subj-fail,
+with $\dblue{\haz_0(4)\,\Delta t} = 0.05$ and risk-set score total
+$\red{S_i} = 6$ (@exm-ph-risk-set-score).
+By @eq-ph-one-failure, the probability that *some* one subject fails at $t_i = 4$ is
+
+$$
+\Pr\sb{1 \text{ failure at } 4 \mid R(4)}
+\approx \dblue{0.05} \times \red{6} = 0.30 .
+$$
+:::

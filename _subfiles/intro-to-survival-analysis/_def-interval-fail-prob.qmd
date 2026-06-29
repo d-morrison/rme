@@ -1,0 +1,54 @@
+:::{#def-interval-fail-prob}
+#### Interval failure probability
+
+Fix an interval width $\Delta t$ and grid points $\tau$.
+For subject $j$, the **interval failure probability** at $\tau$ is the
+conditional probability that $j$ fails during $[\tau, \tau + \Delta t)$,
+given that $j$ is still at risk at $\tau$:
+
+$$
+q_j(\tau) \eqdef \Pr\sb{j \text{ fails in } [\tau,\, \tau + \Delta t) \mid j \text{ at risk at } \tau}.
+$$
+:::
+
+:::{#exm-interval-fail-prob}
+#### Interval failure probability: exact value
+
+Suppose subject $j$ has constant hazard $\haz(t \mid \vx_j) = 0.1$ per year,
+and consider the half-year interval $[4.0,\, 4.5)$, so $\Delta t = 0.5$ years.
+Using the [survival/cumulative-hazard relationship](intro-to-survival-analysis.qmd#cor-surv-int-haz),
+the exact probability that $j$ fails in this interval, given survival to year $4$, is
+
+$$
+\ba
+q_j(4.0)
+&= \Pr\sb{j \text{ fails in } [4.0,\, 4.5) \mid j \text{ at risk at } 4.0}
+&& \text{(definition of } q_j \text{)}
+\\
+&= 1 - \Pr\sb{j \text{ survives past } 4.5 \mid j \text{ at risk at } 4.0}
+&& \text{(complement rule)}
+\\
+&= 1 - \frac{\surv(4.5 \mid \vx_j)}{\surv(4.0 \mid \vx_j)}
+&& \text{(conditional survival as a ratio)}
+\\
+&= 1 - \frac{\expf{-\int_{0}^{4.5} \haz(u \mid \vx_j)\,du}}
+            {\expf{-\int_{0}^{4.0} \haz(u \mid \vx_j)\,du}}
+&& \text{(survival from cumulative hazard)}
+\\
+&= 1 - \expf{-\int_{4.0}^{4.5} \haz(u \mid \vx_j)\,du}
+&& \text{(quotient of exponentials)}
+\\
+&= 1 - \expf{-\int_{4.0}^{4.5} 0.1 \,du}
+&& \text{(substitute } \haz(u \mid \vx_j) = 0.1\text{)}
+\\
+&= 1 - \expf{-0.1 \times 0.5}
+&& \text{(constant integrand over width } \Delta t = 0.5\text{)}
+\\
+&= 1 - \expf{-0.05}
+&& \text{(arithmetic)}
+\\
+&\approx 0.0488 .
+&& \text{(evaluate } e^{-0.05} \approx 0.9512\text{)}
+\ea
+$$
+:::

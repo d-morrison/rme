@@ -1,0 +1,56 @@
+:::{#lem-surv-discretized}
+#### Exact discretization of the survival factor
+
+Partition $[0, \max_j Y_j]$ into intervals of width $\Delta t$ with left endpoints $\tau$,
+and assume each observed time $Y_j$ falls on an interval boundary
+(for an interior $Y_j$ the identity instead holds in the $\Delta t \to 0$ limit).
+Then each subject's survival factor is the *exact* product
+of its per-interval conditional survival probabilities:
+
+$$
+\surv(Y_j \mid \vx_j) = \prod_{\tau < Y_j} \paren{1 - q_j(\tau)},
+$$ {#eq-surv-discretized}
+
+where $q_j(\tau)$ is the interval failure probability of @def-interval-fail-prob.
+:::
+
+{{< slidebreak >}}
+
+::: {.proof}
+Surviving to $Y_j$ is the intersection of the events "survive interval $\tau$",
+over all grid intervals $\tau < Y_j$,
+which tile $[0, Y_j)$ exactly because $Y_j$ is a grid boundary.
+By the chain rule for survival over a partition,
+the probability of this intersection factors into the product,
+over those intervals, of the conditional probability of surviving each interval
+given survival to its left endpoint.
+That conditional survival probability is, by definition, $1 - q_j(\tau)$.
+The factorization is *exact*: each factor is the exact conditional survival probability
+$1 - q_j(\tau)$, not its first-order hazard approximation,
+so no error is incurred at this step.
+:::
+
+:::{#exm-surv-discretized}
+#### Discretizing a constant hazard
+
+Suppose subject $j$ has constant hazard $\haz(t \mid \vx_j) = 0.1$/yr
+and is observed to $Y_j = 1.5$ yr,
+discretized with $\Delta t = 0.5$ yr (three intervals, $\tau = 0,\, 0.5,\, 1.0$).
+Each exact per-interval survival factor is
+
+$$
+1 - q_j(\tau) = \expf{-\textstyle\int_{\tau}^{\tau + 0.5} 0.1 \, du} = \expf{-0.05} \approx 0.9512 ,
+$$
+
+so @eq-surv-discretized gives
+
+$$
+\surv(1.5 \mid \vx_j)
+= \prod_{\tau \in \set{0,\, 0.5,\, 1.0}} \paren{1 - q_j(\tau)}
+\approx 0.9512^3
+\approx 0.8607 ,
+$$
+
+which matches the closed form $\surv(1.5 \mid \vx_j) = \expf{-0.1 \times 1.5} = \expf{-0.15} \approx 0.8607$ exactly,
+confirming that the discretization introduces no error.
+:::
