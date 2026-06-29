@@ -3,15 +3,13 @@
 
 ::: notes
 When the data contain no censored observations (@def-right-censor), we can easily estimate the survival function (@def-surv-fn).
-We observe every patient's event time, so for any time $t$ we simply count the fraction of patients whose event time is greater than $t$.
-In the `drug6mp` dataset (@exm-6mp-leukemia), all of the placebo patients relapsed (exit times `t1`, no censoring), so we can estimate their survival function this way.
-For any time $t$ in months, the estimate $\hsurv(t)$ is the fraction of patients with event times greater than $t$:
+We observe every patient's event time, so for any time $t$ we simply count the fraction of patients whose event time is greater than $t$:
 :::
 
 $$
 \hsurv(t)
 = \frac{1}{n}\sumin \indicp{Y_i > t}
-= 1 - \hat F(t)
+= 1 - \hat \cdf(t)
 $$ {#eq-emp-surv-no-cens}
 
 ::: notes
@@ -19,6 +17,10 @@ where $\hat F(t)$ is the [empirical CDF](nonparametric-models.qmd#def-empirical-
 This estimate is a right-continuous step function that starts at $\hsurv(0) = 1$ and drops by $d_j/n$ at each distinct event time $t_j$, where $d_j$ is the number of events at $t_j$.
 Without censoring, this empirical survival estimate matches the Kaplan-Meier estimator, as we prove later in @thm-KM-est-no-cens.
 :::
+
+:::{#exm-surv-6mp-placebo}
+
+### Estimated survival function for placebo arm of 6-MP study
 
 ::: notes
 For the placebo arm of `drug6mp` ($n = 21$), the empirical survival function is:
@@ -73,6 +75,7 @@ ggplot(placebo_surv_plot) +
 Empirical survival curve $\hsurv(t)$ for the placebo arm of `drug6mp`
 :::
 
+:::
 
 ## Estimating survival in datasets with censoring
 
