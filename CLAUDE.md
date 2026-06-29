@@ -47,6 +47,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Use `{{< slidebreak >}}` instead of `---` for slide breaks
 - Add `{{< slidebreak >}}` immediately before every theorem-type div (`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`)
 - When a subfile begins with a theorem-type div, put the preceding `{{< slidebreak >}}` in the **parent** file (before the `{{< include >}}`), not inside the subfile
+  - Exception: when a section heading immediately precedes the div (or the `{{< include >}}` of a subfile that begins with one), the slidebreak may be omitted so the heading shares its slide with the div, rather than producing a title-only slide. Mark the intentional omission with an inline `<!-- ... do not re-flag -->` comment at that spot.
 - Default to `#| code-fold: true` for figure/table chunks
 - Use div format (`:::{#fig-...}`) for figures and tables, not chunk-option `fig-cap`/`tbl-cap`
 - Do not indent `:::` fenced div markers inside lists
