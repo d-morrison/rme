@@ -591,10 +591,10 @@ Key macros to use:
 - **Estimators of vector estimands**: the estimator symbol (e.g. `\hat`,
   `\bar`, `\tilde`) goes on top of the vector symbol, not inside it —
   write `\hat{\vec{\mu}}`, not `\vec{\hat\mu}`. The hat sits on top of the
-  already-vectorized symbol. Use `\vec{}` or `\vecf{}`, **not** `\v{}`: `\v`
-  is a LaTeX built-in (the caron accent), so `\providecommand{\v}{...}` in
-  `macros.qmd` is a no-op and `\hat{\v{\mu}}` renders as a broken red `\v`
-  in MathJax.
+  already-vectorized symbol. Use `\v{}`, `\vec{}`, or `\vecf{}` — all three
+  work. (`\v` was formerly broken because `\providecommand` could not override
+  the LaTeX built-in caron accent; it is now defined with `\renewcommand`
+  in `macros.qmd`.)
 
 matrix-product helper macros:
 
