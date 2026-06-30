@@ -237,7 +237,11 @@ We can now place the observed and causal marginal risks side by side:
 
 #### Observed and causal marginal risks coincide without confounding
 
-If $Z \perp A$ (as under complete randomization of $A$),
+Under the identification assumptions of @thm-causal-marginal-risk
+([Consistency](causal-inference.qmd#def-consistency),
+[Conditional Exchangeability](causal-inference.qmd#def-exchangeability),
+and [Positivity](causal-inference.qmd#def-positivity)),
+if additionally $Z \perp A$ (as under complete randomization of $A$),
 the observed and causal marginal risks are equal:
 
 $$\pi(a) = \pi_a$$
@@ -252,17 +256,48 @@ $$
 \ba
 \pi(a)
 &= \E{\teal{\pi(a, Z)} \mid A = a}
-&& \text{[observed marginal risk]}
+&& \text{[observed marginal risk theorem]}
 \\
 &= \E{\teal{\pi(a, Z)}}
 && \text{[no confounding]}
 \\
 &= \pi_a
-&& \text{[causal marginal risk]}
+&& \text{[causal marginal risk theorem]}
 \ea
 $$
 
 :::
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-observed-equals-causal}
+
+#### Illustration: coincidence under randomization
+
+Take the covariate-specific risks $\pi(1, 0) = 0.1$ and $\pi(1, 1) = 0.3$
+of @exm-observed-marginal-risk, but now suppose $A$ is randomized,
+so the exposed carry the population's covariate distribution,
+$\Pr(Z = 1 \mid A = 1) = \Pr(Z = 1) = 0.2$.
+Then the observed marginal risk
+
+$$
+\ba
+\pi(1)
+&= \E{\pi(1, Z) \mid A = 1}
+&& \text{[observed marginal risk theorem]}
+\\
+&= (0.8)(0.1) + (0.2)(0.3)
+&& \text{[substitute randomized weights]}
+\\
+&= 0.14
+&& \text{[arithmetic]}
+\ea
+$$
+
+equals the causal marginal risk $\pi_1 = 0.14$ of @exm-causal-marginal-risk,
+exactly as @cor-observed-equals-causal predicts.
 
 :::
 
@@ -326,9 +361,14 @@ $$
 \ea
 $$
 
-The estimation-error term converges to zero in probability,
-because each $\hat\pi(a, z_i) - \teal{\pi(a, z_i)} \overset{p}{\to} 0$
-under correct model specification.
+The estimation-error term converges to zero in probability:
+under correct specification the fitted coefficients are consistent,
+$\hat\beta \overset{p}{\to} \beta^*$,
+and since each fitted risk is a bounded, continuous function of $\hat\beta$,
+the continuous mapping theorem gives
+$\frac{1}{n}\sumin \left|\hat\pi(a, z_i) - \teal{\pi(a, z_i)}\right| \overset{p}{\to} 0$
+(pointwise convergence of the individual terms would not suffice on its own,
+since they are correlated through the shared $\hat\beta$).
 The remaining term averages the true risks over an i.i.d. sample
 $z_1, \dots, z_n$ from the marginal distribution $f_Z$,
 so the weak law of large numbers gives
@@ -419,6 +459,21 @@ so its consistency for $\pi_a$ is exactly @thm-g-computation-consistency.
 
 {{< slidebreak >}}
 
+:::{#exm-full-sample-pm}
+
+#### Illustration: full-sample predictive margin
+
+In the WCGS example (@exm-wcgs-causal-marginal-risks),
+the g-computation estimate $\hat\pi_1$ is simultaneously
+the full-sample predictive margin $\widehat{\text{PM}}(1)$:
+both are the same average $\frac{1}{n}\sumin \hat\pi_{1,i}$
+of the fitted Type A risks over the whole sample,
+so the margin inherits its consistency for $\pi_1$ from @cor-full-sample-pm.
+
+:::
+
+{{< slidebreak >}}
+
 :::{#def-subgroup-predictive-margin}
 
 #### Exposed-subgroup predictive margin
@@ -485,12 +540,32 @@ with the observed marginal risk:
 
 $$
 \E{\teal{\pi(a, Z)} \mid A = a} = \pi(a).
-\qquad \text{[observed marginal risk]}
+\qquad \text{[observed marginal risk theorem]}
 $$
 
 Combining the three steps, $\hat\pi_a(a) \overset{p}{\to} \pi(a)$.
 
 :::
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-subgroup-pm}
+
+#### Illustration: exposed-subgroup predictive margin
+
+Continuing @exm-observed-marginal-risk,
+where the exposed ($A = 1$) have $\Pr(Z = 1 \mid A = 1) = 0.5$
+and covariate-specific risks $\pi(1, 0) = 0.1$ and $\pi(1, 1) = 0.3$,
+averaging the fitted risks over the exposed subgroup gives
+
+$$
+\hat\pi_1(1) = (0.5)(0.1) + (0.5)(0.3) = 0.2,
+$$
+
+which estimates the observed marginal risk $\pi(1) = 0.2$ (@exm-observed-marginal-risk),
+not the causal marginal risk $\pi_1 = 0.14$ (@exm-causal-marginal-risk).
 
 :::
 
@@ -523,6 +598,11 @@ $$
 \quad\text{i.e.}\quad
 \sum_{i : A_i = a} \hat\mu_i = \sum_{i : A_i = a} Y_i.
 $$
+
+(For the reference level, which has no indicator column of its own,
+the same identity follows by subtracting the non-reference indicator
+score equations from the intercept score equation
+$\sum_{i=1}^n (Y_i - \hat\mu_i) = 0$.)
 
 For an observation with $A_i = a$ we have $\hat\mu_i = \hat\pi(a, z_i)$,
 so dividing by $n_a$ gives
