@@ -1,0 +1,229 @@
+:::{#def-potential-mean}
+
+#### Potential mean
+
+The **potential mean** (or **mean potential outcome**) under treatment $A = a$ is
+the expected value of the potential outcome $Y^a$:
+
+$$\mu_a \eqdef \E{Y^a}$$
+
+The potential mean is what the average outcome would be
+if the entire population were assigned treatment $a$.
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-potential-mean}
+
+#### Illustration: potential mean
+
+If a treatment would produce the outcome in 20% of the population,
+the potential mean is $\mu_a = \E{Y^a} = 0.2$.
+
+:::
+
+For a binary outcome,
+the potential mean is a probability,
+which we give its own name:
+
+{{< slidebreak >}}
+
+:::{#def-causal-marginal-risk}
+
+#### Causal marginal risk
+
+For a binary outcome $Y \in \{0, 1\}$,
+the potential mean (@def-potential-mean) is a probability,
+which we call the **causal marginal risk**
+(also: **potential probability**, **potential marginal risk**)
+under exposure level $a$:
+
+$$\pi_a \eqdef \Pr(Y^a = 1)$$
+
+:::
+
+We use the term **causal marginal risk** throughout.
+
+{{< slidebreak >}}
+
+:::{#exm-causal-marginal-risk-illustration}
+
+#### Illustration: causal marginal risk
+
+In a population where treatment $a$ would produce the outcome in 20% of people,
+the causal marginal risk is $\pi_a = \Pr(Y^a = 1) = 0.20$ —
+the fraction who would have the outcome if everyone were assigned treatment $a$.
+
+:::
+
+{{< slidebreak >}}
+
+:::{#thm-causal-marginal-risk-equals-mean}
+
+#### Causal marginal risk equals potential mean
+
+The matching values in @exm-potential-mean and @exm-causal-marginal-risk-illustration
+are no coincidence:
+the causal marginal risk (@def-causal-marginal-risk)
+is a special case of the potential mean (@def-potential-mean):
+
+$$\pi_a = \E{Y^a}$$
+
+::: {.proof}
+
+Since $Y^a$ is binary ($Y^a \in \{0, 1\}$):
+
+$$
+\ba
+\E{Y^a}
+&= 1 \cdot \Pr(Y^a = 1) + 0 \cdot \Pr(Y^a = 0)
+&& \text{[expectation of a binary variable]}
+\\
+&= \Pr(Y^a = 1)
+&& \text{[arithmetic]}
+\\
+&= \pi_a
+&& \text{[definition of causal marginal risk]}
+\ea
+$$
+
+:::
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-causal-marginal-risk-as-mean}
+
+#### Illustration: causal marginal risk equals potential mean
+
+With $\pi_a = 0.20$ as in @exm-causal-marginal-risk-illustration,
+reading the potential mean as an expectation gives the same value:
+
+$$\E{Y^a} = 1 \cdot 0.20 + 0 \cdot 0.80 = 0.20 = \pi_a.$$
+
+:::
+
+{{< slidebreak >}}
+
+Under causal identification assumptions
+(see [Consistency](causal-inference.qmd#def-consistency),
+[Conditional Exchangeability](causal-inference.qmd#def-exchangeability),
+and [Positivity](causal-inference.qmd#def-positivity)),
+the causal marginal risk $\pi_a$ (@def-causal-marginal-risk)
+can be expressed in terms of observed data:
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_thm-causal-marginal-risk.qmd >}}
+
+{{< slidebreak >}}
+
+:::{#exm-causal-marginal-risk}
+
+#### Causal marginal risk by standardization
+
+Continuing @exm-observed-marginal-risk
+with the same covariate-specific risks
+$\pi(1, 0) = 0.1$ and $\pi(1, 1) = 0.3$,
+suppose only 20% of the whole population has $Z = 1$
+($\Pr(Z = 1) = 0.2$),
+so the exposed are enriched for the high-risk level.
+Then @thm-causal-marginal-risk gives:
+
+$$
+\ba
+\pi_1
+&= \E{\pi(1, Z)}
+&& \text{[causal marginal risk theorem]}
+\\
+&= (0.8)(0.1) + (0.2)(0.3)
+&& \text{[substitute stratum risks and weights]}
+\\
+&= 0.14
+&& \text{[arithmetic]}
+\ea
+$$
+
+This differs from the observed marginal risk $\pi(1) = 0.2$
+because the exposed subgroup's covariate distribution
+differs from the population's.
+
+:::
+
+We can now place the observed and causal marginal risks side by side:
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_rem-observed-vs-causal-marginal-risk.qmd >}}
+
+{{< slidebreak >}}
+
+:::{#cor-observed-equals-causal}
+
+#### Observed and causal marginal risks coincide without confounding
+
+Under the identification assumptions of @thm-causal-marginal-risk
+([Consistency](causal-inference.qmd#def-consistency),
+[Conditional Exchangeability](causal-inference.qmd#def-exchangeability),
+and [Positivity](causal-inference.qmd#def-positivity)),
+if additionally $Z \perp A$ (as under complete randomization of $A$),
+the observed and causal marginal risks are equal:
+
+$$\pi(a) = \pi_a$$
+
+::: {.proof}
+
+When $Z \perp A$ the conditional and marginal distributions of $Z$ coincide,
+$\red{f_{Z \mid A}(z \mid a)} = \red{f_Z(z)}$,
+so @thm-observed-marginal-risk and @thm-causal-marginal-risk give:
+
+$$
+\ba
+\pi(a)
+&= \E{\teal{\pi(a, Z)} \mid A = a}
+&& \text{[observed marginal risk theorem]}
+\\
+&= \E{\teal{\pi(a, Z)}}
+&& \text{[no confounding]}
+\\
+&= \pi_a
+&& \text{[causal marginal risk theorem]}
+\ea
+$$
+
+:::
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-observed-equals-causal}
+
+#### Illustration: coincidence under randomization
+
+Take the covariate-specific risks $\pi(1, 0) = 0.1$ and $\pi(1, 1) = 0.3$
+of @exm-observed-marginal-risk, but now suppose $A$ is randomized,
+so the exposed carry the population's covariate distribution,
+$\Pr(Z = 1 \mid A = 1) = \Pr(Z = 1) = 0.2$.
+Then the observed marginal risk
+
+$$
+\ba
+\pi(1)
+&= \E{\pi(1, Z) \mid A = 1}
+&& \text{[observed marginal risk theorem]}
+\\
+&= (0.8)(0.1) + (0.2)(0.3)
+&& \text{[substitute randomized weights]}
+\\
+&= 0.14
+&& \text{[arithmetic]}
+\ea
+$$
+
+equals the causal marginal risk $\pi_1 = 0.14$ of @exm-causal-marginal-risk,
+exactly as @cor-observed-equals-causal predicts.
+
+:::
