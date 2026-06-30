@@ -1,43 +1,8 @@
----
-title: "Introduction to Bayesian Inference"
-format:
-  html: default
-  revealjs:
-    output-file: intro-bayes-slides.html
-  pdf:
-    output-file: intro-bayes-handout.pdf
-  docx:
-    output-file: intro-bayes-handout.docx
+#### Credible vs. confidence interval for a normal mean
 
----
-
-
-{{< include shared-config.qmd >}}
-
----
-
-Suppose $X_1,...,X_n \siid N(M,1)$
-
-Suppose $M \sim N(0, 1)$.
-
-Then:
-$$
-\ba
-p(M=\mu|X=x) 
-&\propto p(M=\mu, X=x)\\
-&= p(X=x|M=\mu) p(M=\mu)\\
-&\propto \exp{-\frac{1}{2}n\mu^2 - 2\mu n\bar{x}}
-\exp{-\frac{1}{2} \mu^2}\\
-&= \exp{-\frac{1}{2}(n+1)\mu^2 - 2\mu n\bar{x}}\\
-&\propto \exp{-\frac{1}{2}(n+1)(\mu -  \frac{n}{n+1}\bar{x})^2}
-\ea
-$$
-So: 
-$$p(M=\mu|X=x) \sim N(\frac{n}{n+1}\bar{x}, (n+1)^{-1})$$
-
-Let's put this in perspective.
-
-Here's a frequentist CI:
+We compare the two interval estimates from @sec-bayes-interval-interp on
+simulated data from the model of @exm-normal-normal.
+First, the frequentist interval:
 
 ```{r}
 set.seed(1)
@@ -51,8 +16,9 @@ CI_freq <- xbar + se * qnorm(c(.025, .975))
 print(CI_freq)
 ```
 
+The likelihood as a function of $\mu$:
+
 ```{r}
-lik0 <- function(mu) dnorm(x = x, mean = mu, sd = 1) |> prod()
 lik <- function(mu) {
   (2 * pi * sigma^2)^(-n / 2) *
     exp(
@@ -60,7 +26,6 @@ lik <- function(mu) {
         (sum(x^2) - 2 * mu * sum(x) + n * (mu^2))
     )
 }
-library(ggplot2)
 ngraph <- 1001
 plot1 <- ggplot() +
   geom_function(fun = lik, aes(col = "likelihood"), n = ngraph) +
@@ -71,8 +36,8 @@ plot1 <- ggplot() +
 print(plot1)
 ```
 
-
-Here's a Bayesian CI:
+Next, the Bayesian credible interval, using the closed-form posterior
+$\ndist{\frac{n}{n+1}\bar{x},\, (n+1)^{-1}}$ from @exm-normal-normal:
 
 ```{r}
 mu_prior_mean <- 0
@@ -94,7 +59,9 @@ plot2 <- plot1 +
 print(plot2 + scale_y_log10())
 ```
 
-Here's $p(M \in (l(x),r(x))|X=x)$:
+Finally, the quantity a credible interval reports —
+the posterior probability that $M$ lies in the *frequentist* interval —
+is well defined for the Bayesian but not for the frequentist:
 
 ```{r}
 pr_in_CI <- pnorm(
@@ -104,16 +71,3 @@ pr_in_CI <- pnorm(
 ) |> diff()
 print(pr_in_CI)
 ```
-
-# Example with JAGS
-
-{{< include dobson-bayes-example.qmd >}}
-
-# Other resources
-
-{{< include _subfiles/intro-bayes/_sec-bayes-resources.qmd >}}
-
-# References {.unnumbered}
-
-::: {#refs}
-:::

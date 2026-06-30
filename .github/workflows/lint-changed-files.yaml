@@ -13,7 +13,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -34,25 +34,15 @@ jobs:
           cat('\noptions(lintr.linter_file = ".lintr")\n', file = "~/.Rprofile", append = TRUE)
         shell: Rscript {0}
 
-      # Use the `gh` CLI (not the gh R package) to list changed files. The R
-      # package resolves the token via gitcreds and rejected the Actions token
-      # with "Invalid GitHub PAT format"; the CLI reads GH_TOKEN directly and
-      # handles the `ghs_` Actions token format natively.
-      - name: Extract files changed by this PR
+      - name: Extract and lint files changed by this PR
         run: |
-          gh api \
-            --paginate \
-            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
-            --jq '.[] | select(.status != "renamed" or .changes > 0) | .filename' \
-            > changed_files.txt
-          echo "Changed files:"
-          cat changed_files.txt
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Lint files changed by this PR
-        run: |
-          changed_files <- readLines("changed_files.txt")
+          files <- gh::gh(
+            "GET https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files",
+            .limit = Inf
+          )
+          changed_files <- files |>
+            purrr::keep(~ .$status != "renamed" || .$changes > 0) |>
+            purrr::map_chr("filename")
           changed_files <- setdiff(changed_files, "renv/activate.R")
           if (length(changed_files) == 0) {
             message("No changed files to lint.")

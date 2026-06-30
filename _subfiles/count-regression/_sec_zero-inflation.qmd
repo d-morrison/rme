@@ -31,12 +31,105 @@ $$
 ---
 
 ::: {#exr-zinf-pmf}
-Expand $P(Y=0|X=x,T=t)$, $P(Y=1|X=x,T=t)$ and $P(Y=y|X=x,T=t)$ into expressions involving $P(Z=1|X=x,T=t)$ and $P(Y=y|Z=0,X=x,T=t)$.
+Expand $P(Y=0|X=x,T=t)$, $P(Y=1|X=x,T=t)$ and $P(Y=y|X=x,T=t)$ into expressions involving $P(Z=1|X=x)$ and $P(Y=y|Z=0,X=x,T=t)$.
 :::
 
----
+::: {.solution}
+
+Let $\pi = \P(Z=1|X=x)$ and $\mu_0 = \Expp[Y|Z=0,X=x,T=t]$.
+
+**$P(Y=0)$:** $Y=0$ occurs either because $Z=1$ (always zero)
+or because $Z=0$ and the Poisson draw equals 0:
+
+$$
+\ba
+\P(Y=0|X=x,T=t)
+&= \P(Z=1|X=x) + \P(Z=0|X=x)\,\P(Y=0|Z=0,X=x,T=t)\\
+&= \pi + (1-\pi)\,e^{-\mu_0}
+\ea
+$$
+
+**$P(Y=1)$:** $Z=1$ can never produce $Y=1$, so:
+
+$$
+\P(Y=1|X=x,T=t)
+= (1-\pi)\,\P(Y=1|Z=0,X=x,T=t)
+= (1-\pi)\,\mu_0 e^{-\mu_0}
+$$
+
+**$P(Y=y)$ for $y \geq 1$:** Identical reasoning gives
+
+$$
+\P(Y=y|X=x,T=t)
+= (1-\pi)\,\frac{\mu_0^y e^{-\mu_0}}{y!}
+$$
+
+:::
+
+{{< slidebreak >}}
 
 ::: {#exr-zinf-moments}
 
-Derive the expected value and variance of $Y$, conditional on $X$ and $T$, as functions of $P(Z=1|X=x,T=t)$ and $\Expp[Y|Z=0,X=x,T=t]$.
+Derive the expected value and variance of $Y$, conditional on $X$ and $T$, as functions of $\pi = P(Z=1|X=x)$ and $\mu_0 = \Expp[Y|Z=0,X=x,T=t]$.
+:::
+
+::: {.solution}
+
+Let $\pi = \P(Z=1|X=x)$ and $\mu_0 = \Expp[Y|Z=0,X=x,T=t]$.
+
+**Expected value.** By the Law of Total Expectation
+(conditioning on $Z$, within the subpopulation $\{X=x, T=t\}$):
+
+$$
+\ba
+\Expp[Y|X=x,T=t]
+&= \Expp[Y|Z=1,X=x,T=t]\,\pi + \Expp[Y|Z=0,X=x,T=t]\,(1-\pi)\\
+&= 0 \cdot \pi + \mu_0(1-\pi)\\
+&= (1-\pi)\,\mu_0
+\ea
+$$
+
+The substitution $\Expp[Y|Z=0,X=x,T=t] = \mu_0$ follows immediately
+from the definition of $\mu_0$ above.
+
+**Variance.** By the Law of Total Variance.
+To reduce clutter, we suppress the $(X=x, T=t)$ conditioning in the
+intermediate steps below: every expectation and variance is taken within
+the subpopulation $\{X=x, T=t\}$, and we restore the explicit conditioning
+in the final line.
+
+$$
+\Var{Y} = \Expp[\Var{Y|Z}] + \Var{\Expp[Y|Z]}
+$$
+
+For the first term, since $\Var{Y|Z=1}=0$ and $\Var{Y|Z=0}=\mu_0$ (Poisson):
+
+$$
+\Expp[\Var{Y|Z}] = 0 \cdot \pi + \mu_0(1-\pi) = (1-\pi)\mu_0
+$$
+
+For the second term, $\Expp[Y|Z]$ takes the value 0 (with prob $\pi$)
+or $\mu_0$ (with prob $1-\pi$), so:
+
+$$
+\ba
+\Var{\Expp[Y|Z]}
+&= \pi(0 - (1-\pi)\mu_0)^2 + (1-\pi)(\mu_0 - (1-\pi)\mu_0)^2\\
+&= \pi(1-\pi)^2\mu_0^2 + (1-\pi)\pi^2\mu_0^2\\
+&= \pi(1-\pi)\mu_0^2[\,(1-\pi)+\pi\,]\\
+&= \pi(1-\pi)\mu_0^2
+\ea
+$$
+
+Combining:
+
+$$
+\Var{Y|X=x,T=t} = (1-\pi)\mu_0 + \pi(1-\pi)\mu_0^2
+= (1-\pi)\mu_0\bigl(1 + \pi\mu_0\bigr)
+$$
+
+Since $(1-\pi)\mu_0\bigl(1+\pi\mu_0\bigr) \geq (1-\pi)\mu_0 = \Expp[Y|X=x,T=t]$ for any $\pi > 0$,
+zero-inflated count models always exhibit overdispersion relative to a Poisson model
+with the same mean.
+
 :::

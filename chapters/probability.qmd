@@ -409,7 +409,7 @@ $$\int_{x \in \rangef{X}} f(x) dx = 1$$
 :::{#def-expectation}
 ## Expectation, expected value, population mean \index{expectation} \index{expected value}
 
-The **expectation**, **expected value**, or **population mean** of a *continuous* random variable $X$, denoted $\E{X}$, $\mu(X)$, or $\mu_X$, is the weighted mean of $X$'s possible values, weighted by the probability density function of those values:
+The **expectation**, **expected value**, or **population mean** of a *continuous* random variable $X$, denoted $\E{X}$, $\mu(X)$, or $\mu_X$, is the weighted mean of $X$'s possible values, weighted by the [probability density function](#def-pdf) of those values:
 
 $$\E{X} = \int_{x\in \rangef{X}} x \cdot \p(X=x)dx$$
 
@@ -1203,10 +1203,12 @@ For any quantity $z$ and reference value $r$:
 $$z - r$$
 
 In probability and statistics,
-"deviation" often means deviation from a population mean.
+"deviation" often means deviation from a [population mean](#def-expectation).
 For a random variable $Y$:
 
 $$Y - \E{Y}$$
+
+See: [Wikipedia: Deviation (statistics)](https://en.wikipedia.org/wiki/Deviation_(statistics))
 
 :::
 
@@ -1220,7 +1222,7 @@ we call this quantity a **deviation from a mean**.
 It is often also called an **error** or **noise term**
 in other sources.
 For the random variable $Y$,
-define the deviation from its mean as:
+define the [deviation](#def-deviation) from its mean as:
 
 $$\devn(Y) \eqdef Y - \E{Y}$$
 
@@ -1258,11 +1260,29 @@ See:
 :::{#def-variance}
 ### Variance
 
-The variance of a random variable $X$ is the expectation of the squared difference between $X$ and $\E{X}$; that is:
+The variance of a random variable $X$ is the [expectation](#def-expectation) of the squared [deviation from the mean](#def-deviation-pop-mean); that is:
 
 $$
-\Var{X} \eqdef \E{(X-\E{X})^2}
+\Var{X} \eqdef \E{[\devn(X)]^2}
 $$
+
+:::
+
+---
+
+:::{#thm-variance-expanded}
+### Variance as expected squared deviation from the mean
+
+$$\Var{X} = \E{(X - \E{X})^2}$$
+
+::::{.proof}
+Substituting the definition of $\devn(X)$ from @def-deviation-pop-mean
+into @def-variance:
+
+$$
+\Var{X} \eqdef \E{[\devn(X)]^2} = \E{(X - \E{X})^2}.
+$$
+::::
 
 :::
 
@@ -1280,8 +1300,9 @@ By linearity of expectation, we have:
 
 $$
 \begin{aligned}
-\Var{X} 
-&\eqdef \E{(X-\E{X})^2}\\
+\Var{X}
+&\eqdef \E{[\devn(X)]^2}\\
+&= \E{(X-\E{X})^2}\\
 &=\E{X^2 - 2X\E{X} + \sqf{\E{X}}}\\
 &=\E{X^2} - \E{2X\E{X}} + \E{\sqf{\E{X}}}\\
 &=\E{X^2} - 2\E{X}\E{X} + \sqf{\E{X}}\\
@@ -1406,7 +1427,7 @@ $$
 ### Precision
 
 The **precision** of a random variable $X$, often denoted $\tau(X)$, $\tau_X$, or shorthanded as $\tau$, is
-the inverse of that random variable's variance; that is:
+the inverse of that random variable's [variance](#def-variance); that is:
 
 $$\tau(X) \eqdef \inv{\Var{X}}$$
 :::
@@ -1415,7 +1436,7 @@ $$\tau(X) \eqdef \inv{\Var{X}}$$
 
 ### Standard deviation
 
-The standard deviation of a random variable $X$ is the square-root of the variance of $X$:
+The standard deviation of a random variable $X$ is the square-root of the [variance](#def-variance) of $X$:
 
 $$\SD{X} \eqdef \sqrt{\Var{X}}$$
 
@@ -1671,7 +1692,7 @@ Or, see <https://statproofbook.github.io/P/var-lincomb.html>
 :::{#def-homosked}
 ## homoskedastic, heteroskedastic
 
-A random variable $Y$ is **homoskedastic** (with respect to covariates $X$) if the variance of $Y$ does not vary with $X$: 
+A random variable $Y$ is **homoskedastic** (with respect to covariates $X$) if the [variance](#def-variance) of $Y$ does not vary with $X$:
 
 $$\Varr(Y|X=x) = \ss, \forall x$$
 
@@ -1685,8 +1706,8 @@ Otherwise it is **heteroskedastic**.
 
 ## Statistical independence
 
-A set of random variables $\X1n$ are **statistically independent** 
-if their joint probability is equal to the product of their marginal probabilities:
+A set of random variables $\X1n$ are **statistically independent**
+if their joint [probability](#def-probability) is equal to the product of their marginal [probabilities](#def-probability):
 
 $$\Pr(\Xx1n) = \prodi1n{\Pr(X_i=x_i)}$$
 
@@ -1707,10 +1728,10 @@ So the symbol can remind you of its definition (@def-indpt).
 
 ## Conditional independence
 
-A set of random variables $\dsn{Y}$ are **conditionally statistically independent** 
+A set of random variables $\dsn{Y}$ are **conditionally statistically independent**
 given a set of covariates $\X1n$
-if the joint probability of the $Y_i$s given the $X_i$s is equal to 
-the product of their marginal probabilities:
+if the joint [probability](#def-probability) of the $Y_i$s given the $X_i$s is equal to
+the product of their marginal [probabilities](#def-probability):
 
 $$\Pr(\dsvn{Y}{y}|\dsvn{X}{x}) = \prodi1n{\Pr(Y_i=y_i|X_i=x_i)}$$
 
@@ -1757,7 +1778,7 @@ $$
 ### Independent and identically distributed
 
 A set of random variables $\dsn{X}$ are **independent and identically distributed**
-(shorthand: "$X_i\ \iid$") if they are statistically independent and identically distributed.
+(shorthand: "$X_i\ \iid$") if they are [statistically independent](#def-indpt) and [identically distributed](#def-ident).
 
 :::
 
@@ -1767,7 +1788,7 @@ A set of random variables $\dsn{X}$ are **independent and identically distribute
 ### Conditionally independent and identically distributed
 
 A set of random variables $\dsn{Y}$ are **conditionally independent and identically distributed** (shorthand: "$Y_i | X_i\ \ciid$" or just "$Y_i |X_i\ \iid$") given a set of covariates $\dsn{X}$
-if $\dsn{Y}$ are conditionally independent given $\dsn{X}$ and $\dsn{Y}$ are identically distributed given 
+if $\dsn{Y}$ are [conditionally independent](#def-cind) given $\dsn{X}$ and $\dsn{Y}$ are [conditionally identically distributed](#def-cident) given
 $\dsn{X}$.
 
 :::
