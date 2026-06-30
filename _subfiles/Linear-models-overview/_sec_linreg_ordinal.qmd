@@ -35,7 +35,7 @@ instead of the default treatment contrasts:
 
 ```{r}
 hers <- hers |>
-  mutate(physact_ord = ordered(physact))
+  dplyr::mutate(physact_ord = ordered(physact))
 
 lm_physact <- lm(LDL ~ physact_ord, data = hers)
 ```
@@ -54,8 +54,10 @@ Mean LDL by physical-activity level, using polynomial contrasts
 
 With polynomial contrasts,
 each coefficient summarizes a trend component across the ordered levels:
-the linear term is the steady change in mean LDL per step up the scale,
+the linear term measures the strength and direction of a straight-line (monotone) trend in mean LDL across the levels,
 and the quadratic and higher terms capture curvature.
+The contrasts are orthonormal, so the linear coefficient is scaled by the contrast normalization;
+it is not the raw change in mean LDL per level.
 Here the linear-trend coefficient is small and not statistically significant,
 so these data show little evidence of a monotone association
 between physical-activity level and mean LDL cholesterol.
