@@ -49,7 +49,17 @@ If half of the exposed have $Z = 1$
 then @thm-observed-marginal-risk gives:
 
 $$
-\pi(1) = \E{\pi(1, Z) \mid A = 1} = (0.5)(0.1) + (0.5)(0.3) = 0.2
+\ba
+\pi(1)
+&= \E{\pi(1, Z) \mid A = 1}
+&& \text{[observed marginal risk theorem]}
+\\
+&= (0.5)(0.1) + (0.5)(0.3)
+&& \text{[substitute stratum risks and weights]}
+\\
+&= 0.2
+&& \text{[arithmetic]}
+\ea
 $$
 
 :::
@@ -141,10 +151,13 @@ $$
 \ba
 \E{Y^a}
 &= 1 \cdot \Pr(Y^a = 1) + 0 \cdot \Pr(Y^a = 0)
+&& \text{[expectation of a binary variable]}
 \\
 &= \Pr(Y^a = 1)
+&& \text{[arithmetic]}
 \\
 &= \pi_a
+&& \text{[definition of causal marginal risk]}
 \ea
 $$
 
@@ -193,7 +206,17 @@ so the exposed are enriched for the high-risk level.
 Then @thm-causal-marginal-risk gives:
 
 $$
-\pi_1 = \E{\pi(1, Z)} = (0.8)(0.1) + (0.2)(0.3) = 0.14
+\ba
+\pi_1
+&= \E{\pi(1, Z)}
+&& \text{[causal marginal risk theorem]}
+\\
+&= (0.8)(0.1) + (0.2)(0.3)
+&& \text{[substitute stratum risks and weights]}
+\\
+&= 0.14
+&& \text{[arithmetic]}
+\ea
 $$
 
 This differs from the observed marginal risk $\pi(1) = 0.2$
@@ -207,6 +230,41 @@ We can now place the observed and causal marginal risks side by side:
 {{< slidebreak >}}
 
 {{< include _subfiles/logistic-regression/_rem-observed-vs-causal-marginal-risk.qmd >}}
+
+{{< slidebreak >}}
+
+:::{#cor-observed-equals-causal}
+
+#### Observed and causal marginal risks coincide without confounding
+
+If $Z \perp A$ (as under complete randomization of $A$),
+the observed and causal marginal risks are equal:
+
+$$\pi(a) = \pi_a$$
+
+::: {.proof}
+
+When $Z \perp A$ the conditional and marginal distributions of $Z$ coincide,
+$\red{f_{Z \mid A}(z \mid a)} = \red{f_Z(z)}$,
+so @thm-observed-marginal-risk and @thm-causal-marginal-risk give:
+
+$$
+\ba
+\pi(a)
+&= \E{\teal{\pi(a, Z)} \mid A = a}
+&& \text{[observed marginal risk]}
+\\
+&= \E{\teal{\pi(a, Z)}}
+&& \text{[no confounding]}
+\\
+&= \pi_a
+&& \text{[causal marginal risk]}
+\ea
+$$
+
+:::
+
+:::
 
 Two related procedures estimate these marginal risks from a fitted regression model:
 
@@ -234,8 +292,64 @@ correct for g-computation. -->
 
 $$\hat\pi_a = \frac{1}{n}\sumin \hat\pi_{a,i}$$
 
-Under identification assumptions (@thm-causal-marginal-risk),
-$\hat\pi_a$ consistently estimates $\pi_a = \E{\pi(a, Z)}$.
+:::
+
+{{< slidebreak >}}
+
+:::{#thm-g-computation-consistency}
+
+#### Consistency of g-computation
+
+Suppose the outcome regression is correctly specified,
+so the fitted conditional risk is consistent for the true conditional risk,
+$\hat\pi(a, z) \overset{p}{\to} \teal{\pi(a, z)}$ for each $z$,
+and suppose the identification assumptions of @thm-causal-marginal-risk hold.
+Then the g-computation estimator (@def-g-computation)
+is consistent for the causal marginal risk $\pi_a$ (@def-causal-marginal-risk):
+
+$$\hat\pi_a \overset{p}{\to} \pi_a$$
+
+::: {.proof}
+
+Split the estimator into the average of the **true** conditional risks
+plus an estimation-error term:
+
+$$
+\ba
+\hat\pi_a
+&= \frac{1}{n}\sumin \hat\pi(a, z_i)
+&& \text{[definition of the estimator]}
+\\
+&= \frac{1}{n}\sumin \teal{\pi(a, z_i)}
++ \frac{1}{n}\sumin \left(\hat\pi(a, z_i) - \teal{\pi(a, z_i)}\right)
+&& \text{[add and subtract the true risks]}
+\ea
+$$
+
+The estimation-error term converges to zero in probability,
+because each $\hat\pi(a, z_i) - \teal{\pi(a, z_i)} \overset{p}{\to} 0$
+under correct model specification.
+The remaining term averages the true risks over an i.i.d. sample
+$z_1, \dots, z_n$ from the marginal distribution $f_Z$,
+so the weak law of large numbers gives
+
+$$
+\frac{1}{n}\sumin \teal{\pi(a, z_i)}
+\overset{p}{\to} \E{\teal{\pi(a, Z)}}.
+\qquad \text{[weak law of large numbers]}
+$$
+
+Finally, @thm-causal-marginal-risk identifies this expectation
+with the causal marginal risk:
+
+$$
+\E{\teal{\pi(a, Z)}} = \pi_a.
+\qquad \text{[causal marginal risk identification]}
+$$
+
+Combining the three steps, $\hat\pi_a \overset{p}{\to} \pi_a$.
+
+:::
 
 :::
 
@@ -262,25 +376,164 @@ $$
 
 using the shorthand $\hat\pi_{a,i} = \hat\pi(a, z_i)$ from @def-g-computation,
 where $|S|$ is the number of observations in $S$.
-The choice of $S$ determines which estimand the margin targets:
-
-- Over the **full sample** $S = \{1, \dots, n\}$:
-  $\widehat{\text{PM}}(a) = \frac{1}{n}\sumin \hat\pi_{a,i} = \hat\pi_a$,
-  which estimates the causal marginal risk $\pi_a$ (@def-causal-marginal-risk)
-  under the identification assumptions of @thm-causal-marginal-risk
-  — identical to g-computation (@def-g-computation)
-- Over the **exposed subgroup** $S = \{i : A_i = a\}$:
-  $\widehat{\text{PM}}(a) = \frac{1}{n_a} \sum_{i : A_i = a} \hat\pi_{a,i}$,
-  which estimates the observed marginal risk $\pi(a)$ (@def-observed-marginal-risk)
-  (under correct model specification),
-  where $n_a$ is the number of observations with $A_i = a$.
-
+The choice of the averaging set $S$ determines which estimand the margin targets;
+the two standard choices each have their own name.
 The term "predictive margins" is commonly used in social science
 and in Stata's `margins` command.
 
 :::
 
-The following example applies predictive margins to the same WCGS data.
+{{< slidebreak >}}
+
+:::{#def-full-sample-predictive-margin}
+
+#### Full-sample predictive margin
+
+The **full-sample predictive margin** averages the fitted risks
+over the **whole sample** $S = \{1, \dots, n\}$:
+
+$$
+\widehat{\text{PM}}(a) \eqdef \frac{1}{n}\sumin \hat\pi_{a,i} = \hat\pi_a
+$$
+
+:::
+
+{{< slidebreak >}}
+
+:::{#cor-full-sample-pm}
+
+#### Full-sample predictive margin estimates the causal marginal risk
+
+The full-sample predictive margin is consistent
+for the causal marginal risk $\pi_a$ (@def-causal-marginal-risk):
+
+$$\widehat{\text{PM}}(a) = \hat\pi_a \overset{p}{\to} \pi_a$$
+
+::: {.proof}
+The full-sample predictive margin $\frac{1}{n}\sumin \hat\pi_{a,i}$
+is, term for term, the g-computation estimator $\hat\pi_a$ of @def-g-computation,
+so its consistency for $\pi_a$ is exactly @thm-g-computation-consistency.
+:::
+
+:::
+
+{{< slidebreak >}}
+
+:::{#def-subgroup-predictive-margin}
+
+#### Exposed-subgroup predictive margin
+
+The **exposed-subgroup predictive margin** averages the fitted risks
+only over the observations actually exposed to $A = a$,
+$S = \{i : A_i = a\}$,
+and we give it its own symbol $\hat\pi_a(a)$:
+
+$$
+\hat\pi_a(a) \eqdef \frac{1}{n_a} \sum_{i : A_i = a} \hat\pi_{a,i}
+$$
+
+where $n_a$ is the number of observations with $A_i = a$.
+The subscript records the treatment level the risks are predicted under,
+and the argument records the subgroup averaged over;
+the full-sample margin $\hat\pi_a$ averages over everyone instead.
+
+:::
+
+{{< slidebreak >}}
+
+:::{#thm-subgroup-pm}
+
+#### Exposed-subgroup predictive margin estimates the observed marginal risk
+
+Under correct model specification,
+the exposed-subgroup predictive margin is consistent
+for the observed marginal risk $\pi(a)$ (@def-observed-marginal-risk):
+
+$$\hat\pi_a(a) \overset{p}{\to} \pi(a)$$
+
+::: {.proof}
+
+Split the estimator into the average of the **true** conditional risks
+over the exposed subgroup plus an estimation-error term:
+
+$$
+\ba
+\hat\pi_a(a)
+&= \frac{1}{n_a} \sum_{i : A_i = a} \hat\pi(a, z_i)
+&& \text{[definition of the estimator]}
+\\
+&= \frac{1}{n_a} \sum_{i : A_i = a} \teal{\pi(a, z_i)}
++ \frac{1}{n_a} \sum_{i : A_i = a} \left(\hat\pi(a, z_i) - \teal{\pi(a, z_i)}\right)
+&& \text{[add and subtract the true risks]}
+\ea
+$$
+
+The estimation-error term converges to zero in probability
+under correct model specification.
+The observations with $A_i = a$ are an i.i.d. sample
+from the conditional distribution $f_{Z \mid A}(z \mid a)$,
+so the weak law of large numbers gives
+
+$$
+\frac{1}{n_a} \sum_{i : A_i = a} \teal{\pi(a, z_i)}
+\overset{p}{\to} \E{\teal{\pi(a, Z)} \mid A = a}.
+\qquad \text{[weak law of large numbers]}
+$$
+
+Finally, @thm-observed-marginal-risk identifies this conditional expectation
+with the observed marginal risk:
+
+$$
+\E{\teal{\pi(a, Z)} \mid A = a} = \pi(a).
+\qquad \text{[observed marginal risk]}
+$$
+
+Combining the three steps, $\hat\pi_a(a) \overset{p}{\to} \pi(a)$.
+
+:::
+
+:::
+
+{{< slidebreak >}}
+
+:::{#lem-subgroup-pm-proportion}
+
+#### Exposed-subgroup predictive margin reproduces the observed proportion
+
+If the fitted model includes the exposure $A$ as a categorical covariate,
+the exposed-subgroup predictive margin equals
+the observed event proportion in that subgroup **exactly**,
+in any finite sample:
+
+$$
+\hat\pi_a(a) = \bar Y_a
+\eqdef \frac{1}{n_a} \sum_{i : A_i = a} Y_i
+$$
+
+::: {.proof}
+
+The maximum-likelihood score equations for a logistic GLM
+set $\sum_{i} x_{ij} (Y_i - \hat\mu_i) = 0$ for each covariate column $x_{\cdot j}$,
+where $\hat\mu_i = \hat\pi(A_i, z_i)$ is observation $i$'s fitted risk.
+Because $A$ enters as a categorical covariate,
+the indicator column for level $a$ contributes the score equation
+
+$$
+\sum_{i : A_i = a} (Y_i - \hat\mu_i) = 0,
+\quad\text{i.e.}\quad
+\sum_{i : A_i = a} \hat\mu_i = \sum_{i : A_i = a} Y_i.
+$$
+
+For an observation with $A_i = a$ we have $\hat\mu_i = \hat\pi(a, z_i)$,
+so dividing by $n_a$ gives
+$\hat\pi_a(a) = \frac{1}{n_a}\sum_{i : A_i = a}\hat\pi(a, z_i)
+= \frac{1}{n_a}\sum_{i : A_i = a} Y_i = \bar Y_a$.
+
+:::
+
+:::
+
+The following example applies these predictive margins to the same WCGS data.
 
 {{< slidebreak >}}
 
