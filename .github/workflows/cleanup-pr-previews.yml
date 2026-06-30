@@ -1,7 +1,9 @@
 # Housekeeping half of the PR-preview family, delegated to the reusable
 # workflow in d-morrison/gha. Periodically deletes gh-pages preview directories
-# for PRs that are no longer open. The calling job grants contents: write so the
-# reusable workflow can commit the deletions back to gh-pages.
+# for PRs that are no longer open, and (with compact-history) orphan-squashes
+# gh-pages to a single commit so the deleted snapshots stop bloating the repo.
+# The calling job grants contents: write so the reusable workflow can commit the
+# deletions / force-push the compacted branch back to gh-pages.
 name: Clean up PR Previews
 
 on:
@@ -15,3 +17,5 @@ jobs:
       contents: write
       pull-requests: read
     uses: d-morrison/gha/.github/workflows/cleanup-pr-previews.yml@v2
+    with:
+      compact-history: true
