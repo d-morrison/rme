@@ -47,8 +47,10 @@ locator is Chapter 4, "Generalized Linear Models: Model Fitting and
 Inference". Section 4.2, "Likelihood and Asymptotic Distributions for GLMs"
 (p. 123), derives the ML estimating equations and the large-sample normal
 distribution of the GLM MLE — the source for the consistency /
-asymptotic-normality claim. Verified against the published table of
-contents (Wiley / O'Reilly). -->
+asymptotic-normality claim. Verified against the publisher's online table
+of contents (auditable, not self-asserted):
+https://www.oreilly.com/library/view/foundations-of-linear/9781118730058/c04.xhtml
+lists Chapter 4 as this title and its Section 4.2 as above. -->
 
 ::: {.proof}
 
@@ -69,14 +71,32 @@ $$
 
 The estimation-error term converges to zero in probability.
 By hypothesis the fitted coefficients are consistent,
-$\hat\beta \overset{p}{\to} \beta^*$;
-combined with the boundedness hypothesis $\|x_{a,i}\| \le B$
-and the logistic link's derivative bound of $\tfrac{1}{4}$, this gives
+$\hat\beta \overset{p}{\to} \beta^*$.
+Write the fitted and true risks as the logistic link of the linear predictor,
+$\hat\pi(a, z_i) = \expitf{x_{a,i}'\hat\beta}$
+and $\teal{\pi(a, z_i)} = \expitf{x_{a,i}'\beta^*}$,
+and recall that $\expit$ is Lipschitz with constant $\tfrac{1}{4}$
+(its derivative $\expitf{u}\,(1 - \expitf{u})$ is at most $\tfrac{1}{4}$).
+Then
 
 $$
+\ba
 \left|\hat\pi(a, z_i) - \teal{\pi(a, z_i)}\right|
-\le \tfrac{1}{4}\|x_{a,i}\|\,\|\hat\beta - \beta^*\|
-\le \tfrac{B}{4}\,\|\hat\beta - \beta^*\|
+&= \left|\expitf{x_{a,i}'\hat\beta} - \expitf{x_{a,i}'\beta^*}\right|
+&& \text{[risk as logistic link of the linear predictor]}
+\\
+&\le \tfrac{1}{4}\left|x_{a,i}'\hat\beta - x_{a,i}'\beta^*\right|
+&& \text{[$\expit$ is $\tfrac{1}{4}$-Lipschitz, by the mean value theorem]}
+\\
+&= \tfrac{1}{4}\left|x_{a,i}'(\hat\beta - \beta^*)\right|
+&& \text{[factor out $x_{a,i}'$]}
+\\
+&\le \tfrac{1}{4}\,\|x_{a,i}\|\,\|\hat\beta - \beta^*\|
+&& \text{[Cauchy–Schwarz]}
+\\
+&\le \tfrac{B}{4}\,\|\hat\beta - \beta^*\|
+&& \text{[boundedness hypothesis $\|x_{a,i}\| \le B$]}
+\ea
 $$
 
 uniformly in $i$, giving
