@@ -1,27 +1,25 @@
 #!/usr/bin/env python3
-"""Guard the website render list against the revealjs/HTML output-file collision.
+"""Guard the website render list against output-file collisions.
 
 Every page in the ``render:`` list of ``_quarto-website.yml`` is rendered to the
-project's formats. The ``html`` format writes ``<stem>.html`` and the
-``revealjs`` format defaults its output to the *same* ``<stem>.html``. When a
-page is rendered to both without giving revealjs a distinct ``output-file``,
-Quarto's project move fails with
+project's formats. Each format writes an output file: ``html`` and ``revealjs``
+both default to ``<stem>.html``, ``pdf`` to ``<stem>.pdf``, ``docx`` to
+``<stem>.docx``. When two of a page's rendered formats resolve to the *same*
+output path, Quarto's project move fails with
 
     rename '.../<stem>.html' -> '_site/.../<stem>.html': No such file
 
 and the publish workflow dies (see issue #966 / PR #967). ``publish.yml`` only
-runs on push to ``main``, so a header-less page sails through PR CI and breaks
-the site after merge -- this check catches it on the PR instead.
+runs on push to ``main``, so a colliding page sails through PR CI and breaks the
+site after merge -- this check catches it on the PR instead.
 
-A render-list page is collision-safe when it does **not** render both ``html``
-and ``revealjs`` with a bare revealjs output. Concretely, a page is flagged when:
+The classic trigger is a page with no ``format:`` block: it inherits the project
+formats (which pair ``html`` with a bare ``revealjs``, both writing
+``<stem>.html``). But any page whose rendered formats resolve two identical
+output paths is flagged -- e.g. a hand-edited header that sets
+``revealjs: output-file: <stem>.html``, reusing the html default.
 
-* it declares no ``format:`` block -- it inherits the project formats (which
-  include both ``html`` and ``revealjs``), so revealjs collides; or
-* its effective formats include both ``html`` and ``revealjs`` and that
-  revealjs entry carries no ``output-file``.
-
-Exit status is 1 (with a per-file report) if any page is unsafe, 0 otherwise.
+Exit status is 1 (with a per-file report) if any page collides, 0 otherwise.
 """
 
 from __future__ import annotations
@@ -32,6 +30,18 @@ from pathlib import Path
 import yaml
 
 WEBSITE_CONFIG = "_quarto-website.yml"
+
+# Default output extension per Quarto format. revealjs shares html's `.html`,
+# which is the collision at the heart of #966. Formats not listed fall back to
+# the format name, which cannot spuriously collide with these.
+DEFAULT_EXT = {
+    "html": "html",
+    "revealjs": "html",
+    "pdf": "pdf",
+    "docx": "docx",
+    "gfm": "md",
+    "ipynb": "ipynb",
+}
 
 
 def load_yaml(path: Path) -> dict:
@@ -61,36 +71,48 @@ def format_keys(format_block) -> list[str]:
     return []
 
 
-def revealjs_has_output_file(format_block) -> bool:
-    """True when the `revealjs` entry in a format block sets `output-file`."""
-    if not isinstance(format_block, dict):
-        return False
-    revealjs = format_block.get("revealjs")
-    return isinstance(revealjs, dict) and "output-file" in revealjs
+def format_output_file(stem: str, fmt: str, doc_format, project_format) -> str:
+    """Resolve the output filename a format writes for a page.
+
+    A document-level `output-file` wins over a project-level one; absent both,
+    the format writes `<stem>.<default-ext>`.
+    """
+    for source in (doc_format, project_format):
+        if isinstance(source, dict):
+            entry = source.get(fmt)
+            if isinstance(entry, dict) and entry.get("output-file"):
+                return str(entry["output-file"])
+    return f"{stem}.{DEFAULT_EXT.get(fmt, fmt)}"
 
 
 def collision_reason(qmd_path: Path, project_format) -> str | None:
-    """Return why a render-list page would collide, or None if it is safe."""
+    """Return why a render-list page's outputs collide, or None if it is safe."""
     doc_format = front_matter(qmd_path).get("format")
 
-    # No document-level `format:` block -> the page inherits the project
-    # formats, which pair html with a bare revealjs.
-    if doc_format is None:
-        if {"html", "revealjs"} <= set(format_keys(project_format)):
-            return "no `format:` block, so it inherits the project's html+revealjs (revealjs writes <stem>.html)"
+    # A document-level `format:` block restricts the page to exactly those
+    # formats; without one, the page inherits the project's formats.
+    rendered = format_keys(doc_format if doc_format is not None else project_format)
+    stem = qmd_path.stem
+
+    outputs: dict[str, list[str]] = {}
+    for fmt in rendered:
+        out = format_output_file(stem, fmt, doc_format, project_format)
+        outputs.setdefault(out, []).append(fmt)
+
+    collisions = {out: fmts for out, fmts in outputs.items() if len(fmts) > 1}
+    if not collisions:
         return None
 
-    # Document declares its own formats -> it renders exactly those.
-    keys = set(format_keys(doc_format))
-    if {"html", "revealjs"} <= keys and not revealjs_has_output_file(doc_format):
-        return "renders both html and revealjs but revealjs has no `output-file`"
-    return None
+    inherited = "" if doc_format is not None else " (no `format:` block; inherits project formats)"
+    detail = "; ".join(
+        f"{out} <- {', '.join(sorted(fmts))}" for out, fmts in sorted(collisions.items())
+    )
+    return f"formats write the same output file{inherited}: {detail}"
 
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
-    config_path = repo_root / WEBSITE_CONFIG
-    config = load_yaml(config_path)
+    config = load_yaml(repo_root / WEBSITE_CONFIG)
 
     project_format = config.get("format", {})
     render_list = config.get("project", {}).get("render", []) or []
@@ -107,18 +129,18 @@ def main() -> int:
             offenders.append((entry, reason))
 
     if offenders:
-        print("Render-list pages with an unsafe (colliding) format header:\n")
+        print("Render-list pages whose rendered formats collide on an output file:\n")
         for entry, reason in offenders:
             print(f"  - {entry}: {reason}")
         print(
-            "\nGive each flagged page a `format:` block whose `revealjs` entry sets a "
-            "distinct `output-file` (e.g. `<slug>-slides.html`), mirroring the sibling "
-            "appendices, or restrict it to `format: {html: default}` if it is HTML-only. "
-            "See issue #966 / PR #967."
+            "\nGive each rendered format a distinct output path -- typically a `format:` "
+            "block whose `revealjs` entry sets `output-file: <slug>-slides.html` "
+            "(mirroring the sibling appendices), or restrict the page to "
+            "`format: {html: default}` if it is HTML-only. See issue #966 / PR #967."
         )
         return 1
 
-    print(f"OK: all {len(qmd_entries)} website render-list pages have collision-safe format headers.")
+    print(f"OK: all {len(qmd_entries)} website render-list pages resolve distinct output files per format.")
     return 0
 
 
