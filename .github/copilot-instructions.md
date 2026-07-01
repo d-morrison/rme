@@ -476,6 +476,16 @@ A measure is *collapsible* if ...
 :::
 ```
 
+### Exception: section heading immediately before the div
+
+When a section heading immediately precedes the div
+(or the `{{< include >}}` of a subfile that begins with one),
+the `{{< slidebreak >}}` may be omitted
+so the heading shares its slide with the div,
+rather than producing a title-only slide.
+Mark the intentional omission with an inline
+`<!-- ... do not re-flag -->` comment at that spot.
+
 ## Example Formatting
 
 All worked examples in `.qmd` files must be wrapped in a Quarto `#exm-` div.
