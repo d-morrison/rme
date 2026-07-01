@@ -1,0 +1,84 @@
+Note that these risk differences and risk ratios are **conditional** on the covariate value $z$.
+In many applications,
+we want to summarize the effect across the population,
+which requires computing a **marginal** risk difference or risk ratio.
+
+{{< slidebreak >}}
+
+:::{#def-observed-marginal-risk}
+
+#### Observed marginal risk
+
+The **observed marginal risk** under exposure level $A = a$ is:
+
+$$\pi(a) \eqdef \Pr(Y = 1 \mid A = a)$$
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-observed-marginal-risk-direct}
+
+#### Illustration: observed marginal risk
+
+If 20% of the exposed group ($A = 1$) experience the outcome,
+the observed marginal risk is $\pi(1) = \Pr(Y = 1 \mid A = 1) = 0.20$ —
+simply the event proportion within that exposure group.
+
+:::
+
+This definition collapses the outcome over everything else in one step.
+When the model also conditions on covariates $Z$,
+we can unpack $\pi(a)$ as the covariate-specific risk $\pi(a, z)$
+averaged over the distribution of $Z$ among those with $A = a$:
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_thm-observed-marginal-risk.qmd >}}
+
+{{< slidebreak >}}
+
+:::{#exm-observed-marginal-risk}
+
+#### Observed marginal risk by standardization
+
+Suppose a binary covariate $Z$ and, under exposure $A = 1$,
+covariate-specific risks $\pi(1, 0) = 0.1$ and $\pi(1, 1) = 0.3$.
+If half of the exposed have $Z = 1$
+(so $\Pr(Z = 1 \mid A = 1) = 0.5$),
+then @thm-observed-marginal-risk gives:
+
+$$
+\ba
+\pi(1)
+&= \E{\pi(1, Z) \mid A = 1}
+&& \text{[observed marginal risk theorem]}
+\\
+&= (0.5)(0.1) + (0.5)(0.3)
+&& \text{[substitute stratum risks and weights]}
+\\
+&= 0.2
+&& \text{[arithmetic]}
+\ea
+$$
+
+:::
+
+In causal inference,
+[potential outcomes](causal-inference.qmd#def-potential-outcomes) $Y^a$
+represent the outcome each unit would have under exposure level $a$.
+Population-level causal estimands summarize these potential outcomes:
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_sec-causal-marginal-risk.qmd >}}
+
+Two related procedures estimate these marginal risks from a fitted regression model:
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_sec-predictive-margins.qmd >}}
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_sec-marginal-risk-differences.qmd >}}

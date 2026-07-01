@@ -266,6 +266,21 @@ Do not use generic acknowledgements without locators
 or plaintext author-title references
 when a BibTeX citation is available.
 
+## Observational vs Causal Estimands
+
+Always distinguish observational estimands
+from causal estimands in notation and prose.
+
+- Use observational notation
+  (for example, standardized risks based on `\E{Y \mid A=a, Z=z}`)
+  when discussing model-based associations.
+- Use potential-outcome notation
+  (for example, `\Pr(Y^a = 1)`)
+  only when making a causal claim.
+- If observational and causal estimands are equated,
+  explicitly state identification assumptions
+  (consistency, exchangeability, and positivity).
+
 ## Variable Definitions in Exercises
 
 When introducing model variables in exercises,
@@ -382,6 +397,123 @@ When introducing or editing formal statistical definitions in `.qmd` files:
   (for example, empirical CDF),
   ensure those terms also have formal `#def-` div definitions
   in the relevant scope before relying on them
+
+## Slidebreaks Before Theorem-Type Divs
+
+Always add `{{< slidebreak >}}` on a blank line immediately before
+every theorem-type div opener.
+This ensures slide-format output stays readable.
+
+Theorem-type div types (per [Quarto cross-reference docs](https://quarto.org/docs/authoring/cross-references.html#theorems-and-proofs)):
+`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`
+
+### Slidebreaks in including vs. included files
+
+When a subfile's **first** content is a theorem-type div,
+place the `{{< slidebreak >}}` in the **including** (parent) file,
+immediately before the `{{< include >}}` shortcode —
+**not** at the start of the included subfile itself.
+
+**Correct** — slidebreak in the including file:
+```qmd
+<!-- in the parent file -->
+{{< slidebreak >}}
+
+{{< include _subfiles/chapter/_exm-my-example.qmd >}}
+```
+
+```qmd
+<!-- in _exm-my-example.qmd — no leading slidebreak -->
+:::{#exm-my-example}
+
+#### My example title
+
+Content...
+
+:::
+```
+
+**Incorrect** — slidebreak inside the included file:
+```qmd
+<!-- in the parent file — no slidebreak -->
+{{< include _subfiles/chapter/_exm-my-example.qmd >}}
+```
+
+```qmd
+<!-- in _exm-my-example.qmd — do NOT put slidebreak here -->
+{{< slidebreak >}}
+
+:::{#exm-my-example}
+
+#### My example title
+
+Content...
+
+:::
+```
+
+**Correct** example (non-leading slidebreak, same file):
+```qmd
+{{< slidebreak >}}
+
+:::{#def-collapsibility}
+
+#### Collapsibility
+
+A measure is *collapsible* if ...
+
+:::
+```
+
+**Incorrect** (missing slidebreak):
+```qmd
+:::{#def-collapsibility}
+
+#### Collapsibility
+
+A measure is *collapsible* if ...
+
+:::
+```
+
+### Exception: section heading immediately before the div
+
+When a section heading immediately precedes the div
+(or the `{{< include >}}` of a subfile that begins with one),
+the `{{< slidebreak >}}` may be omitted
+so the heading shares its slide with the div,
+rather than producing a title-only slide.
+Mark the intentional omission with an inline
+`<!-- ... do not re-flag -->` comment at that spot.
+
+## Example Formatting
+
+All worked examples in `.qmd` files must be wrapped in a Quarto `#exm-` div.
+Never leave a named example as a plain markdown section.
+
+**Correct:**
+```qmd
+:::{#exm-wcgs-marginal-rd}
+
+##### Example: Marginal risk difference
+
+Content of the example...
+
+:::
+```
+
+**Incorrect:**
+```qmd
+##### Example: Marginal risk difference
+
+Content of the example...
+```
+
+- Use an id beginning `#exm-` (for example, `#exm-wcgs-marginal-rd`)
+- Put the example title in a heading inside the div,
+  at the heading level matching the surrounding section depth
+- All content for the example (setup, computation, interpretation)
+  should live inside the div
 
 ## Div Titles vs. Markdown Headings
 
@@ -830,6 +962,7 @@ Content here.
 
 More content.
 ```
+When a subfile begins with a theorem-type div (`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`), place the preceding `{{< slidebreak >}}` in the **parent** file (before the `{{< include >}}`), not inside the subfile. The subfile itself should not start with `{{< slidebreak >}}`.
 
 ## Computer Algebra Systems (CAS)
 

@@ -1,0 +1,68 @@
+:::{#exm-collapsibility}
+
+#### Collapsibility: numerical illustration
+
+Consider a hypothetical scenario with two strata
+($Z = 0$: low-risk, $Z = 1$: high-risk).
+We make two simplifying assumptions:
+
+1. **Covariate balance** ($A \perp Z$):
+   exposure is independent of the covariate,
+   so $f_{Z \mid A}(z \mid a) = f_Z(z)$ for all $a$ and $z$.
+2. **Equal stratum sizes** ($f_Z(0) = f_Z(1) = \tfrac{1}{2}$):
+   both strata have the same marginal probability.
+
+Together, these imply
+$f_{Z \mid A}(z \mid a) = \tfrac{1}{2}$ for all $a$ and $z$,
+so the simple (equal-weight) average of stratum-specific effects
+equals both the observed marginal risk $\pi(a)$ and the causal marginal risk $\pi_a$:
+
+```{r}
+#| label: collapsibility-example
+#| code-fold: true
+
+strata <- tibble::tibble(
+  stratum = c("Z = 0 (low risk)", "Z = 1 (high risk)"),
+  pi_0    = c(0.05, 0.30),
+  pi_1    = c(0.10, 0.50)
+) |>
+  dplyr::mutate(
+    RD = pi_1 - pi_0,
+    RR = pi_1 / pi_0,
+    OR = (pi_1 / (1 - pi_1)) / (pi_0 / (1 - pi_0))
+  )
+
+pi1_marg <- mean(strata$pi_1)
+pi0_marg <- mean(strata$pi_0)
+
+tibble::tibble(
+  Measure = c("Risk difference", "Risk ratio", "Odds ratio"),
+  Marginal = c(
+    pi1_marg - pi0_marg,
+    pi1_marg / pi0_marg,
+    (pi1_marg / (1 - pi1_marg)) / (pi0_marg / (1 - pi0_marg))
+  ),
+  `Avg. conditional` = c(
+    mean(strata$RD), mean(strata$RR), mean(strata$OR)
+  ),
+  `Marginal = avg. conditional?` = c("Yes", "No", "No")
+) |>
+  knitr::kable(digits = 3)
+```
+
+Even with covariate balance ($A \perp Z$), the marginal RR and marginal OR both differ from
+the average of their conditional counterparts,
+while the marginal RD equals the average conditional RD exactly.
+
+Non-collapsibility is distinct from effect-measure modification.
+Here the stratum-specific effects also vary across strata
+(risk ratios $2.00$ vs. $1.67$, odds ratios $2.11$ vs. $2.33$),
+but that variation is not what drives the discrepancy:
+even if the conditional odds ratio were held *constant* across strata,
+the marginal odds ratio would generally still differ from it
+(and lie closer to the null) [@hernan2020causal],
+whereas a constant conditional risk difference
+always reproduces the marginal risk difference.
+
+:::
+

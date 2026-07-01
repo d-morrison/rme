@@ -1,15 +1,64 @@
-
 If you want to report risk differences or risk ratios instead of odds ratios,
 you can obtain estimates from logistic regression models,
 as long as you didn't stratify sampling by the outcome;
 in other words, not in case-control studies
 (see @sec-CC-studies).
 
-To compute risk ratios from logistic regression models:
+### Computing marginal risk differences
 
-- Apply the expit function to the linear predictor for each covariate pattern
-to compute the (estimated) risks,
+::: {.callout-note}
+This section is **optional for 2026** and will not be tested on exams.
+:::
+
+#### Conceptual approach
+
+To compute risk ratios or risk differences from logistic regression models:
+
+- Apply the expit function (@def-expit)
+  to the linear predictor
+  for each covariate pattern
+  to compute the (estimated) risks,
 - Then take the differences or ratios of the risks, as needed.
+
+For example,
+suppose we have a logistic regression model
+with a binary exposure $A$ and a covariate $Z$:
+
+$$
+\logit\{\Pr(Y = 1 | A, Z)\} = \b_0 + \b_A A + \b_Z Z
+$$
+
+The predicted risk for an individual with exposure $A = a$ and covariate $Z = z$ is:
+
+$$
+\hat\pi(a, z) = \expit(\hb_0 + \hb_A a + \hb_Z z)
+$$
+
+The **risk difference** comparing exposure levels $a = 1$ vs. $a = 0$
+at a fixed covariate value $z$ is:
+
+$$
+\widehat{\text{RD}}(z) = \hat\pi(1, z) - \hat\pi(0, z)
+$$
+
+The **risk ratio** comparing exposure levels $a = 1$ vs. $a = 0$
+at a fixed covariate value $z$ is:
+
+$$
+\widehat{\text{RR}}(z) = \frac{\hat\pi(1, z)}{\hat\pi(0, z)}
+$$
+
+#### Marginal vs. conditional effects
+
+{{< include _subfiles/logistic-regression/_sec-marginal-vs-conditional.qmd >}}
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_exm-marginal-rd.qmd >}}
+
+{{< slidebreak >}}
+
+#### Standard errors and confidence intervals
 
 To quantify uncertainty for risk difference or risk ratio estimates
 derived from logistic regression models
@@ -19,126 +68,27 @@ bootstrap,
 the multivariate delta method,
 or some other special technique.
 
-::: notes
-Adapted from
-[@vittinghoff2e, Section 3.6, p. 62],
-[@hastie2009esl2e, Section 7.11, p. 249],
-and
-[@james2021islr2e, Chapter 5, Section 5.2, p. 209].
-:::
+The **bootstrap** is generally the most straightforward approach
+and does not require deriving complex formulas.
 
-#### Bootstrap workflow for derived risk measures
+{{< slidebreak >}}
 
-When using nonparametric bootstrap inference
-for a derived quantity
-like a marginal risk difference or risk ratio:
+### Bootstrap inference
 
-1. Fit the logistic model on the observed data.
-2. Compute the target estimand
-   (for example, a g-computation risk difference or risk ratio).
-3. Repeat for
-   $b = 1, \ldots, B$:
-   draw a bootstrap sample of size $n$
-   with replacement,
-   refit the model,
-   and recompute the target estimand.
-4. Use the empirical standard deviation of the
-   $B$ bootstrap estimates
-   as the bootstrap standard error.
-5. Build a confidence interval from the bootstrap distribution
-   (percentile or BCa intervals are common when the bootstrap distribution is skewed).
+{{< include _subfiles/logistic-regression/_sec-bootstrap-inference.qmd >}}
 
-In practice,
-larger $B$ is usually needed for interval estimation than for standard errors;
-for percentile or BCa intervals,
-it is common to use at least 1,000 resamples,
-and often 2,000 or more for stability.
+{{< slidebreak >}}
 
-::: {#exm-wcgs-bootstrap-rd}
+### Computing marginal risk ratios
 
-#### Bootstrap CI for marginal risk difference and risk ratio (WCGS)
+{{< include _subfiles/logistic-regression/_sec-marginal-rr.qmd >}}
 
-We estimate the marginal risk difference and risk ratio
-comparing Type A vs. Type B personality patterns in the WCGS study,
-using g-computation to derive the estimands
-and the nonparametric bootstrap to quantify uncertainty.
+{{< slidebreak >}}
 
-**Steps 1–2: Point estimates via g-computation**
+### Notes and caveats
 
-```{r}
-#| label: exm-boot-gcomp-point
-#| code-fold: true
-# Fit logistic model: CHD ~ behavioral pattern + age
-fit_wcgs <- glm(
-  chd69 ~ dibpat + age,
-  family = binomial,
-  data = wcgs
-)
-
-# G-computation: set everyone to Type A, then to Type B,
-# and average the predicted risks
-dibpat_levels <- levels(wcgs$dibpat)
-
-newdata_A <- wcgs |> mutate(dibpat = factor("Type A", levels = dibpat_levels))
-newdata_B <- wcgs |> mutate(dibpat = factor("Type B", levels = dibpat_levels))
-
-risk_A <- mean(predict(fit_wcgs, newdata = newdata_A, type = "response"))
-risk_B <- mean(predict(fit_wcgs, newdata = newdata_B, type = "response"))
-
-tibble::tibble(
-  measure   = c(
-    "Risk (Type A)", "Risk (Type B)",
-    "Risk difference", "Risk ratio"
-  ),
-  estimate  = c(risk_A, risk_B, risk_A - risk_B, risk_A / risk_B)
-)
-```
-
-**Steps 3–5: Bootstrap SE and BCa CIs**
-
-```{r}
-#| label: exm-boot-gcomp-ci
-#| code-fold: true
-library(boot)
-library(dplyr)
-
-boot_gcomp <- function(data, indices) {
-  d <- data[indices, ]
-  fit <- glm(chd69 ~ dibpat + age, family = binomial, data = d)
-  lev <- levels(d$dibpat)
-  risk_A <- mean(
-    predict(fit, newdata = mutate(d, dibpat = factor("Type A", levels = lev)),
-            type = "response")
-  )
-  risk_B <- mean(
-    predict(fit, newdata = mutate(d, dibpat = factor("Type B", levels = lev)),
-            type = "response")
-  )
-  c(RD = risk_A - risk_B, RR = risk_A / risk_B)
-}
-
-set.seed(42)
-boot_wcgs <- boot(data = wcgs, statistic = boot_gcomp, R = 1000)
-
-boot_wcgs
-```
-
-```{r}
-#| label: exm-boot-gcomp-ci-rd
-#| code-fold: true
-# BCa CI for risk difference (index = 1)
-boot.ci(boot_wcgs, type = "bca", index = 1)
-```
-
-```{r}
-#| label: exm-boot-gcomp-ci-rr
-#| code-fold: true
-# BCa CI for risk ratio (index = 2)
-boot.ci(boot_wcgs, type = "bca", index = 2)
-```
-
-The bootstrap standard errors and BCa intervals
-provide valid inference for both the risk difference and risk ratio
-without requiring any closed-form delta-method derivation.
-
-:::
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the include. The slidebreak above already opens a fresh slide; the
+heading and the first div (#def-collapsibility) intentionally share that slide
+to avoid a title-only slide. -->
+{{< include _subfiles/logistic-regression/_sec-marginal-notes.qmd >}}

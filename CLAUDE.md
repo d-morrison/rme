@@ -45,6 +45,9 @@ Before committing any `.qmd`, `.R`, or config file change:
 
 ### Quarto
 - Use `{{< slidebreak >}}` instead of `---` for slide breaks
+- Add `{{< slidebreak >}}` immediately before every theorem-type div (`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`)
+- When a subfile begins with a theorem-type div, put the preceding `{{< slidebreak >}}` in the **parent** file (before the `{{< include >}}`), not inside the subfile
+  - Exception: when a section heading immediately precedes the div (or the `{{< include >}}` of a subfile that begins with one), the slidebreak may be omitted so the heading shares its slide with the div, rather than producing a title-only slide. Mark the intentional omission with an inline `<!-- ... do not re-flag -->` comment at that spot.
 - Default to `#| code-fold: true` for figure/table chunks
 - Use div format (`:::{#fig-...}`) for figures and tables, not chunk-option `fig-cap`/`tbl-cap`
 - Do not indent `:::` fenced div markers inside lists
@@ -59,7 +62,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
 - Include every intermediate step in derivations — do not skip steps
-- Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
+- Color coding: `\red{...}` for focal/extra terms, `\teal{...}` for shared terms (use `\teal`, not `\blue` — `\teal` reads better in dark mode)
 - **Matrix dimensions**: always verify dimension compatibility for every matrix expression -- dimensions of each operand must be consistent with the operation
 - **Annotate matrix dimensions with underbraces** in display math: use `\underbrace{M}_{m \times n}` for each matrix or vector
 - **Zero matrices**: never write bare `\mathbf{0}` in a matrix equation -- subscript dimensions: `\mathbf{0}_{m \times n}`

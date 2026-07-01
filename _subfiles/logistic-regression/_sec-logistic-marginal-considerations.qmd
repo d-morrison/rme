@@ -1,0 +1,77 @@
+**Important considerations when computing marginal effects:**
+
+1. **Target population**:
+   The marginal effect is specific to the covariate distribution
+   in your sample.
+   If your sample is not representative of your target population,
+   you may want to use standardization or weighting.
+
+2. **Collapsibility** (see @def-collapsibility):
+   the derivations below re-derive @thm-collapsibility concretely
+   for the risk-difference and risk-ratio/odds-ratio cases.
+   Risk differences are **collapsible**:
+   the causal marginal RD ($\pi_1 - \pi_0$) equals the average
+   of stratum-specific causal RDs ($\pi(1,z) - \pi(0,z)$)
+   weighted by the marginal distribution $f_Z$,
+
+   $$
+   \ba
+   \pi_1 - \pi_0
+   &= \E{\pi(1, Z)} - \E{\pi(0, Z)}
+   && \text{[causal marginal risk theorem]}
+   \\
+   &= \E{\pi(1, Z) - \pi(0, Z)}
+   && \text{[linearity of expectation]}
+   \\
+   &= \E{\text{RD}(Z)},
+   && \text{[definition of conditional risk difference]}
+   \ea
+   $$
+
+   so there is no collapsibility bias from averaging over a covariate $Z$.
+   Risk ratios are **not** collapsible in general:
+   the marginal RR does not equal the marginal-distribution-weighted average
+   of conditional RRs, $\E{\text{RR}(Z)}$,
+   because a ratio of expectations is not the same as an expectation of ratios:
+
+   $$
+   \ba
+   \frac{\pi_1}{\pi_0}
+   &= \frac{\E{\pi(1, Z)}}{\E{\pi(0, Z)}}
+   && \text{[causal marginal risk theorem]}
+   \\
+   &\neq \E{\frac{\pi(1, Z)}{\pi(0, Z)}}
+   && \text{[ratio of expectations, not expectation of ratios]}
+   \\
+   &= \E{\text{RR}(Z)}.
+   && \text{[definition of conditional risk ratio]}
+   \ea
+   $$
+
+   Odds ratios are non-collapsible in an even stronger sense:
+   even when the conditional OR is the same in every stratum,
+   the marginal OR is generally different from it (closer to the null)
+   [@hernan2020causal],
+   whereas a constant conditional RD always reproduces the marginal RD exactly
+   (the marginal RD is the average $\E{\text{RD}(Z)}$ of the stratum-specific RDs
+   by @thm-collapsibility, and the average of a constant is that constant).
+
+3. **Bootstrap sample size**:
+   Use at least 1000 bootstrap iterations for standard errors,
+   and at least 2000 for confidence intervals.
+   More iterations provide more stable estimates
+   but take longer to compute.
+
+4. **Alternative methods**:
+   The multivariate delta method can also be used
+   to compute standard errors analytically,
+   but the formulas are complex.
+   The [`margins`](https://cran.r-project.org/package=margins) package in R
+   provides implementations of the delta method
+   for marginal effects.
+
+5. **Case-control studies**:
+   These methods are **not valid** for case-control studies,
+   where sampling is stratified by outcome.
+   In case-control designs,
+   only odds ratios can be estimated consistently.

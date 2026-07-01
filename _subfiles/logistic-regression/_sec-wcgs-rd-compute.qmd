@@ -1,0 +1,82 @@
+We define helper functions for g-computation —
+these are reused in the bootstrap loop below —
+and extract the point estimate already computed in @exm-marginal-rd above
+for the contrast comparing Type A to Type B behavioral patterns:
+
+```{r}
+#| label: compute-marginal-rd
+#| code-fold: true
+
+make_counterfactual_datasets <- function(data,
+                                         exposure_var,
+                                         exposed_level,
+                                         unexposed_level) {
+  if (!is.factor(data[[exposure_var]])) {
+    stop("The exposure variable must be a factor.")
+  }
+  exposure_levels <- levels(data[[exposure_var]])
+  if (!all(c(exposed_level, unexposed_level) %in% exposure_levels)) {
+    stop(
+      sprintf(
+        paste0(
+          "Specified exposure levels '%s' and '%s' ",
+          "are not in factor levels: %s"
+        ),
+        exposed_level,
+        unexposed_level,
+        paste(exposure_levels, collapse = ", ")
+      )
+    )
+  }
+
+  data_exposed <- data
+  data_exposed[[exposure_var]] <- factor(
+    rep(exposed_level, nrow(data_exposed)),
+    levels = exposure_levels
+  )
+
+  data_unexposed <- data
+  data_unexposed[[exposure_var]] <- factor(
+    rep(unexposed_level, nrow(data_unexposed)),
+    levels = exposure_levels
+  )
+
+  list(
+    data_exposed = data_exposed,
+    data_unexposed = data_unexposed
+  )
+}
+
+compute_marginal_rd <- function(model,
+                                data,
+                                exposure_var,
+                                exposed_level,
+                                unexposed_level) {
+  counterfactual_data <- make_counterfactual_datasets(
+    data = data,
+    exposure_var = exposure_var,
+    exposed_level = exposed_level,
+    unexposed_level = unexposed_level
+  )
+  data_exposed <- counterfactual_data$data_exposed
+  data_unexposed <- counterfactual_data$data_unexposed
+
+  risk_exposed <- predict(
+    model,
+    newdata = data_exposed,
+    type = "response"
+  )
+
+  risk_unexposed <- predict(
+    model,
+    newdata = data_unexposed,
+    type = "response"
+  )
+
+  mean(risk_exposed) - mean(risk_unexposed)
+}
+
+# rd_hat is defined in _exm-marginal-rd.qmd (chunk wcgs-causal-marginal-rd);
+# alias it here so both computation paths stay in sync
+marginal_rd_est <- rd_hat
+```
