@@ -33,12 +33,11 @@ hers <-
       relevel(ref = "no")
   )
 
-# Snapshot the factor-coded `hers` for the diagnostics sections, which render
-# after `_sec_linreg_ordinal.qmd` reassigns `hers` to a label-stripped copy.
+# Snapshot the factor-coded `hers` so the diagnostics sections below use
+# exactly the data the models were fit on, regardless of any later
+# reassignment of `hers`.
 hers_lm_data <- hers
 ```
-
-::::: {.panel-tabset}
 
 #### Data as table
 
@@ -53,6 +52,8 @@ hers |> head()
 
 :::
 
+{{< slidebreak >}}
+
 #### Data as graph
 
 :::{#fig-hers-scatter}
@@ -61,31 +62,59 @@ hers |> head()
 #| code-fold: true
 hers_scatter_data <- hers |>
   dplyr::filter(!is.na(age), !is.na(BMI), !is.na(LDL), !is.na(statins))
-plotly::plot_ly(
-  x = hers_scatter_data[["age"]],
-  y = hers_scatter_data[["BMI"]],
-  z = hers_scatter_data[["LDL"]],
-  color = as.character(hers_scatter_data[["statins"]]),
-  colors = c("no" = "steelblue", "yes" = "darkorange"),
-  type = "scatter3d",
-  mode = "markers",
-  marker = list(size = 3, opacity = 0.5)
-) |>
+hers_scatter_no <- hers_scatter_data |> dplyr::filter(statins == "no")
+hers_scatter_yes <- hers_scatter_data |> dplyr::filter(statins == "yes")
+
+hers_scatter_axes <- list(
+  xaxis = list(title = "Age (yr)"),
+  yaxis = list(title = "BMI (kg/m²)"),
+  zaxis = list(title = "LDL (mg/dL)")
+)
+
+plotly::plot_ly() |>
+  plotly::add_trace(
+    data = hers_scatter_no,
+    x = ~age, y = ~BMI, z = ~LDL,
+    type = "scatter3d", mode = "markers",
+    name = "No statins", scene = "scene",
+    marker = list(size = 3, opacity = 0.5, color = "steelblue")
+  ) |>
+  plotly::add_trace(
+    data = hers_scatter_yes,
+    x = ~age, y = ~BMI, z = ~LDL,
+    type = "scatter3d", mode = "markers",
+    name = "Yes statins", scene = "scene2",
+    marker = list(size = 3, opacity = 0.5, color = "darkorange")
+  ) |>
   plotly::layout(
-    scene = list(
-      xaxis = list(title = "Age (yr)"),
-      yaxis = list(title = "BMI (kg/m²)"),
-      zaxis = list(title = "LDL (mg/dL)")
+    annotations = list(
+      list(
+        text = "No statins", x = 0.22, y = 0.95,
+        xref = "paper", yref = "paper", showarrow = FALSE
+      ),
+      list(
+        text = "Yes statins", x = 0.78, y = 0.95,
+        xref = "paper", yref = "paper", showarrow = FALSE
+      )
     ),
-    legend = list(title = list(text = "Statins"))
+    scene = c(
+      hers_scatter_axes,
+      list(domain = list(x = c(0, 0.48), y = c(0, 1)))
+    ),
+    scene2 = c(
+      hers_scatter_axes,
+      list(domain = list(x = c(0.52, 1), y = c(0, 1)))
+    )
   )
 ```
 
 `hers` data (@vittinghoff2e):
 age (years) and BMI (kg/m²) vs. baseline LDL (mg/dL),
-colored by statin use.
+split by statin use (left: no statins; right: statins).
 
 :::
+
+{{< slidebreak >}}
 
 #### Key variables
 
@@ -117,8 +146,6 @@ Key variables in `hers` data: outcome (LDL),
 treatment (HT), and covariates (BMI, statins, age)
 
 :::
-
-:::::
 
 {{< slidebreak >}}
 
