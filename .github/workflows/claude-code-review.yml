@@ -44,3 +44,24 @@ jobs:
       # can read macros the chapters reference instead of reporting them as
       # "not initialized" (see PR #806).
       checkout-submodules: true
+      # Flag PR-diff LaTeX simplifiable via an existing latex-macros/macros.qmd
+      # macro, and nontrivial expressions repeated 3+ times that are
+      # candidates for a new one. Needs checkout-submodules: true (above) to
+      # find real macro definitions — the reviewer has no network-fetch tools.
+      check-latex-macros: true
+      # Same CAS tooling copilot-setup-steps.yml and claude.yml install, so the
+      # reviewer's Bash tool can symbolically check a derivation it's reviewing
+      # instead of eyeballing the algebra.
+      apt-packages: maxima
+      pip-packages: sympy
+      prompt-addendum: |
+        This is a math-heavy statistics textbook. When a diff includes a
+        mathematical derivation, proof, or claimed identity, use the
+        installed computer-algebra tools (SymPy via `python3 -c "..."`,
+        Maxima via `maxima --very-quiet`) to symbolically check the steps
+        rather than eyeballing the algebra — re-derive or verify each step,
+        confirm dimensional/unit consistency in matrix expressions, and flag
+        any step that doesn't hold. Also check any computed value or figure
+        the prose describes against the PR-preview site (linked in a sticky
+        comment on this PR) or the `gh-pages` branch's `pr-preview/pr-<N>/`
+        files, rather than trusting the prose's own description of it.

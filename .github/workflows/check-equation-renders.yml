@@ -1,0 +1,22 @@
+# Fourth leg of the PR-preview family, delegated to the reusable workflow in
+# d-morrison/gha. Triggered when the build workflow finishes, it downloads the
+# build artifact and crawls it with a headless browser to catch equations
+# MathJax can't render -- invisible in the Quarto/pandoc build log, since
+# MathJax only typesets client-side (see d-morrison/rme#972).
+#
+# NOTE: the `workflows:` value below MUST match the `name:` of the build
+# workflow (preview.yml). `workflow_run` triggers only fire when this file
+# lives on the default branch.
+name: Quarto Check Equation Renders
+
+on:
+  workflow_run:
+    workflows: ["Quarto Preview Build"]
+    types: [completed]
+
+jobs:
+  check:
+    permissions:
+      contents: read
+      actions: read  # needed to download the build artifact
+    uses: d-morrison/gha/.github/workflows/check-equation-renders.yml@v2
