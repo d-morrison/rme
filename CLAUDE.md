@@ -99,6 +99,19 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Verify all changed hyperlinks before requesting review
 - If any `_subfiles/` were edited, add the "clear freezer" label
 - Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
+- **Fact-check prose and reasoning when reviewing content changes**, per the
+  global rule in `d-morrison/ai-config`'s `shared/writing/fact-check-prose.md`:
+  check factual claims against domain knowledge and external sources, work
+  through document-internal reasoning (formal derivations/proofs *and*
+  informal arguments) step by step, and verify any computed value or figure
+  the prose describes against the actual rendered output — don't take the
+  source prose's word for it. Use the PR-preview deploy when available: the
+  preview link is posted as a sticky comment on the PR, and the rendered
+  files also land on the `gh-pages` branch under `pr-preview/pr-<N>/<path>`
+  (e.g. `pr-preview/pr-123/chapter.html`) if the live site needs cross-checking
+  against source. If no preview has deployed yet for the changed page, render
+  it locally instead (`quarto render <chapter.qmd> --to html`) rather than
+  skipping the check.
 - This checkout is often shared by concurrent agent sessions — the branch can switch under you, and commits land on PR branches from other sessions or the `@claude` bot. Work in an isolated `git worktree`: for **new** work `git worktree add -b <branch> <dir> origin/main`; to **resume** an existing PR branch `git worktree add -B <branch> <dir> origin/<branch>` (uppercase `-B` so it resets to the remote even if the local branch already exists; the `origin/<branch>` start point picks up the PR rather than starting a fresh branch from `main`). Then run `git submodule update --init` in the new worktree. Before every push, `git fetch` and reconcile `origin/<branch>` (merge or rebase) — another session may have already pushed the same change
 - After opening (or when asked to watch) a PR, subscribe to its activity and keep watching until it is merged or closed: confirm CI results, surface review comments, and catch merge conflicts; re-arm a periodic check-in and only ping when something needs the author. Stop immediately if the author asks you to back off.
 - **Do not wait indefinitely for CI or review jobs.** When monitoring a PR, if a check has been `in_progress` for more than 5–10 minutes without completion, investigate immediately: check job logs for errors, look for blockers, and either fix issues or report what's stuck. Do not passively wait for slow or hung jobs to finish.
