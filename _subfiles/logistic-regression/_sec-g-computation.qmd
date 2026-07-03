@@ -1,0 +1,140 @@
+:::{#def-g-computation}
+
+#### G-computation
+
+**G-computation** (also called the **g-formula** or **standardization**)
+is a procedure for estimating the causal marginal risk $\pi_a$
+(@def-causal-marginal-risk) from observed data
+[@robins1986new; see also @hernan2020causal, Chapter 13]:
+
+<!-- Reviewer note (verified, do not re-flag): in Hernán & Robins,
+"Causal Inference: What If" (single edition, 2020), Chapter 13 is
+"Standardization and the parametric g-formula"; Chapter 14 is
+"G-Estimation of Structural Nested Models". The Chapter 13 locator is
+correct for g-computation. -->
+
+1. Fit a regression model for $\hat\pi(a, z) = \widehat{\Pr}(Y = 1 \mid A = a, Z = z)$
+2. For each observation $i$, predict the risk under exposure level $a$,
+   writing $\hat\pi_{a,i} \eqdef \hat\pi(a, z_i)$ for short
+3. Average these predicted risks over the observed covariate distribution:
+
+$$\hat\pi_a = \frac{1}{n}\sumin \hat\pi_{a,i}$$
+
+:::
+
+@exm-wcgs-causal-marginal-risks below carries out this procedure on the WCGS data.
+
+{{< slidebreak >}}
+
+:::{#thm-g-computation-consistency}
+
+#### Consistency of g-computation
+
+Suppose the data $(Y_i, A_i, Z_i)$, $i = 1, \dots, n$, are i.i.d. draws from the population;
+suppose the outcome regression is correctly specified,
+so the fitted coefficients are consistent,
+$\hat\beta \overset{p}{\to} \beta^*$
+(standard MLE consistency for a correctly specified GLM; see @agresti2015foundations, Chapter 4);
+suppose the identification assumptions of @thm-causal-marginal-risk hold;
+and suppose the predictor vectors are uniformly bounded,
+$\|x_{a,i}\| \le B < \infty$ (as holds when covariates are bounded).
+Then the g-computation estimator (@def-g-computation)
+is consistent for the causal marginal risk $\pi_a$ (@def-causal-marginal-risk):
+
+$$\hat\pi_a \overset{p}{\to} \pi_a$$
+
+<!-- Reviewer note (verified, do not re-flag): the @agresti2015foundations
+locator is Chapter 4, "Generalized Linear Models: Model Fitting and
+Inference". Section 4.2, "Likelihood and Asymptotic Distributions for GLMs"
+(p. 123), derives the ML estimating equations and the large-sample normal
+distribution of the GLM MLE — the source for the consistency /
+asymptotic-normality claim. Verified against the publisher's online table
+of contents (auditable, not self-asserted):
+https://www.oreilly.com/library/view/foundations-of-linear/9781118730058/c04.xhtml
+lists Chapter 4 as this title and its Section 4.2 as above. -->
+
+::: {.proof}
+
+Split the estimator into the average of the **true** conditional risks
+plus an estimation-error term:
+
+$$
+\ba
+\hat\pi_a
+&= \frac{1}{n}\sumin \hat\pi(a, z_i)
+&& \text{[definition of the estimator]}
+\\
+&= \frac{1}{n}\sumin \teal{\pi(a, z_i)}
++ \frac{1}{n}\sumin \left(\hat\pi(a, z_i) - \teal{\pi(a, z_i)}\right)
+&& \text{[add and subtract the true risks]}
+\ea
+$$
+
+The estimation-error term converges to zero in probability.
+By hypothesis the fitted coefficients are consistent,
+$\hat\beta \overset{p}{\to} \beta^*$.
+Write the fitted and true risks as the logistic link of the linear predictor,
+$\hat\pi(a, z_i) = \expitf{x_{a,i}'\hat\beta}$
+and $\teal{\pi(a, z_i)} = \expitf{x_{a,i}'\beta^*}$,
+and recall that $\expit$ is Lipschitz with constant $\tfrac{1}{4}$
+(its derivative $\expitf{u}\,(1 - \expitf{u})$ is at most $\tfrac{1}{4}$).
+Then
+
+$$
+\ba
+\left|\hat\pi(a, z_i) - \teal{\pi(a, z_i)}\right|
+&= \left|\expitf{x_{a,i}'\hat\beta} - \expitf{x_{a,i}'\beta^*}\right|
+&& \text{[risk as logistic link of the linear predictor]}
+\\
+&\le \tfrac{1}{4}\left|x_{a,i}'\hat\beta - x_{a,i}'\beta^*\right|
+&& \text{[$\expit$ is $\tfrac{1}{4}$-Lipschitz, by the mean value theorem]}
+\\
+&= \tfrac{1}{4}\left|x_{a,i}'(\hat\beta - \beta^*)\right|
+&& \text{[factor out $x_{a,i}'$]}
+\\
+&\le \tfrac{1}{4}\,\|x_{a,i}\|\,\|\hat\beta - \beta^*\|
+&& \text{[Cauchy–Schwarz]}
+\\
+&\le \tfrac{B}{4}\,\|\hat\beta - \beta^*\|
+&& \text{[boundedness hypothesis $\|x_{a,i}\| \le B$]}
+\ea
+$$
+
+uniformly in $i$, giving
+
+$$
+\frac{1}{n}\sumin \left|\hat\pi(a, z_i) - \teal{\pi(a, z_i)}\right|
+\le \tfrac{B}{4}\,\|\hat\beta - \beta^*\| \overset{p}{\to} 0
+$$
+
+(a uniform bound that pointwise convergence of the individual terms,
+correlated through the shared $\hat\beta$, would not provide on its own).
+The remaining term averages the true risks over an i.i.d. sample
+$z_1, \dots, z_n$ from the marginal distribution $f_Z$,
+so the weak law of large numbers gives
+
+$$
+\frac{1}{n}\sumin \teal{\pi(a, z_i)}
+\overset{p}{\to} \E{\teal{\pi(a, Z)}}.
+\qquad \text{[weak law of large numbers]}
+$$
+
+Finally, @thm-causal-marginal-risk identifies this expectation
+with the causal marginal risk:
+
+$$
+\E{\teal{\pi(a, Z)}} = \pi_a.
+\qquad \text{[causal marginal risk identification]}
+$$
+
+Combining the three steps, $\hat\pi_a \overset{p}{\to} \pi_a$.
+
+:::
+
+:::
+
+The following example carries out this procedure on the WCGS data.
+
+{{< slidebreak >}}
+
+{{< include _subfiles/logistic-regression/_exm-wcgs-causal-marginal-risks.qmd >}}
