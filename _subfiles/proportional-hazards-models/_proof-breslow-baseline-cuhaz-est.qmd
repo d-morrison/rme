@@ -7,8 +7,8 @@ Assume, as in the partial-likelihood proof, that there are no tied event times,
 so each ordered event time $t_i$ corresponds to exactly one event.
 Let $K$ denote the number of distinct event times $t_1 < \cdots < t_K$.
 As in the partial-likelihood proof, we color the
-$\dblue{\text{baseline-hazard pieces}}$ — here the point masses
-$\dblue{h_{0i}}$ that we profile out — and the
+$\blue{\text{baseline-hazard pieces}}$ — here the point masses
+$\blue{h_{0i}}$ that we profile out — and the
 $\red{\text{focal hazard-ratio pieces}}$, so the eye can follow how each
 piece moves through the algebra.
 
@@ -25,17 +25,17 @@ where $\delta_j$ is the event indicator and $\tilde{T}_j$ the observed time
 for subject $j$ — the same quantities denoted $D_j$ and $Y_j$ in the [censored-data likelihood](intro-to-survival-analysis.qmd#lem-censored-lik) lemma,
 so $\tilde{T}_j = Y_j = \min(T_j, C_j)$ and $\delta_j = D_j$.
 Substituting
-$\haz(t \mid \vx) = \dblue{\haz_0(t)}\,\red{\hazfactor(\vx)}$ (by @thm-ph-haz-decomp)
+$\haz(t \mid \vx) = \blue{\haz_0(t)}\,\red{\hazfactor(\vx)}$ (by @thm-ph-haz-decomp)
 and
-$\surv(t \mid \vx) = \expf{-\dblue{\cuhaz_0(t)}\,\red{\hazfactor(\vx)}}$
+$\surv(t \mid \vx) = \expf{-\blue{\cuhaz_0(t)}\,\red{\hazfactor(\vx)}}$
 (by @thm-ph-cuhaz, using $\surv(t) = \expf{-\cuhaz(t)}$ from the [survival/cumulative hazard relationship](intro-to-survival-analysis.qmd#cor-surv-int-haz))
 gives
 
 $$
 \Lik\sb{\vb,\,\haz_0(\cdot)}
 = \prod_{j = 1}^{n}
-    \sb{\dblue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}}^{\delta_j}\,
-    \expf{-\dblue{\cuhaz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}}.
+    \sb{\blue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}}^{\delta_j}\,
+    \expf{-\blue{\cuhaz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}}.
 $$
 
 Fix $\vb$ and maximize over $\haz_0(\cdot)$.
@@ -60,25 +60,25 @@ The likelihood is therefore maximized by a hazard
 that places point masses only at the observed event times:
 
 $$
-\dblue{\haz_0(t)} = \begin{cases}
-\dblue{h_{0i}}, & t = t_i \text{ for some } i \in \set{1, \dots, K},\\
+\blue{\haz_0(t)} = \begin{cases}
+\blue{h_{0i}}, & t = t_i \text{ for some } i \in \set{1, \dots, K},\\
 0,      & \text{otherwise},
 \end{cases}
 $$
 
-with $\dblue{\cuhaz_0(\tilde{T}_j)} = \sum_{i\ :\ t_i \le \tilde{T}_j} \dblue{h_{0i}}$.
+with $\blue{\cuhaz_0(\tilde{T}_j)} = \sum_{i\ :\ t_i \le \tilde{T}_j} \blue{h_{0i}}$.
 Expanding the survival exponent and swapping the order of summation:
 
 $$
 \ba
-\sum_j \dblue{\cuhaz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}
-&= \sum_j \red{\hazfactor(\vx_j)} \sum_{i:\ t_i \le \tilde{T}_j} \dblue{h_{0i}}
-&& \text{(expand } \dblue{\cuhaz_0(\tilde{T}_j)} \text{ as point masses)}
+\sum_j \blue{\cuhaz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}
+&= \sum_j \red{\hazfactor(\vx_j)} \sum_{i:\ t_i \le \tilde{T}_j} \blue{h_{0i}}
+&& \text{(expand } \blue{\cuhaz_0(\tilde{T}_j)} \text{ as point masses)}
 \\
-&= \sum_i \dblue{h_{0i}} \sum_{j:\ \tilde{T}_j \ge t_i} \red{\hazfactor(\vx_j)}
+&= \sum_i \blue{h_{0i}} \sum_{j:\ \tilde{T}_j \ge t_i} \red{\hazfactor(\vx_j)}
 && \text{(swap the order of summation)}
 \\
-&= \sum_i \dblue{h_{0i}} \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)},
+&= \sum_i \blue{h_{0i}} \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)},
 && \text{(}R(t_i) = \{j : \tilde{T}_j \ge t_i\}\text{)}
 \ea
 $$
@@ -86,12 +86,12 @@ $$
 Here $R(t_i)$ uses the "at risk *at* $t_i$" convention
 (the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set))
 with the $\ge$ boundary — a subject censored exactly at $t_i$ is in
-$R(t_i)$ and contributes $\dblue{h_{0i}}$ to $\dblue{\cuhaz_0(\tilde{T}_j)}$.
+$R(t_i)$ and contributes $\blue{h_{0i}}$ to $\blue{\cuhaz_0(\tilde{T}_j)}$.
 Collecting the inner sum into the **risk-set score total**
 $\red{S_i} = \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)}$
 — the same piece defined in the partial-likelihood proof
 (@eq-ph-risk-set-score) — the survival exponent becomes
-$\sum_i \dblue{h_{0i}}\,\red{S_i}$.
+$\sum_i \blue{h_{0i}}\,\red{S_i}$.
 Reindexing the hazard-density product: subjects with $\delta_j = 0$
 contribute a factor of $\haz_0(\tilde{T}_j)^0 = 1$ (no contribution),
 and for each subject with $\delta_j = 1$ their event occurred at some
@@ -99,64 +99,64 @@ $t_i$, so $\haz_0(\tilde{T}_j) = h_{0i}$:
 
 $$
 \ba
-\prod_{j=1}^n \sb{\dblue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}}^{\delta_j}
-&= \prod_{j:\,\delta_j=1} \dblue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}
+\prod_{j=1}^n \sb{\blue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}}^{\delta_j}
+&= \prod_{j:\,\delta_j=1} \blue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}
    && \text{(terms with } \delta_j = 0 \text{ equal } 1\text{, dropped)}
 \\
-&= \prod_{i=1}^K \dblue{h_{0i}}\,\red{\hazfactor(\vx_{(i)})}.
-   && \text{(}\dblue{\haz_0(\tilde{T}_j)} = \dblue{h_{0i}} \text{ for event } j \text{ at event time } t_i\text{)}
+&= \prod_{i=1}^K \blue{h_{0i}}\,\red{\hazfactor(\vx_{(i)})}.
+   && \text{(}\blue{\haz_0(\tilde{T}_j)} = \blue{h_{0i}} \text{ for event } j \text{ at event time } t_i\text{)}
 \ea
 $$
 
-Factoring $\expf{-\sum_i \dblue{h_{0i}}\,\red{S_i}} = \prod_i \expf{-\dblue{h_{0i}}\,\red{S_i}}$
+Factoring $\expf{-\sum_i \blue{h_{0i}}\,\red{S_i}} = \prod_i \expf{-\blue{h_{0i}}\,\red{S_i}}$
 and combining factor-by-factor with the hazard-density product:
 
 $$
 \ba
 \Lik\sb{\vb,\,h_{01},\dots,h_{0K}}
-&= \underbrace{\prod_{i=1}^{K} \dblue{h_{0i}}\,\red{\hazfactor(\vx_{(i)})}}_{\text{hazard-density}}
-   \cdot \underbrace{\prod_{i=1}^{K} \expf{-\dblue{h_{0i}}\,\red{S_i}}}_{\text{survival}}
+&= \underbrace{\prod_{i=1}^{K} \blue{h_{0i}}\,\red{\hazfactor(\vx_{(i)})}}_{\text{hazard-density}}
+   \cdot \underbrace{\prod_{i=1}^{K} \expf{-\blue{h_{0i}}\,\red{S_i}}}_{\text{survival}}
 \\
 &= \prod_{i = 1}^{K}
-    \dblue{h_{0i}}\;\red{\hazfactor(\vx_{(i)})}\;
-    \expf{-\dblue{h_{0i}}\,\red{S_i}}.
+    \blue{h_{0i}}\;\red{\hazfactor(\vx_{(i)})}\;
+    \expf{-\blue{h_{0i}}\,\red{S_i}}.
 \ea
 $$
 
-The log-likelihood is separable in the $\dblue{h_{0i}}$ (each summand $\log \dblue{h_{0i}} - \dblue{h_{0i}}\,\red{S_i}$ involves only $\dblue{h_{0i}}$):
+The log-likelihood is separable in the $\blue{h_{0i}}$ (each summand $\log \blue{h_{0i}} - \blue{h_{0i}}\,\red{S_i}$ involves only $\blue{h_{0i}}$):
 
 $$
 \loglik\sb{\vb,\,h_{01},\dots,h_{0K}}
 = \sum_{i = 1}^{K} \log\red{\hazfactor(\vx_{(i)})}
   + \sum_{i = 1}^{K}
-    \cb{\log \dblue{h_{0i}} - \dblue{h_{0i}}\,\red{S_i}}.
+    \cb{\log \blue{h_{0i}} - \blue{h_{0i}}\,\red{S_i}}.
 $$
 
 Differentiating with respect to $h_{0i}$ and setting the derivative to zero:
 
 $$
 \ba
-\frac{1}{\dblue{h_{0i}}} - \red{S_i} &= 0
+\frac{1}{\blue{h_{0i}}} - \red{S_i} &= 0
 && \text{(stationarity condition)}
 \\
-\Longrightarrow\quad \dblue{\hat h_{0i}} &= \frac{1}{\red{S_i}}.
-&& \text{(solve for } \dblue{\hat h_{0i}} \text{)}
+\Longrightarrow\quad \blue{\hat h_{0i}} &= \frac{1}{\red{S_i}}.
+&& \text{(solve for } \blue{\hat h_{0i}} \text{)}
 \ea
 $$
 
-The second derivative $-1/\dblue{h_{0i}}^2 < 0$ confirms this critical point is a maximum.
+The second derivative $-1/\blue{h_{0i}}^2 < 0$ confirms this critical point is a maximum.
 
 Summing over event times $t_i \le t$ gives the **Breslow estimator**
 of the baseline cumulative hazard:
 
 $$
 \ba
-\dblue{\hat \cuhaz_0(t)}
-&= \sum_{t_i \le t} \dblue{\hat h_{0i}}
+\blue{\hat \cuhaz_0(t)}
+&= \sum_{t_i \le t} \blue{\hat h_{0i}}
 && \text{(sum the estimated point masses up to } t \text{)}
 \\
 &= \sum_{t_i \le t} \frac{1}{\red{S_i}}.
-&& \text{(substitute } \dblue{\hat h_{0i}} = 1/\red{S_i} \text{)}
+&& \text{(substitute } \blue{\hat h_{0i}} = 1/\red{S_i} \text{)}
 \ea
 $$
 
@@ -171,13 +171,13 @@ $$
 \ba
 \Lik\sb{\vb,\,\hat h_{01},\dots,\hat h_{0K}}
 &= \prod_{i = 1}^{K}
-    \dblue{\hat h_{0i}}\;\red{\hazfactor(\vx_{(i)})}\;
-    \expf{-\dblue{\hat h_{0i}}\,\red{S_i}}
+    \blue{\hat h_{0i}}\;\red{\hazfactor(\vx_{(i)})}\;
+    \expf{-\blue{\hat h_{0i}}\,\red{S_i}}
 \\
 &= \prod_{i = 1}^{K}
     \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}\;
     \expf{-\red{S_i} / \red{S_i}}
-    && \text{(substituting } \dblue{\hat h_{0i}} = 1/\red{S_i}\text{)}
+    && \text{(substituting } \blue{\hat h_{0i}} = 1/\red{S_i}\text{)}
 \\
 &= \prod_{i = 1}^{K}
     \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}\;
