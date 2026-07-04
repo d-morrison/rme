@@ -125,6 +125,20 @@ When summarizing PRs, issues, workflow runs, or jobs, always include the
 GitHub URL alongside the reference (e.g.,
 [#897](https://github.com/d-morrison/rme/pull/897), not just "#897").
 
+## ai-config skills and memories
+
+The `d-morrison/ai-config` repo is checked out as the `.ai-config` submodule.
+`.claude/skills` is a committed symlink to `.ai-config/skills`,
+so its skills are discoverable and invocable like any other project skill
+(this replaces a hand-copied, drift-prone snapshot of the `reprexes` skill
+that used to live directly under `.claude/skills/`).
+`.ai-config/memories/` and `.ai-config/shared/` are also on disk —
+there's no Claude Code mechanism that auto-loads a project memories folder
+the way it does skills,
+so read a specific fragment on demand
+(e.g. `.ai-config/shared/writing/fact-check-prose.md`)
+rather than expecting it to already be in context.
+
 ## External Resources Available in This Session
 
 - `$EPI202_TOKEN` — fine-grained PAT with read access to
