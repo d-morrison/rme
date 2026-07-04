@@ -124,7 +124,45 @@ the baseline cumulative hazard is estimated by the Breslow estimator:
 ::: notes
 This estimator reduces to the Nelson-Aalen estimator when there are no covariates;
 several other estimators have also been proposed.
-The proof derives it as a profile likelihood:
+To derive it as a profile likelihood, substitute the proportional-hazards
+decomposition into the full censored-data likelihood
+(the [censored-data likelihood](intro-to-survival-analysis.qmd#lem-censored-lik) lemma):
+:::
+
+$$
+\Lik\sb{\vb,\,\haz_0(\cdot)}
+= \prod_{j = 1}^{n}
+    \sb{\blue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}}^{\delta_j}\,
+    \expf{-\blue{\cuhaz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}},
+$$ {#eq-ph-breslow-full-lik}
+
+::: notes
+where $\delta_j$ is the event indicator and $\tilde{T}_j$ the observed time for subject $j$
+— the same quantities denoted $D_j$ and $Y_j$ in the censored-data likelihood lemma,
+so $\tilde{T}_j = Y_j = \min(T_j, C_j)$ and $\delta_j = D_j$ —
+using $\haz(t \mid \vx) = \blue{\haz_0(t)}\,\red{\hazfactor(\vx)}$ (@thm-ph-haz-decomp)
+and $\surv(t \mid \vx) = \expf{-\blue{\cuhaz_0(t)}\,\red{\hazfactor(\vx)}}$
+(by @thm-ph-cuhaz, using $\surv(t) = \expf{-\cuhaz(t)}$ from the
+[survival/cumulative hazard relationship](intro-to-survival-analysis.qmd#cor-surv-int-haz)).
+Fix $\vb$ and maximize over $\haz_0(\cdot)$.
+We build up to the Breslow estimator's profile-likelihood justification through a chain of lemmas:
+the point-mass form of the maximizing hazard, the resulting profile likelihood,
+the maximizer of each point mass, and the assembly that recovers the partial likelihood.
+:::
+
+{{< slidebreak >}}
+
+{{< include _subfiles/proportional-hazards-models/_lem-ph-breslow-point-mass.qmd >}}
+
+{{< include _subfiles/proportional-hazards-models/_lem-ph-breslow-profile-lik.qmd >}}
+
+{{< include _subfiles/proportional-hazards-models/_lem-ph-breslow-mle.qmd >}}
+
+{{< include _subfiles/proportional-hazards-models/_lem-ph-breslow-closes-loop.qmd >}}
+
+::: notes
+With the lemmas in hand, the proof assembles them into the Breslow estimator
+and shows the profile likelihood recovers the partial likelihood:
 :::
 
 {{< include _subfiles/proportional-hazards-models/_proof-breslow-baseline-cuhaz-est.qmd >}}
