@@ -74,6 +74,15 @@ Before committing any `.qmd`, `.R`, or config file change:
   - Use the generic `\ratio`/`\ratiof` macro when a ratio's inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — e.g. `\ratio(\odds_1, \odds_2)`, **not** `\ror(\odds_1, \odds_2)` — because the type of ratio is clear from the inputs.
   - Use the type-subscripted ratio macros (`\ror` for odds ratios, `\hazratio`/`\hr` for hazard ratios, `\rateratio`, `\riskratio`, `\prevratio`, `\cuhazratio`, …) only when the inputs are **covariate patterns** (e.g. `\ror(\vx,\vxs)`, `\hr(t\mid\vx:\vxs)`), where the subscript is needed to say which kind of ratio it is.
   - Factors compare **one** covariate pattern to the implicit baseline pattern (e.g. the Cox risk score `\hazfactor(\vx)`); always use the subscripted factor macros (`\hazfactor`, `\oddsfactor`, …; function forms `\hazfactorf`/`\hazff`, …).
+- **Estimator indirection (`\est`/`\Est`), added in `latex-macros` #78:** every
+  legacy `\h...`-prefixed hat-estimator macro (`\hb`, `\hsurv`, `\hhazratio`,
+  `\hskm`, …) now has a parallel `\e...`-prefixed counterpart (`\eb`, `\esurv`,
+  `\ehazratio`, `\eskm`, …) composed through the new `\est` (renders `\hat`) /
+  `\Est` (renders `\widehat`) indirection macros, instead of applying
+  `\hat`/`\widehat` directly. Prefer the `\e...` family in new content — a
+  future change to the estimator symbol only requires editing `\est`/`\Est`.
+  The `\h...` family is unchanged and stays supported for existing content.
+  See `latex-macros/CONTRIBUTING.md` for the full naming convention.
 
 ### Citations
 - Always use BibTeX keys with `@citekey` Pandoc syntax — never plaintext author-date
