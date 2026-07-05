@@ -6,7 +6,14 @@
 # the kernel look for "/bin/bash\r" and fail with "bad interpreter".
 *.sh text eol=lf
 
-# Files where conflicting edits from both branches should typically both be
-# kept rather than forcing a manual conflict resolution.
+# references.bib entries are independent, uniquely-keyed blocks, so two
+# branches adding distinct entries can usually be combined automatically
+# instead of forcing a manual conflict resolution. This only helps when git
+# itself performs the merge (a local merge/rebase, or CI) — GitHub's own
+# web-merge button and mergeability check don't apply custom merge drivers.
+# CLAUDE.md is deliberately NOT included here: unlike bib entries, its prose
+# is actively reworded in place, and a union merge of two differing edits to
+# the same rule silently keeps both versions with no conflict raised
+# (confirmed by a local merge simulation) — unacceptable for a file whose
+# instructions are meant to be followed exactly.
 references.bib merge=union
-CLAUDE.md merge=union
