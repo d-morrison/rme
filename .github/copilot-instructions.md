@@ -588,6 +588,13 @@ Key macros to use:
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
 - **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
 - **Deviation/error notation**: Use `\erf{...}` for deviations of estimates/estimators from their estimands; use `\devn(...)` for all other deviations (e.g., observations from population means)
+- **Estimators of vector estimands**: the estimator symbol (e.g. `\hat`,
+  `\bar`, `\tilde`) goes on top of the vector symbol, not inside it —
+  write `\hat{\vec{\mu}}`, not `\vec{\hat\mu}`. The hat sits on top of the
+  already-vectorized symbol. Use `\v{}`, `\vec{}`, or `\vecf{}` — all three
+  work. (`\v` was formerly broken because `\providecommand` could not override
+  the LaTeX built-in caron accent; it is now defined with `\renewcommand`
+  in `macros.qmd`.)
 
 matrix-product helper macros:
 
@@ -793,6 +800,7 @@ Some R packages require system-level libraries to compile from source:
 - `png` package requires `libpng-dev`
 - `jpeg` package requires `libjpeg-dev`
 - `systemfonts` package requires `libfontconfig1-dev`
+- `igraph` (used by `ggdag` for DAG figures such as `fig-dag-heat-deaths`) requires `libglpk40` (runtime dependency — needed even when installing pre-compiled binaries) — install with `sudo apt-get install -y libglpk40`; without it a local `quarto render` halts with `Error in dyn.load(...): libglpk.so.40: cannot open shared object file`
 - Consider using `rocker/verse` Docker image for workflows to reduce installation requirements
 
 ## JAGS Dependencies

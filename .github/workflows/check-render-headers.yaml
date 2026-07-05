@@ -1,0 +1,36 @@
+---
+name: check-render-headers
+
+# Fails when a page in the `_quarto-website.yml` render list would render both
+# `html` and `revealjs` to the same `<stem>.html` output -- the collision that
+# broke the publish workflow in #966 / #967. `publish.yml` only runs on push to
+# `main`, so this cheap static check is what catches the bug on the PR instead.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions: read-all
+
+jobs:
+  check-render-headers:
+    runs-on: ubuntu-latest
+    name: check-render-headers
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Check render-list pages have collision-safe format headers
+        run: python .github/scripts/check_render_list_headers.py

@@ -38,6 +38,10 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Link to `.qmd` source files, not rendered `.html` files
 - Aim to keep `.qmd` source files under ~100 lines; split longer files into named subfiles in `_subfiles/`
 - `_extensions/` is vendored third-party code — do not review or modify it
+- New book pages must be wired into each render profile that should include them — the profiles keep independent page lists, so a page added to only one is missing from the others:
+  - `_quarto-website.yml` — the default profile (`profile.default: website` in `_quarto.yml`): add to the `render:` list, and to the navbar if it's a primary/navigable chapter (supplemental pages like appendices can stay in `render:` without a navbar entry)
+  - `_quarto-book.yml` — the book/PDF TOC: add to `book.chapters:` (directly or inside a `part:` grouping)
+  - `_quarto-handout.yml` — a curated PDF-handout subset with its own `render:` list; add the page here too if it belongs in the handouts
 
 ### Quarto
 - Use `{{< slidebreak >}}` instead of `---` for slide breaks
@@ -45,16 +49,49 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Use div format (`:::{#fig-...}`) for figures and tables, not chunk-option `fig-cap`/`tbl-cap`
 - Do not indent `:::` fenced div markers inside lists
 - One source line per major phrase in prose — keeps git diffs readable and review easier
+- **Theorem-div headings** (`:::{#exm-...}`, `:::{#def-...}`, etc.): use `####` (level 4) or deeper for the name heading inside the div — using `##` or `###` creates numbered section headings that disrupt document structure and break example/definition numbering.
+
+### Cross-references
+- **Within-chapter** (`@id`): use Pandoc `@id` syntax for any element in the same rendered `.html` file — includes the parent chapter and all its `{{< include >}}`d subfiles.
+- **Cross-chapter** (`other-chapter.qmd`): this is a Quarto `website` project (not `book`), so `@id` does **not** resolve across `.html` files. For elements in other chapters use an explicit relative link: `[text](other-chapter.qmd#id)`.
 
 ### Math Notation
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
-- Include every intermediate step in derivations — do not skip steps
+- Include every intermediate step in derivations — do not skip steps. This is
+  a global standing rule from `d-morrison/ai-config`'s
+  `shared/writing/math-derivation-steps.md` (submodule pin bumped in this PR
+  to a commit that includes it), which also covers the review-side
+  counterpart: a reviewer should name the exact gap and the missing
+  operation when a step is skipped, not just flag "skipped steps" in
+  general. The `@claude` bot will apply this automatically via
+  `d-morrison/gha`'s review checklist once
+  [gha#228](https://github.com/d-morrison/gha/pull/228) merges and the
+  `@v2` tag it pins picks up the change.
 - Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
+- **Matrix dimensions**: always verify dimension compatibility for every matrix expression -- dimensions of each operand must be consistent with the operation
+- **Annotate matrix dimensions with underbraces** in display math: use `\underbrace{M}_{m \times n}` for each matrix or vector
+- **Zero matrices**: never write bare `\mathbf{0}` in a matrix equation -- subscript dimensions: `\mathbf{0}_{m \times n}`
+- **Jacobian**: `\deriv{\vb} \vx` where both are p-vectors produces a p × p Jacobian matrix (not a vector)
+- Estimators of vector estimands: the estimator symbol (e.g. `\hat`) goes
+  on top of the vector symbol, not inside it — write `\hat{\vec{\mu}}`, not
+  `\vec{\hat\mu}`. (Same for `\bar`, `\tilde`, etc.) Use `\v{}`, `\vec{}`, or
+  `\vecf{}` — all three work. (`\v` was formerly broken because its
+  `\providecommand` definition was a no-op against the LaTeX built-in caron
+  accent; it is now defined with `\renewcommand` in `macros.qmd`.)
 - Ratios vs. factors:
   - Use the generic `\ratio`/`\ratiof` macro when a ratio's inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — e.g. `\ratio(\odds_1, \odds_2)`, **not** `\ror(\odds_1, \odds_2)` — because the type of ratio is clear from the inputs.
   - Use the type-subscripted ratio macros (`\ror` for odds ratios, `\hazratio`/`\hr` for hazard ratios, `\rateratio`, `\riskratio`, `\prevratio`, `\cuhazratio`, …) only when the inputs are **covariate patterns** (e.g. `\ror(\vx,\vxs)`, `\hr(t\mid\vx:\vxs)`), where the subscript is needed to say which kind of ratio it is.
   - Factors compare **one** covariate pattern to the implicit baseline pattern (e.g. the Cox risk score `\hazfactor(\vx)`); always use the subscripted factor macros (`\hazfactor`, `\oddsfactor`, …; function forms `\hazfactorf`/`\hazff`, …).
+- **Estimator indirection (`\est`/`\Est`), added in `latex-macros` #78:** every
+  legacy `\h...`-prefixed hat-estimator macro (`\hb`, `\hsurv`, `\hhazratio`,
+  `\hskm`, …) now has a parallel `\e...`-prefixed counterpart (`\eb`, `\esurv`,
+  `\ehazratio`, `\eskm`, …) composed through the new `\est` (renders `\hat`) /
+  `\Est` (renders `\widehat`) indirection macros, instead of applying
+  `\hat`/`\widehat` directly. Prefer the `\e...` family in new content — a
+  future change to the estimator symbol only requires editing `\est`/`\Est`.
+  The `\h...` family is unchanged and stays supported for existing content.
+  See `latex-macros/CONTRIBUTING.md` for the full naming convention.
 
 ### Citations
 - Always use BibTeX keys with `@citekey` Pandoc syntax — never plaintext author-date
@@ -65,7 +102,10 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Introduce concepts before using them — no forward references
 - Factual claims must have a specific citation
 - Variable definitions in exercises: use bullet points/table with symbol, meaning, and dataset column
-- After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div
+- After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div; if a counterexample is feasible, include one immediately after the example
+- After every theoretical claim (thm, cor, lem): when a proof is feasible and in scope, (1) immediately follow with a proof, then (2) immediately follow with an example utilizing the claim; when a proof is non-elementary or out of scope (e.g., `@thm-fubini`, `@thm-fubini-tonelli`), omit the proof block and proceed directly to the example
+- Always arrange divs and sections so that related items are adjacent: theorem → proof → example(s) → counterexample(s)
+- Clearly distinguish **model structure** (how the data relate to the parameters — distributional family, link function, random effects, hierarchies, …) from **inference method** (how the parameters are estimated — MLE, Bayes, GEE, method of moments, …). The two are orthogonal: any model structure can be paired with any compatible inference method (e.g. a random-effects model can be fit by maximum likelihood *or* by Bayesian MCMC). Never write as if a structure belonged to one inference paradigm (avoid e.g. "the Bayesian version of random effects"); instead name the inference method being applied to the structure.
 
 ### Pull Requests
 - Remove existing review requests immediately when starting work on a PR
@@ -74,6 +114,22 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Verify all changed hyperlinks before requesting review
 - If any `_subfiles/` were edited, add the "clear freezer" label
 - Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
+- **Fact-check prose and reasoning when reviewing content changes**, per the
+  global rule in `d-morrison/ai-config`'s `shared/writing/fact-check-prose.md`:
+  check factual claims against domain knowledge and external sources, work
+  through document-internal reasoning (formal derivations/proofs *and*
+  informal arguments) step by step, and verify any computed value or figure
+  the prose describes against the actual rendered output — don't take the
+  source prose's word for it. Use the PR-preview deploy when available: the
+  preview link is posted as a sticky comment on the PR, and the rendered
+  files also land on the `gh-pages` branch under `pr-preview/pr-<N>/<path>`
+  (e.g. `pr-preview/pr-123/chapter.html`) if the live site needs cross-checking
+  against source. If no preview has deployed yet for the changed page, render
+  it locally instead (`quarto render <chapter.qmd> --to html`) rather than
+  skipping the check.
+- This checkout is often shared by concurrent agent sessions — the branch can switch under you, and commits land on PR branches from other sessions or the `@claude` bot. Work in an isolated `git worktree`: for **new** work `git worktree add -b <branch> <dir> origin/main`; to **resume** an existing PR branch `git worktree add -B <branch> <dir> origin/<branch>` (uppercase `-B` so it resets to the remote even if the local branch already exists; the `origin/<branch>` start point picks up the PR rather than starting a fresh branch from `main`). Then run `git submodule update --init` in the new worktree. Before every push, `git fetch` and reconcile `origin/<branch>` (merge or rebase) — another session may have already pushed the same change
+- After opening (or when asked to watch) a PR, subscribe to its activity and keep watching until it is merged or closed: confirm CI results, surface review comments, and catch merge conflicts; re-arm a periodic check-in and only ping when something needs the author. Stop immediately if the author asks you to back off.
+- **Do not wait indefinitely for CI or review jobs.** When monitoring a PR, if a check has been `in_progress` for more than 5–10 minutes without completion, investigate immediately: check job logs for errors, look for blockers, and either fix issues or report what's stuck. Do not passively wait for slow or hung jobs to finish.
 
 ## Workflow Responsibility
 
@@ -86,6 +142,20 @@ If a failure is not caused by your changes, document it in the PR description.
 When summarizing PRs, issues, workflow runs, or jobs, always include the
 GitHub URL alongside the reference (e.g.,
 [#897](https://github.com/d-morrison/rme/pull/897), not just "#897").
+
+## ai-config skills and memories
+
+The `d-morrison/ai-config` repo is checked out as the `.ai-config` submodule.
+`.claude/skills` is a committed symlink to `.ai-config/skills`,
+so its skills are discoverable and invocable like any other project skill
+(this replaces a hand-copied, drift-prone snapshot of the `reprexes` skill
+that used to live directly under `.claude/skills/`).
+`.ai-config/memories/` and `.ai-config/shared/` are also on disk —
+there's no Claude Code mechanism that auto-loads a project memories folder
+the way it does skills,
+so read a specific fragment on demand
+(e.g. `.ai-config/shared/writing/fact-check-prose.md`)
+rather than expecting it to already be in context.
 
 ## External Resources Available in This Session
 
