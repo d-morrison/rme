@@ -58,7 +58,16 @@ Before committing any `.qmd`, `.R`, or config file change:
 ### Math Notation
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
-- Include every intermediate step in derivations — do not skip steps
+- Include every intermediate step in derivations — do not skip steps. This is
+  a global standing rule from `d-morrison/ai-config`'s
+  `shared/writing/math-derivation-steps.md` (submodule pin bumped in this PR
+  to a commit that includes it), which also covers the review-side
+  counterpart: a reviewer should name the exact gap and the missing
+  operation when a step is skipped, not just flag "skipped steps" in
+  general. The `@claude` bot will apply this automatically via
+  `d-morrison/gha`'s review checklist once
+  [gha#228](https://github.com/d-morrison/gha/pull/228) merges and the
+  `@v2` tag it pins picks up the change.
 - Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
 - **Matrix dimensions**: always verify dimension compatibility for every matrix expression -- dimensions of each operand must be consistent with the operation
 - **Annotate matrix dimensions with underbraces** in display math: use `\underbrace{M}_{m \times n}` for each matrix or vector
@@ -74,6 +83,15 @@ Before committing any `.qmd`, `.R`, or config file change:
   - Use the generic `\ratio`/`\ratiof` macro when a ratio's inputs are the **quantities themselves** (the odds, hazards, rates, etc.) — e.g. `\ratio(\odds_1, \odds_2)`, **not** `\ror(\odds_1, \odds_2)` — because the type of ratio is clear from the inputs.
   - Use the type-subscripted ratio macros (`\ror` for odds ratios, `\hazratio`/`\hr` for hazard ratios, `\rateratio`, `\riskratio`, `\prevratio`, `\cuhazratio`, …) only when the inputs are **covariate patterns** (e.g. `\ror(\vx,\vxs)`, `\hr(t\mid\vx:\vxs)`), where the subscript is needed to say which kind of ratio it is.
   - Factors compare **one** covariate pattern to the implicit baseline pattern (e.g. the Cox risk score `\hazfactor(\vx)`); always use the subscripted factor macros (`\hazfactor`, `\oddsfactor`, …; function forms `\hazfactorf`/`\hazff`, …).
+- **Estimator indirection (`\est`/`\Est`), added in `latex-macros` #78:** every
+  legacy `\h...`-prefixed hat-estimator macro (`\hb`, `\hsurv`, `\hhazratio`,
+  `\hskm`, …) now has a parallel `\e...`-prefixed counterpart (`\eb`, `\esurv`,
+  `\ehazratio`, `\eskm`, …) composed through the new `\est` (renders `\hat`) /
+  `\Est` (renders `\widehat`) indirection macros, instead of applying
+  `\hat`/`\widehat` directly. Prefer the `\e...` family in new content — a
+  future change to the estimator symbol only requires editing `\est`/`\Est`.
+  The `\h...` family is unchanged and stays supported for existing content.
+  See `latex-macros/CONTRIBUTING.md` for the full naming convention.
 
 ### Citations
 - Always use BibTeX keys with `@citekey` Pandoc syntax — never plaintext author-date
