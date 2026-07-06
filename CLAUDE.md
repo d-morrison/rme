@@ -59,15 +59,19 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
 - Use `\eqdef` instead of `=` for any equality that holds **by definition** — both the defining equation in a `{#def-...}` div and the first introduction of new local notation (e.g. the step in a proof where a symbol is first defined). When an equality holds by definition, annotate it with `\eqdef` even inside a proof.
-- Include every intermediate step in derivations — do not skip steps. Give each algebraic step its own aligned line (one operation per step — distribution, substitution, cancellation, approximation), and annotate each step with a short parenthetical explanation of the rule, definition, or approximation it uses (e.g. a trailing `&& \text{(...)}` column in an aligned block, as in `@eq-ph-surv-discretized`). Default to this level of explicitness for all derivations.
-- Include every intermediate step in derivations — do not skip steps. This is
-  a global standing rule from `d-morrison/ai-config`'s
-  `shared/writing/math-derivation-steps.md` (submodule pin bumped in this PR
-  to a commit that includes it), which also covers the review-side
-  counterpart: a reviewer should name the exact gap and the missing
-  operation when a step is skipped, not just flag "skipped steps" in
-  general. The `@claude` bot will apply this automatically via
-  `d-morrison/gha`'s review checklist once
+- Include every intermediate step in derivations — do not skip steps. Give
+  each algebraic step its own aligned line (one operation per step —
+  distribution, substitution, cancellation, approximation), and annotate
+  each step with a short parenthetical explanation of the rule, definition,
+  or approximation it uses (e.g. a trailing `&& \text{(...)}` column in an
+  aligned block, as in `@eq-ph-surv-discretized`). Default to this level of
+  explicitness for all derivations. This is a global standing rule from
+  `d-morrison/ai-config`'s `shared/writing/math-derivation-steps.md`
+  (submodule pin bumped in this PR to a commit that includes it), which
+  also covers the review-side counterpart: a reviewer should name the
+  exact gap and the missing operation when a step is skipped, not just
+  flag "skipped steps" in general. The `@claude` bot will apply this
+  automatically via `d-morrison/gha`'s review checklist once
   [gha#228](https://github.com/d-morrison/gha/pull/228) merges and the
   `@v2` tag it pins picks up the change.
 - Color coding: `\red{...}` for focal/extra terms, `\blue{...}` for shared terms
