@@ -14,28 +14,11 @@ adjusted for `age`:
 library(dplyr)
 library(haven)
 
-wcgs_path <- here::here("Data", "wcgs.rda")
-if (!file.exists(wcgs_path)) {
-  stop(
-    "Could not find WCGS data file at: ", wcgs_path,
-    ". This file should be in the repository's Data directory. ",
-    paste0(
-      "Run this chapter from the repository root and verify ",
-      "that Data/wcgs.rda is present."
-    )
-  )
-}
-wcgs_env <- new.env(parent = emptyenv())
-invisible(load(wcgs_path, envir = wcgs_env))
-wcgs <- wcgs_env$wcgs
-
-wcgs_clean <- wcgs |>
+wcgs_clean <- rmb::wcgs |>
   mutate(
-    dibpat = dibpat |>
-      haven::as_factor() |>
-      relevel(ref = "Type B"),
-    chd69_binary = as.numeric(chd69 == "Yes"),
-    across(where(is.labelled), haven::as_factor)
+    across(where(is.labelled), haven::as_factor),
+    dibpat = dibpat |> relevel(ref = "Type B"),
+    chd69_binary = as.numeric(chd69 == "Yes")
   ) |>
   filter(!is.na(chd69_binary), !is.na(dibpat), !is.na(age))
 
