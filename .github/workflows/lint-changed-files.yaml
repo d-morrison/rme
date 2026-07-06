@@ -12,6 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      # renv::restore() only needs each package's already-pinned RemoteSha from
+      # renv.lock; it doesn't need to also re-resolve DESCRIPTION's Remotes:
+      # field against GitHub's API (a source of flaky/rate-limited failures --
+      # see d-morrison/rme#994). Disabling this consistency check removes that
+      # extra network dependency without changing which package versions get
+      # installed.
+      RENV_CONFIG_INSTALL_REMOTES: false
     steps:
       - uses: actions/checkout@v7
 
