@@ -1,0 +1,82 @@
+:::{#def-cond-mixed}
+
+#### Conditional expectation: mixed case
+
+Suppose exactly one of $X, Y$ is discrete and the other is continuous.
+Write $\p(X = x,\, Y = y)$ for their **joint density-mass function**:
+a probability density in the continuous variable
+and a probability mass in the discrete variable.
+
+**$X$ discrete, $Y$ continuous.**
+Here $\p(X=x,\,Y=y)$ is, for each fixed $x$,
+a probability density in $y$,
+scaled so that $\int_{y} \p(X=x,\,Y=y)\,dy = \P(X=x)$.
+The conditional PDF of $Y$ given $X = x$
+(for values of $x$ with $\P(X = x) > 0$) is:
+
+$$\p(Y = y \mid X = x) \eqdef \frac{\p(X = x,\, Y = y)}{\P(X = x)}$$
+
+and the conditional expectation of $Y$ given $X = x$ is:
+
+$$\E{Y \mid X = x} \eqdef \int_{y \in \rangef{Y}} y \cd \p(Y = y \mid X = x)\, dy$$
+
+**$X$ continuous, $Y$ discrete.**
+Here $\p(X=x,\,Y=y)$ is, for each fixed $y$,
+a probability density in $x$,
+scaled so that $\sum_{y} \p(X=x,\,Y=y) = \p(X=x)$.
+The conditional PMF of $Y$ given $X = x$
+(for values of $x$ with $\p(X = x) > 0$) is:
+
+$$\P(Y = y \mid X = x) \eqdef \frac{\p(X = x,\, Y = y)}{\p(X = x)}$$
+
+and the conditional expectation of $Y$ given $X = x$ is:
+
+$$\E{Y \mid X = x} \eqdef \sum_{y \in \rangef{Y}} y \cd \P(Y = y \mid X = x)$$
+
+:::
+
+---
+
+:::{#exm-cond-mixed}
+
+#### Conditional expectation, one discrete variable and one continuous variable
+
+**$X$ discrete, $Y$ continuous.**
+Let $X \sim \mathrm{Bernoulli}(0.4)$,
+and given $X = x$,
+let $Y \mid X = x \sim \mathrm{Uniform}(0,\, x+2)$,
+so $\p(Y=y \mid X=x) = \frac{1}{x+2}$ for $0 < y < x+2$.
+By @def-cond-mixed:
+
+$$
+\ba
+\E{Y \mid X = x}
+&= \int_0^{x+2} y \cd \frac{1}{x+2}\,dy
+\\&= \frac{1}{x+2} \sb{\frac{y^2}{2}}_0^{x+2}
+\\&= \frac{1}{x+2} \cd \frac{(x+2)^2}{2}
+\\&= \frac{x+2}{2}
+\ea
+$$
+
+At $x = 0$: $\E{Y \mid X=0} = \frac{2}{2} = 1$.
+At $x = 1$: $\E{Y \mid X=1} = \frac{3}{2}$.
+
+**$X$ continuous, $Y$ discrete.**
+Let $X \sim \mathrm{Uniform}(0, 1)$,
+and given $X = x$,
+let $Y \mid X = x \sim \mathrm{Bernoulli}(x)$,
+so $\P(Y=1 \mid X=x) = x$ and $\P(Y=0 \mid X=x) = 1-x$.
+By @def-cond-mixed:
+
+$$
+\ba
+\E{Y \mid X = x}
+&= 0 \cd \P(Y=0 \mid X=x) + 1 \cd \P(Y=1 \mid X=x)
+\\&= 0 \cd (1-x) + 1 \cd x
+\\&= x
+\ea
+$$
+
+At $x = 0.3$: $\E{Y \mid X=0.3} = 0.3$.
+
+:::
