@@ -30,6 +30,7 @@
 
    so there is no collapsibility bias from averaging over a covariate $Z$.
    Risk ratios are **not** collapsible in general:
+   when the conditional RR varies across strata,
    the marginal RR does not equal the marginal-distribution-weighted average
    of conditional RRs, $\E{\text{RR}(Z)}$,
    because a ratio of expectations is not the same as an expectation of ratios:
@@ -48,11 +49,42 @@
    \ea
    $$
 
-   Odds ratios are non-collapsible in an even stronger sense:
+   Unlike the odds ratio (below), though,
+   this discrepancy is entirely a consequence of the conditional RR *varying* across strata:
+   when the conditional risk ratio is instead **constant**,
+   $\text{RR}(z) = r$ for every $z$,
+   the marginal RR reproduces it exactly:
+
+   $$
+   \ba
+   \pi_1
+   &= \E{\pi(1, Z)}
+   && \text{[causal marginal risk theorem]}
+   \\
+   &= \E{\text{RR}(Z) \cdot \pi(0, Z)}
+   && \text{[definition of conditional risk ratio]}
+   \\
+   &= \E{r \cdot \pi(0, Z)}
+   && \text{[constant conditional risk ratio]}
+   \\
+   &= r \cdot \E{\pi(0, Z)}
+   && \text{[linearity of expectation]}
+   \\
+   &= r \cdot \pi_0
+   && \text{[causal marginal risk theorem]}
+   \ea
+   $$
+
+   so $\pi_1 / \pi_0 = r$:
+   like the risk difference, the risk ratio is collapsible
+   under a homogeneous conditional effect.
+
+   Odds ratios are non-collapsible in a **stronger** sense than risk ratios:
    even when the conditional OR is the same in every stratum,
    the marginal OR is generally different from it (closer to the null)
-   [@hernan2020causal],
-   whereas a constant conditional RD always reproduces the marginal RD exactly
+   [@hernan2020causal, Chapter 4],
+   whereas a constant conditional RD or RR always reproduces
+   the corresponding marginal RD or RR exactly
    (the marginal RD is the average $\E{\text{RD}(Z)}$ of the stratum-specific RDs
    by @thm-collapsibility, and the average of a constant is that constant).
 
