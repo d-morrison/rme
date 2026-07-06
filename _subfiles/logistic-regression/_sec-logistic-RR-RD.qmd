@@ -60,6 +60,47 @@ $$
 
 :::
 
+{{< slidebreak >}}
+
+:::{#exm-cond-rd-rr}
+
+#### Numerical example: conditional RD and RR at a fixed covariate value
+
+Suppose a fitted logistic model for CHD risk
+(exposure $A$ = Type A behavior pattern, covariate $Z$ = age in years)
+gives $\hat\b_0 = -4.5$, $\hat\b_A = 0.8$, and $\hat\b_Z = 0.05$.
+At age $z = 50$:
+
+```{r}
+#| label: cond-rd-rr-example
+#| code-fold: true
+
+b0_hat <- -4.5
+bA_hat <- 0.8
+bZ_hat <- 0.05
+z <- 50
+
+pi_hat_1 <- expit(b0_hat + bA_hat * 1 + bZ_hat * z)
+pi_hat_0 <- expit(b0_hat + bA_hat * 0 + bZ_hat * z)
+
+rd_hat_z <- pi_hat_1 - pi_hat_0
+rr_hat_z <- pi_hat_1 / pi_hat_0
+
+tibble::tibble(
+  quantity = c(
+    "$\\hat\\pi(1, 50)$", "$\\hat\\pi(0, 50)$",
+    "$\\widehat{\\text{RD}}(50)$", "$\\widehat{\\text{RR}}(50)$"
+  ),
+  value = c(pi_hat_1, pi_hat_0, rd_hat_z, rr_hat_z)
+) |>
+  knitr::kable(digits = 3)
+```
+
+These are *conditional* estimates: both hold age fixed at 50
+and compare only the two exposure levels at that one age.
+
+:::
+
 #### Marginal vs. conditional effects
 
 {{< include _subfiles/logistic-regression/_sec-marginal-vs-conditional.qmd >}}
