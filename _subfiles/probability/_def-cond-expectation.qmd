@@ -1,0 +1,308 @@
+:::{#def-cond-pmf}
+
+#### Conditional probability mass function
+
+Let $X$ and $Y$ be jointly distributed discrete random variables.
+The **conditional probability mass function** of $Y$ given $X = x$
+(for values of $x$ with $\P(X = x) > 0$) is:
+
+$$\P(Y = y \mid X = x) \eqdef \frac{\P(X = x,\, Y = y)}{\P(X = x)}$$
+
+:::
+
+---
+
+:::{#exm-cond-pmf}
+
+#### Conditional PMF from a joint table
+
+Let $X$ and $Y$ be jointly discrete with joint probability mass function:
+
+| | $Y = 0$ | $Y = 1$ |
+|:---:|:---:|:---:|
+| $X = 0$ | $0.1$ | $0.2$ |
+| $X = 1$ | $0.3$ | $0.4$ |
+
+The marginal probability $\P(X = 0)$ is:
+
+$$
+\ba
+\P(X = 0) &= \P(X = 0,\, Y = 0) + \P(X = 0,\, Y = 1)
+\\&= 0.1 + 0.2
+\\&= 0.3
+\ea
+$$
+
+By @def-cond-pmf, the conditional PMF of $Y$ given $X = 0$ is:
+
+$$
+\ba
+\P(Y = 1 \mid X = 0) &= \frac{\P(X = 0,\, Y = 1)}{\P(X = 0)}
+\\&= \frac{0.2}{0.3}
+\\&= \tfrac{2}{3}
+\ea
+$$
+
+:::
+
+---
+
+{{< slidebreak >}}
+
+:::{#def-cond-pdf}
+
+#### Conditional probability density function
+
+Let $X$ and $Y$ be jointly distributed continuous random variables
+with joint density $\p(X = x,\, Y = y)$ and marginal density $\p(X = x)$.
+The **conditional probability density function** of $Y$ given $X = x$
+(for values of $x$ with $\p(X = x) > 0$) is:
+
+$$\p(Y = y \mid X = x) \eqdef \frac{\p(X = x,\, Y = y)}{\p(X = x)}$$
+
+:::
+
+---
+
+:::{#exm-cond-pdf}
+
+#### Conditional PDF from a joint density
+
+Let $X$ and $Y$ be jointly continuous with joint density
+$\p(X=x,\,Y=y) = x + y$ for $0 < x < 1$, $0 < y < 1$
+(and $0$ otherwise).
+
+The marginal density $\p(X = x)$ is:
+
+$$
+\ba
+\p(X = x) &= \int_0^1 \p(X=x,\,Y=y)\,dy
+\\&= \int_0^1 (x + y)\,dy
+\\&= \sb{xy + \frac{y^2}{2}}_{y=0}^{y=1}
+\\&= x + \tfrac12
+\ea
+$$
+
+At $x = \tfrac12$:
+
+$$\p(X=\tfrac12) = \tfrac12 + \tfrac12 = 1$$
+
+By @def-cond-pdf, the conditional PDF of $Y$ given $X = \tfrac12$ is:
+
+$$
+\ba
+\p(Y=y \mid X=\tfrac12) &= \frac{\p(X=\tfrac12,\,Y=y)}{\p(X=\tfrac12)}
+\\&= \frac{\tfrac12 + y}{1}
+\\&= \tfrac12 + y, \quad 0 < y < 1
+\ea
+$$
+
+As a check, this is a valid density in $y$:
+
+$$
+\int_0^1 \paren{\tfrac12 + y}\,dy = \sb{\frac{y}{2} + \frac{y^2}{2}}_0^1 = \tfrac12 + \tfrac12 = 1
+$$
+
+:::
+
+---
+
+{{< slidebreak >}}
+
+:::{#def-cond-expectation}
+
+#### Conditional expectation
+
+**Discrete case.**
+Let $X$ and $Y$ be jointly distributed discrete random variables.
+The **conditional expectation** of $Y$ given $X = x$,
+using the [conditional PMF](#def-cond-pmf),
+is:
+
+$$\E{Y \mid X = x} \eqdef \sum_{y \in \rangef{Y}} y \cd \P(Y = y \mid X = x)$$
+
+**Continuous case.**
+Let $X$ and $Y$ be jointly distributed continuous random variables.
+The **conditional expectation** of $Y$ given $X = x$,
+using the [conditional PDF](#def-cond-pdf),
+is:
+
+$$\E{Y \mid X = x} \eqdef \int_{y \in \rangef{Y}} y \cd \p(Y = y \mid X = x)\, dy$$
+
+:::
+
+---
+
+:::{#exm-cond-expectation}
+
+#### Conditional expectation from a conditional PMF and PDF
+
+**Discrete case.**
+Continuing @exm-cond-pmf,
+the conditional expectation of $Y$ given $X = 0$ is:
+
+$$
+\ba
+\P(Y = 0 \mid X = 0) &= \frac{\P(X = 0,\, Y = 0)}{\P(X = 0)}
+\\&= \frac{0.1}{0.3}
+\\&= \tfrac13
+\ea
+$$
+
+$$
+\ba
+\E{Y \mid X = 0} &= 0 \cd \P(Y = 0 \mid X = 0) + 1 \cd \P(Y = 1 \mid X = 0)
+\\&= 0 \cd \tfrac13 + 1 \cd \tfrac23
+\\&= \tfrac23
+\ea
+$$
+
+**Continuous case.**
+Continuing @exm-cond-pdf,
+the conditional expectation of $Y$ given $X = \tfrac12$ is:
+
+$$
+\ba
+\E{Y \mid X = \tfrac12}
+&= \int_0^1 y \cd \p(Y=y \mid X=\tfrac12)\,dy
+\\&= \int_0^1 y \paren{\tfrac12 + y}\,dy
+\\&= \int_0^1 \paren{\frac{y}{2} + y^2}\,dy
+\\&= \sb{\frac{y^2}{4} + \frac{y^3}{3}}_0^1
+\\&= \tfrac14 + \tfrac13
+\\&= \tfrac{3}{12} + \tfrac{4}{12}
+\\&= \tfrac{7}{12}
+\ea
+$$
+
+:::
+
+---
+
+{{< slidebreak >}}
+
+:::{#def-cond-mixed}
+
+#### Conditional expectation: mixed case
+
+Suppose exactly one of $X, Y$ is discrete and the other is continuous.
+Write $\p(X = x,\, Y = y)$ for their **joint density-mass function**:
+a probability density in the continuous variable
+and a probability mass in the discrete variable.
+
+**$X$ discrete, $Y$ continuous.**
+Here $\p(X=x,\,Y=y)$ is, for each fixed $x$,
+a probability density in $y$,
+scaled so that $\int_{y} \p(X=x,\,Y=y)\,dy = \P(X=x)$.
+The conditional PDF of $Y$ given $X = x$
+(for values of $x$ with $\P(X = x) > 0$) is:
+
+$$\p(Y = y \mid X = x) \eqdef \frac{\p(X = x,\, Y = y)}{\P(X = x)}$$
+
+and the conditional expectation of $Y$ given $X = x$ is:
+
+$$\E{Y \mid X = x} \eqdef \int_{y \in \rangef{Y}} y \cd \p(Y = y \mid X = x)\, dy$$
+
+**$X$ continuous, $Y$ discrete.**
+Here $\p(X=x,\,Y=y)$ is, for each fixed $y$,
+a probability density in $x$,
+scaled so that $\sum_{y} \p(X=x,\,Y=y) = \p(X=x)$.
+The conditional PMF of $Y$ given $X = x$
+(for values of $x$ with $\p(X = x) > 0$) is:
+
+$$\P(Y = y \mid X = x) \eqdef \frac{\p(X = x,\, Y = y)}{\p(X = x)}$$
+
+and the conditional expectation of $Y$ given $X = x$ is:
+
+$$\E{Y \mid X = x} \eqdef \sum_{y \in \rangef{Y}} y \cd \P(Y = y \mid X = x)$$
+
+:::
+
+---
+
+:::{#exm-cond-mixed}
+
+#### Conditional expectation, one discrete variable and one continuous variable
+
+**$X$ discrete, $Y$ continuous.**
+Let $X \sim \mathrm{Bernoulli}(0.4)$,
+and given $X = x$,
+let $Y \mid X = x \sim \mathrm{Uniform}(0,\, x+2)$,
+so $\p(Y=y \mid X=x) = \frac{1}{x+2}$ for $0 < y < x+2$.
+By @def-cond-mixed:
+
+$$
+\ba
+\E{Y \mid X = x}
+&= \int_0^{x+2} y \cd \frac{1}{x+2}\,dy
+\\&= \frac{1}{x+2} \sb{\frac{y^2}{2}}_0^{x+2}
+\\&= \frac{1}{x+2} \cd \frac{(x+2)^2}{2}
+\\&= \frac{x+2}{2}
+\ea
+$$
+
+At $x = 0$: $\E{Y \mid X=0} = \frac{2}{2} = 1$.
+At $x = 1$: $\E{Y \mid X=1} = \frac{3}{2}$.
+
+**$X$ continuous, $Y$ discrete.**
+Let $X \sim \mathrm{Uniform}(0, 1)$,
+and given $X = x$,
+let $Y \mid X = x \sim \mathrm{Bernoulli}(x)$,
+so $\P(Y=1 \mid X=x) = x$ and $\P(Y=0 \mid X=x) = 1-x$.
+By @def-cond-mixed:
+
+$$
+\ba
+\E{Y \mid X = x}
+&= 0 \cd \P(Y=0 \mid X=x) + 1 \cd \P(Y=1 \mid X=x)
+\\&= 0 \cd (1-x) + 1 \cd x
+\\&= x
+\ea
+$$
+
+At $x = 0.3$: $\E{Y \mid X=0.3} = 0.3$.
+
+:::
+
+---
+
+{{< slidebreak >}}
+
+:::{#def-cond-expectation-function}
+
+#### Conditional expectation function
+
+The **conditional expectation function** $\E{Y \mid X}$ is the function
+(and hence random variable) of $X$ obtained by evaluating
+$\E{Y \mid X = x}$ at $X$; that is,
+$\E{Y \mid X} = g(X)$ where $g(x) \eqdef \E{Y \mid X = x}$.
+
+:::
+
+---
+
+:::{#exm-cond-expectation-function}
+
+#### The conditional expectation function of a joint density
+
+Continuing @exm-cond-pdf and @exm-cond-expectation,
+let $(X,Y)$ be jointly continuous with density $\p(X=x,\,Y=y) = x+y$
+for $0 < x < 1$, $0 < y < 1$.
+The conditional expectation function $g(x) \eqdef \E{Y \mid X=x}$ is:
+
+$$
+\ba
+g(x) &= \int_0^1 y \cd \p(Y=y \mid X=x)\,dy
+\\&= \int_0^1 y \cd \frac{x+y}{x+\tfrac12}\,dy
+\\&= \frac{1}{x+\tfrac12} \int_0^1 (xy + y^2)\,dy
+\\&= \frac{1}{x+\tfrac12} \sb{\frac{xy^2}{2} + \frac{y^3}{3}}_0^1
+\\&= \frac{\tfrac{x}{2} + \tfrac13}{x+\tfrac12}
+\ea
+$$
+
+As a check, evaluating at $x = \tfrac12$ recovers @exm-cond-expectation's result:
+
+$$
+g(\tfrac12) = \frac{\tfrac14 + \tfrac13}{1} = \tfrac{7}{12}
+$$
+
+:::
