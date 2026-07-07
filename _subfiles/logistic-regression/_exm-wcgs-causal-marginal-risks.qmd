@@ -2,32 +2,11 @@
 
 #### Estimated causal marginal risks (WCGS)
 
-Using the WCGS data with `dibpat` (behavior pattern) as the exposure
+Continuing with the same WCGS data and fitted model
+(`wcgs_clean` and `fit`) introduced in @exm-cond-rd-rr ---
+`dibpat` (behavior pattern) as the exposure
 and `chd69` (coronary heart disease by 1969) as the outcome,
 adjusted for `age`:
-
-```{r}
-#| label: wcgs-marginal-setup
-#| code-fold: true
-#| message: false
-#| warning: false
-library(dplyr)
-library(haven)
-
-wcgs_clean <- rmb::wcgs |>
-  mutate(
-    across(where(is.labelled), haven::as_factor),
-    dibpat = dibpat |> relevel(ref = "Type B"),
-    chd69_binary = as.numeric(chd69 == "Yes")
-  ) |>
-  filter(!is.na(chd69_binary), !is.na(dibpat), !is.na(age))
-
-fit <- glm(
-  chd69_binary ~ dibpat + age,
-  data = wcgs_clean,
-  family = binomial(link = "logit")
-)
-```
 
 The **causal marginal risks**
 $\hat\pi_a = \frac{1}{n}\sumin \hat\pi(a, z_i)$

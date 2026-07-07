@@ -32,14 +32,21 @@ $$
 
 #### Conditional predicted risk
 
-The **conditional predicted risk** for an individual
-with exposure $A = a$ and covariate $Z = z$ is:
+The **conditional predicted risk** (or **conditional risk**)
+for an individual with exposure $A = a$ and covariate $Z = z$
+is the population probability
 
 $$
-\hat\pi(a, z) = \expitf{\eb_0 + \eb_A a + \eb_Z z}
+\pi(a, z) \eqdef \Pr(Y = 1 \mid A = a, Z = z).
 $$
 
 :::
+
+Under the logistic model above, this population risk equals
+
+$$
+\pi(a, z) = \expitf{\b_0 + \b_A a + \b_Z z}.
+$$
 
 :::{#def-cond-rd}
 
@@ -50,7 +57,7 @@ at a fixed covariate value $z$ is, using the conditional predicted risk
 (@def-cond-predicted-risk):
 
 $$
-\widehat{\text{RD}}(z) = \hat\pi(1, z) - \hat\pi(0, z)
+\text{RD}(z) \eqdef \pi(1, z) - \pi(0, z)
 $$
 
 :::
@@ -64,7 +71,7 @@ at a fixed covariate value $z$ is, using the conditional predicted risk
 (@def-cond-predicted-risk):
 
 $$
-\widehat{\text{RR}}(z) = \frac{\hat\pi(1, z)}{\hat\pi(0, z)}
+\text{RR}(z) \eqdef \frac{\pi(1, z)}{\pi(0, z)}
 $$
 
 :::
@@ -75,22 +82,46 @@ $$
 
 #### Numerical example: conditional RD and RR at a fixed covariate value
 
-Suppose a fitted logistic model for CHD risk
-(exposure $A$ = Type A behavior pattern, covariate $Z$ = age in years)
-gives $\hat\b_0 = -4.5$, $\hat\b_A = 0.8$, and $\hat\b_Z = 0.05$.
-At age $z = 50$:
+Using the WCGS data with `dibpat` (behavior pattern) as the exposure
+and `chd69` (coronary heart disease by 1969) as the outcome,
+adjusted for `age`:
+
+```{r}
+#| label: wcgs-marginal-setup
+#| code-fold: true
+#| message: false
+#| warning: false
+library(dplyr)
+library(haven)
+
+wcgs_clean <- rmb::wcgs |>
+  mutate(
+    across(where(is.labelled), haven::as_factor),
+    dibpat = dibpat |> relevel(ref = "Type B"),
+    chd69_binary = as.numeric(chd69 == "Yes")
+  ) |>
+  filter(!is.na(chd69_binary), !is.na(dibpat), !is.na(age))
+
+fit <- glm(
+  chd69_binary ~ dibpat + age,
+  data = wcgs_clean,
+  family = binomial(link = "logit")
+)
+```
+
+At age $z = 50$ (within the WCGS sample's observed age range):
 
 ```{r}
 #| label: cond-rd-rr-example
 #| code-fold: true
 
-b0_hat <- -4.5
-bA_hat <- 0.8
-bZ_hat <- 0.05
 z <- 50
+dibpat_levels <- levels(wcgs_clean$dibpat)
+wcgs_cf_a <- data.frame(dibpat = factor("Type A", levels = dibpat_levels), age = z)
+wcgs_cf_b <- data.frame(dibpat = factor("Type B", levels = dibpat_levels), age = z)
 
-pi_hat_1 <- expit(b0_hat + bA_hat * 1 + bZ_hat * z)
-pi_hat_0 <- expit(b0_hat + bA_hat * 0 + bZ_hat * z)
+pi_hat_1 <- predict(fit, newdata = wcgs_cf_a, type = "response")
+pi_hat_0 <- predict(fit, newdata = wcgs_cf_b, type = "response")
 
 rd_hat_z <- pi_hat_1 - pi_hat_0
 rr_hat_z <- pi_hat_1 / pi_hat_0
