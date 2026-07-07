@@ -24,43 +24,53 @@ $$\E{Y \mid X = x} \eqdef \int_{y \in \rangef{Y}} y \cd \p(Y = y \mid X = x)\, d
 
 :::{#exm-cond-expectation}
 
-#### Conditional expectation from a conditional PMF and PDF
+#### Conditional expectation from real trial and birthweight data
 
 **Discrete case.**
 Continuing @exm-cond-pmf,
-the conditional expectation of $Y$ given $X = 0$ is:
+score the vaccine trial's response levels
+$\text{small} = 1$, $\text{moderate} = 2$, $\text{large} = 3$.
+The conditional PMF of $Y$ given $X = \text{placebo}$ (from @exm-cond-pmf) is:
 
 $$
 \ba
-\P(Y = 0 \mid X = 0) &= \frac{\P(X = 0,\, Y = 0)}{\P(X = 0)}
-\\&= \frac{0.1}{0.3}
-\\&= \tfrac13
+\P(Y = \text{small} \mid X = \text{placebo}) &= \tfrac{25}{38}
+\\
+\P(Y = \text{moderate} \mid X = \text{placebo}) &= \tfrac{8}{38}
+\\
+\P(Y = \text{large} \mid X = \text{placebo}) &= \tfrac{5}{38}
 \ea
 $$
 
+so:
+
 $$
 \ba
-\E{Y \mid X = 0} &= 0 \cd \P(Y = 0 \mid X = 0) + 1 \cd \P(Y = 1 \mid X = 0)
-\\&= 0 \cd \tfrac13 + 1 \cd \tfrac23
-\\&= \tfrac23
+\E{Y \mid X = \text{placebo}}
+&= 1 \cd \tfrac{25}{38} + 2 \cd \tfrac{8}{38} + 3 \cd \tfrac{5}{38}
+\\&= \frac{25 + 16 + 15}{38}
+\\&= \frac{56}{38}
+\\&= \frac{28}{19}
+\\&\approx 1.47
 \ea
 $$
 
 **Continuous case.**
 Continuing @exm-cond-pdf,
-the conditional expectation of $Y$ given $X = \tfrac12$ is:
+$Y \mid X = `r x0` \sim \ndist{`r round(cond_mean, 2)`,\, `r round(cond_sd, 2)`^2}$.
+Since the mean of a normal random variable is its own location parameter,
+integrating $y$ against this conditional density directly gives:
 
 $$
 \ba
-\E{Y \mid X = \tfrac12}
-&= \int_0^1 y \cd \p(Y=y \mid X=\tfrac12)\,dy
-\\&= \int_0^1 y \paren{\tfrac12 + y}\,dy
-\\&= \int_0^1 \paren{\frac{y}{2} + y^2}\,dy
-\\&= \sb{\frac{y^2}{4} + \frac{y^3}{3}}_0^1
-\\&= \tfrac14 + \tfrac13
-\\&= \tfrac{3}{12} + \tfrac{4}{12}
-\\&= \tfrac{7}{12}
+\E{Y \mid X = `r x0`}
+&= \int_{-\infty}^{\infty} y \cd \p(Y=y \mid X=`r x0`)\,dy
+\\&= `r round(cond_mean, 2)` \text{ g}
 \ea
 $$
+
+matching the fitted regression line's prediction at $x=`r x0`$ weeks exactly,
+as expected since the conditional mean of a bivariate normal
+*is* the linear regression of $Y$ on $X$.
 
 :::

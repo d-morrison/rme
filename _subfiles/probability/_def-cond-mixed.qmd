@@ -42,41 +42,87 @@ $$\E{Y \mid X = x} \eqdef \sum_{y \in \rangef{Y}} y \cd \P(Y = y \mid X = x)$$
 #### Conditional expectation, one discrete variable and one continuous variable
 
 **$X$ discrete, $Y$ continuous.**
-Let $X \sim \mathrm{Bernoulli}(0.4)$,
-and given $X = x$,
-let $Y \mid X = x \sim \mathrm{Uniform}(0,\, x+2)$,
-so $\p(Y=y \mid X=x) = \frac{1}{x+2}$ for $0 < y < x+2$.
-By @def-cond-mixed:
+The `plasma` dataset in the `dobson` package
+(@dobson4e, Table 6.25)
+records plasma inorganic phosphate levels (mg/dL)
+one hour after a glucose tolerance test,
+for hyperinsulinemic obese (`H-O`) and control (`C`) participants.
+Let $X$ be group and $Y$ be phosphate level.
 
-$$
-\ba
-\E{Y \mid X = x}
-&= \int_0^{x+2} y \cd \frac{1}{x+2}\,dy
-\\&= \frac{1}{x+2} \sb{\frac{y^2}{2}}_0^{x+2}
-\\&= \frac{1}{x+2} \cd \frac{(x+2)^2}{2}
-\\&= \frac{x+2}{2}
-\ea
-$$
+```{r}
+#| code-fold: true
+#| message: false
+library(dobson)
+library(dplyr)
+data(plasma)
+plasma_subset <- plasma |> filter(Group %in% c("H-O", "C"))
+plasma_summary <- plasma_subset |>
+  summarise(n = n(), mean = mean(phosphate), sd = sd(phosphate), .by = Group)
+n_ho <- plasma_summary$n[plasma_summary$Group == "H-O"]
+n_c <- plasma_summary$n[plasma_summary$Group == "C"]
+mean_ho <- plasma_summary$mean[plasma_summary$Group == "H-O"]
+sd_ho <- plasma_summary$sd[plasma_summary$Group == "H-O"]
+mean_c <- plasma_summary$mean[plasma_summary$Group == "C"]
+sd_c <- plasma_summary$sd[plasma_summary$Group == "C"]
+pander::pander(plasma_summary)
+```
 
-At $x = 0$: $\E{Y \mid X=0} = \frac{2}{2} = 1$.
-At $x = 1$: $\E{Y \mid X=1} = \frac{3}{2}$.
+Modeling phosphate as approximately normal within each group,
+with parameters set equal to each group's sample mean and SD,
+and $\P(X = \text{H-O}) = `r n_ho`/`r n_ho + n_c`$:
+
+$$\p(Y = y \mid X = \text{H-O}) \approx \ndist{`r round(mean_ho, 2)`,\, `r round(sd_ho, 2)`^2}$$
+$$\p(Y = y \mid X = \text{C}) \approx \ndist{`r round(mean_c, 2)`,\, `r round(sd_c, 2)`^2}$$
+
+By @def-cond-mixed, since the mean of a normal random variable
+is its own location parameter:
+
+$$\E{Y \mid X = \text{H-O}} = `r round(mean_ho, 2)` \text{ mg/dL}, \qquad
+  \E{Y \mid X = \text{C}} = `r round(mean_c, 2)` \text{ mg/dL}$$
 
 **$X$ continuous, $Y$ discrete.**
-Let $X \sim \mathrm{Uniform}(0, 1)$,
-and given $X = x$,
-let $Y \mid X = x \sim \mathrm{Bernoulli}(x)$,
-so $\P(Y=1 \mid X=x) = x$ and $\P(Y=0 \mid X=x) = 1-x$.
-By @def-cond-mixed:
+The `senility` dataset in the `dobson` package
+(@dobson4e, Table 7.8)
+records, for 54 elderly people,
+a WAIS (Wechsler Adult Intelligence Scale) score
+and whether symptoms of senility were present.
+Let $X$ be WAIS score and $Y$ indicate senility symptoms.
+
+```{r}
+#| code-fold: true
+#| message: false
+data(senility)
+senility_fit <- glm(s ~ x, data = senility, family = binomial)
+b0 <- coef(senility_fit)[["(Intercept)"]]
+b1 <- coef(senility_fit)[["x"]]
+pander::pander(coef(senility_fit))
+```
+
+Modeling $\P(Y = 1 \mid X = x)$ with the fitted logistic regression:
+
+$$\logit \P(Y = 1 \mid X = x) = `r sprintf("%.4f", b0)` - `r sprintf("%.4f", abs(b1))`\, x$$
+
+By @def-cond-mixed, since $Y \mid X=x$ is Bernoulli:
 
 $$
 \ba
-\E{Y \mid X = x}
-&= 0 \cd \P(Y=0 \mid X=x) + 1 \cd \P(Y=1 \mid X=x)
-\\&= 0 \cd (1-x) + 1 \cd x
-\\&= x
+\E{Y \mid X = x} &= 0 \cd \P(Y=0 \mid X=x) + 1 \cd \P(Y=1 \mid X=x)
+\\&= \P(Y=1 \mid X=x)
+\\&= \frac{1}{1 + \e{-(`r sprintf("%.4f", b0)` - `r sprintf("%.4f", abs(b1))`\, x)}}
 \ea
 $$
 
-At $x = 0.3$: $\E{Y \mid X=0.3} = 0.3$.
+```{r}
+#| code-fold: true
+senility_p10 <- predict(senility_fit,
+                        newdata = data.frame(x = 10), type = "response")
+senility_p15 <- predict(senility_fit,
+                        newdata = data.frame(x = 15), type = "response")
+```
+
+At $x = 10$: $\E{Y \mid X=10} = `r round(senility_p10, 2)`$.
+At $x = 15$: $\E{Y \mid X=15} = `r round(senility_p15, 2)`$ —
+a lower WAIS score is associated with higher predicted probability
+of senility symptoms.
 
 :::
