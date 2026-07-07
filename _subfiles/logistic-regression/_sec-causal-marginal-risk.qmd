@@ -18,8 +18,14 @@ if the entire population were assigned treatment $a$.
 
 #### Illustration: potential mean
 
-If a treatment would produce the outcome event in 20% of the population,
-the potential mean is $\mu_a = \E{Y^a} = 0.2$.
+Suppose, hypothetically, that if every man in the WCGS cohort
+had exhibited Type A behavior pattern ($a = 1$),
+the fraction who would go on to develop CHD by 1969
+were close to the fraction actually observed
+among the men who really did have that behavior pattern,
+$\pi(1) = `r round(pi1_direct, 3)`$ (@exm-observed-marginal-risk-direct).
+Under that supposition, the potential mean is
+$\mu_1 = \E{Y^1} = `r round(pi1_direct, 3)`$.
 
 :::
 
@@ -51,9 +57,12 @@ We use the term **causal marginal risk** throughout.
 
 #### Illustration: causal marginal risk
 
-In a population where treatment $a$ would produce the outcome event in 20% of people,
-the causal marginal risk is $\pi_a = \Pr(Y^a = 1) = 0.20$ —
-the fraction who would have the outcome event if everyone were assigned treatment $a$.
+Continuing @exm-potential-mean,
+under that same supposition
+the causal marginal risk is
+$\pi_1 = \Pr(Y^1 = 1) = `r round(pi1_direct, 3)`$ —
+the fraction who would develop CHD
+if every man in the cohort had Type A behavior pattern.
 
 :::
 
@@ -98,10 +107,13 @@ $$
 
 #### Illustration: causal marginal risk equals potential mean
 
-With $\pi_a = 0.20$ as in @exm-causal-marginal-risk-illustration,
+With $\pi_1 = `r round(pi1_direct, 3)`$ as in @exm-causal-marginal-risk-illustration,
 reading the potential mean as an expectation gives the same value:
 
-$$\E{Y^a} = 1 \cdot 0.20 + 0 \cdot 0.80 = 0.20 = \pi_a.$$
+$$
+\E{Y^1} = 1 \cdot `r round(pi1_direct, 3)` + 0 \cdot `r round(1 - pi1_direct, 3)`
+= `r round(pi1_direct, 3)` = \pi_1.
+$$
 
 :::
 
@@ -125,11 +137,22 @@ can be expressed in terms of observed data:
 #### Causal marginal risk by standardization
 
 Continuing @exm-observed-marginal-risk
-with the same covariate-specific risks
-$\pi(1, 0) = 0.1$ and $\pi(1, 1) = 0.3$,
-suppose only 20% of the whole population has $Z = 1$
-($\Pr(Z = 1) = 0.2$),
-so the exposed are enriched for the high-risk level.
+with the same age-specific risks
+$\pi(1, 0) = `r round(pi1_z0, 3)`$ and $\pi(1, 1) = `r round(pi1_z1, 3)`$,
+now weight by the age distribution of the **whole** WCGS population
+rather than just the Type A men:
+
+```{r}
+#| label: wcgs-causal-marginal-risk-strata
+#| code-fold: true
+
+p_z1_pop <- mean(wcgs_clean$age_ge50)
+```
+
+$\Pr(Z = 1) = `r round(p_z1_pop, 3)`$ of the whole population is 50 or older —
+a smaller share than among the Type A men
+($\Pr(Z = 1 \mid A = 1) = `r round(p_z1_a1, 3)`$),
+since behavior pattern and age are associated in this cohort.
 Then @thm-causal-marginal-risk gives:
 
 $$
@@ -138,17 +161,19 @@ $$
 &= \E{\pi(1, Z)}
 && \text{[causal marginal risk theorem]}
 \\
-&= (0.8)(0.1) + (0.2)(0.3)
+&= (1 - `r round(p_z1_pop, 3)`)(`r round(pi1_z0, 3)`)
++ (`r round(p_z1_pop, 3)`)(`r round(pi1_z1, 3)`)
 && \text{[substitute stratum risks and weights]}
 \\
-&= 0.14
+&= `r round((1 - p_z1_pop) * pi1_z0 + p_z1_pop * pi1_z1, 3)`
 && \text{[arithmetic]}
 \ea
 $$
 
-This differs from the observed marginal risk $\pi(1) = 0.2$
-because the exposed subgroup's covariate distribution
-differs from the population's.
+This differs (slightly) from the observed marginal risk
+$\pi(1) = `r round(pi1_direct, 3)`$
+because the Type A men skew somewhat older
+than the WCGS population as a whole.
 
 :::
 
@@ -212,11 +237,13 @@ randomization is the stronger design assumption that yields all three.)
 
 #### Illustration: coincidence under randomization
 
-Take the covariate-specific risks $\pi(1, 0) = 0.1$ and $\pi(1, 1) = 0.3$
-of @exm-observed-marginal-risk, but now suppose $A$ is randomized,
-so the exposed carry the population's covariate distribution,
-$\Pr(Z = 1 \mid A = 1) = \Pr(Z = 1) = 0.2$.
-Then the observed marginal risk
+Take the same age-specific risks $\pi(1, 0) = `r round(pi1_z0, 3)`$
+and $\pi(1, 1) = `r round(pi1_z1, 3)`$ of @exm-observed-marginal-risk,
+but now suppose $A$ had been randomized,
+so the exposed would carry the population's age distribution
+instead of the actual, older-skewing one:
+$\Pr(Z = 1 \mid A = 1) = \Pr(Z = 1) = `r round(p_z1_pop, 3)`$.
+Then the observed marginal risk would be
 
 $$
 \ba
@@ -224,15 +251,18 @@ $$
 &= \E{\pi(1, Z) \mid A = 1}
 && \text{[observed marginal risk theorem]}
 \\
-&= (0.8)(0.1) + (0.2)(0.3)
+&= (1 - `r round(p_z1_pop, 3)`)(`r round(pi1_z0, 3)`)
++ (`r round(p_z1_pop, 3)`)(`r round(pi1_z1, 3)`)
 && \text{[substitute randomized weights]}
 \\
-&= 0.14
+&= `r round((1 - p_z1_pop) * pi1_z0 + p_z1_pop * pi1_z1, 3)`
 && \text{[arithmetic]}
 \ea
 $$
 
-equals the causal marginal risk $\pi_1 = 0.14$ of @exm-causal-marginal-risk,
+equal to the causal marginal risk
+$\pi_1 = `r round((1 - p_z1_pop) * pi1_z0 + p_z1_pop * pi1_z1, 3)`$
+of @exm-causal-marginal-risk,
 exactly as @cor-observed-equals-causal predicts.
 
 :::

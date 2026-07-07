@@ -21,9 +21,21 @@ $$\pi(a) \eqdef \Pr(Y = 1 \mid A = a)$$
 
 #### Illustration: observed marginal risk
 
-If 20% of the exposed group ($A = 1$) experience the outcome event,
-the observed marginal risk is $\pi(1) = \Pr(Y = 1 \mid A = 1) = 0.20$ —
-simply the event proportion within that exposure group.
+Continuing the WCGS example (@exm-cond-rd-rr):
+
+```{r}
+#| label: wcgs-obs-marginal-risk-direct-illustration
+#| code-fold: true
+
+pi1_direct <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type A"])
+```
+
+The observed marginal risk among the Type A men ($A = 1$)
+is simply the proportion of them who developed CHD by 1969:
+
+$$
+\pi(1) = \Pr(Y = 1 \mid A = 1) = `r round(pi1_direct, 3)`
+$$
 
 :::
 
@@ -42,11 +54,25 @@ averaged over the distribution of $Z$ among those with $A = a$:
 
 #### Observed marginal risk by standardization
 
-Suppose a binary covariate $Z$ and, under exposure $A = 1$,
-covariate-specific risks $\pi(1, 0) = 0.1$ and $\pi(1, 1) = 0.3$.
-If half of the exposed have $Z = 1$
-(so $\Pr(Z = 1 \mid A = 1) = 0.5$),
-then @thm-observed-marginal-risk gives:
+Take $Z$ to be an indicator for age 50 or older.
+Among the WCGS men with $A = 1$ (Type A):
+
+```{r}
+#| label: wcgs-age-strata-setup
+#| code-fold: true
+
+wcgs_clean$age_ge50 <- as.numeric(wcgs_clean$age >= 50)
+wcgs_exposed <- wcgs_clean[wcgs_clean$dibpat == "Type A", ]
+pi1_z0 <- mean(wcgs_exposed$chd69_binary[wcgs_exposed$age_ge50 == 0])
+pi1_z1 <- mean(wcgs_exposed$chd69_binary[wcgs_exposed$age_ge50 == 1])
+p_z1_a1 <- mean(wcgs_exposed$age_ge50)
+```
+
+the age-specific risks are $\pi(1, 0) = `r round(pi1_z0, 3)`$
+(under 50) and $\pi(1, 1) = `r round(pi1_z1, 3)`$ (50 or older),
+and $\Pr(Z = 1 \mid A = 1) = `r round(p_z1_a1, 3)`$
+of the Type A men are 50 or older.
+Then @thm-observed-marginal-risk gives:
 
 $$
 \ba
@@ -54,13 +80,18 @@ $$
 &= \E{\pi(1, Z) \mid A = 1}
 && \text{[observed marginal risk theorem]}
 \\
-&= (0.5)(0.1) + (0.5)(0.3)
+&= (1 - `r round(p_z1_a1, 3)`)(`r round(pi1_z0, 3)`)
++ (`r round(p_z1_a1, 3)`)(`r round(pi1_z1, 3)`)
 && \text{[substitute stratum risks and weights]}
 \\
-&= 0.2
+&= `r round((1 - p_z1_a1) * pi1_z0 + p_z1_a1 * pi1_z1, 3)`
 && \text{[arithmetic]}
 \ea
 $$
+
+matching the direct estimate $\pi(1) = `r round(pi1_direct, 3)`$
+from @exm-observed-marginal-risk-direct
+(up to rounding).
 
 :::
 

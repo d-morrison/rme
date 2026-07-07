@@ -2,29 +2,29 @@
 
 #### Collapsibility: numerical illustration
 
-Consider a hypothetical scenario with two strata
-($Z = 0$: low-risk, $Z = 1$: high-risk).
-We make two simplifying assumptions:
-
-1. **Covariate balance** ($A \ind Z$):
-   exposure is independent of the covariate,
-   so $f_{Z \mid A}(z \mid a) = f_Z(z)$ for all $a$ and $z$.
-2. **Equal stratum sizes** ($f_Z(0) = f_Z(1) = \tfrac{1}{2}$):
-   both strata have the same marginal probability.
-
-Together, these imply
-$f_{Z \mid A}(z \mid a) = \tfrac{1}{2}$ for all $a$ and $z$,
-so the simple (equal-weight) average of stratum-specific effects
-equals both the observed marginal risk $\pi(a)$ and the causal marginal risk $\pi_a$:
+Continuing the WCGS example with `dibpat` as the exposure,
+`chd69` as the outcome, and age 50 or older as $Z$
+(@exm-observed-marginal-risk):
+the causal marginal risk (@def-causal-marginal-risk) standardizes
+**both** exposure groups' stratum-specific risks
+to the same population age distribution $f_Z(z)$
+(@rem-observed-vs-causal-marginal-risk),
+so this is exactly the common weighting @def-collapsibility requires --
+no simplifying assumptions needed:
 
 ```{r}
-#| label: collapsibility-example
+#| label: wcgs-collapsibility
 #| code-fold: true
 
+wcgs_nonexposed <- wcgs_clean[wcgs_clean$dibpat == "Type B", ]
+pi0_z0 <- mean(wcgs_nonexposed$chd69_binary[wcgs_nonexposed$age_ge50 == 0])
+pi0_z1 <- mean(wcgs_nonexposed$chd69_binary[wcgs_nonexposed$age_ge50 == 1])
+
 strata <- tibble::tibble(
-  stratum = c("Z = 0 (low risk)", "Z = 1 (high risk)"),
-  pi_0    = c(0.05, 0.30),
-  pi_1    = c(0.10, 0.50)
+  stratum = c("Z = 0 (under 50)", "Z = 1 (50 or older)"),
+  weight  = c(1 - p_z1_pop, p_z1_pop),
+  pi_0    = c(pi0_z0, pi0_z1),
+  pi_1    = c(pi1_z0, pi1_z1)
 ) |>
   dplyr::mutate(
     RD = pi_1 - pi_0,
@@ -32,8 +32,8 @@ strata <- tibble::tibble(
     OR = (pi_1 / (1 - pi_1)) / (pi_0 / (1 - pi_0))
   )
 
-pi1_marg <- mean(strata$pi_1)
-pi0_marg <- mean(strata$pi_0)
+pi1_marg <- sum(strata$weight * strata$pi_1)
+pi0_marg <- sum(strata$weight * strata$pi_0)
 
 tibble::tibble(
   Measure = c("Risk difference", "Risk ratio", "Odds ratio"),
@@ -42,22 +42,29 @@ tibble::tibble(
     pi1_marg / pi0_marg,
     (pi1_marg / (1 - pi1_marg)) / (pi0_marg / (1 - pi0_marg))
   ),
-  `Avg. conditional` = c(
-    mean(strata$RD), mean(strata$RR), mean(strata$OR)
+  `Weighted avg. conditional` = c(
+    sum(strata$weight * strata$RD),
+    sum(strata$weight * strata$RR),
+    sum(strata$weight * strata$OR)
   ),
-  `Marginal = avg. conditional?` = c("Yes", "No", "No")
+  `Marginal = weighted avg. conditional?` = c("Yes", "No", "No")
 ) |>
-  knitr::kable(digits = 3)
+  knitr::kable(digits = 4)
 ```
 
-Even with covariate balance ($A \ind Z$), the marginal RR and marginal OR both differ from
-the average of their conditional counterparts,
-while the marginal RD equals the average conditional RD exactly.
+The marginal risk difference equals the weighted average
+of the conditional risk differences exactly, as @thm-collapsibility guarantees.
+The marginal risk ratio and marginal odds ratio both differ
+from the weighted average of their conditional counterparts --
+though the risk ratio's discrepancy only shows up in the fourth decimal place here,
+because the conditional risk ratios happen to be nearly homogeneous
+across the two age strata
+($`r sprintf("%.3f", strata$RR[1])`$ vs. $`r sprintf("%.3f", strata$RR[2])`$).
 
 Non-collapsibility is distinct from effect-measure modification.
-Here the stratum-specific effects also vary across strata
-(risk ratios $2.00$ vs. $1.67$, odds ratios $2.11$ vs. $2.33$),
-and for the risk ratio, that heterogeneity is exactly what drives its discrepancy here:
+The conditional odds ratios vary more across strata
+($`r sprintf("%.3f", strata$OR[1])`$ vs. $`r sprintf("%.3f", strata$OR[2])`$),
+and for the risk ratio, that near-homogeneity is exactly what keeps its discrepancy small here:
 if the conditional risk ratio were instead **constant** across strata,
 the marginal risk ratio would reproduce it exactly,
 just like the risk difference.
