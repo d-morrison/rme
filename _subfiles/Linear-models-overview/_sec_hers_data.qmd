@@ -1,0 +1,180 @@
+:::{.callout-note}
+This section is based on [@vittinghoff2e, Chapter 4].
+:::
+
+::: notes
+
+{{< include _subfiles/shared/_sec_hers_intro.qmd >}}
+
+:::
+
+```{r}
+#| eval: false
+#| code-fold: show
+library(haven)
+hers <- haven::read_dta(
+  paste0(
+    "https://regression.ucsf.edu/sites/g/files",
+    "/tkssra6706/f/wysiwyg/home/data/hersdata.dta"
+  )
+)
+```
+
+```{r}
+#| include: false
+library(haven)
+hers <-
+  fs::path_package("rme", "extdata/hersdata.dta") |>
+  read_dta() |>
+  dplyr::mutate(
+    HT = as_factor(HT) |>
+      relevel(ref = "placebo"),
+    statins = as_factor(statins) |>
+      relevel(ref = "no")
+  )
+
+# Snapshot the factor-coded `hers` so the diagnostics sections below use
+# exactly the data the models were fit on, regardless of any later
+# reassignment of `hers`.
+hers_lm_data <- hers
+```
+
+### Data as table
+
+:::{#tbl-hers-ch4}
+
+```{r}
+#| code-fold: true
+hers |> head()
+```
+
+`hers` data
+
+:::
+
+{{< slidebreak >}}
+
+### Data as graph
+
+:::{#fig-hers-scatter}
+
+```{r}
+#| code-fold: true
+hers_scatter_data <- hers |>
+  dplyr::filter(!is.na(age), !is.na(BMI), !is.na(LDL), !is.na(statins))
+hers_scatter_no <- hers_scatter_data |> dplyr::filter(statins == "no")
+hers_scatter_yes <- hers_scatter_data |> dplyr::filter(statins == "yes")
+
+hers_scatter_axes <- list(
+  xaxis = list(title = "Age (yr)"),
+  yaxis = list(title = "BMI (kg/m²)"),
+  zaxis = list(title = "LDL (mg/dL)")
+)
+
+plotly::plot_ly() |>
+  plotly::add_trace(
+    data = hers_scatter_no,
+    x = ~age, y = ~BMI, z = ~LDL,
+    type = "scatter3d", mode = "markers",
+    name = "No statins", scene = "scene",
+    marker = list(size = 3, opacity = 0.5, color = "steelblue")
+  ) |>
+  plotly::add_trace(
+    data = hers_scatter_yes,
+    x = ~age, y = ~BMI, z = ~LDL,
+    type = "scatter3d", mode = "markers",
+    name = "Yes statins", scene = "scene2",
+    marker = list(size = 3, opacity = 0.5, color = "darkorange")
+  ) |>
+  plotly::layout(
+    annotations = list(
+      list(
+        text = "No statins", x = 0.22, y = 0.95,
+        xref = "paper", yref = "paper", showarrow = FALSE
+      ),
+      list(
+        text = "Yes statins", x = 0.78, y = 0.95,
+        xref = "paper", yref = "paper", showarrow = FALSE
+      )
+    ),
+    scene = c(
+      hers_scatter_axes,
+      list(domain = list(x = c(0, 0.48), y = c(0, 1)))
+    ),
+    scene2 = c(
+      hers_scatter_axes,
+      list(domain = list(x = c(0.52, 1), y = c(0, 1)))
+    )
+  )
+```
+
+`hers` data (@vittinghoff2e):
+age (years) and BMI (kg/m²) vs. baseline LDL (mg/dL),
+split by statin use (left: no statins; right: statins).
+
+:::
+
+{{< slidebreak >}}
+
+### Key variables
+
+:::{#fig-hers-key-vars}
+
+```{r}
+#| code-fold: true
+#| fig-height: 7
+#| fig-width: 8
+library(GGally)
+hers |>
+  dplyr::select(LDL, HT, BMI, statins, age) |>
+  ggpairs(
+    mapping = aes(col = statins),
+    lower = list(continuous = GGally::wrap("points", alpha = 0.3)),
+    columnLabels = c(
+      "LDL (mg/dL)",
+      "HT",
+      "BMI (kg/m²)",
+      "Statins",
+      "Age (yr)"
+    )
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+Key variables in `hers` data: outcome (LDL),
+treatment (HT), and covariates (BMI, statins, age)
+
+:::
+
+{{< slidebreak >}}
+
+### Data notation {.smaller}
+
+::: notes
+Let's define some notation to represent this data:
+:::
+
+-   $Y$: LDL cholesterol (mg/dL)
+-   $A$: age (years)
+-   $B$: BMI (kg/m²)
+-   $T$: hormone therapy treatment assignment
+    ("placebo" or "hormone therapy")
+-   $H$: indicator variable for $T$ = "hormone therapy"
+    -   $H = 0$ if $T$ = "placebo"
+    -   $H = 1$ if $T$ = "hormone therapy"
+-   $U$: statin use ("no" or "yes")
+-   $V$: indicator variable for $U$ = "yes"
+    -   $V = 0$ if $U$ = "no"
+    -   $V = 1$ if $U$ = "yes"
+
+::: notes
+"Placebo" is the **reference level** for the categorical variable $T$,
+and "no" is the **reference level** for statin use $U$.
+The choice of reference level is arbitrary;
+it only affects the interpretation of the intercept and corresponding indicator coefficients.
+
+Since LDL is measured at **baseline** (before the hormone therapy was administered),
+$H$ is not included as a predictor in our regression models for LDL.
+We instead focus on statin use $U$ (and its indicator $V$) as the key grouping variable.
+:::

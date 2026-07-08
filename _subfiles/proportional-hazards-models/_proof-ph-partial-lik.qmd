@@ -1,0 +1,80 @@
+::: {.proof}
+
+Adapted from [@klein2003survival, §8.3, Theoretical Note 1, p. 257].
+This proof draws on the discretized-likelihood building blocks assembled earlier in this section —
+@lem-censored-lik, @lem-surv-discretized, and @lem-lik-by-interval —
+together with the proportional-hazards lemmas @lem-ph-single-subj-fail, @lem-ph-whether-failure, @lem-ph-event-chain-rule, and @lem-ph-which-subject.
+
+Assume noninformative censoring
+(conditional on $\vx$, censoring times are independent of event times)
+and no tied event times.
+Let $t_1 < \cdots < t_K$ be the distinct observed failure times,
+and let $(i)$ be the subject who fails at $t_i$ (unique under the no-ties assumption).
+
+By @lem-lik-by-interval, the likelihood factors over intervals,
+$\Lik \approx \prod_\tau \Lik_\tau$.
+Separate the $K$ intervals that contain a failure from the rest.
+A no-failure interval contributes
+$\Lik_\tau^{\text{no failure}} = \prod_{m \in R(\tau)}\paren{1 - q_m(\tau)}$;
+the interval containing $t_i$ contributes the event factor
+$\Pr\sb{(i) \text{ fails at } t_i \mid R(t_i)}$ times the survival of the other members,
+which to first order is just the event factor itself, since each other member survives with probability $1 - O(\Delta t)$.
+Applying @lem-ph-event-chain-rule to each event factor,
+and then @lem-ph-whether-failure and @lem-ph-which-subject to its two pieces,
+
+$$
+\ba
+\Lik
+&\approx
+\paren{\prod_{i=1}^{K}
+   \Pr\sb{(i) \text{ fails} \mid 1 \text{ failure at } t_i,\ R(t_i)}\,
+   \Pr\sb{1 \text{ failure at } t_i \mid R(t_i)}}
+   \paren{\prod_{\tau\,:\,\text{no failure}} \Lik_\tau^{\text{no failure}}}
+&& \text{(event chain rule)}
+\\
+&\approx
+\underbrace{\paren{\prod_{i=1}^{K} \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}}}
+          _{\Lik^*(\vb)\ \text{(kept)}}
+\;\times\;
+\underbrace{
+\sb{\prod_{i=1}^{K} \blue{\haz_0(t_i)\,\Delta t}\;\red{S_i}}
+\sb{\prod_{\tau\,:\,\text{no failure}} \prod_{m \in R(\tau)} \paren{1 - q_m(\tau)}}}
+          _{\mathcal{B}(\vb,\,\haz_0)\ \text{(discarded)}} .
+&& \text{(whether-failure and which-subject factors)}
+\ea
+$$ {#eq-ph-factored-lik}
+
+Under the no-ties assumption each event time has $d_i = 1$
+(where $d_i$ is the number of events at $t_i$),
+so the kept product $\prod_{i=1}^{K}(\cdots) = \prod_{\set{i:\ d_i = 1}}(\cdots)$
+matches the form of $\Lik^*(\vb)$ in @def-ph-partial-lik.
+
+The partial likelihood keeps the first product, $\Lik^*(\vb)$,
+and drops the second, $\mathcal{B}(\vb, \haz_0)$.
+The discarded factor $\mathcal{B}(\vb, \haz_0)$ collects both the
+whether-a-failure-occurs factors and the entire between-event survival background,
+and it is the only place the baseline hazard $\blue{\haz_0(\cdot)}$ appears —
+equivalently, the shared $\blue{\haz_0(t_i)\,\Delta t}$ cancels from each kept factor
+in @eq-ph-which-subject — which is why maximizing $\Lik^*(\vb)$ alone
+frees the estimator from $\haz_0(\cdot)$.
+The discarded factor is **not** free of $\vb$, however:
+it still depends on $\vb$ through the risk-set score totals $\red{S_i}$ and the survival background.
+Dropping it therefore sacrifices the information about $\vb$ carried by
+*when* (and within how large a risk set) failures occur,
+retaining only the information in *which* subject fails at each event time.
+
+The factorization in @eq-ph-factored-lik is a *construction* rather than
+an exact decomposition of the joint probability:
+the factors are not formally independent
+(the risk set $R(t_{i+1})$ depends on who failed and was censored before $t_{i+1}$,
+and the discretization is exact only in the $\Delta t \to 0$ limit),
+but Cox showed that treating $\Lik^*(\vb)$ as a likelihood — i.e.,
+maximizing it as a function of $\vb$ — yields estimators with the
+usual large-sample properties
+(consistency, asymptotic normality, the standard score and information identities;
+see also [@klein2003survival, §8.3, Theoretical Note 1]).
+Under noninformative censoring, each kept factor depends on the observed history
+only through $R(t_i)$ and $\set{\vx_j}_{j \in R(t_i)}$,
+and @eq-ph-which-subject gives exactly the partial likelihood $\Lik^*(\vb)$ of @def-ph-partial-lik.
+
+:::

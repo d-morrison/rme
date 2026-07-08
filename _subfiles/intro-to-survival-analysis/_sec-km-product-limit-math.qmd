@@ -52,27 +52,43 @@ between-exit-time survival assumption.
 Let
 $\cs(y_j) = \Pr(Y > y_j \mid Y \geq y_j)$
 denote the conditional probability of surviving past the exit time $y_j$,
-given survival up to $y_j$. 
-The marginal survival through $y_j$ can then be
-written recursively:
+given survival up to $y_j$.
+By @thm-km-gaps, the conditioning event $\{Y \geq y_j\}$ has the same
+probability as $\{Y > y_{j-1}\}$, so $\cs(y_j)$ is really a conditional
+survival probability spanning the previous exit time to this one;
+applying @lem-cond-surv-ratio to that pair of times gives:
 
 $$
 \ba
-\survf{y_j}
-&=\Pr(Y > y_j)
+\cs(y_j)
+&\eqdef \Pr(Y > y_j \mid Y \geq y_j)
+&& \text{(definition of } \cs(y_j)\text{)}
 \\
-&= \Pr(Y > y_j, Y \geq y_j)\\
-&= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y \geq y_j)\\
-&= \Pr(Y > y_j \mid Y \geq y_j)\Pr(Y > y_{j-1})\\
-&= \cs(y_j)\Pr(Y > y_{j-1})
+&= \frac{\Pr(Y > y_j,\ Y \geq y_j)}{\Pr(Y \geq y_j)}
+&& \text{(definition of conditional probability)}
 \\
-&= \cs(y_j)\survf{y_{j-1}}.
+&= \frac{\Pr(Y > y_j)}{\Pr(Y \geq y_j)}
+&& \text{(}\{Y > y_j\} \subseteq \{Y \geq y_j\}\text{)}
+\\
+&= \frac{\Pr(Y > y_j)}{\Pr(Y > y_{j-1})}
+&& \text{(consecutive exit-time identity)}
+\\
+&= \frac{\Pr(Y > y_j,\ Y > y_{j-1})}{\Pr(Y > y_{j-1})}
+&& \text{(}\{Y > y_j\} \subseteq \{Y > y_{j-1}\}\text{)}
+\\
+&= \Pr(Y > y_j \mid Y > y_{j-1})
+&& \text{(definition of conditional probability)}
+\\
+&= \frac{\survf{y_j}}{\survf{y_{j-1}}} ,
+&& \text{(conditional survival ratio)}
 \ea
 $$
 
-Here the first equality again uses the [subset property](probability.qmd#thm-prob-subset): if $Y > y_j$, then
-$Y \geq y_j$, so $\{Y > y_j\} \subseteq \{Y \geq y_j\}$. The third equality substitutes the @thm-km-gaps result,
-$\Pr(Y \geq y_j) = \Pr(Y > y_{j-1})$.
+so, rearranging, the marginal survival through $y_j$ is written recursively:
+
+$$
+\survf{y_j} = \cs(y_j)\,\survf{y_{j-1}}.
+$$
 
 The same recursion can be applied repeatedly. If
 $S_j = \Pr(Y > y_j)$ and $S_0 = 1$, then:

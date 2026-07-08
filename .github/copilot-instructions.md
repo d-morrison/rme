@@ -266,6 +266,21 @@ Do not use generic acknowledgements without locators
 or plaintext author-title references
 when a BibTeX citation is available.
 
+## Observational vs Causal Estimands
+
+Always distinguish observational estimands
+from causal estimands in notation and prose.
+
+- Use observational notation
+  (for example, standardized risks based on `\E{Y \mid A=a, Z=z}`)
+  when discussing model-based associations.
+- Use potential-outcome notation
+  (for example, `\Prf{Y^a = 1}`)
+  only when making a causal claim.
+- If observational and causal estimands are equated,
+  explicitly state identification assumptions
+  (consistency, exchangeability, and positivity).
+
 ## Variable Definitions in Exercises
 
 When introducing model variables in exercises,
@@ -382,6 +397,123 @@ When introducing or editing formal statistical definitions in `.qmd` files:
   (for example, empirical CDF),
   ensure those terms also have formal `#def-` div definitions
   in the relevant scope before relying on them
+
+## Slidebreaks Before Theorem-Type Divs
+
+Always add `{{< slidebreak >}}` on a blank line immediately before
+every theorem-type div opener.
+This ensures slide-format output stays readable.
+
+Theorem-type div types (per [Quarto cross-reference docs](https://quarto.org/docs/authoring/cross-references.html#theorems-and-proofs)):
+`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`, `#sol-`
+
+### Slidebreaks in including vs. included files
+
+When a subfile's **first** content is a theorem-type div,
+place the `{{< slidebreak >}}` in the **including** (parent) file,
+immediately before the `{{< include >}}` shortcode —
+**not** at the start of the included subfile itself.
+
+**Correct** — slidebreak in the including file:
+```qmd
+<!-- in the parent file -->
+{{< slidebreak >}}
+
+{{< include _subfiles/chapter/_exm-my-example.qmd >}}
+```
+
+```qmd
+<!-- in _exm-my-example.qmd — no leading slidebreak -->
+:::{#exm-my-example}
+
+#### My example title
+
+Content...
+
+:::
+```
+
+**Incorrect** — slidebreak inside the included file:
+```qmd
+<!-- in the parent file — no slidebreak -->
+{{< include _subfiles/chapter/_exm-my-example.qmd >}}
+```
+
+```qmd
+<!-- in _exm-my-example.qmd — do NOT put slidebreak here -->
+{{< slidebreak >}}
+
+:::{#exm-my-example}
+
+#### My example title
+
+Content...
+
+:::
+```
+
+**Correct** example (non-leading slidebreak, same file):
+```qmd
+{{< slidebreak >}}
+
+:::{#def-collapsibility}
+
+#### Collapsibility
+
+A measure is *collapsible* if ...
+
+:::
+```
+
+**Incorrect** (missing slidebreak):
+```qmd
+:::{#def-collapsibility}
+
+#### Collapsibility
+
+A measure is *collapsible* if ...
+
+:::
+```
+
+### Exception: section heading immediately before the div
+
+When a section heading immediately precedes the div
+(or the `{{< include >}}` of a subfile that begins with one),
+the `{{< slidebreak >}}` may be omitted
+so the heading shares its slide with the div,
+rather than producing a title-only slide.
+Mark the intentional omission with an inline
+`<!-- ... do not re-flag -->` comment at that spot.
+
+## Example Formatting
+
+All worked examples in `.qmd` files must be wrapped in a Quarto `#exm-` div.
+Never leave a named example as a plain markdown section.
+
+**Correct:**
+```qmd
+:::{#exm-wcgs-marginal-rd}
+
+##### Example: Marginal risk difference
+
+Content of the example...
+
+:::
+```
+
+**Incorrect:**
+```qmd
+##### Example: Marginal risk difference
+
+Content of the example...
+```
+
+- Use an id beginning `#exm-` (for example, `#exm-wcgs-marginal-rd`)
+- Put the example title in a heading inside the div,
+  at the heading level matching the surrounding section depth
+- All content for the example (setup, computation, interpretation)
+  should live inside the div
 
 ## Div Titles vs. Markdown Headings
 
@@ -586,7 +718,7 @@ Key macros to use:
 - **Expectation operator**: Use `\E{Y|X=x}` (renders as $\text{E}[Y|X=x]$), **not** raw `E[Y|X=x]`
 - **Aligned equations**: Use `\ba` / `\ea` for `\begin{aligned}` / `\end{aligned}`
 - **Greek letters**: Use `\b` for $\beta$, `\g` for $\gamma$, `\a` for $\alpha$
-- **Formatting**: Use `\red{...}` and `\blue{...}` for colored text in math
+- **Formatting**: Use `\red{...}` and `\teal{...}` for colored text in math
 - **Deviation/error notation**: Use `\erf{...}` for deviations of estimates/estimators from their estimands; use `\devn(...)` for all other deviations (e.g., observations from population means)
 - **Estimators of vector estimands**: the estimator symbol (e.g. `\hat`,
   `\bar`, `\tilde`) goes on top of the vector symbol, not inside it —
@@ -717,26 +849,27 @@ job-level `env:` mapping in `.github/workflows/claude.yml`).
 
 ## Color Coding Strategy for Math Expressions
 
-Use `\red{...}` and `\blue{...}` purposefully and consistently to help readers:
+Use `\red{...}` and `\teal{...}` purposefully and consistently to help readers
+(`\teal`, not `\blue` — `\teal` reads better in dark mode):
 
 1. **Focal coefficient**: Use `\red{...}` for the coefficient being interpreted or derived in the current context.
    This draws the reader's eye to the quantity that the surrounding text is about.
    Example: When deriving that $\b_A$ is the slope, color it `\red{\b_A}` throughout the derivation.
 
 2. **Differences between similar expressions**: When comparing two expressions that differ in certain components,
-   use `\red{...}` for the unique/extra term and `\blue{...}` for the shared term.
+   use `\red{...}` for the unique/extra term and `\teal{...}` for the shared term.
    This makes it visually clear what cancels and what remains.
-   Example: Male slope $= \blue{\b_A} + \red{\b_{AM}}$, female slope $= \blue{\b_A}$,
-   difference $= \blue{\b_A} + \red{\b_{AM}} - \blue{\b_A} = \red{\b_{AM}}$.
+   Example: Male slope $= \teal{\b_A} + \red{\b_{AM}}$, female slope $= \teal{\b_A}$,
+   difference $= \teal{\b_A} + \red{\b_{AM}} - \teal{\b_A} = \red{\b_{AM}}$.
 
 3. **Reference level constraints**: In models with interactions, coefficient interpretations are constrained
    to a specific reference level of other covariates.
    Use `\red{0}` (or `\red{P = 0}`, `\red{A = 0}`, etc.) to highlight reference levels that constrain an interpretation.
-   Use `\blue{m}` (or the generic variable name) when the interpretation holds for any value.
+   Use `\teal{m}` (or the generic variable name) when the interpretation holds for any value.
    This visually distinguishes interaction models (constrained) from additive models (unconstrained).
 
 4. **Chain rule components**: When applying the chain rule, use `\red{...}` for the first factor
-   and `\blue{...}` for the second factor.
+   and `\teal{...}` for the second factor.
    This connects the factored form to the simplified form on the next line.
 
 5. **Connected components across equations**: When a term is defined in one equation and expanded
