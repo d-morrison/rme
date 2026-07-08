@@ -275,7 +275,7 @@ from causal estimands in notation and prose.
   (for example, standardized risks based on `\E{Y \mid A=a, Z=z}`)
   when discussing model-based associations.
 - Use potential-outcome notation
-  (for example, `\Pr(Y^a = 1)`)
+  (for example, `\Prf{Y^a = 1}`)
   only when making a causal claim.
 - If observational and causal estimands are equated,
   explicitly state identification assumptions
@@ -405,7 +405,7 @@ every theorem-type div opener.
 This ensures slide-format output stays readable.
 
 Theorem-type div types (per [Quarto cross-reference docs](https://quarto.org/docs/authoring/cross-references.html#theorems-and-proofs)):
-`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`
+`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`, `#sol-`
 
 ### Slidebreaks in including vs. included files
 
@@ -963,7 +963,6 @@ Content here.
 
 More content.
 ```
-When a subfile begins with a theorem-type div (`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`), place the preceding `{{< slidebreak >}}` in the **parent** file (before the `{{< include >}}`), not inside the subfile. The subfile itself should not start with `{{< slidebreak >}}`.
 
 ## Computer Algebra Systems (CAS)
 
