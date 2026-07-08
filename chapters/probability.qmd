@@ -620,6 +620,90 @@ $\E{Y \mid X} = g(X)$ where $g(x) \eqdef \E{Y \mid X = x}$.
 
 :::
 
+---
+
+:::{#exr-fubini-joint-disc}
+
+#### Expectation of a sum, given a joint PMF
+
+Let $(X, Y)$ be discrete with joint probability mass function:
+
+| | $Y = 0$ | $Y = 1$ |
+|:---:|:---:|:---:|
+| $X = 0$ | $0.2$ | $0.3$ |
+| $X = 1$ | $0.1$ | $0.4$ |
+
+Compute $\E{X + Y}$.
+
+:::
+
+::::{.solution}
+
+Treating $(X, Y)$ as a single discrete random object
+taking one of the four values $(0,0)$, $(0,1)$, $(1,0)$, $(1,1)$,
+LOTUS (@thm-lotus) applied to $g(x, y) = x + y$ gives directly:
+
+$$
+\ba
+\E{X + Y}
+&= \sum_{x \in \{0,1\}} \sum_{y \in \{0,1\}} (x + y)\,\P(X = x,\, Y = y) \\
+&= (0{+}0)(0.2) + (0{+}1)(0.3) + (1{+}0)(0.1) + (1{+}1)(0.4) \\
+&= 0 + 0.3 + 0.1 + 0.8 \\
+&= 1.2
+\ea
+$$
+
+As a check: $\E{X} = 0(0.5) + 1(0.5) = 0.5$ and
+$\E{Y} = 0(0.3) + 1(0.7) = 0.7$,
+so $\E{X + Y} = \E{X} + \E{Y} = 1.2$.
+
+Note that $X$ and $Y$ are **not** independent here:
+$\P(X = 0, Y = 0) = 0.2 \neq 0.15 = \P(X = 0)\,\P(Y = 0)$.
+LOTUS applies regardless, since it requires only the
+*actual* joint mass function, not independence.
+
+There are only four $(x,y)$ pairs here,
+so summing them in any order --- row by row, column by column,
+or any other listing --- gives the same total
+by ordinary commutativity and associativity of addition;
+no result about interchanging summation order is needed.
+Fubini--Tonelli, covered next, is what's needed
+once the support is countably infinite instead ---
+see @exr-fubini-joint-disc-infinite.
+
+:::{#fig-fubini-joint-disc}
+
+```{r}
+#| code-fold: true
+#| message: false
+
+x_labs <- c("X=0", "X=0", "X=1", "X=1")
+y_labs <- c("Y=0", "Y=1", "Y=0", "Y=1")
+probs <- c(0.2, 0.3, 0.1, 0.4)
+
+plotly::plot_ly(
+  x = ~y_labs, y = ~probs, color = ~x_labs,
+  colors = c("steelblue", "tomato"),
+  type = "bar"
+) |>
+  plotly::layout(
+    barmode = "group",
+    xaxis = list(title = "Y"),
+    yaxis = list(title = "P(X = x, Y = y)", range = c(0, 0.5)),
+    legend = list(title = list(text = "X value"))
+  )
+```
+
+Joint probability mass function $\P(X = x, Y = y)$.
+Marginal totals: $\P(X = 0) = 0.5$, $\P(X = 1) = 0.5$,
+$\P(Y = 0) = 0.3$, $\P(Y = 1) = 0.7$.
+
+:::
+
+::::
+
+---
+
 ## Fubini–Tonelli for expectations
 
 The [Riemann version of Fubini's theorem](math-prereqs.qmd#thm-fubini),
@@ -890,84 +974,7 @@ $\{(x, y) : 0 \le x \le y \le 1\}$, and zero elsewhere. The total
 
 {{< slidebreak >}}
 
-::::{#exm-fubini-joint-disc}
-
-#### Both-discrete case: joint PMF
-
-Let $(X, Y)$ be discrete with joint probability mass function:
-
-| | $Y = 0$ | $Y = 1$ |
-|:---:|:---:|:---:|
-| $X = 0$ | $0.2$ | $0.3$ |
-| $X = 1$ | $0.1$ | $0.4$ |
-
-Compute $\E{X + Y}$ using @cor-fubini-joint with
-$\mu_X = \mu_Y = \text{counting measure}$ and $h(x,y) = x + y$.
-
-By @cor-fubini-joint (both-discrete case):
-
-$$
-\ba
-\E{X + Y}
-&= \sum_{x \in \{0,1\}} \sum_{y \in \{0,1\}} (x + y)\,\P(X = x,\, Y = y) \\
-&= (0{+}0)(0.2) + (0{+}1)(0.3) + (1{+}0)(0.1) + (1{+}1)(0.4) \\
-&= 0 + 0.3 + 0.1 + 0.8 \\
-&= 1.2
-\ea
-$$
-
-As a check: $\E{X} = 0(0.5) + 1(0.5) = 0.5$ and
-$\E{Y} = 0(0.3) + 1(0.7) = 0.7$,
-so $\E{X + Y} = \E{X} + \E{Y} = 1.2$.
-
-Note that $X$ and $Y$ are **not** independent here:
-$\P(X = 0, Y = 0) = 0.2 \neq 0.15 = \P(X = 0)\,\P(Y = 0)$.
-@cor-fubini-joint applies regardless, since it requires only the
-*actual* joint mass function, not independence.
-
-This example's support is finite, so reordering the double sum above
-is justified by ordinary commutativity and associativity of addition:
-there are only four terms, and adding four numbers in a different order
-cannot change their total.
-@cor-fubini-joint's guarantee isn't actually doing any work here.
-@exm-fubini-joint-disc-infinite below gives a case
-where the support is countably infinite instead,
-so the guarantee is load-bearing.
-
-:::{#fig-fubini-joint-disc}
-
-```{r}
-#| code-fold: true
-#| message: false
-
-x_labs <- c("X=0", "X=0", "X=1", "X=1")
-y_labs <- c("Y=0", "Y=1", "Y=0", "Y=1")
-probs <- c(0.2, 0.3, 0.1, 0.4)
-
-plotly::plot_ly(
-  x = ~y_labs, y = ~probs, color = ~x_labs,
-  colors = c("steelblue", "tomato"),
-  type = "bar"
-) |>
-  plotly::layout(
-    barmode = "group",
-    xaxis = list(title = "Y"),
-    yaxis = list(title = "P(X = x, Y = y)", range = c(0, 0.5)),
-    legend = list(title = list(text = "X value"))
-  )
-```
-
-Joint probability mass function $\P(X = x, Y = y)$.
-Marginal totals: $\P(X = 0) = 0.5$, $\P(X = 1) = 0.5$,
-$\P(Y = 0) = 0.3$, $\P(Y = 1) = 0.7$.
-
-:::
-
-::::
-
-{{< slidebreak >}}
-
-::::{#exm-fubini-joint-disc-infinite}
+:::{#exr-fubini-joint-disc-infinite}
 
 #### Both-discrete case, infinite support: joint PMF
 
@@ -977,9 +984,15 @@ with $\P(X = x) = (1-p)\,p^x$ for a fixed $p \in (0, 1)$
 ($X$ counts the number of failures before the first success
 in a sequence of independent trials with success probability $1-p$;
 likewise for $Y$).
-Unlike @exm-fubini-joint-disc, the support here is countably infinite.
+Unlike @exr-fubini-joint-disc, the support here is countably infinite.
 The joint PMF is
 $\P(X = x,\, Y = y) = (1-p)^2\,p^{x+y}$.
+
+Compute $\E{X + Y}$.
+
+:::
+
+::::{.solution}
 
 Compute $\E{X + Y}$ using @cor-fubini-joint with
 $\mu_X = \mu_Y = \text{counting measure}$ and $h(x, y) = x + y$.
@@ -1080,12 +1093,19 @@ once the terms are no longer all nonnegative.
 
 {{< slidebreak >}}
 
-::::{#exm-fubini-joint-mixed}
+:::{#exr-fubini-joint-mixed}
 
 #### Mixed case: one continuous variable, one discrete variable
 
 Let $Y \sim \mathrm{Bernoulli}(0.6)$ and,
 given $Y = y$, let $X \mid Y = y \sim \mathrm{Uniform}(0,\, y + 1)$.
+
+Compute $\E{X}$.
+
+:::
+
+::::{.solution}
+
 Compute $\E{X}$ using @cor-fubini-joint with $\mu_X = \text{Lebesgue measure}$,
 $\mu_Y = \text{counting measure}$, and $h(x, y) = x$.
 
@@ -1121,7 +1141,7 @@ $\sum_{y \in \{0,1\}} \int_0^{y+1} x\,f_{X,Y}(x,\,y)\,dx$
 is just linearity of the integral applied to a two-term sum
 --- $\int g + \int k = \int (g + k)$ ---
 not a genuine interchange of summation and integration order.
-@exm-fubini-joint-mixed-infinite below gives $Y$ a countably infinite
+@exr-fubini-joint-mixed-infinite below gives $Y$ a countably infinite
 range instead, so the sum-of-integrals is genuinely infinite
 and @cor-fubini-joint's guarantee is load-bearing.
 
@@ -1165,14 +1185,21 @@ summing to 1.
 
 {{< slidebreak >}}
 
-::::{#exm-fubini-joint-mixed-infinite}
+:::{#exr-fubini-joint-mixed-infinite}
 
 #### Mixed case, infinite discrete support
 
 Let $Y$ be Geometric on $\{0, 1, 2, \dots\}$
 with $\P(Y = y) = (1-q)\,q^y$ for a fixed $q \in (0, 1)$ and,
 given $Y = y$, let $X \mid Y = y \sim \mathrm{Uniform}(0,\, y+1)$.
-Unlike @exm-fubini-joint-mixed, $Y$'s range here is countably infinite.
+Unlike @exr-fubini-joint-mixed, $Y$'s range here is countably infinite.
+
+Compute $\E{X}$.
+
+:::
+
+::: {.solution}
+
 Compute $\E{X}$ using @cor-fubini-joint with $\mu_X = \text{Lebesgue measure}$,
 $\mu_Y = \text{counting measure}$, and $h(x, y) = x$.
 
@@ -1182,7 +1209,7 @@ $f_{X,Y}(x, y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)
 
 Since $h(x, y) = x \ge 0$ on this support, hypothesis (a) holds,
 so @cor-fubini-joint (via Tonelli's theorem) guarantees the now-infinite
-sum-of-integrals below is valid --- unlike @exm-fubini-joint-mixed,
+sum-of-integrals below is valid --- unlike @exr-fubini-joint-mixed,
 this is not simply linearity applied to a finite sum.
 
 By @cor-fubini-joint (mixed case):
@@ -1202,7 +1229,7 @@ $$
 \ea
 $$
 
-using the same geometric-series facts as @exm-fubini-joint-disc-infinite
+using the same geometric-series facts as @exr-fubini-joint-disc-infinite
 (e.g. @CaseBerg01).
 
 As a check using the law of total expectation:
@@ -1245,7 +1272,7 @@ pander::pander(data.frame(
 With $q = `r q`$, the truncated sum-of-integrals matches the closed form
 $\frac{1}{2(1-q)} = `r round(exact_ex, 4)`$.
 
-::::
+:::
 
 ---
 
