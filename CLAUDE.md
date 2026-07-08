@@ -48,6 +48,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Add `{{< slidebreak >}}` immediately before every theorem-type div (`#thm-`, `#lem-`, `#cor-`, `#prp-`, `#cnj-`, `#def-`, `#exm-`, `#exr-`, `#rem-`, `#sol-`)
 - When a subfile begins with a theorem-type div, put the preceding `{{< slidebreak >}}` in the **parent** file (before the `{{< include >}}`), not inside the subfile
   - Exception: when a section heading immediately precedes the div (or the `{{< include >}}` of a subfile that begins with one), the slidebreak may be omitted so the heading shares its slide with the div, rather than producing a title-only slide. Mark the intentional omission with an inline `<!-- ... do not re-flag -->` comment at that spot.
+  - `{{< slidebreak >}}` and `---` are **not equivalent** and must not be combined: per `_extensions/slidebreak/slidebreak.lua`, the shortcode only renders a rule in the `revealjs` profile and is a no-op everywhere else, while a bare `---` renders a visible `<hr>` in *every* profile (book, website, PDF handout). When relocating an example/theorem div next to an existing `---` separator, replace that `---` with `{{< slidebreak >}}` rather than adding the shortcode alongside it — leaving both introduces a stray `<hr>` in the non-slide renders.
 - Default to `#| code-fold: true` for figure/table chunks
 - Use div format (`:::{#fig-...}`) for figures and tables, not chunk-option `fig-cap`/`tbl-cap`
 - Do not indent `:::` fenced div markers inside lists
