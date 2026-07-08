@@ -1,0 +1,112 @@
+:::{#def-interval-fail-prob}
+#### Interval failure probability
+
+Fix an interval width $\Delta t$ and grid points $\tau$.
+For subject $j$, the **interval failure probability** at $\tau$ is the
+conditional probability that $j$ fails during $[\tau, \tau + \Delta t)$,
+given that $j$ is still at risk at $\tau$:
+
+$$
+q_j(\tau) \eqdef \Pr\sb{j \text{ fails in } [\tau,\, \tau + \Delta t) \mid j \text{ at risk at } \tau}.
+$$
+:::
+
+:::{#lem-cond-surv-ratio}
+#### Conditional survival as a ratio
+
+For $\tau_1 < \tau_2$, the conditional probability of surviving past $\tau_2$
+given survival past $\tau_1$ is the ratio of survival function values:
+
+$$
+\Pr(T > \tau_2 \mid T > \tau_1) = \frac{\surv(\tau_2)}{\surv(\tau_1)}.
+$$ {#eq-cond-surv-ratio}
+:::
+
+{{< slidebreak >}}
+
+::: {.proof}
+Since $\tau_2 > \tau_1$, the event $\{T > \tau_2\}$ is a subset of $\{T > \tau_1\}$,
+so their intersection is just $\{T > \tau_2\}$
+([subset property](probability.qmd#thm-prob-subset)).
+By the [definition of conditional probability](probability.qmd#def-conditional-prob),
+
+$$
+\ba
+\Pr(T > \tau_2 \mid T > \tau_1)
+&= \frac{\Pr(T > \tau_2,\ T > \tau_1)}{\Pr(T > \tau_1)}
+&& \text{(definition of conditional probability)}
+\\
+&= \frac{\Pr(T > \tau_2)}{\Pr(T > \tau_1)}
+&& \text{(}\{T > \tau_2\} \subseteq \{T > \tau_1\}\text{)}
+\\
+&= \frac{\surv(\tau_2)}{\surv(\tau_1)} .
+&& \text{(definition of the survival function)}
+\ea
+$$
+:::
+
+:::{#exm-cond-surv-ratio}
+#### Conditional survival ratio for an exponential lifetime
+
+Let $T \sim \mathrm{Exponential}(\lambda)$, so $\surv(t) = \expf{-\lambda t}$.
+The probability of surviving past $\tau_2$ given survival past $\tau_1 < \tau_2$ is
+
+$$
+\ba
+\Pr(T > \tau_2 \mid T > \tau_1)
+&= \frac{\surv(\tau_2)}{\surv(\tau_1)}
+&& \text{(conditional survival ratio)}
+\\
+&= \frac{\expf{-\lambda \tau_2}}{\expf{-\lambda \tau_1}}
+&& \text{(substitute the exponential survival function)}
+\\
+&= \expf{-\lambda(\tau_2 - \tau_1)} ,
+&& \text{(quotient of exponentials)}
+\ea
+$$
+
+which depends only on the elapsed time $\tau_2 - \tau_1$, not on $\tau_1$ itself —
+the memoryless property of the exponential distribution.
+:::
+
+:::{#exm-interval-fail-prob}
+#### Interval failure probability: exact value
+
+Suppose subject $j$ has constant hazard $\haz(t) = 0.1$ per year,
+and consider the half-year interval $[4.0,\, 4.5)$, so $\Delta t = 0.5$ years.
+By @lem-cond-surv-ratio and the survival/cumulative-hazard relationship (@cor-surv-int-haz),
+the exact probability that $j$ fails in this interval, given survival to year $4$, is
+
+$$
+\ba
+q_j(4.0)
+&= \Pr\sb{j \text{ fails in } [4.0,\, 4.5) \mid j \text{ at risk at } 4.0}
+&& \text{(definition of } q_j \text{)}
+\\
+&= 1 - \Pr\sb{j \text{ survives past } 4.5 \mid j \text{ at risk at } 4.0}
+&& \text{(complement rule)}
+\\
+&= 1 - \frac{\surv(4.5)}{\surv(4.0)}
+&& \text{(conditional survival ratio)}
+\\
+&= 1 - \frac{\expf{-\int_{0}^{4.5} \haz(u)\,du}}
+            {\expf{-\int_{0}^{4.0} \haz(u)\,du}}
+&& \text{(survival from cumulative hazard)}
+\\
+&= 1 - \expf{-\int_{4.0}^{4.5} \haz(u)\,du}
+&& \text{(quotient of exponentials)}
+\\
+&= 1 - \expf{-\int_{4.0}^{4.5} 0.1 \,du}
+&& \text{(substitute } \haz(u) = 0.1\text{)}
+\\
+&= 1 - \expf{-0.1 \times 0.5}
+&& \text{(constant integrand over width } \Delta t = 0.5\text{)}
+\\
+&= 1 - \expf{-0.05}
+&& \text{(arithmetic)}
+\\
+&\approx 0.0488 .
+&& \text{(evaluate } e^{-0.05} \approx 0.9512\text{)}
+\ea
+$$
+:::

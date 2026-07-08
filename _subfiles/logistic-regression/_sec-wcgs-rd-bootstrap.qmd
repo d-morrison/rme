@@ -1,0 +1,77 @@
+Now we use the bootstrap to estimate
+the standard error and construct a 95% confidence interval.
+In the non-parametric bootstrap,
+each iteration applies both the model-fitting step
+and the covariate standardization to the same bootstrap resample.
+This mirrors the original world in the bootstrap world
+and is standard practice for this type of estimator.
+(An alternative would fix the covariates at the observed values,
+but is less common for g-computation estimators.)
+
+```{r}
+#| label: bootstrap-ci
+#| code-fold: show
+#| cache: true
+#| message: false
+#| warning: false
+
+# Set seed for reproducibility
+set.seed(20260512)
+
+# Number of bootstrap iterations in this rendered example
+# (illustrative only; use >= 2000 for final CIs)
+B <- 300
+
+boot_estimates <- numeric(B)
+
+for (b in 1:B) {
+
+  boot_indices <- sample(
+    seq_len(nrow(wcgs_clean)),
+    size = nrow(wcgs_clean),
+    replace = TRUE
+  )
+
+  boot_data <- wcgs_clean[boot_indices, ]
+
+  boot_fit <- glm(
+    chd69_binary ~ dibpat + age,
+    data = boot_data,
+    family = binomial(link = "logit")
+  )
+
+  boot_estimates[b] <- compute_marginal_rd(
+    model = boot_fit,
+    data = boot_data,
+    exposure_var = "dibpat",
+    exposed_level = "Type A",
+    unexposed_level = "Type B"
+  )
+}
+
+boot_se <- sd(boot_estimates)
+
+# percentile method: quantiles of the bootstrap distribution
+ci_lower <- as.numeric(quantile(boot_estimates, 0.025))
+ci_upper <- as.numeric(quantile(boot_estimates, 0.975))
+```
+
+::: {#tbl-marginal-rd-results}
+
+```{r}
+#| code-fold: true
+
+tibble(
+  Estimate = marginal_rd_est,
+  `Std. Error` = boot_se,
+  `95% CI Lower` = ci_lower,
+  `95% CI Upper` = ci_upper
+) |>
+  knitr::kable(digits = 4)
+```
+
+Causal marginal risk difference (CMRD) for Type A vs Type B behavioral pattern
+(adjusted for age) via g-computation,
+with bootstrap standard error and 95% confidence interval
+
+:::

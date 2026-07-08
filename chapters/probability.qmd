@@ -517,15 +517,23 @@ confirming the standard result $\E{T} = 1/\lambda$.
 
 ### Law of the Unconscious Statistician (LOTUS)
 
+**Discrete case.**
 For any function $g$ of a *discrete* random variable $X$:
 
 $$\E{g(X)} = \sum_{x \in \rangef{X}} g(x) \cd \P(X=x)$$
+
+**Continuous case.**
+For any function $g$ of a *continuous* random variable $X$ with density $\p(X=x)$:
+
+$$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
 
 :::
 
 ---
 
 ::: proof
+
+We prove the discrete case.
 
 Let $Y = g(X)$.
 By @def-expectation applied to $Y$:
@@ -544,6 +552,13 @@ $$
 where the last equality follows by rearranging the double sum,
 grouping each term $x$ by its image $y = g(x)$.
 
+The continuous case is the density-weighted analogue of this argument,
+but a fully rigorous proof needs the general change-of-variables theorem
+for integrals against a pushforward measure —
+approximating $g$ by simple functions and passing to the limit —
+which is beyond Epi 204's scope
+[@billingsley1995probability; @gut2013; @CaseBerg01; @wp:lotus].
+
 :::
 
 ---
@@ -554,11 +569,6 @@ LOTUS says that to compute $\E{g(X)}$,
 we do not need to first find the distribution of $g(X)$;
 we can compute the expectation directly using the distribution of $X$.
 
-For a *continuous* random variable $X$ with density $\p(X=x)$,
-the analogous formula is:
-
-$$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
-
 :::
 
 ---
@@ -568,7 +578,7 @@ $$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
 #### Expected value of $X^2$ for a Bernoulli variable
 
 Let $X \sim \Ber(\pi)$.
-By LOTUS (@thm-lotus):
+By LOTUS (@thm-lotus, discrete case):
 
 $$
 \ba
@@ -585,45 +595,67 @@ $$
 
 ---
 
-:::{#def-cond-expectation}
+:::{#exm-lotus-continuous}
 
-### Conditional expectation
+#### Expected value of $X^2$ for a Uniform(0,1) variable
 
-**Discrete case.**
-Let $X$ and $Y$ be jointly distributed discrete random variables.
-The **conditional probability mass function** of $Y$ given $X = x$
-(for values of $x$ with $\P(X = x) > 0$) is:
+Let $X \sim \text{Uniform}(0,1)$, so $\p(X=x) = 1$ for $x \in [0,1]$.
+By LOTUS (@thm-lotus, continuous case):
 
-$$\P(Y = y \mid X = x) \eqdef \frac{\P(X = x,\, Y = y)}{\P(X = x)}$$
-
-The **conditional expectation** of $Y$ given $X = x$ is:
-
-$$\E{Y \mid X = x} \eqdef \sum_{y \in \rangef{Y}} y \cd \P(Y = y \mid X = x)$$
-
-**Continuous case.**
-Let $X$ and $Y$ be jointly distributed continuous random variables
-with joint density $\p(X = x,\, Y = y)$ and marginal density $\p(X = x)$.
-The **conditional probability density function** of $Y$ given $X = x$
-(for values of $x$ with $\p(X = x) > 0$) is:
-
-$$\p(Y = y \mid X = x) \eqdef \frac{\p(X = x,\, Y = y)}{\p(X = x)}$$
-
-The **conditional expectation** of $Y$ given $X = x$ is:
-
-$$\E{Y \mid X = x} \eqdef \int_{y \in \rangef{Y}} y \cd \p(Y = y \mid X = x)\, dy$$
-
-**Conditional expectation function.**
-The **conditional expectation function** $\E{Y \mid X}$ is the function
-(and hence random variable) of $X$ obtained by evaluating
-$\E{Y \mid X = x}$ at $X$; that is,
-$\E{Y \mid X} = g(X)$ where $g(x) \eqdef \E{Y \mid X = x}$.
+$$
+\ba
+\E{X^2}
+&= \int_0^1 x^2 \cd \p(X=x)\,dx
+&& \text{(LOTUS, continuous case)}
+\\&= \int_0^1 x^2 \cd 1\,dx
+&& \text{(}\p(X=x) = 1\text{ on } [0,1]\text{)}
+\\&= \sb{\frac{x^3}{3}}_0^1
+&& \text{(antiderivative of } x^2\text{)}
+\\&= \frac{1}{3}.
+&& \text{(evaluate at the bounds)}
+\ea
+$$
 
 :::
+
+---
+
+### Conditional distributions and expectations
+
+{{< include _subfiles/probability/_def-cond-pmf.qmd >}}
+
+---
+
+{{< slidebreak >}}
+
+{{< include _subfiles/probability/_def-cond-pdf.qmd >}}
+
+---
+
+{{< slidebreak >}}
+
+{{< include _subfiles/probability/_def-cond-expectation.qmd >}}
+
+---
+
+{{< slidebreak >}}
+
+{{< include _subfiles/probability/_def-cond-mixed.qmd >}}
+
+---
+
+{{< slidebreak >}}
+
+{{< include _subfiles/probability/_def-cond-expectation-function.qmd >}}
+
+{{< slidebreak >}}
+
+{{< include _subfiles/probability/_exr-fubini-joint-disc.qmd >}}
 
 ## Fubini–Tonelli for expectations
 
 The [Riemann version of Fubini's theorem](math-prereqs.qmd#thm-fubini),
-stated in the math-prereqs chapter,
+stated in the [math-prereqs chapter](math-prereqs.qmd),
 lets us switch the order of integration for
 continuous integrands on simple regions.
 For expectations against probability measures we use its
@@ -675,6 +707,8 @@ The choice of reference measures covers three cases:
   $f_{X,Y}(x,y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$
   (or $\P(X = x \mid Y = y)\,f_Y(y)$ if $X$ is discrete and $Y$ continuous),
   and the iterated integrals combine an ordinary integral with a sum.
+  The conditional densities/PMFs here are defined the same way as in
+  @def-cond-mixed, just conditioning on $Y$ instead of $X$.
 
 :::
 
@@ -890,147 +924,15 @@ $\{(x, y) : 0 \le x \le y \le 1\}$, and zero elsewhere. The total
 
 {{< slidebreak >}}
 
-::::{#exm-fubini-joint-disc}
-
-#### Both-discrete case: joint PMF
-
-Let $(X, Y)$ be discrete with joint probability mass function:
-
-| | $Y = 0$ | $Y = 1$ |
-|:---:|:---:|:---:|
-| $X = 0$ | $0.2$ | $0.3$ |
-| $X = 1$ | $0.1$ | $0.4$ |
-
-Compute $\E{X + Y}$ using @cor-fubini-joint with
-$\mu_X = \mu_Y = \text{counting measure}$ and $h(x,y) = x + y$.
-
-By @cor-fubini-joint (both-discrete case):
-
-$$
-\ba
-\E{X + Y}
-&= \sum_{x \in \{0,1\}} \sum_{y \in \{0,1\}} (x + y)\,\P(X = x,\, Y = y) \\
-&= (0{+}0)(0.2) + (0{+}1)(0.3) + (1{+}0)(0.1) + (1{+}1)(0.4) \\
-&= 0 + 0.3 + 0.1 + 0.8 \\
-&= 1.2
-\ea
-$$
-
-As a check: $\E{X} = 0(0.5) + 1(0.5) = 0.5$ and
-$\E{Y} = 0(0.3) + 1(0.7) = 0.7$,
-so $\E{X + Y} = \E{X} + \E{Y} = 1.2$.
-
-Note that $X$ and $Y$ are **not** independent here:
-$\P(X = 0, Y = 0) = 0.2 \neq 0.15 = \P(X = 0)\,\P(Y = 0)$.
-@cor-fubini-joint applies regardless, since it requires only the
-*actual* joint mass function, not independence.
-
-:::{#fig-fubini-joint-disc}
-
-```{r}
-#| code-fold: true
-#| message: false
-
-x_labs <- c("X=0", "X=0", "X=1", "X=1")
-y_labs <- c("Y=0", "Y=1", "Y=0", "Y=1")
-probs <- c(0.2, 0.3, 0.1, 0.4)
-
-plotly::plot_ly(
-  x = ~y_labs, y = ~probs, color = ~x_labs,
-  colors = c("steelblue", "tomato"),
-  type = "bar"
-) |>
-  plotly::layout(
-    barmode = "group",
-    xaxis = list(title = "Y"),
-    yaxis = list(title = "P(X = x, Y = y)", range = c(0, 0.5)),
-    legend = list(title = list(text = "X value"))
-  )
-```
-
-Joint probability mass function $\P(X = x, Y = y)$.
-Marginal totals: $\P(X = 0) = 0.5$, $\P(X = 1) = 0.5$,
-$\P(Y = 0) = 0.3$, $\P(Y = 1) = 0.7$.
-
-:::
-
-::::
+{{< include _subfiles/probability/_exr-fubini-joint-disc-infinite.qmd >}}
 
 {{< slidebreak >}}
 
-::::{#exm-fubini-joint-mixed}
+{{< include _subfiles/probability/_exr-fubini-joint-mixed.qmd >}}
 
-#### Mixed case: one continuous variable, one discrete variable
+{{< slidebreak >}}
 
-Let $Y \sim \mathrm{Bernoulli}(0.6)$ and,
-given $Y = y$, let $X \mid Y = y \sim \mathrm{Uniform}(0,\, y + 1)$.
-Compute $\E{X}$ using @cor-fubini-joint with $\mu_X = \text{Lebesgue measure}$,
-$\mu_Y = \text{counting measure}$, and $h(x, y) = x$.
-
-The joint density w.r.t. Lebesgue $\times$ counting measure is
-$f_{X,Y}(x, y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$:
-
-$$
-\ba
-f_{X,Y}(x,\, 0) &= 1 \cdot 0.4 = 0.4 &&\text{ for } x \in [0,1];\\
-f_{X,Y}(x,\, 1) &= \tfrac{1}{2} \cdot 0.6 = 0.3 &&\text{ for } x \in [0,2].
-\ea
-$$
-
-By @cor-fubini-joint (mixed case):
-
-$$
-\ba
-\E{X}
-&= \sum_{y \in \{0,1\}} \int_0^{y+1} x\,f_{X,Y}(x,\, y)\,dx \\
-&= \int_0^1 x \cdot 0.4\,dx
-   + \int_0^2 x \cdot 0.3\,dx \\
-&= 0.4 \cdot \frac{1}{2} + 0.3 \cdot 2 \\
-&= 0.2 + 0.6 = 0.8
-\ea
-$$
-
-As a check using the law of total expectation:
-$\E{X \mid Y = 0} = \tfrac{1}{2}$ and $\E{X \mid Y = 1} = 1$, so
-$\E{X} = \tfrac{1}{2}(0.4) + 1(0.6) = 0.2 + 0.6 = 0.8$.
-
-:::{#fig-fubini-joint-mixed}
-
-```{r}
-#| code-fold: true
-#| message: false
-
-x_fine <- seq(0, 2, by = 0.005)
-df <- data.frame(
-  x = c(x_fine[x_fine <= 1], x_fine),
-  density = c(rep(0.4, sum(x_fine <= 1)), rep(0.3, length(x_fine))),
-  label = c(
-    rep("Y = 0  (P = 0.4)", sum(x_fine <= 1)),
-    rep("Y = 1  (P = 0.6)", length(x_fine))
-  )
-)
-
-plotly::plot_ly(
-  df, x = ~x, y = ~density, color = ~label,
-  colors = c("steelblue", "tomato")
-) |>
-  plotly::add_lines() |>
-  plotly::layout(
-    xaxis = list(title = "x"),
-    yaxis = list(title = "f<sub>X,Y</sub>(x, y)", range = c(0, 0.55)),
-    legend = list(title = list(text = "Y value"))
-  )
-```
-
-Joint density $f_{X,Y}(x, y) = f_{X \mid Y}(x \mid y)\,\P(Y = y)$
-for each value of the discrete variable $Y$.
-The area under each component integrates to $\P(Y = y)$:
-$0.4 \cdot 1 = 0.4$ (blue) and $0.3 \cdot 2 = 0.6$ (red),
-summing to 1.
-
-:::
-
-::::
+{{< include _subfiles/probability/_exr-fubini-joint-mixed-infinite.qmd >}}
 
 ---
 
