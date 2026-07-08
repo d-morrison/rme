@@ -50,6 +50,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Do not indent `:::` fenced div markers inside lists
 - One source line per major phrase in prose — keeps git diffs readable and review easier
 - **Theorem-div headings** (`:::{#exm-...}`, `:::{#def-...}`, etc.): use `####` (level 4) or deeper for the name heading inside the div — using `##` or `###` creates numbered section headings that disrupt document structure and break example/definition numbering.
+- **Parenthetical notes and asides** — meta-commentary that isn't core to the main definition/derivation (e.g. "this doesn't actually need theorem X" or "note that X and Y aren't independent here") — should usually go in a `::: notes` div rather than sitting inline in the main prose. `::: notes` renders as a plain aside in the book/website profiles and doubles as [Reveal.js speaker notes](https://quarto.org/docs/presentations/revealjs/presenting.html#speaker-view) in slide profiles, so writing the aside there rather than inline keeps the main text focused and gets slide-mode support for free. See `thm-lotus`'s existing `::: notes` div for precedent.
 
 ### Cross-references
 - **Within-chapter** (`@id`): use Pandoc `@id` syntax for any element in the same rendered `.html` file — includes the parent chapter and all its `{{< include >}}`d subfiles.
