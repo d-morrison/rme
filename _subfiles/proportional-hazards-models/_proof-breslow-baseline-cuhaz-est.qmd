@@ -1,0 +1,37 @@
+::: {.proof}
+
+Adapted from [@klein2003survival, §8.3, Theoretical Note 2, p. 258];
+the original profile-likelihood argument is due to @johansen1983extension.
+This proof assembles four building-block lemmas:
+@lem-ph-breslow-point-mass, @lem-ph-breslow-profile-lik, @lem-ph-breslow-mle, and @lem-ph-breslow-closes-loop.
+
+Assume, as in the partial-likelihood proof, that there are no tied event times,
+so each ordered event time $t_i$ corresponds to exactly one event,
+and let $K$ denote the number of distinct event times $t_1 < \cdots < t_K$.
+
+Fix $\vb$. By @lem-ph-breslow-point-mass, the maximizing $\haz_0(\cdot)$
+places point masses $\blue{h_{0i}} \eqdef \blue{\haz_0(t_i)}$ only at the $K$ event times.
+By @lem-ph-breslow-profile-lik, substituting this form into @eq-ph-breslow-full-lik
+gives the profile likelihood @eq-ph-breslow-profile-lik in terms of the point masses
+and the risk-set score totals $\red{S_i}$ (@def-ph-risk-set-score).
+By @lem-ph-breslow-mle, each point mass is maximized at $\blue{\hat h_{0i}} = 1/\red{S_i}$.
+Summing the estimated point masses over event times $t_i \le t$ gives the **Breslow estimator**
+of the baseline cumulative hazard,
+
+$$
+\blue{\hat \cuhaz_0(t)} = \sum_{t_i \le t} \blue{\hat h_{0i}} = \sum_{t_i \le t} \frac{1}{\red{S_i}} ,
+$$
+
+matching @def-breslow-baseline-cuhaz-est under the no-ties assumption ($d_i = 1$ for every $i$).
+With tied event times, the numerator generalizes to $d_i$, the number of events at $t_i$
+(see [@klein2003survival, §8.8] for the tie-handling adjustments).
+
+By @lem-ph-breslow-closes-loop, substituting $\blue{\hat h_{0i}}$ back into the profile likelihood recovers
+the partial likelihood up to a $\vb$-free constant,
+$\Lik\sb{\vb,\,\hat h_{01},\dots,\hat h_{0K}} = e^{-K}\,\Lik^*(\vb)$,
+where $\Lik^*(\vb)$ is the partial likelihood of @def-ph-partial-lik.
+Since $e^{-K}$ does not depend on $\vb$, the profile likelihood is proportional to $\Lik^*(\vb)$.
+This proportionality justifies treating the partial likelihood as a profile likelihood
+for $\vb$, with $\haz_0(\cdot)$ concentrated out.
+
+:::

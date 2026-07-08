@@ -62,14 +62,20 @@ Before committing any `.qmd`, `.R`, or config file change:
 - Use custom macros from `latex-macros/macros.qmd` instead of raw LaTeX
 - Key macros: `\E{Y|X=x}`, `\ba`/`\ea`, `\tp{v}`, `\b`, `\g`, `\a`, `\devn(...)`, `\erf{...}`
 - Color coding: `\red{...}` for focal/extra terms, `\teal{...}` for shared terms (use `\teal`, not `\blue` — `\teal` reads better in dark mode)
-- Include every intermediate step in derivations — do not skip steps. This is
-  a global standing rule from `d-morrison/ai-config`'s
-  `shared/writing/math-derivation-steps.md` (submodule pin bumped in this PR
-  to a commit that includes it), which also covers the review-side
-  counterpart: a reviewer should name the exact gap and the missing
-  operation when a step is skipped, not just flag "skipped steps" in
-  general. The `@claude` bot will apply this automatically via
-  `d-morrison/gha`'s review checklist once
+- Use `\eqdef` instead of `=` for any equality that holds **by definition** — both the defining equation in a `{#def-...}` div and the first introduction of new local notation (e.g. the step in a proof where a symbol is first defined). When an equality holds by definition, annotate it with `\eqdef` even inside a proof.
+- Include every intermediate step in derivations — do not skip steps. Give
+  each algebraic step its own aligned line (one operation per step —
+  distribution, substitution, cancellation, approximation), and annotate
+  each step with a short parenthetical explanation of the rule, definition,
+  or approximation it uses (e.g. a trailing `&& \text{(...)}` column in an
+  aligned block, as in `@eq-ph-surv-discretized`). Default to this level of
+  explicitness for all derivations. This is a global standing rule from
+  `d-morrison/ai-config`'s `shared/writing/math-derivation-steps.md`
+  (submodule pin bumped in this PR to a commit that includes it), which
+  also covers the review-side counterpart: a reviewer should name the
+  exact gap and the missing operation when a step is skipped, not just
+  flag "skipped steps" in general. The `@claude` bot will apply this
+  automatically via `d-morrison/gha`'s review checklist once
   [gha#228](https://github.com/d-morrison/gha/pull/228) merges and the
   `@v2` tag it pins picks up the change.
 - **Matrix dimensions**: always verify dimension compatibility for every matrix expression -- dimensions of each operand must be consistent with the operation
@@ -108,6 +114,8 @@ Before committing any `.qmd`, `.R`, or config file change:
 - After every definition or concept, include a concrete example — preferably numerical — to illustrate the abstract idea; use a `{#exm-...}` div; if a counterexample is feasible, include one immediately after the example
 - After every theoretical claim (thm, cor, lem): when a proof is feasible and in scope, (1) immediately follow with a proof, then (2) immediately follow with an example utilizing the claim; when a proof is non-elementary or out of scope (e.g., `@thm-fubini`, `@thm-fubini-tonelli`), omit the proof block and proceed directly to the example
 - Always arrange divs and sections so that related items are adjacent: theorem → proof → example(s) → counterexample(s)
+- Never use "above" or "below" to refer to content — cross-reference with `@label` syntax instead
+- Always add a noun phrase after "This", "That", and "Those" to clarify the referent (e.g., "This estimator", not "This")
 - Clearly distinguish **model structure** (how the data relate to the parameters — distributional family, link function, random effects, hierarchies, …) from **inference method** (how the parameters are estimated — MLE, Bayes, GEE, method of moments, …). The two are orthogonal: any model structure can be paired with any compatible inference method (e.g. a random-effects model can be fit by maximum likelihood *or* by Bayesian MCMC). Never write as if a structure belonged to one inference paradigm (avoid e.g. "the Bayesian version of random effects"); instead name the inference method being applied to the structure.
 
 ### Pull Requests
