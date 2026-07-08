@@ -517,15 +517,23 @@ confirming the standard result $\E{T} = 1/\lambda$.
 
 ### Law of the Unconscious Statistician (LOTUS)
 
+**Discrete case.**
 For any function $g$ of a *discrete* random variable $X$:
 
 $$\E{g(X)} = \sum_{x \in \rangef{X}} g(x) \cd \P(X=x)$$
+
+**Continuous case.**
+For any function $g$ of a *continuous* random variable $X$ with density $\p(X=x)$:
+
+$$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
 
 :::
 
 ---
 
 ::: proof
+
+We prove the discrete case.
 
 Let $Y = g(X)$.
 By @def-expectation applied to $Y$:
@@ -544,6 +552,13 @@ $$
 where the last equality follows by rearranging the double sum,
 grouping each term $x$ by its image $y = g(x)$.
 
+The continuous case is the density-weighted analogue of this argument,
+but a fully rigorous proof needs the general change-of-variables theorem
+for integrals against a pushforward measure —
+approximating $g$ by simple functions and passing to the limit —
+which is beyond Epi 204's scope
+[@billingsley1995probability; @gut2013; @CaseBerg01; @wp:lotus].
+
 :::
 
 ---
@@ -554,11 +569,6 @@ LOTUS says that to compute $\E{g(X)}$,
 we do not need to first find the distribution of $g(X)$;
 we can compute the expectation directly using the distribution of $X$.
 
-For a *continuous* random variable $X$ with density $\p(X=x)$,
-the analogous formula is:
-
-$$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
-
 :::
 
 ---
@@ -568,7 +578,7 @@ $$\E{g(X)} = \int_{x \in \rangef{X}} g(x) \cd \p(X=x)\, dx$$
 #### Expected value of $X^2$ for a Bernoulli variable
 
 Let $X \sim \Ber(\pi)$.
-By LOTUS (@thm-lotus):
+By LOTUS (@thm-lotus, discrete case):
 
 $$
 \ba
@@ -578,6 +588,31 @@ $$
 \\&= 0^2 \cd (1-\pi) + 1^2 \cd \pi
 \\&= 0 + \pi
 \\&= \pi
+\ea
+$$
+
+:::
+
+---
+
+:::{#exm-lotus-continuous}
+
+#### Expected value of $X^2$ for a Uniform(0,1) variable
+
+Let $X \sim \text{Uniform}(0,1)$, so $\p(X=x) = 1$ for $x \in [0,1]$.
+By LOTUS (@thm-lotus, continuous case):
+
+$$
+\ba
+\E{X^2}
+&= \int_0^1 x^2 \cd \p(X=x)\,dx
+&& \text{(LOTUS, continuous case)}
+\\&= \int_0^1 x^2 \cd 1\,dx
+&& \text{(}\p(X=x) = 1\text{ on } [0,1]\text{)}
+\\&= \sb{\frac{x^3}{3}}_0^1
+&& \text{(antiderivative of } x^2\text{)}
+\\&= \frac{1}{3}.
+&& \text{(evaluate at the bounds)}
 \ea
 $$
 

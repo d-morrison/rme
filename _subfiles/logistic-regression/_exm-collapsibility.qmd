@@ -1,0 +1,79 @@
+:::{#exm-collapsibility}
+
+#### Collapsibility: numerical illustration
+
+Continuing the WCGS example with `dibpat` as the exposure,
+`chd69` as the outcome, and age 50 or older as $Z$
+(@exm-observed-marginal-risk):
+the causal marginal risk (@def-causal-marginal-risk) standardizes
+**both** exposure groups' stratum-specific risks
+to the same population age distribution $f_Z(z)$
+(@rem-observed-vs-causal-marginal-risk),
+so this is exactly the common weighting @def-collapsibility requires --
+no simplifying assumptions needed:
+
+```{r}
+#| label: wcgs-collapsibility
+#| code-fold: true
+
+wcgs_nonexposed <- wcgs_clean[wcgs_clean$dibpat == "Type B", ]
+pi0_z0 <- mean(wcgs_nonexposed$chd69_binary[wcgs_nonexposed$age_ge50 == 0])
+pi0_z1 <- mean(wcgs_nonexposed$chd69_binary[wcgs_nonexposed$age_ge50 == 1])
+
+strata <- tibble::tibble(
+  stratum = c("Z = 0 (under 50)", "Z = 1 (50 or older)"),
+  weight  = c(1 - p_z1_pop, p_z1_pop),
+  pi_0    = c(pi0_z0, pi0_z1),
+  pi_1    = c(pi1_z0, pi1_z1)
+) |>
+  dplyr::mutate(
+    RD = pi_1 - pi_0,
+    RR = pi_1 / pi_0,
+    OR = (pi_1 / (1 - pi_1)) / (pi_0 / (1 - pi_0))
+  )
+
+pi1_marg <- sum(strata$weight * strata$pi_1)
+pi0_marg <- sum(strata$weight * strata$pi_0)
+
+tibble::tibble(
+  Measure = c("Risk difference", "Risk ratio", "Odds ratio"),
+  Marginal = c(
+    pi1_marg - pi0_marg,
+    pi1_marg / pi0_marg,
+    (pi1_marg / (1 - pi1_marg)) / (pi0_marg / (1 - pi0_marg))
+  ),
+  `Weighted avg. conditional` = c(
+    sum(strata$weight * strata$RD),
+    sum(strata$weight * strata$RR),
+    sum(strata$weight * strata$OR)
+  ),
+  `Marginal = weighted avg. conditional?` = c("Yes", "No", "No")
+) |>
+  knitr::kable(digits = 4)
+```
+
+The marginal risk difference equals the weighted average
+of the conditional risk differences exactly, as @thm-collapsibility guarantees.
+The marginal risk ratio and marginal odds ratio both differ
+from the weighted average of their conditional counterparts --
+though the risk ratio's discrepancy only shows up in the fourth decimal place here,
+because the conditional risk ratios happen to be nearly homogeneous
+across the two age strata
+($`r sprintf("%.3f", strata$RR[1])`$ vs. $`r sprintf("%.3f", strata$RR[2])`$).
+
+Non-collapsibility is distinct from effect-measure modification.
+The conditional odds ratios vary more across strata
+($`r sprintf("%.3f", strata$OR[1])`$ vs. $`r sprintf("%.3f", strata$OR[2])`$),
+and for the risk ratio, that near-homogeneity is exactly what keeps its discrepancy small here:
+if the conditional risk ratio were instead **constant** across strata,
+the marginal risk ratio would reproduce it exactly,
+just like the risk difference.
+The odds ratio's discrepancy is different in kind:
+even if the conditional odds ratio were held *constant* across strata,
+the marginal odds ratio would generally still differ from it
+(and lie closer to the null) [@hernan2020causal, Chapter 4],
+whereas a constant conditional risk difference or risk ratio
+always reproduces the corresponding marginal measure exactly.
+
+:::
+

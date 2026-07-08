@@ -1,0 +1,41 @@
+:::{#exm-wcgs-causal-marginal-risks}
+
+#### Estimated causal marginal risks (WCGS)
+
+Continuing with the same WCGS data and fitted model
+(`wcgs_clean` and `fit`) introduced in @exm-cond-rd-rr ---
+`dibpat` (behavior pattern) as the exposure
+and `chd69` (coronary heart disease by 1969) as the outcome,
+adjusted for `age`:
+
+The **causal marginal risks**
+$\hat\pi_a = \frac{1}{n}\sumin \hat\pi(a, z_i)$
+standardize the fitted risks over the full covariate distribution
+(@def-g-computation):
+
+```{r}
+#| label: wcgs-causal-marginal-risks
+dibpat_levels <- levels(wcgs_clean$dibpat)
+wcgs_counterfactual_a <- wcgs_clean |>
+  mutate(
+    dibpat = factor("Type A", levels = dibpat_levels)
+  )
+wcgs_counterfactual_b <- wcgs_clean |>
+  mutate(
+    dibpat = factor("Type B", levels = dibpat_levels)
+  )
+
+pi1_hat <- mean(
+  predict(fit, newdata = wcgs_counterfactual_a, type = "response")
+)
+pi0_hat <- mean(
+  predict(fit, newdata = wcgs_counterfactual_b, type = "response")
+)
+```
+
+$$
+\hat\pi_1 = `r round(pi1_hat, 3)`, \quad
+\hat\pi_0 = `r round(pi0_hat, 3)`
+$$
+
+:::
