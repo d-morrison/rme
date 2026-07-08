@@ -72,14 +72,12 @@ Before committing any `.qmd`, `.R`, or config file change:
   or approximation it uses (e.g. a trailing `&& \text{(...)}` column in an
   aligned block, as in `@eq-ph-surv-discretized`). Default to this level of
   explicitness for all derivations. This is a global standing rule from
-  `d-morrison/ai-config`'s `shared/writing/math-derivation-steps.md`
-  (submodule pin bumped in this PR to a commit that includes it), which
+  `d-morrison/ai-config`'s `shared/writing/math-derivation-steps.md`, which
   also covers the review-side counterpart: a reviewer should name the
   exact gap and the missing operation when a step is skipped, not just
-  flag "skipped steps" in general. The `@claude` bot will apply this
-  automatically via `d-morrison/gha`'s review checklist once
-  [gha#228](https://github.com/d-morrison/gha/pull/228) merges and the
-  `@v2` tag it pins picks up the change.
+  flag "skipped steps" in general. The `@claude` bot applies this
+  automatically via `d-morrison/gha`'s review checklist
+  ([gha#228](https://github.com/d-morrison/gha/pull/228)).
 - **Matrix dimensions**: always verify dimension compatibility for every matrix expression -- dimensions of each operand must be consistent with the operation
 - **Annotate matrix dimensions with underbraces** in display math: use `\underbrace{M}_{m \times n}` for each matrix or vector
 - **Zero matrices**: never write bare `\mathbf{0}` in a matrix equation -- subscript dimensions: `\mathbf{0}_{m \times n}`
