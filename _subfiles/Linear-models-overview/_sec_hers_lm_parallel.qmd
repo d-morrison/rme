@@ -1,0 +1,121 @@
+::: notes
+Just as the birthweight parallel-lines model assumes that sex shifts the intercept
+but not the age slope (parallel lines in 2D),
+the parallel-planes model for the HERS data assumes a flat regression surface
+over the age-BMI space: the slope of mean LDL with respect to BMI
+is the same at every age, and the slope with respect to age is the same at every BMI.
+
+We use age ($A$) and BMI ($B$) as predictors---not hormone therapy ($H$)---because
+LDL is measured at **baseline**, before treatment was administered.
+:::
+
+$$
+\ba
+Y|A,B &\sciid N(\mu(A,B), \sigma^2)\\
+\mu(a,b) &= \beta_0 + \beta_A a + \beta_B b
+\ea
+$$ {#eq-hers-parallel}
+
+::: {#tbl-hers-lm1}
+
+```{r}
+#| code-fold: true
+hers_lm1 <- lm(
+  formula = LDL ~ age + BMI,
+  data = hers,
+  na.action = na.exclude
+)
+hers_plot_data <- hers |>
+  dplyr::filter(!is.na(age), !is.na(BMI), !is.na(LDL))
+
+hers_lm1 |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+Regression parameter estimates for [Model @eq-hers-parallel]
+
+:::
+
+::::: {.panel-tabset}
+
+### Statins: No
+
+:::{#fig-hers-parallel-fit-no}
+
+```{r}
+#| code-fold: true
+hers_no <- hers_plot_data |> dplyr::filter(statins == "no")
+
+plotly::plot_ly(
+  x = hers_no[["age"]],
+  y = hers_no[["BMI"]],
+  z = hers_no[["LDL"]],
+  type = "scatter3d",
+  mode = "markers",
+  name = "No statins",
+  marker = list(size = 3, opacity = 0.3, color = "steelblue")
+) |>
+  regress3d::add_3d_surface(
+    model = hers_lm1,
+    data = hers_plot_data,
+    showlegend = TRUE
+  ) |>
+  plotly::layout(
+    scene = list(
+      xaxis = list(title = "Age (yr)"),
+      yaxis = list(title = "BMI (kg/m\u00b2)"),
+      zaxis = list(title = "LDL (mg/dL)")
+    )
+  )
+```
+
+Fitted regression surface from [Model @eq-hers-parallel]
+(patients not taking statins)
+
+:::
+
+### Statins: Yes
+
+:::{#fig-hers-parallel-fit-yes}
+
+```{r}
+#| code-fold: true
+hers_yes <- hers_plot_data |> dplyr::filter(statins == "yes")
+
+plotly::plot_ly(
+  x = hers_yes[["age"]],
+  y = hers_yes[["BMI"]],
+  z = hers_yes[["LDL"]],
+  type = "scatter3d",
+  mode = "markers",
+  name = "Yes statins",
+  marker = list(size = 3, opacity = 0.3, color = "darkorange")
+) |>
+  regress3d::add_3d_surface(
+    model = hers_lm1,
+    data = hers_plot_data,
+    showlegend = TRUE
+  ) |>
+  plotly::layout(
+    scene = list(
+      xaxis = list(title = "Age (yr)"),
+      yaxis = list(title = "BMI (kg/m\u00b2)"),
+      zaxis = list(title = "LDL (mg/dL)")
+    )
+  )
+```
+
+Fitted regression surface from [Model @eq-hers-parallel]
+(patients taking statins)
+
+:::
+
+:::::
+
+The coefficient estimates in @tbl-hers-lm1 quantify the shape of these surfaces.
+Both tabs display the same fitted flat plane: the parallel-planes model constrains the age and BMI slopes to be the same regardless of statin use.
+The statins-yes tab reveals that patients taking statins tend to have lower LDL values on average ---
+a shift the parallel-planes model cannot capture, because it does not include statin use as a predictor.
