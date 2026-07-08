@@ -1,0 +1,56 @@
+::: notes
+We repeat the same checks for the interaction model
+(`hers_lm2`, @eq-hers-interact, fitted in @tbl-hers-lm2).
+:::
+
+#### Residuals vs fitted for `hers_lm2`
+
+:::{#fig-hers-resid-fitted-lm2}
+
+```{r}
+#| code-fold: true
+hers_diag2 <- hers_lm_data |>
+  dplyr::mutate(
+    .fitted = fitted(hers_lm2),
+    .resid = residuals(hers_lm2)
+  )
+
+ggplot(hers_diag2, aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~statins, labeller = label_both) +
+  xlab("Fitted values") +
+  ylab("Residuals") +
+  theme_bw()
+```
+
+Residuals vs fitted values for `hers_lm2` (interaction model)
+
+:::
+
+#### QQ plot for `hers_lm2`
+
+:::{#fig-hers-qq-lm2}
+
+```{r}
+#| code-fold: true
+ggplot(hers_diag2, aes(sample = .resid)) +
+  stat_qq() +
+  stat_qq_line() +
+  facet_wrap(~statins, labeller = label_both) +
+  theme_bw()
+```
+
+QQ plot of residuals for `hers_lm2` (interaction model)
+
+:::
+
+::: notes
+The residual and QQ plots for the interaction model
+(@fig-hers-resid-fitted-lm2, @fig-hers-qq-lm2)
+look essentially identical to those for the parallel-planes model:
+adding the age-BMI interaction barely changes the residual structure.
+This previews the model-selection result ---
+the likelihood ratio test (@tbl-hers-lrt) shows the interaction
+does not improve the fit enough to justify the extra parameter.
+:::
