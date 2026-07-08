@@ -1,0 +1,46 @@
+:::{#thm-causal-marginal-risk}
+
+#### Causal marginal risk under identification assumptions
+
+Under [Consistency](causal-inference.qmd#def-consistency),
+[Conditional Exchangeability](causal-inference.qmd#def-exchangeability),
+and [Positivity](causal-inference.qmd#def-positivity):
+
+$$\pi_a = \E{\teal{\pi(a, Z)}}$$
+
+where the expectation is over the **marginal** distribution of $Z$
+(not the conditional distribution $f_{Z \mid A}(z \mid a)$).
+
+::: {.proof}
+
+$$
+\ba
+\pi_a
+&= \Pr(Y^a = 1)
+&& \text{[definition of causal marginal risk]}
+\\
+&= \int \Pr(Y^a = 1 \mid Z=z)\, \red{f_Z(z)}\, dz
+&& \text{[law of total probability]}
+\\
+&= \int \Pr(Y^a = 1 \mid A=a, Z=z)\, \red{f_Z(z)}\, dz
+&& \text{[by conditional exchangeability]}
+\\
+&= \int \Pr(Y=1 \mid A=a, Z=z)\, \red{f_Z(z)}\, dz
+&& \text{[by consistency]}
+\\
+&= \int \teal{\pi(a, z)}\, \red{f_Z(z)}\, dz
+&& \text{[definition of conditional risk]}
+\\
+&= \E{\teal{\pi(a, Z)}}
+&& \text{[definition of expectation]}
+\ea
+$$
+
+Conditional exchangeability licenses adding the conditioning on $A = a$;
+positivity ($\Pr(A = a \mid Z = z) > 0$ wherever $f_Z(z) > 0$)
+guarantees that conditional risk is defined in every stratum;
+and consistency replaces the potential outcome $Y^a$ with the observed $Y$.
+
+:::
+
+:::

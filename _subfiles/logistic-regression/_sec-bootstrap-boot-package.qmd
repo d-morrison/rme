@@ -1,0 +1,51 @@
+The [`boot`](https://cran.r-project.org/package=boot) package provides a more streamlined interface for bootstrap inference.
+Here's how to compute the same confidence interval using `boot::boot()`:
+
+```{r}
+#| label: boot-package-example
+#| code-fold: show
+#| eval: false
+
+library(boot)
+
+statistic_fn <- function(data, indices) {
+  boot_data <- data[indices, ]
+
+  boot_fit <- glm(
+    chd69_binary ~ dibpat + age,
+    data = boot_data,
+    family = binomial(link = "logit")
+  )
+
+  compute_marginal_rd(
+    model = boot_fit,
+    data = boot_data,
+    exposure_var = "dibpat",
+    exposed_level = "Type A",
+    unexposed_level = "Type B"
+  )
+}
+
+set.seed(20260512)
+boot_results <- boot(
+  data = wcgs_clean,
+  statistic = statistic_fn,
+  # Keep the rendered example fast; increase to 2000+ for final analyses.
+  R = 300
+)
+
+boot_results
+
+boot.ci(boot_results, type = c("perc", "bca"))
+```
+
+The [`boot`](https://cran.r-project.org/package=boot) package provides several types of confidence intervals,
+including the percentile method (`perc`)
+and the bias-corrected and accelerated (BCa) method (`bca`),
+which can provide better coverage in some situations.
+The BCa method is more demanding than the percentile method:
+its bias-correction and acceleration estimates are unstable
+at the illustrative `R = 300` used here
+(and can warn or fail outright),
+so use a substantially larger `R` (at least 2000)
+before relying on `bca` intervals.
