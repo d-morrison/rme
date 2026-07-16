@@ -211,6 +211,57 @@ By @sol-simplify-logistic-OR.
 
 {{< slidebreak >}}
 
+:::{#exm-logistic-or-beetles}
+
+#### Odds ratio between adjacent beetle dose levels
+
+::: notes
+We can apply @thm-logistic-OR to the `beetles` logistic regression model
+(@tbl-beetles-model-grouped).
+:::
+
+The estimated dose coefficient for that model is
+$\eb_1 = `r coef(beetles_glm_grouped)["dose"]`$.
+
+Consider the two covariate patterns
+given by the two lowest dose levels in the `beetles` data:
+$\vx = (1, `r beetles$dose[2]`)\'$
+and
+$\vxs = (1, `r beetles$dose[1]`)\'$
+(intercept and dose).
+Their difference is
+$\diffvx = \vx - \vxs = (0, `r beetles$dose[2] - beetles$dose[1]`)\'$.
+
+By @thm-logistic-OR,
+the estimated odds ratio comparing these two dose levels is:
+
+$$
+\ba
+\eror(\vx,\vxs)
+&= \expf{(\diffvx)\cdot \eb}
+&& \text{(@thm-logistic-OR)}
+\\
+&= \expf{0\cdot\eb_0 + (`r beetles$dose[2] - beetles$dose[1]`)\cdot \eb_1}
+&& \text{(expand the dot product)}
+\\
+&= \expf{(`r beetles$dose[2] - beetles$dose[1]`)\cdot (`r coef(beetles_glm_grouped)["dose"]`)}
+&& \text{(substitute } \eb_1\text{)}
+\\
+&= `r exp(coef(beetles_glm_grouped)["dose"] * (beetles$dose[2] - beetles$dose[1]))`
+\ea
+$$
+
+::: notes
+So an increase of $`r beetles$dose[2] - beetles$dose[1]`$ units in dose
+(the gap between the two lowest dose levels)
+multiplies the estimated odds of death
+by about $`r round(exp(coef(beetles_glm_grouped)["dose"] * (beetles$dose[2] - beetles$dose[1])), 2)`$.
+:::
+
+:::
+
+{{< slidebreak >}}
+
 :::{#cor-log-or}
 
 #### Log odds ratio equals the difference in log-odds

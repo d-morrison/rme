@@ -52,6 +52,66 @@ anthers_glm_logit |>
 
 {{< slidebreak >}}
 
+We can compare the two link functions
+by plotting their fitted germination probabilities
+across the range of the storage covariate,
+alongside the observed proportions:
+
+:::{#fig-anthers-fitted-scales}
+
+```{r}
+#| code-fold: true
+library(tidyr)
+
+anthers_fitted_grid <-
+  data.frame(
+    storage = seq(
+      min(anthers_sum$storage),
+      max(anthers_sum$storage),
+      length.out = 100
+    )
+  ) |>
+  mutate(
+    `Log link` = predict(anthers_glm_log, pick(storage), type = "response"),
+    `Logit link` = predict(anthers_glm_logit, pick(storage), type = "response")
+  ) |>
+  pivot_longer(
+    cols = c(`Log link`, `Logit link`),
+    names_to = "Link function",
+    values_to = "fitted"
+  )
+
+anthers_observed <-
+  anthers_sum |>
+  mutate(proportion = y / n)
+
+ggplot() +
+  geom_line(
+    data = anthers_fitted_grid,
+    mapping = aes(x = storage, y = fitted, color = `Link function`)
+  ) +
+  geom_point(
+    data = anthers_observed,
+    mapping = aes(x = storage, y = proportion),
+    size = 3
+  ) +
+  labs(
+    x = "Storage condition",
+    y = "Fitted probability of germination"
+  ) +
+  theme_bw()
+```
+
+Fitted germination probabilities from the log-link and logit-link models for the `anthers` data,
+with the observed proportions as points.
+The two link functions nearly coincide here because the model is saturated
+(two parameters fit to two storage conditions),
+so both reproduce the observed proportions at the data points
+and differ only slightly in between.
+:::
+
+{{< slidebreak >}}
+
 In practice, fitting a binomial model with `link = "log"` often fails to converge,
 producing errors about not finding good starting values for the estimation procedure.
 This convergence failure is likely because the model is producing

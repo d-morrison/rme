@@ -115,9 +115,12 @@ $$
 \ea
 $$
 
+:::
+
 {{< slidebreak >}}
 
-Combining @eq-var-diff-logodds and MLE invariance:
+Combining @eq-var-diff-logodds with the invariance property of MLEs
+gives an estimator for the variance and standard error:
 
 :::{#thm-est-se-diff-logodds}
 
@@ -128,18 +131,65 @@ $$
 $${#eq-est-var-difflogodds}
 
 $$
-\teal{\HSE{\Delta{\hat\logodds}}} = 
+\teal{\HSE{\Delta{\hat\logodds}}} =
 \teal{\sqrt{\tp{\diffvx}\hS(\diffvx)}}
 $${#eq-est-se-diff-logodds}
 
 :::
 
-::: notes
-Note: on the RHS, we have plugged in $\hS$,
-our estimate of $\Sigma$.
-
-Compare this result with [confidence intervals](Linear-models-overview.qmd#sec-se-fitted).
-
+::: proof
+By @sol-se-diff-logodds,
+$\Var{\hdifflogodds} = \tp{\diffvx}\Sigma(\diffvx)$ (@eq-var-diff-logodds).
+By the invariance property of MLEs,
+we estimate $\Sigma$ with $\hS \eqdef \widehat{\Covt}(\hb)$,
+which yields @eq-est-var-difflogodds;
+taking the square root gives @eq-est-se-diff-logodds.
 :::
+
+::: notes
+Compare this result with [confidence intervals](Linear-models-overview.qmd#sec-se-fitted).
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-est-se-diff-logodds-beetles}
+
+#### Standard error and CI for a beetle odds ratio
+
+::: notes
+We instantiate @thm-est-se-diff-logodds
+for the `beetles` logistic regression model
+(@tbl-beetles-model-ungrouped).
+:::
+
+Compare two covariate patterns,
+a dose of 1.8 versus a dose of 1.7:
+$\vx = (1, 1.8)\'$
+and
+$\vxs = (1, 1.7)\'$,
+so that $\diffvx = \vx - \vxs = (0, 0.1)\'$.
+
+```{r}
+#| label: exm-se-diff-logodds-beetles-setup
+#| code-fold: show
+delta_x <- c(0, 0.1)
+sigma_hat <- vcov(beetles_glm_ungrouped)
+diff_logodds_hat <- as.numeric(delta_x %*% coef(beetles_glm_ungrouped))
+se_diff <- sqrt(as.numeric(t(delta_x) %*% sigma_hat %*% delta_x))
+ci_diff <- diff_logodds_hat + c(-1, 1) * 1.96 * se_diff
+```
+
+By @eq-est-se-diff-logodds,
+the estimated standard error of the difference in log-odds is
+$\HSE{\Delta\hat\logodds} = \sqrt{\tp{\diffvx}\hS(\diffvx)} = `r se_diff`$,
+and the estimated difference in log-odds is
+$\Delta\hat\logodds = (\diffvx)\cdot\hb = `r diff_logodds_hat`$.
+
+The resulting 95% confidence interval for $\difflogodds$ is
+$(`r ci_diff[1]`, `r ci_diff[2]`)$,
+so by @eq-ci-OR-exp
+the estimated odds ratio and its 95% confidence interval are
+$\hat\ror(\vx,\vxs) = e^{`r diff_logodds_hat`} = `r exp(diff_logodds_hat)`$,
+with CI $(`r exp(ci_diff[1])`, `r exp(ci_diff[2])`)$.
 
 :::

@@ -1,12 +1,84 @@
 
-<!--  include _lem-one-minus-expit.qmd -->
-
 {{< include _subfiles/logistic-regression/_sec-d_odds-d_logodds.qmd >}}
 
 {{< slidebreak >}}
 
 {{< include _subfiles/logistic-regression/_sec_d-pi_d-eta.qmd >}}
 
-<!-- include _cor-deriv-expit.qmd -->
+{{< slidebreak >}}
 
-<!-- include _sec_prf_cor-deriv-expit.qmd -->
+:::{#cor-deriv-expit}
+
+#### Derivative of expit
+
+$$\dexpitf{\logodds} = \expitf{\logodds}(1 - \expitf{\logodds})$$
+
+:::
+
+{{< slidebreak >}}
+
+::: proof
+
+Using @thm-expit-prob-logodds and @thm-d_prob-d_logodds:
+
+$$
+\ba
+\dexpitf{\logodds}
+&= \derivf{\prob}{\logodds}
+&& \text{(probability via the expit function: } \prob = \expitf{\logodds}\text{)}
+\\ &= \prob(1-\prob)
+&& \text{(derivative of probability w.r.t. log-odds)}
+\\ &= \expitf{\logodds}(1 - \expitf{\logodds})
+&& \text{(substitute } \prob = \expitf{\logodds}\text{)}
+\ea
+$$
+
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-deriv-expit-beetles}
+
+#### Slope of expit for the beetles model
+
+```{r}
+#| label: deriv-expit-beetles
+#| code-fold: true
+
+beetles_mid_row <- ceiling(nrow(beetles) / 2)
+beetles_dose_mid <- beetles$dose[beetles_mid_row]
+beetles_eta_mid <-
+  predict(beetles_glm_grouped, type = "link")[beetles_mid_row] |>
+  unname()
+beetles_pi_mid <-
+  predict(beetles_glm_grouped, type = "response")[beetles_mid_row] |>
+  unname()
+beetles_slope_mid <- beetles_pi_mid * (1 - beetles_pi_mid)
+```
+
+Consider the grouped-data logistic regression model
+for the beetles data (@tbl-beetles-model-grouped).
+At the middle (`r beetles_mid_row`th of `r nrow(beetles)`) dose in the dataset,
+$x = `r beetles_dose_mid`$,
+the fitted log-odds of death is
+$\est{\logodds} = `r round(beetles_eta_mid, 4)`$,
+and the fitted probability of death is
+$\est{\prob} = \expitf{`r round(beetles_eta_mid, 4)`} = `r round(beetles_pi_mid, 4)`$.
+By @cor-deriv-expit,
+the slope of the expit function at this fitted log-odds value is:
+
+$$
+\dexpitf{`r round(beetles_eta_mid, 4)`}
+= `r round(beetles_pi_mid, 4)` \times (1 - `r round(beetles_pi_mid, 4)`)
+= `r round(beetles_slope_mid, 4)`
+$$
+
+::: notes
+That is, near dose $x = `r beetles_dose_mid`$,
+a small increase of $\Delta\logodds$ in the fitted log-odds
+corresponds to an increase of approximately
+$`r round(beetles_slope_mid, 4)` \times \Delta\logodds$
+in the fitted probability of death.
+:::
+
+:::
