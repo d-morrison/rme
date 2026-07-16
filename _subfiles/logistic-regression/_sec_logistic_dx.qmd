@@ -157,7 +157,7 @@ the graph easier to interpret. Here's one way to do that:
 
 The Pearson (chi-squared) residual for covariate pattern $k$ is: $$
 \begin{aligned}
-X_k &= \frac{\bar y_k - \hat\pi_k}{\sqrt{\hat \pi_k (1-\hat\pi_k)/n_k}}
+X_k &\eqdef \frac{\bar y_k - \hat\pi_k}{\sqrt{\hat \pi_k (1-\hat\pi_k)/n_k}}
 \end{aligned}
 $$
 
@@ -285,7 +285,7 @@ The Pearson chi-squared goodness of fit statistic is:
 $$X^2 = \sum_{k=1}^m X_k^2$$
 
 Under the null hypothesis that the model in question is correct
-(i.e., sufficiently complex), $X^2\ \dot \sim\ \chi^2(N-p)$.
+(i.e., sufficiently complex), $X^2\ \dot \sim\ \chi^2(q-p)$.
 
 ```{r}
 x_pearson <- chd_glm_contrasts_grouped |>
@@ -309,7 +309,7 @@ Especially for small data sets, we might want to adjust our residuals
 for leverage (since outliers in $X$ add extra variance to the
 residuals):
 
-$$r_{P_k} = \frac{X_k}{\sqrt{1-h_k}}$$
+$$r_{P_k} \eqdef \frac{X_k}{\sqrt{1-h_k}}$$
 
 where $h_k$ is the leverage of $X_k$. The functions `autoplot()` and
 `plot.lm()` use these for some of their graphs.
@@ -321,11 +321,17 @@ approximately the same. For small sample sizes, the deviance residuals
 from covariate patterns with small sample sizes can be unreliable (high
 variance).
 
-$$d_k = \text{sign}(y_k - n_k \hat \pi_k)\left\{\sqrt{2[\ell_{\text{full}}(x_k) - \ell(\hat\beta; x_k)]}\right\}$$
+Here $\ell_{\text{full}}(x_k)$ is the saturated model's log-likelihood contribution
+from covariate pattern $k$,
+so that summing over the covariate patterns gives the full log-likelihood:
+
+$$\ell_{\text{full}} \eqdef \sum_{k} \ell_{\text{full}}(x_k)$$
+
+$$d_k \eqdef \signt(y_k - n_k \hat \pi_k)\left\{\sqrt{2[\ell_{\text{full}}(x_k) - \ell(\hat\beta; x_k)]}\right\}$$
 
 #### Standardized deviance residuals
 
-$$r_{D_k} = \frac{d_k}{\sqrt{1-h_k}}$$
+$$r_{D_k} \eqdef \frac{d_k}{\sqrt{1-h_k}}$$
 
 ### Diagnostic plots
 
