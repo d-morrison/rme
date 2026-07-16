@@ -24,11 +24,14 @@ age_offset = 0L
 
 $$
 \ba
-\eta(P=0,A=0) &= \beta_0 + \beta_P 0 + \beta_A 0
+\eta(P=0,A=0) &= \beta_0 + \beta_P \cdot 0 + \beta_A \cdot 0 + \beta_{PA} (0 \cdot 0)
+&& \text{(model equation, with } p = 0, a = 0 \text{)}
 \\
-&= \beta_0 + 0 + 0
+&= \beta_0 + 0 + 0 + 0
+&& \text{(multiplication by zero)}
 \\
 &= \beta_0
+&& \text{(additive identity)}
 \ea
 $$
 
@@ -44,27 +47,43 @@ $\text{e}^{\beta_{0}}$ is the odds of experiencing CHD
 for a `r age_offset` year-old with a type B personality,
 
 $$
-\begin{aligned}
+\ba
 \expf{\beta_{0}}
-&= \frac{\Pr(Y= 1| P = 0, A = 0)}{1-\Pr(Y= 1| P = 0, A = 0)} \\
-&= \frac
+&= \expf{\eta(P=0,A=0)}
+&& \text{(} \beta_0 \text{ as a log-odds)}
+\\ &= \omega(P=0,A=0)
+&& \text{(exponential of log-odds is odds: } \odds = \expf{\eta} \text{)}
+\\ &= \frac{\Pr(Y= 1| P = 0, A = 0)}{1-\Pr(Y= 1| P = 0, A = 0)}
+&& \text{(definition of odds)}
+\\ &= \frac
 {\Pr(Y= 1| P = 0, A = 0)}
 {\Pr(Y= 0| P = 0, A = 0)}
-\end{aligned}
+&& \text{(complement rule: } 1 - \Pr(Y=1|\cdot) = \Pr(Y=0|\cdot) \text{)}
+\ea
 $$
 
 {{< slidebreak >}}
 
 $$
 \ba
-\deriv{a}\eta(P=0, A = a) 
-&= \deriv{a} (\beta_0 + \beta_P 0 + \beta_A a + \beta_{PA}(0\cdot a))
+\deriv{a}\eta(P=0, A = a)
+&= \deriv{a} \paren{\beta_0 + \beta_P \cdot 0 + \beta_A a + \beta_{PA}(0\cdot a)}
+&& \text{(model equation, with } p = 0 \text{)}
 \\
-&= \deriv{a}\beta_0 + \deriv{a}\beta_P 0 + \deriv{a}\beta_A a + \deriv{a}\beta_{PA}(0\cdot a)
+&= \deriv{a} \paren{\beta_0 + 0 + \beta_A a + 0}
+&& \text{(multiplication by zero)}
 \\
-&=  0 + 0 + \beta_A + 0
+&= \deriv{a} \paren{\beta_0 + \beta_A a}
+&& \text{(additive identity)}
+\\
+&= \deriv{a}\beta_0 + \deriv{a}\paren{\beta_A a}
+&& \text{(linearity of differentiation)}
+\\
+&=  0 + \beta_A
+&& \text{(constants have derivative 0; derivative of a linear term)}
 \\
 &= \beta_A
+&& \text{(additive identity)}
 \ea
 $$
 
@@ -77,10 +96,20 @@ $\beta_A$ is the slope of the log-odds of CHD with respect to age, for individua
 Alternatively:
 
 $$
-\begin{aligned}
-\beta_{A}
-&= \eta(P = 0, A = a + 1)- \eta(P = 0, A = a)
-\end{aligned}
+\ba
+\eta(P = 0, A = a + 1)- \eta(P = 0, A = a)
+&= \paren{\beta_0 + \beta_P \cdot 0 + \beta_A (a+1) + \beta_{PA} (0 \cdot (a+1))} - \paren{\beta_0 + \beta_P \cdot 0 + \beta_A a + \beta_{PA} (0 \cdot a)}
+&& \text{(model equation, with } p = 0 \text{)}
+\\
+&= \paren{\beta_0 + \beta_A (a+1)} - \paren{\beta_0 + \beta_A a}
+&& \text{(multiplication by zero; additive identity)}
+\\
+&= \beta_0 + \beta_A a + \beta_A - \beta_0 - \beta_A a
+&& \text{(distribute)}
+\\
+&= \beta_{A}
+&& \text{(cancel } \beta_0 \text{ and } \beta_A a \text{)}
+\ea
 $$
 
 That is,
@@ -94,16 +123,21 @@ between two individuals with type B personalities.
 $$
 \ba
 \expf{\beta_{A}} &= \expf{\eta(P = 0, A = a + 1)- \eta(P = 0, A = a)}
+&& \text{(} \beta_A \text{ as a difference in log-odds)}
 \\
 &= \frac{\expf{\eta(P = 0, A = a + 1)}}{\expf{\eta(P = 0, A = a)}}
+&& \text{(exponential of a difference is a ratio)}
 \\
 &= \frac{\omega(P = 0, A = a + 1)}{\omega(P = 0, A = a)}
+&& \text{(exponential of log-odds is odds: } \odds = \expf{\eta} \text{)}
 \\
 &= \frac
 {\oddst(Y= 1|P=0, A = a + 1)}
 {\oddst(Y= 1|P=0, A = a)}
+&& \text{(notation: } \omega(p, a) \eqdef \oddst(Y=1|P=p, A=a) \text{)}
 \\
 &= \ror(\Delta a = 1 | P = 0)
+&& \text{(definition of the odds ratio)}
 \ea
 $$
 
@@ -139,9 +173,21 @@ $$
 
 $$
 \ba
-\deriv{a}\eta(P=\red{1}, A = a) &= \red{\beta_A + \beta_{PA}}
+\deriv{a}\eta(P=\red{1}, A = a)
+&= \deriv{a} \paren{\beta_0 + \beta_P \cdot 1 + \beta_A a + \beta_{PA}(1 \cdot a)}
+&& \text{(model equation, with } p = 1 \text{)}
+\\
+&= \deriv{a} \paren{\beta_0 + \beta_P + \beta_A a + \beta_{PA} a}
+&& \text{(multiplicative identity)}
+\\
+&= 0 + 0 + \beta_A + \beta_{PA}
+&& \text{(term-by-term: constants have derivative 0; derivatives of linear terms)}
+\\
+&= \red{\beta_A + \beta_{PA}}
+&& \text{(additive identity)}
 \\
 \deriv{a}\eta(P=\teal{0}, A = a) &= \teal{\beta_A}
+&& \text{(the type B slope, from the } \beta_A \text{ derivation)}
 \ea
 $$
 
@@ -149,9 +195,15 @@ Therefore:
 
 $$
 \ba
-\deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\teal{0}, A = a) &= \red{\beta_A + \beta_{PA}} - \teal{\beta_A}
+\deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\teal{0}, A = a)
+&= \paren{\red{\beta_A + \beta_{PA}}} - \teal{\beta_A}
+&& \text{(substitute the two slopes)}
+\\
+&= \beta_A - \beta_A + \beta_{PA}
+&& \text{(commute the addition)}
 \\
 &= \beta_{PA}
+&& \text{(cancel } \beta_A \text{)}
 \ea
 $$
 
@@ -160,8 +212,10 @@ That is,
 $$
 \ba
 \beta_{PA} &= \deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\teal{0}, A = a)
+&& \text{(rearrange the difference of slopes)}
 \\
-&= \deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\teal{0}, A = a)
+&= \deriv{a}\eta(P=\red{1}, A = a) - \teal{\beta_A}
+&& \text{(substitute the type B slope, } \deriv{a}\eta(P=0, A=a) = \beta_A \text{)}
 \ea
 $$
 
@@ -196,7 +250,7 @@ $$
 
 :::
 
-----
+{{< slidebreak >}}
 
 See [Section 5.1.1](https://link.springer.com/chapter/10.1007/978-1-4614-1353-0_5#Sec2_5)
 of @vittinghoff2e for another perspective,

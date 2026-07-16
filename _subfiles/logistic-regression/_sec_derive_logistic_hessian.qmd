@@ -1,18 +1,22 @@
 {{< include latex-macros/macros.qmd >}}
 
 $$
-{\hess(\vb)} = \sumin \olive{\hess_i(\vb)}
+\ub{\hess(\vb)}_{(p+1) \times (p+1)} = \sumin \ub{\olive{\hess_i(\vb)}}_{(p+1) \times (p+1)}
 $${#eq-logit-hessian}
 
 $$
 \ba
-\olive{\hess_i(\vb)} &= \deriv{\vb\'}\scorei
+\olive{\hess_i(\vb)} &\eqdef \deriv{\vb\'}\scorei
+&& \text{(definition of the Hessian component)}
 \\
-&= \deriv{\vb\'}\vx_i\eps_i
+&= \deriv{\vb\'}\paren{\vx_i\eps_i}
+&& \text{(score component for one observation)}
 \\
 &= \vx_i \deriv{\vb\'}\eps_i
+&& \text{(constant-factor rule: } \vx_i \text{ does not depend on } \vb \text{)}
 \\
 &= \vx_i \violet{\eps_i'}
+&& \text{(definition: } \violet{\eps_i'} \eqdef \deriv{\vb\'}\eps_i \text{)}
 \ea
 $${#eq-logit-hessian-i}
 
@@ -26,21 +30,27 @@ Using @thm-d_pi_d_beta:
 
 $$
 \ba
-\violet{\eps'_i} &= \derivff{\vb\'}{\eps_i}
+\violet{\eps'_i} &\eqdef \derivf{\eps_i}{\vb\'}
+&& \text{(definition of } \violet{\eps'_i} \text{)}
 \\
-&= \deriv{\vb\'}\eps_i 
-\\
-&=\deriv{\vb\'}(y_i - \mu_i)
+&= \deriv{\vb\'}(y_i - \mu_i)
+&& \text{(definition of the error: } \eps_i \eqdef y_i - \mu_i \text{)}
 \\
 &= \deriv{\vb\'}y_i - \deriv{\vb\'}\mu_i
+&& \text{(linearity of differentiation)}
 \\
-&= 0 - \deriv{\vb\'}\mu_i
+&= \mathbf{0}_{1 \times (p+1)} - \deriv{\vb\'}\mu_i
+&& \text{(} y_i \text{ does not depend on } \vb \text{)}
 \\
 &= -\derivf{\mu_i}{\vb\'}
+&& \text{(additive identity)}
 \\
 &= -\purple{\derivf{\pi_i}{\vb\'}}
-\\ &= - \pi_i (1-\pi_i) \vx_i\' 
-\\ &= - \Varf{Y_i|X_i=x_i} \vx_i\' 
+&& \text{(Bernoulli conditional mean: } \mu_i = \pi_i \text{)}
+\\ &= - \pi_i (1-\pi_i) \vx_i\'
+&& \text{(transpose of the gradient of } \pi \text{ w.r.t. coefficients)}
+\\ &= - \Varf{Y_i|\vX_i=\vx_i} \vx_i\'
+&& \text{(Bernoulli conditional variance: } \Varf{Y_i|\vX_i=\vx_i} = \pi_i(1-\pi_i) \text{)}
 \ea
 $$
 
@@ -51,7 +61,11 @@ Returning to @eq-logit-hessian-i:
 $$
 \ba
 \olive{\hess_i(\vb)} &= \vx_i \violet{\eps_i'}
-\\ &= \olive{-\vx_i \Varf{Y_i|X_i=x_i} \vx_i\'}
+&& \text{(Hessian component identity)}
+\\ &= \vx_i \paren{- \Varf{Y_i|\vX_i=\vx_i} \vx_i\'}
+&& \text{(substitute } \violet{\eps_i'} \text{)}
+\\ &= \olive{-\ub{\vx_i}_{(p+1) \times 1} \ub{\Varf{Y_i|\vX_i=\vx_i}}_{1 \times 1} \ub{\vx_i\'}_{1 \times (p+1)}}
+&& \text{(move the scalar factor } -\Varf{Y_i|\vX_i=\vx_i} \text{ between the vectors)}
 \ea
 $${#eq-logit-hessian-i-2}
 
@@ -62,20 +76,74 @@ Returning to @eq-logit-hessian:
 $$
 \ba
 {\llik''(\vb)} &= \sumin \olive{\hess_i(\vb)}
-\\ &= {-\sumin \vx_i  \Varf{Y_i|X_i=x_i} \vx_i'}
-\\ &= {- \mX\'\matr{D}\mX}
+&& \text{(the Hessian decomposes over observations)}
+\\ &= {-\sumin \ub{\vx_i}_{(p+1) \times 1}  \ub{\Varf{Y_i|\vX_i=\vx_i}}_{1 \times 1} \ub{\vx_i\'}_{1 \times (p+1)}}
+&& \text{(Hessian component for one observation)}
+\\ &= {- \ub{\mX\'}_{(p+1) \times n} \ub{\matr{D}}_{n \times n} \ub{\mX}_{n \times (p+1)}}
+&& \text{(matrix form: } \matr{D} \eqdef \text{diag}(\Varf{Y_i|\vX_i=\vx_i}) \text{)}
 \ea
 $${#eq-logistic-hess}
 
-where $\matr{D} \eqdef \text{diag}(\Varf{Y_i|X_i=x_i})$
-is the diagonal matrix whose $i^{th}$ diagonal element is $\Varf{Y_i|X_i=x_i}$.
+where $\matr{D} \eqdef \text{diag}(\Varf{Y_i|\vX_i=\vx_i})$
+is the diagonal matrix whose $i^{th}$ diagonal element is $\Varf{Y_i|\vX_i=\vx_i}$.
+
+{{< slidebreak >}}
+
+:::{#rem-hessian-nsd}
+
+#### The logistic log-likelihood is concave
+
+The Hessian $\llik''(\vb) = -\mX\'\matr{D}\mX$ (@eq-logistic-hess)
+is negative semi-definite for every $\vb$,
+because the diagonal entries of $\matr{D}$ are
+$\Varf{Y_i|\vX_i=\vx_i} = \pi_i(1-\pi_i) \geq 0$.
+Since the diagonal entries are non-negative,
+$\matr{D}^{1/2} \eqdef \text{diag}\paren{\sqrt{\pi_i(1-\pi_i)}}$ is well-defined,
+and for any vector $\vec{v} \in \reals^{p+1}$:
+
+$$
+\ba
+\ub{\tp{\vec{v}}}_{1 \times (p+1)} \paren{-\ub{\mX\'}_{(p+1) \times n}\ub{\matr{D}}_{n \times n}\ub{\mX}_{n \times (p+1)}} \ub{\vec{v}}_{(p+1) \times 1}
+&= -\tp{\vec{v}}\mX\'\matr{D}\mX\vec{v}
+&& \text{(the scalar } -1 \text{ factors out)}
+\\ &= -\tp{\vec{v}}\mX\'\matr{D}^{1/2}\matr{D}^{1/2}\mX\vec{v}
+&& \text{(} \matr{D} = \matr{D}^{1/2}\matr{D}^{1/2} \text{)}
+\\ &= -\tp{\paren{\matr{D}^{1/2}\mX\vec{v}}}\paren{\matr{D}^{1/2}\mX\vec{v}}
+&& \text{(transpose of a product; } \matr{D}^{1/2} \text{ is diagonal, hence symmetric)}
+\\ &= -\normsq{\matr{D}^{1/2}\mX\vec{v}}
+&& \text{(definition of the squared Euclidean norm)}
+\\ &\leq 0
+&& \text{(squared norms are non-negative)}
+\ea
+$$
+
+A twice-differentiable function
+whose Hessian is negative semi-definite everywhere is concave,
+so the log-likelihood $\llik(\vb)$ is concave,
+and every stationary point
+(every solution of the score equation $\vec{\llik'}(\vb) = \mathbf{0}_{(p+1) \times 1}$)
+is a global maximum.
+In fact, since $\pi_i = \expitf{\vx_i \cdot \vb} \in (0,1)$ strictly,
+every diagonal entry $\pi_i(1-\pi_i)$ is strictly positive;
+so when $\mX$ has full column rank,
+$\matr{D}^{1/2}\mX\vec{v} = \mathbf{0}_{n \times 1}$ only for $\vec{v} = \mathbf{0}_{(p+1) \times 1}$,
+the Hessian is negative definite,
+the log-likelihood is strictly concave,
+and the maximum is unique.
+Consequently, when the [Newton-Raphson algorithm](intro-MLEs.qmd#sec-newton-raphson) converges,
+it converges to the unique global maximum likelihood estimate,
+not merely to a local optimum.
+
+:::
 
 Compare with [the linear regression Hessian](Linear-models-overview.qmd#eq-lm-hess):
 
 $$
 \ba
-\llik''(\vb) &= -\frac{1}{\ss}\sumin \vx_i \vx_i' 
-\\ &= -\mX\' \matr{D}^{-1} \mX
+\llik''(\vb) &= -\frac{1}{\ss}\sumin \ub{\vx_i}_{(p+1) \times 1} \ub{\vx_i'}_{1 \times (p+1)}
+&& \text{(linear-model Hessian)}
+\\ &= -\ub{\mX\'}_{(p+1) \times n} \ub{\matr{D}^{-1}}_{n \times n} \ub{\mX}_{n \times (p+1)}
+&& \text{(matrix form: here } \matr{D} = \ss \idmat_{n \times n} \text{, so } \matr{D}^{-1} = \frac{1}{\ss}\idmat_{n \times n} \text{)}
 \ea
 $${#eq-linear-hess}
 
@@ -95,23 +163,26 @@ The components of the Hessian are:
 
 $$
 \ba
-\hess(\beta) 
+\ub{\hess(\beta)}_{(p+1) \times (p+1)}
 &= \xderiv{\beta\'}{\beta}{\llik}
+&& \text{(definition of the Hessian)}
 \\
-&= \deriv{\beta\'}\score
+&= \deriv{\beta\'}\ub{\score}_{(p+1) \times 1}
+&& \text{(the Hessian is the derivative of the score)}
 \\
 &= \sbmat{
-\derivff{\beta_0}{\score}
-& \derivff{\beta_1}{\score}
+\ub{\derivf{\score}{\beta_0}}_{(p+1) \times 1}
+& \ub{\derivf{\score}{\beta_1}}_{(p+1) \times 1}
 & \cdots
-& \derivff{\beta_p}{\score}
+& \ub{\derivf{\score}{\beta_p}}_{(p+1) \times 1}
 }
+&& \text{(differentiate column-by-column w.r.t. } \beta\' \text{)}
 \\
-&= 
-\sbmat{
-\dderivf{\llik}{\beta_0} 
-& \xderivf{\llik}{\beta_0}{\beta_1} 
-& \cdots 
+&=
+\ub{\sbmat{
+\dderivf{\llik}{\beta_0}
+& \xderivf{\llik}{\beta_0}{\beta_1}
+& \cdots
 & \xderivf{\llik}{\beta_0}{\beta_p}
 \\
 \xderivf{\llik}{\beta_1}{\beta_0}
@@ -124,11 +195,12 @@ $$
 & \ddots
 & \vdots
 \\
-\xderivf{\llik}{\beta_p}{\beta_0} 
-& \xderivf{\llik}{\beta_p}{\beta_1} 
-& \cdots 
-& \dderivf{\llik}{\beta_p} 
-}
+\xderivf{\llik}{\beta_p}{\beta_0}
+& \xderivf{\llik}{\beta_p}{\beta_1}
+& \cdots
+& \dderivf{\llik}{\beta_p}
+}}_{(p+1) \times (p+1)}
+&& \text{(each score entry is itself a partial derivative of } \llik \text{)}
 \ea
 $$
 
@@ -150,22 +222,31 @@ In the `beetles` model, the Hessian is:
 
 $$
 \ba
-\hess(\beta) &=
+\ub{\hess(\beta)}_{2 \times 2} &=
 \sbmat{
-\derivff{\beta_0}{\score}
-& \derivff{\beta_1}{\score}
+\ub{\derivf{\score}{\beta_0}}_{2 \times 1}
+& \ub{\derivf{\score}{\beta_1}}_{2 \times 1}
 }
+&& \text{(differentiate column-by-column; here } p+1 = 2 \text{)}
 \\
-&= 
+&=
 \sbmat{
-\dderivf{\llik}{\beta_0} 
-& \xderivf{\llik}{\beta_0}{\beta_1} 
+\dderivf{\llik}{\beta_0}
+& \xderivf{\llik}{\beta_0}{\beta_1}
 \\
-\xderivf{\llik}{\beta_1}{\beta_0} 
+\xderivf{\llik}{\beta_1}{\beta_0}
 & \dderivf{\llik}{\beta_1}
 }
+&& \text{(each score entry is a partial derivative of } \llik \text{)}
 \\
-&= 
+&=
+-\sumin
+\ub{\pmat{1 \\ c_i}}_{2 \times 1}
+\ub{\pi_i(1-\pi_i)}_{1 \times 1}
+\ub{\pmat{1 & c_i}}_{1 \times 2}
+&& \text{(logistic Hessian with } \vx_i = (1, c_i)\' \text{)}
+\\
+&=
 \sbmat{
 -\sumin\pi_i(1-\pi_i)
 & -\sumin c_i \pi_i(1-\pi_i)
@@ -173,6 +254,7 @@ $$
 -\sumin c_i \pi_i(1-\pi_i)
 & -\sumin c_i^2 \pi_i(1-\pi_i)
 }
+&& \text{(multiply out the outer products, entry by entry)}
 \ea
 $$
 
