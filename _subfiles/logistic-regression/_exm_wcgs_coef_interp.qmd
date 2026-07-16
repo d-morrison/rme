@@ -43,15 +43,21 @@ $\beta_{0}$ is the natural logarithm of the odds ("log-odds") of experiencing CH
 
 {{< slidebreak >}}
 
-$\text{e}^{\beta_{0}}$ is the odds of experiencing CHD 
-for a `r age_offset` year-old with a type B personality,
+$\text{e}^{\beta_{0}}$ is the odds of experiencing CHD
+for a `r age_offset` year-old with a type B personality.
+Here we write
+
+$$\odds(p, a) \eqdef \oddst(Y=1|P=p, A=a)$$
+
+for the odds of CHD at covariate values $(p, a)$.
+Then:
 
 $$
 \ba
 \expf{\beta_{0}}
 &= \expf{\eta(P=0,A=0)}
 && \text{(} \beta_0 \text{ as a log-odds)}
-\\ &= \omega(P=0,A=0)
+\\ &= \odds(P=0,A=0)
 && \text{(exponential of log-odds is odds: } \odds = \expf{\eta} \text{)}
 \\ &= \frac{\Pr(Y= 1| P = 0, A = 0)}{1-\Pr(Y= 1| P = 0, A = 0)}
 && \text{(definition of odds)}
@@ -101,8 +107,11 @@ $$
 &= \paren{\beta_0 + \beta_P \cdot 0 + \beta_A (a+1) + \beta_{PA} (0 \cdot (a+1))} - \paren{\beta_0 + \beta_P \cdot 0 + \beta_A a + \beta_{PA} (0 \cdot a)}
 && \text{(model equation, with } p = 0 \text{)}
 \\
+&= \paren{\beta_0 + 0 + \beta_A (a+1) + 0} - \paren{\beta_0 + 0 + \beta_A a + 0}
+&& \text{(multiplication by zero)}
+\\
 &= \paren{\beta_0 + \beta_A (a+1)} - \paren{\beta_0 + \beta_A a}
-&& \text{(multiplication by zero; additive identity)}
+&& \text{(additive identity)}
 \\
 &= \beta_0 + \beta_A a + \beta_A - \beta_0 - \beta_A a
 && \text{(distribute)}
@@ -128,13 +137,13 @@ $$
 &= \frac{\expf{\eta(P = 0, A = a + 1)}}{\expf{\eta(P = 0, A = a)}}
 && \text{(exponential of a difference is a ratio)}
 \\
-&= \frac{\omega(P = 0, A = a + 1)}{\omega(P = 0, A = a)}
+&= \frac{\odds(P = 0, A = a + 1)}{\odds(P = 0, A = a)}
 && \text{(exponential of log-odds is odds: } \odds = \expf{\eta} \text{)}
 \\
 &= \frac
 {\oddst(Y= 1|P=0, A = a + 1)}
 {\oddst(Y= 1|P=0, A = a)}
-&& \text{(notation: } \omega(p, a) \eqdef \oddst(Y=1|P=p, A=a) \text{)}
+&& \text{(the } \odds(p, a) \text{ notation defined at } \beta_0 \text{'s interpretation)}
 \\
 &= \ror(\Delta a = 1 | P = 0)
 && \text{(definition of the odds ratio)}
@@ -180,8 +189,11 @@ $$
 &= \deriv{a} \paren{\beta_0 + \beta_P + \beta_A a + \beta_{PA} a}
 && \text{(multiplicative identity)}
 \\
+&= \deriv{a}\beta_0 + \deriv{a}\beta_P + \deriv{a}\paren{\beta_A a} + \deriv{a}\paren{\beta_{PA} a}
+&& \text{(linearity of differentiation)}
+\\
 &= 0 + 0 + \beta_A + \beta_{PA}
-&& \text{(term-by-term: constants have derivative 0; derivatives of linear terms)}
+&& \text{(constants have derivative 0; derivatives of linear terms)}
 \\
 &= \red{\beta_A + \beta_{PA}}
 && \text{(additive identity)}
