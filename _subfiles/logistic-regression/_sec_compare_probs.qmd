@@ -16,6 +16,13 @@ $$\delta(\pi_1,\pi_2) \eqdef \pi_1 - \pi_2$$
 
 #### Difference in MI risk
 
+Here, we introduce the shorthand notation
+
+$$\pi(OC) \eqdef \Pr(MI|OC), \quad \pi(\neg OC) \eqdef \Pr(MI|\neg OC)$$
+
+for the probability of MI given OC use and given OC non-use,
+respectively.
+
 In @exm-oc-mi, the maximum likelihood estimate of the difference in MI risk between OC users and OC non-users is:
 ```{r, include = FALSE}
 #| label: compute-risk-diff
@@ -103,7 +110,7 @@ of $\pi_1$ compared to $\pi_2$.
 :::{#exr-RR}
 
 :::: notes
-Above, we estimated that:
+In @sol-compute-probs, we estimated that:
 ::::
 
 $$\ph(MI|OC) = `r 13/5000`$$
@@ -173,7 +180,7 @@ see also [Section 8.1.4](https://link.springer.com/chapter/10.1007/978-1-4614-13
 ### Relative risk differences
 
 ::: notes
-The second approach above,
+The second approach in @sol-interpret-rr,
 where we subtract 1 from the risk ratio,
 is actually reporting a slightly different metric:
 :::
@@ -220,14 +227,80 @@ $$
 Risk differences, risk ratios, and relative risk differences are defined by two probabilities, plus a choice of which probability is the **baseline** or **reference** probability (i.e., which probability is the subtrahend of the risk difference or the denominator of the risk ratio).
 :::
 
-$$\delta(\pi_2,\pi_1) = -\delta(\pi_1, \pi_2)$$
+$$\delta(\pi_2,\pi_1) = -\delta(\pi_1, \pi_2)$$ {#eq-rd-switch-ref}
 
-$$\rho(\pi_2,\pi_1) = \inv{\rho(\pi_1,\pi_2)}$$
-$$\xi(\pi_2,\pi_1) = \inv{\xi(\pi_1,\pi_2) + 1} - 1$$
+$$\rho(\pi_2,\pi_1) = \inv{\rho(\pi_1,\pi_2)}$$ {#eq-rr-switch-ref}
+
+$$\xi(\pi_2,\pi_1) = \inv{\xi(\pi_1,\pi_2) + 1} - 1$$ {#eq-rrd-switch-ref}
 
 :::{#exr-change-ref-group}
 
-Prove the relationships above.
+Prove @eq-rd-switch-ref, @eq-rr-switch-ref, and @eq-rrd-switch-ref.
+
+:::
+
+{{< slidebreak >}}
+
+:::{#sol-change-ref-group}
+
+To prove @eq-rd-switch-ref:
+
+$$
+\ba
+\delta(\pi_2,\pi_1)
+&\eqdef \pi_2 - \pi_1
+&& \text{(definition of risk difference)}
+\\ &= -(\pi_1 - \pi_2)
+&& \text{(factoring out } -1 \text{)}
+\\ &= -\delta(\pi_1, \pi_2)
+&& \text{(definition of risk difference)}
+\ea
+$$
+
+To prove @eq-rr-switch-ref:
+
+$$
+\ba
+\rho(\pi_2,\pi_1)
+&\eqdef \frac{\pi_2}{\pi_1}
+&& \text{(definition of risk ratio)}
+\\ &= \inv{\frac{\pi_1}{\pi_2}}
+&& \text{(inverse of the inverted fraction)}
+\\ &= \inv{\rho(\pi_1,\pi_2)}
+&& \text{(definition of risk ratio)}
+\ea
+$$
+
+To prove @eq-rrd-switch-ref,
+first rearrange @thm-rrd-vs-rr to express the risk ratio
+in terms of the relative risk difference:
+
+$$
+\ba
+\xi(\pi_1,\pi_2)
+&= \rho(\pi_1,\pi_2) - 1
+&& \text{(relative risk difference as risk ratio minus 1)}
+\\ \xi(\pi_1,\pi_2) + 1
+&= \rho(\pi_1,\pi_2)
+&& \text{(adding 1 to both sides)}
+\ea
+$$
+
+Then apply @thm-rrd-vs-rr to the switched-reference pair $(\pi_2, \pi_1)$,
+substitute @eq-rr-switch-ref,
+and substitute the rearranged form of @thm-rrd-vs-rr:
+
+$$
+\ba
+\xi(\pi_2,\pi_1)
+&= \rho(\pi_2,\pi_1) - 1
+&& \text{(relative risk difference as risk ratio minus 1)}
+\\ &= \inv{\rho(\pi_1,\pi_2)} - 1
+&& \text{(risk ratio with switched reference group)}
+\\ &= \inv{\xi(\pi_1,\pi_2) + 1} - 1
+&& \text{(substituting } \rho(\pi_1,\pi_2) = \xi(\pi_1,\pi_2) + 1 \text{)}
+\ea
+$$
 
 :::
 
@@ -237,7 +310,7 @@ Prove the relationships above.
 
 #### Switching the reference group in a risk ratio
 
-Above, we estimated that the risk ratio of OC versus non-OC is:
+In @sol-exr-RR, we estimated that the risk ratio of OC versus non-OC is:
 
 $$
 \begin{aligned}

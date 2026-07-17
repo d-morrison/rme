@@ -1,14 +1,10 @@
-::: notes
-
-Alternatively, 
-if you want to estimate risk ratios more directly from the model, 
+Alternatively,
+if you want to estimate risk ratios more directly from the model,
 you can sometimes change the link function from $\logitf{}$ to $\logf{}$;
 then you can obtain risk ratios by exponentiating coefficients
-^[or linear combinations of coefficients, 
-depending on what covariate patterns you are contrasting], 
+^[or linear combinations of coefficients,
+depending on what covariate patterns you are contrasting],
 just like we did for odds ratios with the logit link:
-
-:::
 
 ```{r}
 data(anthers, package = "dobson")
@@ -56,10 +52,10 @@ anthers_glm_logit |>
 
 {{< slidebreak >}}
 
-When I try to use `link ="log"` in practice, I often get errors about
-not finding good starting values for the estimation procedure.
-This is likely because the model is producing fitted probabilities greater than
-1.
+In practice, fitting a binomial model with `link = "log"` often fails to converge,
+producing errors about not finding good starting values for the estimation procedure.
+This convergence failure is likely because the model is producing
+fitted probabilities greater than 1.
 
 When this happens,
 you can instead switch the outcome distribution from binomial to Poisson
@@ -71,8 +67,9 @@ not just a different way of fitting the same model.
 With a Poisson outcome distribution,
 you won't get warnings about fitted probabilities greater than 1,
 but that distribution isn't quite right for binary outcomes.
-In my opinion,
-the Poisson model for binary outcomes is confusing and not very appealing.
+Despite this mismatch,
+Poisson regression is the usual fallback
+when the log-binomial model fails to converge.
 
 ### WCGS: link functions
 

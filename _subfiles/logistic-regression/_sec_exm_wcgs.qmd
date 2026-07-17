@@ -335,3 +335,230 @@ Compare with @tbl-model-corner-point.
 :::{#exr-strat-to-contrast}
 If I give you model 1, how would you get the coefficients of model 2?
 :::
+
+{{< slidebreak >}}
+
+:::{#sol-strat-to-contrast}
+
+Model 1 is the corner-point (reference/contrast) parametrization
+fitted in `chd_glm_contrasts`,
+with linear predictor (@eq-wcgs-model-1):
+
+$$\eta(p, a) = \beta_0 + \beta_P p + \beta_A a + \beta_{PA} pa$$
+
+Model 2 is the stratified parametrization
+fitted in `chd_glm_strat`,
+which gives each personality type
+its own intercept and its own age slope.
+Writing $\gamma_B, \gamma_A$ for the stratum-specific intercepts
+and $\delta_B, \delta_A$ for the stratum-specific age slopes:
+
+$$
+\eta(p, a) \eqdef
+\gamma_B (1 - p) + \gamma_A p + \delta_B (1 - p) a + \delta_A p a
+$$ {#eq-wcgs-model-strat}
+
+The two parametrizations span the same set of linear-predictor functions,
+so both models have the same fitted linear predictor $\eta(p, a)$.
+We can therefore recover the model 2 coefficients
+by equating the two expressions for $\eta(p, a)$
+within each personality-type stratum.
+
+{{< slidebreak >}}
+
+**Type B stratum ($p = 0$):**
+
+In model 1 (@eq-wcgs-model-1):
+
+$$
+\ba
+\eta(0, a)
+&= \beta_0 + \beta_P \cdot 0 + \beta_A a + \beta_{PA} \cdot 0 \cdot a
+&& \text{(substitute } p = 0\text{)}
+\\
+&= \beta_0 + 0 + \beta_A a + 0
+&& \text{(multiply by 0)}
+\\
+&= \beta_0 + \beta_A a
+&& \text{(drop the zero terms)}
+\ea
+$$
+
+In model 2 (@eq-wcgs-model-strat):
+
+$$
+\ba
+\eta(0, a)
+&= \gamma_B (1 - 0) + \gamma_A \cdot 0 + \delta_B (1 - 0) a + \delta_A \cdot 0 \cdot a
+&& \text{(substitute } p = 0\text{)}
+\\
+&= \gamma_B \cdot 1 + \gamma_A \cdot 0 + \delta_B \cdot 1 \cdot a + \delta_A \cdot 0 \cdot a
+&& \text{(} 1 - 0 = 1 \text{)}
+\\
+&= \gamma_B + 0 + \delta_B a + 0
+&& \text{(multiply by 1 and by 0)}
+\\
+&= \gamma_B + \delta_B a
+&& \text{(drop the zero terms)}
+\ea
+$$
+
+{{< slidebreak >}}
+
+Equating the two expressions for $\eta(0, a)$, for all ages $a$:
+
+$$
+\gamma_B + \delta_B a = \beta_0 + \beta_A a
+$$ {#eq-wcgs-strat-match-b}
+
+Setting $a = 0$ in @eq-wcgs-strat-match-b:
+
+$$
+\ba
+\gamma_B + \delta_B \cdot 0
+&= \beta_0 + \beta_A \cdot 0
+&& \text{(substitute } a = 0\text{)}
+\\
+\gamma_B + 0
+&= \beta_0 + 0
+&& \text{(multiply by 0)}
+\\
+\gamma_B
+&= \beta_0
+&& \text{(drop the zero terms)}
+\ea
+$$
+
+Subtracting $\gamma_B = \beta_0$ from both sides of @eq-wcgs-strat-match-b
+and then setting $a = 1$:
+
+$$
+\ba
+\delta_B a
+&= \beta_A a
+&& \text{(subtract } \gamma_B = \beta_0 \text{ from both sides)}
+\\
+\delta_B \cdot 1
+&= \beta_A \cdot 1
+&& \text{(substitute } a = 1\text{)}
+\\
+\delta_B
+&= \beta_A
+&& \text{(multiply by 1)}
+\ea
+$$
+
+{{< slidebreak >}}
+
+**Type A stratum ($p = 1$):**
+
+In model 1 (@eq-wcgs-model-1):
+
+$$
+\ba
+\eta(1, a)
+&= \beta_0 + \beta_P \cdot 1 + \beta_A a + \beta_{PA} \cdot 1 \cdot a
+&& \text{(substitute } p = 1\text{)}
+\\
+&= \beta_0 + \beta_P + \beta_A a + \beta_{PA} a
+&& \text{(multiply by 1)}
+\\
+&= (\beta_0 + \beta_P) + (\beta_A + \beta_{PA}) a
+&& \text{(group the constant terms; factor out } a \text{)}
+\ea
+$$
+
+In model 2 (@eq-wcgs-model-strat):
+
+$$
+\ba
+\eta(1, a)
+&= \gamma_B (1 - 1) + \gamma_A \cdot 1 + \delta_B (1 - 1) a + \delta_A \cdot 1 \cdot a
+&& \text{(substitute } p = 1\text{)}
+\\
+&= \gamma_B \cdot 0 + \gamma_A \cdot 1 + \delta_B \cdot 0 \cdot a + \delta_A \cdot 1 \cdot a
+&& \text{(} 1 - 1 = 0 \text{)}
+\\
+&= 0 + \gamma_A + 0 + \delta_A a
+&& \text{(multiply by 0 and by 1)}
+\\
+&= \gamma_A + \delta_A a
+&& \text{(drop the zero terms)}
+\ea
+$$
+
+Equating the two expressions for $\eta(1, a)$
+and applying the same two steps as in the Type B stratum
+(set $a = 0$; then subtract the intercepts and set $a = 1$):
+
+$$
+\ba
+\gamma_A &= \beta_0 + \beta_P
+\\
+\delta_A &= \beta_A + \beta_{PA}
+\ea
+$$
+
+{{< slidebreak >}}
+
+**Summary of the conversion:**
+
+$$
+\ba
+\gamma_B &= \beta_0
+\\
+\gamma_A &= \beta_0 + \beta_P
+\\
+\delta_B &= \beta_A
+\\
+\delta_A &= \beta_A + \beta_{PA}
+\ea
+$$ {#eq-wcgs-strat-from-contrast}
+
+Solving @eq-wcgs-strat-from-contrast for the model 1 coefficients
+inverts the conversion,
+so either parametrization determines the other:
+
+$$
+\ba
+\beta_0 &= \gamma_B
+&& \text{(first equation of the summary)}
+\\
+\beta_P &= \gamma_A - \gamma_B
+&& \text{(subtract the first equation from the second)}
+\\
+\beta_A &= \delta_B
+&& \text{(third equation)}
+\\
+\beta_{PA} &= \delta_A - \delta_B
+&& \text{(subtract the third equation from the fourth)}
+\ea
+$$
+
+{{< slidebreak >}}
+
+**Numerical check:**
+applying @eq-wcgs-strat-from-contrast to the fitted model 1 coefficients
+(@tbl-model-corner-point)
+reproduces the fitted model 2 coefficients (@tbl-chd-strat):
+
+```{r}
+#| label: strat-to-contrast-check
+#| code-fold: true
+
+b <- coef(chd_glm_contrasts)
+
+gamma_delta <- c(
+  "dibpatType B" = unname(b["(Intercept)"]),
+  "dibpatType A" = unname(b["(Intercept)"] + b["dibpatType A"]),
+  "dibpatType B:age" = unname(b["age"]),
+  "dibpatType A:age" = unname(b["age"] + b["dibpatType A:age"])
+)
+
+cbind(
+  "converted from model 1" = gamma_delta,
+  "model 2 (fitted directly)" = coef(chd_glm_strat)[names(gamma_delta)]
+)
+```
+
+:::
