@@ -120,9 +120,12 @@ $$
 \ea
 $$
 
+:::
+
 {{< slidebreak >}}
 
-Combining @eq-var-logodds and MLE invariance:
+Combining @eq-var-logodds with the invariance property of MLEs
+gives an estimator for the variance and standard error:
 
 :::{#thm-est-se-logodds}
 
@@ -139,21 +142,55 @@ $${#eq-est-se-logodds}
 
 :::
 
-::: notes
-
-Note: on the RHS, we have plugged in $\hS$,
-our estimate of $\Sigma$.
-
-:::
-
+::: proof
+By @sol-se-logodds,
+$\Var{\hat\logodds(\vx)} = \tp{\vx}\Sigma\vx$ (@eq-var-logodds).
+By the invariance property of MLEs,
+we estimate $\Sigma$ with $\hS \eqdef \widehat{\Covt}(\hb)$,
+which yields @eq-est-var-logodds;
+taking the square root gives @eq-est-se-logodds.
 :::
 
 {{< slidebreak >}}
 
-#### In R
+:::{#exm-est-se-logodds-beetles}
 
-In R, `predict()` with `type = "link"` and `se.fit = TRUE`
-computes the estimated log-odds $\hat\logodds(\vx) = \vx'\hb$
+#### Standard error and CI for a beetle log-odds
+
+::: notes
+We instantiate @thm-est-se-logodds
+for the `beetles` logistic regression model
+(@tbl-beetles-model-ungrouped).
+:::
+
+Consider the covariate pattern $\vx = (1, 1.8)\'$,
+representing the intercept and a dose of 1.8.
+
+```{r}
+#| label: exm-se-logodds-beetles-setup
+#| code-fold: show
+x_vec <- c(1, 1.8)
+sigma_hat <- vcov(beetles_glm_ungrouped)
+logodds_hat <- as.numeric(x_vec %*% coef(beetles_glm_ungrouped))
+se_logodds <- sqrt(as.numeric(t(x_vec) %*% sigma_hat %*% x_vec))
+ci_logodds <- logodds_hat + c(-1, 1) * 1.96 * se_logodds
+```
+
+By @eq-est-se-logodds,
+the estimated standard error of the log-odds is
+$\HSE{\hat\logodds(\vx)} = \sqrt{\tp{\vx}\hS\vx} = `r se_logodds`$,
+while the estimated log-odds itself is
+$\hat\logodds(\vx) = \vx'\hb = `r logodds_hat`$.
+
+The resulting 95% confidence interval for the log-odds is
+$(`r ci_logodds[1]`, `r ci_logodds[2]`)$,
+and applying $\expit$ to its endpoints (@eq-ci-prob-exp)
+gives a 95% confidence interval for $\pi(\vx)$ of
+$(`r plogis(ci_logodds[1])`, `r plogis(ci_logodds[2])`)$.
+
+These values match the `dose = 1.8` row of @tbl-beetles-pred-logodds,
+which uses `predict()` with `type = "link"` and `se.fit = TRUE`
+to compute the estimated log-odds $\hat\logodds(\vx) = \vx'\hb$
 and its estimated standard error for each covariate pattern:
 
 ```{r}
@@ -182,3 +219,5 @@ new_doses |>
   ) |>
   knitr::kable(digits = 3)
 ```
+
+:::

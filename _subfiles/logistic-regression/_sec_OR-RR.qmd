@@ -45,6 +45,82 @@ odds(pi2) / odds(pi1)
 
 {{< slidebreak >}}
 
+::: notes
+The relationship between the two spot-checks
+is captured by a simple algebraic identity:
+:::
+
+{{< slidebreak >}}
+
+:::{#thm-rare-disease-or-rr}
+#### Odds ratio as risk ratio times a correction factor
+
+For two probabilities $\pi_1$ and $\pi_2$,
+the odds ratio equals the risk ratio
+times a correction factor:
+
+$$\ratio(\odds_1, \odds_2)
+= \rho(\pi_1, \pi_2) \cdot \frac{1-\pi_2}{1-\pi_1}$$ {#eq-or-rr-correction}
+
+When $\pi_1$ and $\pi_2$ are both small,
+the correction factor $\frac{1-\pi_2}{1-\pi_1}$ is close to 1,
+so the odds ratio is close to the risk ratio.
+:::
+
+{{< slidebreak >}}
+
+::: proof
+$$
+\ba
+\ratio(\odds_1, \odds_2)
+&\eqdef \frac{\odds_1}{\odds_2}
+&& \text{(@def-OR)}
+\\ &= \frac{\paren{\frac{\pi_1}{1-\pi_1}}}{\paren{\frac{\pi_2}{1-\pi_2}}}
+&& \text{(@thm-prob-to-odds, applied to each odds)}
+\\ &= \frac{\pi_1}{\pi_2} \cdot \frac{1-\pi_2}{1-\pi_1}
+&& \text{(rearranging the compound fraction)}
+\\ &= \rho(\pi_1, \pi_2) \cdot \frac{1-\pi_2}{1-\pi_1}
+&& \text{(@def-RR)}
+\ea
+$$
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-or-rr-correction}
+
+#### The correction factor in the two spot-checks
+
+@thm-rare-disease-or-rr explains the two spot-checks preceding it.
+
+```{r}
+#| label: or-rr-correction
+#| include: false
+odds <- function(pi) pi / (1 - pi)
+# Case 1 (rare): higher-risk group pi_1 = 0.02, reference pi_2 = 0.01
+rr_rare <- 0.02 / 0.01
+or_rare <- odds(0.02) / odds(0.01)
+corr_rare <- (1 - 0.01) / (1 - 0.02)
+# Case 2 (frequent): higher-risk group pi_1 = 0.5, reference pi_2 = 0.4
+rr_freq <- 0.5 / 0.4
+or_freq <- odds(0.5) / odds(0.4)
+corr_freq <- (1 - 0.4) / (1 - 0.5)
+```
+
+In **Case 1** (rare events),
+take $\pi_1 = 0.02$ and $\pi_2 = 0.01$.
+The correction factor $\frac{1-\pi_2}{1-\pi_1} = `r corr_rare`$ is close to 1,
+so the odds ratio (`r or_rare`) is close to the risk ratio (`r rr_rare`).
+
+In **Case 2** (frequent events),
+take $\pi_1 = 0.5$ and $\pi_2 = 0.4$.
+The correction factor $\frac{1-\pi_2}{1-\pi_1} = `r corr_freq`$ is farther from 1,
+so the odds ratio (`r or_freq`) and risk ratio (`r rr_freq`) diverge.
+
+:::
+
+{{< slidebreak >}}
+
 {{< include _subfiles/logistic-regression/_fig-rd-rr-or.qmd >}}
 
 {{< slidebreak >}}

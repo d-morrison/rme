@@ -25,34 +25,69 @@ $$\ror(A|B) = \ror(B|A)$$
 
 :::{#exm-or-inv-MI}
 
-In @exm-oc-mi, we have:
+#### Reversibility of the OC-MI odds ratio
+
+@thm-or-swap says $\ror(MI|OC) = \ror(OC|MI)$:
+we can swap the roles of the outcome (MI) and the covariate (OC use)
+without changing the odds ratio.
+We can confirm this equality numerically
+using the counts from @exm-oc-mi.
+
+```{r}
+#| label: or-swap-numeric
+#| include: false
+n_MI_OC <- 13 # OC users with MI # nolint: object_name_linter
+n_nMI_OC <- 4987 # OC users without MI # nolint: object_name_linter
+n_MI_nOC <- 7 # OC non-users with MI # nolint: object_name_linter
+n_nMI_nOC <- 9993 # OC non-users without MI # nolint: object_name_linter
+
+# disease odds ratio: odds of MI, comparing OC users to non-users
+odds_MI_OC <- n_MI_OC / n_nMI_OC # nolint: object_name_linter
+odds_MI_nOC <- n_MI_nOC / n_nMI_nOC # nolint: object_name_linter
+ror_MI_given_OC <- odds_MI_OC / odds_MI_nOC # nolint: object_name_linter
+
+# exposure odds ratio: odds of OC use, comparing MI cases to non-cases
+odds_OC_MI <- n_MI_OC / n_MI_nOC # nolint: object_name_linter
+odds_OC_nMI <- n_nMI_OC / n_nMI_nOC # nolint: object_name_linter
+ror_OC_given_MI <- odds_OC_MI / odds_OC_nMI # nolint: object_name_linter
+```
+
+The **disease** odds ratio
+(the odds of MI, comparing OC users to non-users) is:
 
 $$
-\begin{aligned}
-\ror(MI|OC)
-&\eqdef
-\frac{\odds(MI|OC)}{\odds(MI|\neg OC)}\\
-&\eqdef \frac
-{\left(\frac{\Pr(MI|OC)}{\Pr(\neg MI|OC)}\right)}
-{\left(\frac{\Pr(MI|\neg OC)}{\Pr(\neg MI|\neg OC)}\right)}\\
-&= \frac
-{\left(\frac{\Pr(MI,OC)}{\Pr(\neg MI,OC)}\right)}
-{\left(\frac{\Pr(MI,\neg OC)}{\Pr(\neg MI,\neg OC)}\right)}\\
-&= \left(\frac{\Pr(MI,OC)}{\Pr(\neg MI,OC)}\right)
-\left(\frac{\Pr(\neg MI,\neg OC)}{\Pr(MI,\neg OC)}\right)\\
-&= \left(\frac{\Pr(MI,OC)}{\Pr(MI,\neg OC)}\right)
-\left(\frac{\Pr(\neg MI,\neg OC)}{\Pr(\neg MI,OC)}\right)\\
-&= \left(\frac{\Pr(OC,MI)}{\Pr(\neg OC,MI)}\right)
-\left(\frac{\Pr(\neg OC,\neg MI)}{\Pr(OC,\neg MI)}\right)\\
-&= \left(\frac{\Pr(OC|MI)}{\Pr(\neg OC|MI)}\right)
-\left(\frac{\Pr(\neg OC|\neg MI)}{\Pr(OC|\neg MI)}\right)\\
-&= \frac{\left(\frac{\Pr(OC|MI)}{\Pr(\neg OC|MI)}\right)}
-{\left(\frac{\Pr(OC|\neg MI)}{\Pr(\neg OC|\neg MI)}\right)}\\
-&\eqdef \frac{\odds(OC|MI)}
-{\odds(OC|\neg MI)}\\
-&\eqdef \ror(OC|MI)
-\end{aligned}
+\ba
+\eror(MI|OC)
+&\eqdef \frac{\eodds(MI|OC)}{\eodds(MI|\neg OC)}
+&& \text{(@def-OR, applied to the estimated odds)}
+\\ &= \frac{13/4987}{7/9993}
+&& \text{(@thm-est-odds: estimated odds = events/non-events; counts from @exm-oc-mi)}
+\\ &= \frac{`r odds_MI_OC`}{`r odds_MI_nOC`}
+&& \text{(dividing within each OC-use group)}
+\\ &= `r ror_MI_given_OC`
+&& \text{(dividing)}
+\ea
 $$
+
+The **exposure** odds ratio
+(the odds of OC use, comparing MI cases to non-cases) is:
+
+$$
+\ba
+\eror(OC|MI)
+&\eqdef \frac{\eodds(OC|MI)}{\eodds(OC|\neg MI)}
+&& \text{(@def-OR, applied to the estimated odds)}
+\\ &= \frac{13/7}{4987/9993}
+&& \text{(@thm-est-odds: estimated odds = events/non-events; counts from @exm-oc-mi)}
+\\ &= \frac{`r odds_OC_MI`}{`r odds_OC_nMI`}
+&& \text{(dividing within each MI-status group)}
+\\ &= `r ror_OC_given_MI`
+&& \text{(dividing)}
+\ea
+$$
+
+Both equal `r ror_MI_given_OC`,
+confirming @thm-or-swap.
 :::
 
 {{< slidebreak >}}
@@ -81,4 +116,72 @@ $$\ror(A|B,C) = \ror(B|A,C)$$
 :::{.proof}
 Apply the same steps as for @thm-or-swap,
 inserting $C$ into the conditions (RHS of $|$) of every expression.
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-conditional-or-swap}
+
+#### Reversibility within age strata in the WCGS data
+
+@thm-conditional-OR-swap says a conditional odds ratio is also reversible:
+$\ror(A|B,C) = \ror(B|A,C)$.
+We can illustrate this equality using data from
+the Western Collaborative Group Study (`wcgs`)
+[@rosenman1975coronary],
+a prospective cohort study of coronary heart disease (CHD)
+in 3,154 men aged 39--59,
+which classified each participant's behavioral pattern as
+Type A (urgent, competitive) or Type B (relaxed).
+For this example, we take
+the covariate $B$ to be behavioral pattern (Type A versus Type B),
+the outcome $A$ to be CHD by 1969,
+and the conditioning event $C$ to be an age stratum.
+
+```{r}
+#| label: cond-or-swap-data
+#| include: false
+library(here)
+library(fs)
+here::here() |>
+  fs::path("Data/wcgs.rda") |>
+  load()
+
+library(dplyr)
+# count CHD cases and non-cases by age stratum and behavioral pattern
+or_by_age <-
+  wcgs |>
+  mutate(age_group = if_else(age >= 50, "50 or older", "under 50")) |>
+  summarize(
+    .by = age_group,
+    a_e = sum(dibpat == "Type A" & chd69 == "Yes"),
+    a_n = sum(dibpat == "Type A" & chd69 == "No"),
+    b_e = sum(dibpat == "Type B" & chd69 == "Yes"),
+    b_n = sum(dibpat == "Type B" & chd69 == "No")
+  ) |>
+  mutate(
+    # disease OR: odds of CHD, comparing Type A to Type B
+    disease_or = (a_e / a_n) / (b_e / b_n),
+    # exposure OR: odds of Type A, comparing CHD cases to non-cases
+    exposure_or = (a_e / b_e) / (a_n / b_n)
+  )
+
+d_young <- or_by_age |> filter(age_group == "under 50") |> pull(disease_or)
+e_young <- or_by_age |> filter(age_group == "under 50") |> pull(exposure_or)
+d_old <- or_by_age |> filter(age_group == "50 or older") |> pull(disease_or)
+e_old <- or_by_age |> filter(age_group == "50 or older") |> pull(exposure_or)
+```
+
+Among participants under 50,
+the disease odds ratio
+(the odds of CHD, comparing Type A to Type B) is `r d_young`,
+and the exposure odds ratio
+(the odds of Type A, comparing CHD cases to non-cases) is `r e_young`;
+the two agree, as @thm-conditional-OR-swap requires.
+
+Among participants aged 50 or older,
+the disease and exposure odds ratios are
+`r d_old` and `r e_old`,
+which likewise agree.
+
 :::

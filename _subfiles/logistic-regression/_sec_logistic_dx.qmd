@@ -86,11 +86,27 @@ chd_glm_contrasts_grouped |> autoplot()
 
 ### (Response) residuals
 
+:::{#def-response-residual-logistic}
+<!-- section heading shares its slide with this div; do not re-flag -->
+#### Response residual
+
+The **response residual** for covariate pattern $k$ is
+
 $$e_k \eqdef \bar y_k - \hat{\pi}(x_k)$$
 
-($k$ indexes the covariate patterns)
+where $k$ indexes the covariate patterns,
+$\bar y_k$ is the observed proportion of events in pattern $k$,
+and $\hat\pi(x_k)$ is the fitted probability for pattern $k$.
+:::
 
-We can graph these residuals $e_k$ against the fitted values
+{{< slidebreak >}}
+
+:::{#exm-response-resid-wcgs}
+
+#### Response residuals for the WCGS CHD model
+
+We can graph these residuals $e_k$ (@def-response-residual-logistic)
+against the fitted values
 $\hat\pi(x_k)$:
 
 ```{r}
@@ -146,6 +162,8 @@ We can see a slight fan-shape here: observations on the right have
 larger variance (as expected since $var(\bar y) = \pi(1-\pi)/n$ is
 maximized when $\pi = 0.5$).
 
+:::
+
 ### Pearson residuals
 
 The fan-shape in the response residuals plot isn't necessarily a concern
@@ -154,6 +172,12 @@ as we did for linear regression.
 
 However, we might want to divide by the standard error in order to make
 the graph easier to interpret. Here's one way to do that:
+
+{{< slidebreak >}}
+
+:::{#def-pearson-residual}
+
+#### Pearson residual
 
 The Pearson (chi-squared) residual for covariate pattern $k$ is: $$
 \begin{aligned}
@@ -170,8 +194,16 @@ where $$
 &\eqdef \expit(\hat \beta_0 + \sum_{j=1}^p \hat \beta_j x_{ij})
 \end{aligned}
 $$
+:::
 
-Let's take a look at the Pearson residuals for our CHD model from the
+{{< slidebreak >}}
+
+:::{#exm-wcgs-pearson-resid}
+
+#### Pearson residuals for the WCGS CHD model
+
+Let's take a look at the Pearson residuals (@def-pearson-residual)
+for our CHD model from the
 WCGS data (graphed against the fitted values on the logit scale):
 
 ```{r}
@@ -187,10 +219,17 @@ autoplot(chd_glm_contrasts_grouped, which = 1, ncol = 1) |> print()
 The fan-shape is gone, and these residuals don't show any obvious signs
 of model fit issues.
 
-#### Pearson residuals plot for Beetles Data
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-beetles-pearson-resid}
+
+#### Counterexample: Pearson residuals for the beetles model
 
 If we create the same plot for the `beetles` model, we see some strong
-evidence of a lack of fit:
+evidence of a lack of fit;
+this plot is a **counterexample** to a well-fitting model:
 
 ```{r}
 library(glmx)
@@ -209,6 +248,12 @@ beetles_glm_grouped <- beetles |>
   )
 autoplot(beetles_glm_grouped, which = 1, ncol = 1) |> print()
 ```
+
+The clear pattern in the residuals
+signals that the straight-line logit model
+does not fit the beetle-mortality data well.
+
+:::
 
 #### Pearson residuals with individual (ungrouped) data
 
@@ -314,7 +359,42 @@ pval <- pchisq(
 For our CHD model, the p-value for this test is `r pval`; no significant
 evidence of a lack of fit at the 0.05 level.
 
-#### Standardized Pearson residuals
+{{< slidebreak >}}
+
+:::{#def-leverage-glm}
+
+#### Leverage for a GLM
+
+For a logistic (or other) generalized linear model
+fit to $q$ covariate patterns with $p$ parameters,
+the **weighted hat matrix** is
+
+$$
+\underbrace{\matr{H}}_{q \times q}
+\eqdef
+\underbrace{\matr{W}^{1/2}}_{q \times q}
+\underbrace{\mX}_{q \times p}
+\paren{\underbrace{\tp{\mX}\,\matr{W}\,\mX}_{p \times p}}^{-1}
+\underbrace{\tp{\mX}}_{p \times q}
+\underbrace{\matr{W}^{1/2}}_{q \times q}
+$$
+
+where
+$\underbrace{\matr{W}}_{q \times q} \eqdef \text{diag}\paren{n_k \, \hat\pi_k \, (1 - \hat\pi_k)}$
+is the diagonal matrix of binomial weights,
+and the **leverage** $h_k$ of covariate pattern $k$
+is the $k$-th diagonal element of $\matr{H}$.
+
+This weighted hat matrix is the GLM analog
+of [the linear-model hat matrix](Linear-models-overview.qmd#def-hat-matrix);
+the weight matrix $\matr{W}$ reduces to the identity in the ordinary-least-squares case.
+:::
+
+{{< slidebreak >}}
+
+:::{#def-standardized-pearson-residual}
+
+#### Standardized Pearson residual
 
 Especially for small data sets, we might want to adjust our residuals
 for leverage (since outliers in $X$ add extra variance to the
@@ -322,8 +402,11 @@ residuals):
 
 $$r_{P_k} \eqdef \frac{X_k}{\sqrt{1-h_k}}$$
 
-where $h_k$ is the leverage of $X_k$. The functions `autoplot()` and
+where $X_k$ is the Pearson residual (@def-pearson-residual)
+and $h_k$ is the leverage of covariate pattern $k$ (@def-leverage-glm).
+The functions `autoplot()` and
 `plot.lm()` use these for some of their graphs.
+:::
 
 ### Deviance residuals
 
@@ -332,19 +415,60 @@ approximately the same. For small sample sizes, the deviance residuals
 from covariate patterns with small sample sizes can be unreliable (high
 variance).
 
+{{< slidebreak >}}
+
+:::{#def-deviance-residual-logistic}
+
+#### Deviance residual
+
 Here $\ell_{\text{full}}(x_k)$ is the saturated model's log-likelihood contribution
 from covariate pattern $k$,
 so that summing over the covariate patterns gives the full log-likelihood:
 
 $$\ell_{\text{full}} \eqdef \sum_{k} \ell_{\text{full}}(x_k)$$
 
+The **deviance residual** for covariate pattern $k$ is
+
 $$d_k \eqdef \signt(y_k - n_k \hat \pi_k)\left\{\sqrt{2[\ell_{\text{full}}(x_k) - \ell(\hat\beta; x_k)]}\right\}$$
+:::
+
+{{< slidebreak >}}
 
 #### Standardized deviance residuals
 
+Analogously to the standardized Pearson residual (@def-standardized-pearson-residual),
+we can adjust the deviance residual for leverage:
+
 $$r_{D_k} \eqdef \frac{d_k}{\sqrt{1-h_k}}$$
 
+where $h_k$ is the leverage of covariate pattern $k$ (@def-leverage-glm).
+
 ### Diagnostic plots
+
+:::{#def-cooks-distance-glm}
+<!-- section heading shares its slide with this div; do not re-flag -->
+#### Cook's distance for a GLM
+
+Some of the `autoplot()` diagnostic panels display **Cook's distance**,
+which measures how influential each covariate pattern is on the fit.
+For a generalized linear model,
+the Cook's distance for covariate pattern $k$
+combines the standardized Pearson residual (@def-standardized-pearson-residual)
+and the leverage (@def-leverage-glm):
+
+$$D_k \eqdef \frac{(r_{P_k})^2}{p} \cdot \frac{h_k}{1 - h_k}$$
+
+where $p$ is the number of parameters.
+This diagnostic is the GLM analog
+of [Cook's distance](Linear-models-overview.qmd#def-cooks-distance) for linear models,
+and shares its closed-form structure.
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-wcgs-diagnostics}
+
+#### Diagnostics for the WCGS CHD model
 
 Let's take a look at the full set of `autoplot()` diagnostics now for
 our `CHD` model:
@@ -368,9 +492,13 @@ the grouped residuals should be approximately Gaussian.
 
 :::
 
+:::
+
 {{< slidebreak >}}
 
-#### Beetles
+:::{#exm-beetles-diagnostics}
+
+#### Diagnostics for the beetles model
 
 Let's look at the beetles model diagnostic plots for comparison:
 
@@ -386,3 +514,5 @@ beetles_glm_grouped |>
 
 Hard to tell much from so little data, but there might be some issues
 here.
+
+:::
