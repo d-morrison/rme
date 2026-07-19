@@ -2,14 +2,17 @@
 
 #### Consistency of g-computation
 
-Suppose the data $(Y_i, A_i, Z_i)$, $i = 1, \dots, n$, are i.i.d. draws from the population;
-suppose the outcome regression is correctly specified,
-so the fitted coefficients are consistent,
-$\hat\beta \overset{p}{\to} \beta^*$
-(standard MLE consistency for a correctly specified GLM; see @agresti2015foundations, Chapter 4);
-suppose the identification assumptions of @thm-causal-marginal-risk hold;
-and suppose the predictor vectors are uniformly bounded,
-$\|x_{a,i}\| \le B < \infty$ (as holds when covariates are bounded).
+Suppose:
+
+- the data $(Y_i, A_i, Z_i)$, $i = 1, \dots, n$, are i.i.d. draws from the population;
+- the outcome regression is correctly specified,
+  so the fitted coefficients are consistent,
+  $\hat\beta \overset{p}{\to} \beta^*$
+  (standard MLE consistency for a correctly specified GLM; see @agresti2015foundations, Chapter 4);
+- the identification assumptions of @thm-causal-marginal-risk hold;
+- the predictor vectors are uniformly bounded,
+  $\|x_{a,i}\| \le B < \infty$ (as holds when covariates are bounded).
+
 Then the g-computation estimator (@def-g-computation)
 is consistent for the causal marginal risk $\pi_a$ (@def-causal-marginal-risk):
 
@@ -36,8 +39,8 @@ The estimation-error term converges to zero in probability.
 By hypothesis the fitted coefficients are consistent,
 $\hat\beta \overset{p}{\to} \beta^*$.
 Write the fitted and true risks as the logistic link of the linear predictor,
-$\hat\pi(a, z_i) = \expitf{x_{a,i}'\hat\beta}$
-and $\teal{\pi(a, z_i)} = \expitf{x_{a,i}'\beta^*}$,
+$\hat\pi(a, z_i) \eqdef \expitf{x_{a,i}'\hat\beta}$
+and $\teal{\pi(a, z_i)} \eqdef \expitf{x_{a,i}'\beta^*}$,
 and recall that $\expit$ is Lipschitz with constant $\tfrac{1}{4}$
 (its derivative $\expitf{u}\,(1 - \expitf{u})$ is at most $\tfrac{1}{4}$).
 Then
@@ -89,7 +92,25 @@ $$
 \qquad \text{[causal marginal risk identification]}
 $$
 
-Combining the three steps, $\hat\pi_a \overset{p}{\to} \pi_a$.
+Combining the three steps:
+
+$$
+\ba
+\hat\pi_a
+&= \frac{1}{n}\sumin \teal{\pi(a, z_i)}
++ \frac{1}{n}\sumin \left(\hat\pi(a, z_i) - \teal{\pi(a, z_i)}\right)
+&& \text{[add-and-subtract decomposition]}
+\\
+&\overset{p}{\to} \E{\teal{\pi(a, Z)}} + 0
+&& \text{[Slutsky's theorem]}
+\\
+&= \E{\teal{\pi(a, Z)}}
+&& \text{[additive identity]}
+\\
+&= \pi_a.
+&& \text{[causal marginal risk identification]}
+\ea
+$$
 
 :::
 

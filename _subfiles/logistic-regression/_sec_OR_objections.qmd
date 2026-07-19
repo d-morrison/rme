@@ -3,12 +3,12 @@
 Some scholars have raised objections to the use of odds ratios as 
 an effect measurement [@sackett1996down; @norton2024requiem]. 
 
-As we saw in @fig-rd-rr-or, 
+As we saw in [the figure comparing risk differences, risk ratios, and odds ratios](binary-outcome-associations.qmd#fig-rd-rr-or),
 the odds ratio is not very closely correlated with the risk difference, 
 and the risk difference is typically the metric 
 that ultimately matters for policy decisions.
 
----
+{{< slidebreak >}}
 
 ::: notes
 
@@ -23,17 +23,24 @@ For example, consider the following model:
 
 $$\P(Y=y|X=x,C=c) = \red{\pi(x,c)}^y (1-\red{\pi(x,c)})^{1-y}$$
 
-$$\red{\pi(x,c)} = \expitf{\eta_0 + \b_Xx + \b_Cc}$$
+$$\red{\pi(x,c)} = \expitf{\eta_0 + \b_Xx + \b_Cc}$$ {#eq-or-objections-expit-model}
 
 Then:
 
 $$
 \ba
 \Ef{Y|X=x} &= \Expf{\Ef{Y | X, C} | X=x}
-\\ &= \Expf{\pi(X,C) | X=x}
+&& \text{(law of total expectation)}
+\\ &= \Expf{\red{\pi(X,C)} | X=x}
+&& \text{(Bernoulli conditional mean: } \Ef{Y|X,C} = \pi(X,C) \text{)}
 \\ &= \Expf{\expitf{\eta_0 + \b_X X + \b_C C} | X=x}
+&& \text{(model definition of } \pi \text{)}
+\\ &= \Expf{\expitf{\eta_0 + \b_X x + \b_C C} | X=x}
+&& \text{(conditioning on } X = x \text{ fixes } X \text{ at } x \text{)}
 \\ &= \int_c{\expitf{\eta_0 + \b_X x + \b_C c} ~\p(C=c|X=x)~ \partial c}
-\\ &= \int_c{\pi(x,c)~ \p(C=c|X=x)~ \partial c}
+&& \text{(conditional expectation as an integral over } C \text{'s conditional distribution)}
+\\ &= \int_c{\red{\pi(x,c)}~ \p(C=c|X=x)~ \partial c}
+&& \text{(model definition of } \pi \text{, in reverse)}
 \ea
 $$
 
@@ -44,23 +51,34 @@ we can't change the order of the expectation and $\expitf{}$ operators:
 
 $$\Expf{\expitf{\eta_0 + \b_XX + \b_CC} | X} \neq \expitf{\Expf{\eta_0 + \b_XX + \b_CC} | X}$$
 
----
+{{< slidebreak >}}
 
 In contrast, consider a model with an identity link function:
 
 $$\P(Y=y|X=x,C=c) = \red{\pi(x,c)}^y (1-\red{\pi(x,c)})^{1-y}$$
 
-$$\red{\pi(x,c)} = \eta_0 + \b_Xx + \b_Cc$$
+$$\red{\pi(x,c)} = \eta_0 + \b_Xx + \b_Cc$$ {#eq-or-objections-identity-model}
 
 Then:
 
 $$
 \ba
 \Ef{Y|X=x} &= \Expf{\Ef{Y | X, C} | X=x}
+&& \text{(law of total expectation)}
+\\ &= \Expf{\red{\pi(X,C)} | X=x}
+&& \text{(Bernoulli conditional mean: } \Ef{Y|X,C} = \pi(X,C) \text{)}
 \\ &= \Expf{\eta_0 + \b_X X + \b_C C | X=x}
+&& \text{(identity-link model definition of } \pi \text{)}
 \\ &= \Expf{\eta_0 | X=x} + \Expf{\b_X X | X=x} + \Expf{\b_C C | X=x}
-\\ &= \red{\eta_0} + \blue{\b_X x} +  \red{ \b_C\Expf{ C | X=x}}
-\\ &= \red{(\eta_0 + \b_C \Ef{C|X=x})} + \blue{\b_Xx}
+&& \text{(linearity of expectation)}
+\\ &= \eta_0 + \Expf{\b_X X | X=x} + \Expf{\b_C C | X=x}
+&& \text{(expectation of a constant)}
+\\ &= \eta_0 + \b_X \Expf{X | X=x} + \b_C \Expf{C | X=x}
+&& \text{(constant factors move outside expectations)}
+\\ &= \eta_0 + \b_X x + \b_C \Expf{C | X=x}
+&& \text{(} \Expf{X | X=x} = x \text{)}
+\\ &= \red{(\eta_0 + \b_C\Ef{C | X=x})} + \teal{\b_Xx}
+&& \text{(commute and regroup the terms)}
 \ea
 $$
 
@@ -69,10 +87,13 @@ and we can simplify further:
 
 $$
 \ba
-\Ef{Y|X=x} &= \red{(\eta_0 + \b_C \Ef{C|X=x})} + \blue{\b_Xx}
+\Ef{Y|X=x} &= \red{(\eta_0 + \b_C \Ef{C|X=x})} + \teal{\b_Xx}
+&& \text{(marginal mean under the identity link)}
 \\
-&= \red{(\eta_0 + \b_C \Ef{C})} + \blue{\b_Xx}
-\\&= \red{\eta_0^*}  + \blue{\b_Xx}
+&= \red{(\eta_0 + \b_C \Ef{C})} + \teal{\b_Xx}
+&& \text{(} C \ind X \text{, so } \Ef{C|X=x} = \Ef{C} \text{)}
+\\&= \red{\eta_0^*}  + \teal{\b_Xx}
+&& \text{(definition: } \eta_0^* \eqdef \eta_0 + \b_C \Ef{C} \text{)}
 \ea
 $$
 
@@ -80,8 +101,38 @@ Then:
 
 $$
 \ba
-\deriv{x} \Ef{Y|X=x} = \blue{\b_X} = \deriv{x} \Ef{Y|X=x,C=c}
+\deriv{x} \Ef{Y|X=x}
+&= \deriv{x} \paren{\red{\eta_0^*} + \teal{\b_Xx}}
+&& \text{(marginal mean when } C \ind X \text{)}
+\\ &= \deriv{x}\eta_0^* + \deriv{x}\paren{\b_X x}
+&& \text{(linearity of differentiation)}
+\\ &= 0 + \deriv{x}\paren{\b_X x}
+&& \text{(} \eta_0^* \text{ does not depend on } x \text{)}
+\\ &= 0 + \b_X
+&& \text{(derivative of a linear term)}
+\\ &= \teal{\b_X}
+&& \text{(additive identity)}
 \ea
+$$
+
+The conditional slope is the same:
+
+$$
+\ba
+\deriv{x} \Ef{Y|X=x,C=c}
+&= \deriv{x} \paren{\eta_0 + \b_Xx + \b_Cc}
+&& \text{(identity-link model definition of } \pi \text{)}
+\\ &= 0 + \b_X + 0
+&& \text{(term-by-term: only } \b_X x \text{ depends on } x \text{)}
+\\ &= \teal{\b_X}
+&& \text{(additive identity)}
+\ea
+$$
+
+Therefore:
+
+$$
+\deriv{x} \Ef{Y|X=x} = \teal{\b_X} = \deriv{x} \Ef{Y|X=x,C=c}
 $$
 
 In other words, for a model with an identity link function,
@@ -90,42 +141,110 @@ then the slope with respect to $X$ doesn't depend on
 whether $C$ is included in the model
 (and an analogous result holds if $X$ is discrete or categorical).
 
----
+{{< slidebreak >}}
 
 :::{#exr-marginal-model-non-indep}
 
 What are the expressions for $\Ef{Y|X=x}$ and $\deriv{x} \Ef{Y|X=x}$
-for the model above, 
+for the identity-link model in @eq-or-objections-identity-model,
 if $\Ef{C|X=x} = \gamma_0 + \gamma_x x$?
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#sol-marginal-model-non-indep}
 
-Left to the reader.
+$$
+\ba
+\Ef{Y|X=x}
+&= \Ef{\pi(x, C)|X=x}
+&& \text{(law of total expectation, conditional on } X = x \text{)}
+\\ &= \Ef{\eta_0 + \b_Xx + \b_C C|X=x}
+&& \text{(identity-link model)}
+\\ &= \eta_0 + \b_Xx + \b_C \Ef{C|X=x}
+&& \text{(linearity of expectation)}
+\\ &= \eta_0 + \b_Xx + \b_C (\gamma_0 + \gamma_x x)
+&& \text{(substitute } \Ef{C|X=x} = \gamma_0 + \gamma_x x \text{)}
+\\ &= \eta_0 + \b_Xx + \b_C \gamma_0 + \b_C \gamma_x x
+&& \text{(distribute)}
+\\ &= (\eta_0 + \b_C \gamma_0) + (\b_X + \b_C \gamma_x) x
+&& \text{(commute and regroup the terms)}
+\ea
+$$
+
+$$
+\ba
+\deriv{x}\Ef{Y|X=x}
+&= \deriv{x}\cb{(\eta_0 + \b_C \gamma_0) + (\b_X + \b_C \gamma_x) x}
+&& \text{(marginal mean from the derivation of } \Ef{Y|X=x} \text{)}
+\\ &= \deriv{x}(\eta_0 + \b_C \gamma_0) + \deriv{x}\cb{(\b_X + \b_C \gamma_x) x}
+&& \text{(linearity of differentiation)}
+\\ &= \b_X + \b_C \gamma_x
+&& \text{(constants have derivative 0; derivative of a linear term)}
+\ea
+$$
+
+The marginal mean is still linear in $x$,
+but its slope $\b_X + \b_C \gamma_x$ differs from
+the conditional slope $\b_X$
+unless $\b_C = 0$ or $\gamma_x = 0$.
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#exr-marginal-model-non-indep-interaction}
 
 What are the expressions for $\Ef{Y|X=x}$ and $\deriv{x} \Ef{Y|X=x}$,
-if instead of the model above,
+if instead of the identity-link model in @eq-or-objections-identity-model,
 $$\pi(x,c) = \eta_0 + \b_Xx + \b_Cc +\b_{XC}xc$$
 and $\Ef{C|X=x} = \gamma_0 + \gamma_x x$?
 
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#sol-marginal-model-non-indep-interaction}
 
-Left to the reader. 
+$$
+\ba
+\Ef{Y|X=x}
+&= \Ef{\pi(x, C)|X=x}
+&& \text{(law of total expectation, conditional on } X = x \text{)}
+\\ &= \Ef{\eta_0 + \b_Xx + \b_C C + \b_{XC}xC|X=x}
+&& \text{(interaction model)}
+\\ &= \eta_0 + \b_Xx + \b_C \Ef{C|X=x} + \b_{XC}x \Ef{C|X=x}
+&& \text{(linearity of expectation)}
+\\ &= \eta_0 + \b_Xx + (\b_C + \b_{XC}x)\Ef{C|X=x}
+&& \text{(factor out } \Ef{C|X=x} \text{)}
+\\ &= \eta_0 + \b_Xx + (\b_C + \b_{XC}x)(\gamma_0 + \gamma_x x)
+&& \text{(substitute } \Ef{C|X=x} = \gamma_0 + \gamma_x x \text{)}
+\\ &= \eta_0 + \b_Xx + \b_C\gamma_0 + \b_C\gamma_x x + \b_{XC}\gamma_0 x + \b_{XC}\gamma_x x^2
+&& \text{(distribute)}
+\\ &= (\eta_0 + \b_C\gamma_0) + (\b_X + \b_C\gamma_x + \b_{XC}\gamma_0) x + \b_{XC}\gamma_x x^2
+&& \text{(commute and regroup the terms)}
+\ea
+$$
 
-Hint: does adding the interaction term change the functional form of $\Ef{Y|X=x}$?
+$$
+\ba
+\deriv{x}\Ef{Y|X=x}
+&= \deriv{x}\cb{(\eta_0 + \b_C\gamma_0) + (\b_X + \b_C\gamma_x + \b_{XC}\gamma_0) x + \b_{XC}\gamma_x x^2}
+&& \text{(marginal mean from the derivation of } \Ef{Y|X=x} \text{)}
+\\ &= \deriv{x}(\eta_0 + \b_C\gamma_0) + \deriv{x}\cb{(\b_X + \b_C\gamma_x + \b_{XC}\gamma_0) x} + \deriv{x}\paren{\b_{XC}\gamma_x x^2}
+&& \text{(linearity of differentiation)}
+\\ &= (\b_X + \b_C\gamma_x + \b_{XC}\gamma_0) + 2\b_{XC}\gamma_x x
+&& \text{(constants have derivative 0; derivative of a linear term; power rule)}
+\ea
+$$
+
+So, answering the hint:
+yes — adding the interaction term changes the functional form of $\Ef{Y|X=x}$.
+The marginal mean is now quadratic in $x$
+(whenever $\b_{XC} \neq 0$ and $\gamma_x \neq 0$),
+even though the conditional model is linear in $x$ for each fixed $c$,
+and the marginal slope now varies with $x$.
 
 :::

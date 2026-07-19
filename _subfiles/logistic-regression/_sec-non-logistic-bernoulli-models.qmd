@@ -1,14 +1,10 @@
-::: notes
-
-Alternatively, 
-if you want to estimate risk ratios more directly from the model, 
+Alternatively,
+if you want to estimate risk ratios more directly from the model,
 you can sometimes change the link function from $\logitf{}$ to $\logf{}$;
 then you can obtain risk ratios by exponentiating coefficients
-^[or linear combinations of coefficients, 
-depending on what covariate patterns you are contrasting], 
+^[or linear combinations of coefficients,
+depending on what covariate patterns you are contrasting],
 just like we did for odds ratios with the logit link:
-
-:::
 
 ```{r}
 data(anthers, package = "dobson")
@@ -28,7 +24,7 @@ anthers_glm_log |>
   print_md()
 ```
 
----
+{{< slidebreak >}}
 
 Now $\exp{\beta}$ gives us risk ratios instead of odds ratios:
 
@@ -38,7 +34,7 @@ anthers_glm_log |>
   print_md()
 ```
 
----
+{{< slidebreak >}}
 
 Let's compare this model with a logistic model:
 
@@ -54,14 +50,72 @@ anthers_glm_logit |>
   print_md()
 ```
 
-\[to add: fitted plots on each outcome scale\]
+{{< slidebreak >}}
 
----
+We can compare the two link functions
+by plotting their fitted germination probabilities
+across the range of the storage covariate,
+alongside the observed proportions:
 
-When I try to use `link ="log"` in practice, I often get errors about
-not finding good starting values for the estimation procedure.
-This is likely because the model is producing fitted probabilities greater than
-1.
+:::{#fig-anthers-fitted-scales}
+
+```{r}
+#| code-fold: true
+library(tidyr)
+
+anthers_fitted_grid <-
+  data.frame(
+    storage = seq(
+      min(anthers_sum$storage),
+      max(anthers_sum$storage),
+      length.out = 100
+    )
+  ) |>
+  mutate(
+    `Log link` = predict(anthers_glm_log, pick(storage), type = "response"),
+    `Logit link` = predict(anthers_glm_logit, pick(storage), type = "response")
+  ) |>
+  pivot_longer(
+    cols = c(`Log link`, `Logit link`),
+    names_to = "Link function",
+    values_to = "fitted"
+  )
+
+anthers_observed <-
+  anthers_sum |>
+  mutate(proportion = y / n)
+
+ggplot() +
+  geom_line(
+    data = anthers_fitted_grid,
+    mapping = aes(x = storage, y = fitted, color = `Link function`)
+  ) +
+  geom_point(
+    data = anthers_observed,
+    mapping = aes(x = storage, y = proportion),
+    size = 3
+  ) +
+  labs(
+    x = "Storage condition",
+    y = "Fitted probability of germination"
+  ) +
+  theme_bw()
+```
+
+Fitted germination probabilities from the log-link and logit-link models for the `anthers` data,
+with the observed proportions as points.
+The two link functions nearly coincide here because the model is saturated
+(two parameters fit to two storage conditions),
+so both reproduce the observed proportions at the data points
+and differ only slightly in between.
+:::
+
+{{< slidebreak >}}
+
+In practice, fitting a binomial model with `link = "log"` often fails to converge,
+producing errors about not finding good starting values for the estimation procedure.
+This convergence failure is likely because the model is producing
+fitted probabilities greater than 1.
 
 When this happens,
 you can instead switch the outcome distribution from binomial to Poisson
@@ -73,8 +127,9 @@ not just a different way of fitting the same model.
 With a Poisson outcome distribution,
 you won't get warnings about fitted probabilities greater than 1,
 but that distribution isn't quite right for binary outcomes.
-In my opinion,
-the Poisson model for binary outcomes is confusing and not very appealing.
+Despite this mismatch,
+Poisson regression is the usual fallback
+when the log-binomial model fails to converge.
 
 ### WCGS: link functions
 
@@ -100,26 +155,43 @@ wcgs_glm_identity_link |>
   pander()
 ```
 
+:::{#fig-diagnostics-glm1 layout-ncol=2}
+
+:::{#fig-diagnostics-glm1-logit}
+
 ```{r}
-#| label: fig-diagnostics-glm1
-#| fig-cap: "Residuals vs Fitted plot for `wcgs` models"
-#| layout-ncol: 2
-#| fig-subcap:
-#| - "Logistic link"
-#| - "Identity link"
+#| code-fold: true
 
 library(ggfortify)
 wcgs_glm_logit_link |> autoplot(which = c(1), ncol = 1) + facet_wrap(~dibpat)
+```
+
+Logistic link
+
+:::
+
+:::{#fig-diagnostics-glm1-identity}
+
+```{r}
+#| code-fold: true
+
 wcgs_glm_identity_link |> autoplot(which = c(1), ncol = 1) + facet_wrap(~dibpat)
 ```
 
+Identity link
+
+:::
+
+Residuals vs Fitted plot for `wcgs` models
+
+:::
+
+:::{#fig-diagnostics-beetles layout-ncol=2}
+
+:::{#fig-diagnostics-beetles-logit}
+
 ```{r}
-#| label: fig-diagnostics-beetles
-#| fig-cap: "Residuals vs Fitted plot for `BeetleMortality` models"
-#| layout-ncol: 2
-#| fig-subcap:
-#| - "Logistic link"
-#| - "Identity link"
+#| code-fold: true
 
 beetles_lm <-
   beetles_long |>
@@ -134,5 +206,24 @@ beetles <-
     resid_logit = beetles_glm_grouped |> resid(type = "response")
   )
 beetles_glm_grouped |> autoplot(which = c(1), ncol = 1)
+```
+
+Logistic link
+
+:::
+
+:::{#fig-diagnostics-beetles-identity}
+
+```{r}
+#| code-fold: true
+
 beetles_lm |> autoplot(which = c(1), ncol = 1)
 ```
+
+Identity link
+
+:::
+
+Residuals vs Fitted plot for `BeetleMortality` models
+
+:::

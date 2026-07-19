@@ -11,7 +11,7 @@ State the interpretations concisely in math **and** in words.
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#sol-logistic-coef-interp}
 
@@ -24,11 +24,14 @@ age_offset = 0L
 
 $$
 \ba
-\eta(P=0,A=0) &= \beta_0 + \beta_P 0 + \beta_A 0
+\eta(P=0,A=0) &= \beta_0 + \beta_P \cdot 0 + \beta_A \cdot 0 + \beta_{PA} (0 \cdot 0)
+&& \text{(model equation, with } p = 0, a = 0 \text{)}
 \\
-&= \beta_0 + 0 + 0
+&= \beta_0 + 0 + 0 + 0
+&& \text{(multiplication by zero)}
 \\
 &= \beta_0
+&& \text{(additive identity)}
 \ea
 $$
 
@@ -38,33 +41,79 @@ $$\beta_{0} = \eta(P=0,A=0)$${#eq-wcgs-intxn-beta0}
 
 $\beta_{0}$ is the natural logarithm of the odds ("log-odds") of experiencing CHD for a `r age_offset` year-old person with a type B personality; that is,
 
----
+::: notes
 
-$\text{e}^{\beta_{0}}$ is the odds of experiencing CHD 
-for a `r age_offset` year-old with a type B personality,
+The WCGS cohort ranges in age from 39 to 59 years,
+so a `r age_offset`-year-old is far outside the observed data.
+This intercept is therefore an extrapolation with no in-sample referent.
+Centering age at a representative value
+(replacing $A$ with $A - \bar{A}$)
+is the standard remedy:
+it makes the intercept the log-odds at the mean age,
+which does have in-sample support.
 
-$$
-\begin{aligned}
-\expf{\beta_{0}}
-&= \frac{\Pr(Y= 1| P = 0, A = 0)}{1-\Pr(Y= 1| P = 0, A = 0)} \\
-&= \frac
-{\Pr(Y= 1| P = 0, A = 0)}
-{\Pr(Y= 0| P = 0, A = 0)}
-\end{aligned}
-$$
+:::
 
----
+{{< slidebreak >}}
+
+$\text{e}^{\beta_{0}}$ is the odds of experiencing CHD
+for a `r age_offset` year-old with a type B personality.
+Here we write
+
+$$\odds(p, a) \eqdef \oddst(Y=1|P=p, A=a)$$
+
+for the odds of CHD at covariate values $(p, a)$.
+Then:
 
 $$
 \ba
-\deriv{a}\eta(P=0, A = a) 
-&= \deriv{a} (\beta_0 + \beta_P 0 + \beta_A a + \beta_{PA}(0\cdot a))
+\expf{\beta_{0}}
+&= \expf{\eta(P=0,A=0)}
+&& \text{(} \beta_0 \text{ as a log-odds)}
+\\ &= \odds(P=0,A=0)
+&& \text{(exponential of log-odds is odds: } \odds = \expf{\eta} \text{)}
+\\ &= \frac{\Pr(Y= 1| P = 0, A = 0)}{1-\Pr(Y= 1| P = 0, A = 0)}
+&& \text{(definition of odds)}
+\\ &= \frac
+{\Pr(Y= 1| P = 0, A = 0)}
+{\Pr(Y= 0| P = 0, A = 0)}
+&& \text{(complement rule: } 1 - \Pr(Y=1|\cdot) = \Pr(Y=0|\cdot) \text{)}
+\ea
+$$
+
+::: notes
+
+As with the log-odds interpretation,
+this odds is evaluated at age `r age_offset`,
+which lies outside the cohort's 39-to-59-year age range,
+so $\text{e}^{\beta_0}$ has no in-sample referent.
+Centering age before fitting
+gives an intercept whose odds is evaluated at the mean age instead.
+
+:::
+
+{{< slidebreak >}}
+
+$$
+\ba
+\deriv{a}\eta(P=0, A = a)
+&= \deriv{a} \paren{\beta_0 + \beta_P \cdot 0 + \beta_A a + \beta_{PA}(0\cdot a)}
+&& \text{(model equation, with } p = 0 \text{)}
 \\
-&= \deriv{a}\beta_0 + \deriv{a}\beta_P 0 + \deriv{a}\beta_A a + \deriv{a}\beta_{PA}(0\cdot a))
+&= \deriv{a} \paren{\beta_0 + 0 + \beta_A a + 0}
+&& \text{(multiplication by zero)}
 \\
-&=  0 + 0 + \beta_A + 0
+&= \deriv{a} \paren{\beta_0 + \beta_A a}
+&& \text{(additive identity)}
+\\
+&= \deriv{a}\beta_0 + \deriv{a}\paren{\beta_A a}
+&& \text{(linearity of differentiation)}
+\\
+&=  0 + \beta_A
+&& \text{(constants have derivative 0; derivative of a linear term)}
 \\
 &= \beta_A
+&& \text{(additive identity)}
 \ea
 $$
 
@@ -77,33 +126,51 @@ $\beta_A$ is the slope of the log-odds of CHD with respect to age, for individua
 Alternatively:
 
 $$
-\begin{aligned}
-\beta_{A}
-&= \eta(P = 0, A = a + 1)- \eta(P = 0, A = a)
-\end{aligned}
+\ba
+\eta(P = 0, A = a + 1)- \eta(P = 0, A = a)
+&= \paren{\beta_0 + \beta_P \cdot 0 + \beta_A (a+1) + \beta_{PA} (0 \cdot (a+1))} - \paren{\beta_0 + \beta_P \cdot 0 + \beta_A a + \beta_{PA} (0 \cdot a)}
+&& \text{(model equation, with } p = 0 \text{)}
+\\
+&= \paren{\beta_0 + 0 + \beta_A (a+1) + 0} - \paren{\beta_0 + 0 + \beta_A a + 0}
+&& \text{(multiplication by zero)}
+\\
+&= \paren{\beta_0 + \beta_A (a+1)} - \paren{\beta_0 + \beta_A a}
+&& \text{(additive identity)}
+\\
+&= \beta_0 + \beta_A a + \beta_A - \beta_0 - \beta_A a
+&& \text{(distribute)}
+\\
+&= \beta_{A}
+&& \text{(cancel } \beta_0 \text{ and } \beta_A a \text{)}
+\ea
 $$
 
 That is,
 $\beta_{A}$ is the difference in 
-log-odds of experiencing CHD experiencing CHD 
+log-odds of experiencing CHD
 per one-year difference in age 
 between two individuals with type B personalities.
 
----
+{{< slidebreak >}}
 
 $$
 \ba
 \expf{\beta_{A}} &= \expf{\eta(P = 0, A = a + 1)- \eta(P = 0, A = a)}
+&& \text{(} \beta_A \text{ as a difference in log-odds)}
 \\
 &= \frac{\expf{\eta(P = 0, A = a + 1)}}{\expf{\eta(P = 0, A = a)}}
+&& \text{(exponential of a difference is a ratio)}
 \\
-&= \frac{\omega(P = 0, A = a + 1)}{\omega(P = 0, A = a)}
+&= \frac{\odds(P = 0, A = a + 1)}{\odds(P = 0, A = a)}
+&& \text{(exponential of log-odds is odds: } \odds = \expf{\eta} \text{)}
 \\
 &= \frac
 {\oddst(Y= 1|P=0, A = a + 1)}
 {\oddst(Y= 1|P=0, A = a)}
+&& \text{(the } \odds(p, a) \text{ notation defined at } \beta_0 \text{'s interpretation)}
 \\
 &= \ror(\Delta a = 1 | P = 0)
+&& \text{(definition of the odds ratio)}
 \ea
 $$
 
@@ -112,7 +179,7 @@ differs by a factor of $\text{e}^{\beta_{A}}$
 per one-year difference in age 
 between individuals with type B personality.
 
----
+{{< slidebreak >}}
 
 $\beta_{P}$ is the difference in log-odds of experiencing CHD
 for a `r age_offset` year-old person with type A personality
@@ -121,7 +188,7 @@ that is,
 
 $$\b_P = \eta(P = 1, A = 0) - \eta(P=0, A = 0)$${#eq-wcgs-intxn-betaP}
 
----
+{{< slidebreak >}}
 
 -   $\text{e}^{\beta_{P}}$ is the ratio of the odds (aka "the odds ratio")
     of experiencing CHD, 
@@ -135,13 +202,28 @@ $$
 {\oddst(Y= 1|P=0, A = 0)}
 $$
 
----
+{{< slidebreak >}}
 
 $$
 \ba
-\deriv{a}\eta(P=\red{1}, A = a) &= \red{\beta_A + \beta_{PA}}
+\deriv{a}\eta(P=\red{1}, A = a)
+&= \deriv{a} \paren{\beta_0 + \beta_P \cdot 1 + \beta_A a + \beta_{PA}(1 \cdot a)}
+&& \text{(model equation, with } p = 1 \text{)}
 \\
-\deriv{a}\eta(P=\blue{0}, A = a) &= \blue{\beta_A}
+&= \deriv{a} \paren{\beta_0 + \beta_P + \beta_A a + \beta_{PA} a}
+&& \text{(multiplicative identity)}
+\\
+&= \deriv{a}\beta_0 + \deriv{a}\beta_P + \deriv{a}\paren{\beta_A a} + \deriv{a}\paren{\beta_{PA} a}
+&& \text{(linearity of differentiation)}
+\\
+&= 0 + 0 + \beta_A + \beta_{PA}
+&& \text{(constants have derivative 0; derivatives of linear terms)}
+\\
+&= \red{\beta_A + \beta_{PA}}
+&& \text{(additive identity)}
+\\
+\deriv{a}\eta(P=\teal{0}, A = a) &= \teal{\beta_A}
+&& \text{(the type B slope, from the } \beta_A \text{ derivation)}
 \ea
 $$
 
@@ -149,9 +231,15 @@ Therefore:
 
 $$
 \ba
-\deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\blue{0}, A = a) &= \red{\beta_A + \beta_{PA}} - \blue{\beta_A}
+\deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\teal{0}, A = a)
+&= \paren{\red{\beta_A + \beta_{PA}}} - \teal{\beta_A}
+&& \text{(substitute the two slopes)}
+\\
+&= \beta_A - \beta_A + \beta_{PA}
+&& \text{(commute the addition)}
 \\
 &= \beta_{PA}
+&& \text{(cancel } \beta_A \text{)}
 \ea
 $$
 
@@ -159,9 +247,11 @@ That is,
 
 $$
 \ba
-\beta_{PA} &= \deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\blue{0}, A = a)
+\beta_{PA} &= \deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\teal{0}, A = a)
+&& \text{(rearrange the difference of slopes)}
 \\
-&= \deriv{a}\eta(P=\red{1}, A = a) - \deriv{a}\eta(P=\blue{0}, A = a)
+&= \deriv{a}\eta(P=\red{1}, A = a) - \teal{\beta_A}
+&& \text{(substitute the type B slope, } \deriv{a}\eta(P=0, A=a) = \beta_A \text{)}
 \ea
 $$
 
@@ -170,7 +260,7 @@ the slopes of log-odds over age between
 participants with Type A personalities and
 participants with Type B personalities.
 
----
+{{< slidebreak >}}
 
 Accordingly, 
 the odds ratio of experiencing CHD per one-year difference in age
@@ -196,7 +286,7 @@ $$
 
 :::
 
-----
+{{< slidebreak >}}
 
 See [Section 5.1.1](https://link.springer.com/chapter/10.1007/978-1-4614-1353-0_5#Sec2_5)
 of @vittinghoff2e for another perspective,

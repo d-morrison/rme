@@ -18,10 +18,18 @@ $\derivf{(\text{col } j)}{(\text{row } i)}$.
   both row and column are $p$-vectors;
   derivative is a $p \times p$ matrix.
 - **Undefined** (upper-right $3 \times 2$ block):
-  row is a scalar, column is $\vx$ or $\vb$.
-  Since $\vx$ and $\vb$ are model inputs rather than functions of
-  $\prob$, $\odds$, or $\logodds$,
-  these derivatives are not defined.
+  row is a scalar ($\prob$, $\odds$, or $\logodds$), column is $\vx$ or $\vb$.
+  Each of these entries would be the derivative of a $p$-vector
+  with respect to a scalar,
+  which would require expressing $\vx$ (or $\vb$)
+  as a function of that scalar.
+  No such function exists,
+  because the map from the vector to the scalar is **not invertible**:
+  for $p > 1$, many distinct vectors
+  produce the same value of $\logodds = \dprod{\vx}{\vb}$
+  (and hence the same $\odds$ and $\prob$),
+  so the scalar does not determine the vector,
+  and these derivatives are undefined.
 :::
 
 :::{#tbl-logistic-deriv-matrix}
@@ -30,13 +38,14 @@ $\derivf{(\text{col } j)}{(\text{row } i)}$.
 
 Matrix of logistic regression derivatives
 ($p$ = number of predictors,
-$\logodds = \dprod{\vx}{\vb}$,
-$\odds = \expf{\logodds}$,
-$\prob = \odds / (1 + \odds)$).
+$\logodds \eqdef \dprod{\vx}{\vb}$,
+$\odds \eqdef \expf{\logodds}$,
+$\prob \eqdef \odds / (1 + \odds)$).
 Each entry is the derivative of the **column quantity**
 with respect to the **row quantity**.
 Entries marked "undef" are not defined
-because the column quantity is a model input,
-not a function of the row quantity.
+because the vector-to-scalar map is not invertible:
+the scalar row quantity does not determine
+the vector column quantity.
 :::
 

@@ -53,7 +53,30 @@ jobs:
         shell: bash
 
       - name: Render
-        uses: quarto-dev/quarto-actions/render@v2
+        env:
+          # Quarto's launcher caps Deno at an 8 GB V8 heap by default and
+          # appends this env var's flags after its own, so the later
+          # duplicate wins (V8 parses flags last-wins). Without a raised cap
+          # the site render crashes with "Fatal JavaScript out of memory"
+          # (exit 133); 12 GB of the runner's 16 GB leaves headroom for R,
+          # LaTeX, and the OS (rme#1044, same mechanism as gha#263).
+          QUARTO_DENO_V8_OPTIONS: --max-old-space-size=12288,--max-heap-size=12288
+        shell: bash
+        # One `quarto render` of the website profile builds every page in
+        # all four of its formats (html, revealjs, pdf, docx) inside a
+        # single Deno process, and the heap accumulates across those ~150
+        # document renders — it blew through 12 GB after exceeding the old
+        # 8 GB cap (rme#1044). Render each format as its own invocation
+        # instead, resetting the Deno heap between formats — the same
+        # per-format split gha's `preview` composite uses, which is why the
+        # PR preview builds fit comfortably under the same cap.
+        # `--no-clean` keeps earlier formats' output in _site.
+        run: |
+          set -euo pipefail
+          quarto render --to pdf
+          quarto render --to docx --no-clean
+          quarto render --to revealjs --no-clean
+          quarto render --to html --no-clean
 
       - name: Save Quarto freeze
         if: github.ref_name == 'main'

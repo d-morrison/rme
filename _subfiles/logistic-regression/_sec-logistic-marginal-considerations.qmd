@@ -1,5 +1,3 @@
-**Important considerations when computing marginal effects:**
-
 1. **Target population**:
    The marginal effect is specific to the covariate distribution
    in your sample.
@@ -7,7 +5,7 @@
    you may want to use standardization or weighting.
 
 2. **Collapsibility** (see @def-collapsibility):
-   the derivations below re-derive @thm-collapsibility concretely
+   @eq-rd-collapsible and @eq-rr-not-collapsible re-derive @thm-collapsibility concretely
    for the risk-difference and risk-ratio/odds-ratio cases.
    Risk differences are **collapsible**:
    the causal marginal RD ($\pi_1 - \pi_0$) equals the average
@@ -26,7 +24,7 @@
    &= \E{\text{RD}(Z)},
    && \text{[definition of conditional risk difference]}
    \ea
-   $$
+   $$ {#eq-rd-collapsible}
 
    so there is no collapsibility bias from averaging over a covariate $Z$.
    Risk ratios are **not** collapsible in general:
@@ -47,9 +45,9 @@
    &= \E{\text{RR}(Z)}.
    && \text{[definition of conditional risk ratio]}
    \ea
-   $$
+   $$ {#eq-rr-not-collapsible}
 
-   Unlike the odds ratio (below), though,
+   Unlike the odds ratio, though,
    this discrepancy is entirely a consequence of the conditional RR *varying* across strata:
    when the conditional risk ratio is instead **constant**,
    $\text{RR}(z) = r$ for every $z$,
@@ -82,16 +80,21 @@
    Odds ratios are non-collapsible in a **stronger** sense than risk ratios:
    even when the conditional OR is the same in every stratum,
    the marginal OR is generally different from it (closer to the null)
-   [@hernan2020causal, Chapter 4],
+   [@hernan2020causal, Chapter 4; @greenland1999confounding; @greenland1986identifiability],
    whereas a constant conditional RD or RR always reproduces
    the corresponding marginal RD or RR exactly
    (the marginal RD is the average $\E{\text{RD}(Z)}$ of the stratum-specific RDs
    by @thm-collapsibility, and the average of a constant is that constant).
 
 3. **Bootstrap sample size**:
-   Use at least 1000 bootstrap iterations for standard errors,
+   A confidence interval needs more bootstrap resamples than a standard error,
+   because it depends on the tails of the bootstrap distribution
+   rather than just its spread
+   [@efron1993introduction, Chapter 6; @davison1997bootstrap, Chapter 2].
+   As a conservative rule of thumb,
+   use at least 1000 iterations for standard errors
    and at least 2000 for confidence intervals.
-   More iterations provide more stable estimates
+   More iterations give more stable estimates
    but take longer to compute.
 
 4. **Alternative methods**:
@@ -106,4 +109,5 @@
    These methods are **not valid** for case-control studies,
    where sampling is stratified by outcome.
    In case-control designs,
-   only odds ratios can be estimated consistently.
+   only odds ratios can be estimated consistently
+   (see [Odds Ratios in Case-Control Studies](binary-outcome-associations.qmd#sec-CC-studies)).
