@@ -306,7 +306,7 @@ text-align: center;
 </style></section><section><section id="sec-gam-motivation" class="title-slide slide level1 center" data-number="1"><h1>
 <span class="header-section-number">1</span> Motivation: beyond the linear predictor</h1>
 
-</section><section class="slide level2 scrollable"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2017, sec. 1</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/references" role="doc-biblioref" onclick="">2017, sec. 1</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -320,14 +320,14 @@ text-align: center;
       }</style></aside><p>So far the regression models in this book have assumed that each continuous predictor enters the linear predictor through a single coefficient:</p>
 <p><span class="math display">\[g(\operatorname{E}\mathopen{}\left[Y \mid X = x\right]\mathclose{}) = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \beta_p x_p\]</span></p>
 <p>This forces the effect of every predictor to be <strong>monotone</strong>: if <span class="math inline">\(\beta_j &gt; 0\)</span>, raising <span class="math inline">\(x_j\)</span> always increases the predicted response on the link scale; if <span class="math inline">\(\beta_j &lt; 0\)</span>, it always decreases it. Many real epidemiologic exposures don’t behave that way.</p>
-<div id="exm-age-mortality" class="theorem example">
-<p><span class="theorem-title"><strong>Example 1 (Age and all-cause mortality)</strong></span> All-cause mortality is <strong>U-shaped</strong> in age: high in infancy, low through young adulthood, then rising steeply in old age <span class="citation" data-cites="me4">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Rothman et al. 2021</a>)</span>. A linear model in <span class="math inline">\(\text{age}\)</span> would average those regimes into a single slope, badly misrepresenting risk at both ends.</p>
+</section><section class="slide level2"><div id="exm-age-mortality" class="theorem example">
+<p><span class="theorem-title"><strong>Example 1 (Age and all-cause mortality)</strong></span> All-cause mortality is <strong>U-shaped</strong> in age: high in infancy, low through young adulthood, then rising steeply in old age <span class="citation" data-cites="me4">(<a href="#/references" role="doc-biblioref" onclick="">Rothman et al. 2021</a>)</span>. A linear model in <span class="math inline">\(\text{age}\)</span> would average those regimes into a single slope, badly misrepresenting risk at both ends.</p>
 </div>
-<div id="exm-bmi-mortality" class="theorem example">
-<p><span class="theorem-title"><strong>Example 2 (BMI and mortality)</strong></span> BMI–mortality curves are <strong>J-</strong> or <strong>U-shaped</strong>: very low and very high BMI both carry excess risk, with the minimum somewhere in the 22–25 kg/m² range <span class="citation" data-cites="aune2016bmi">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Aune et al. 2016</a>)</span>. A linear or even quadratic fit misses the asymmetry between the underweight and obese tails.</p>
+</section><section class="slide level2"><div id="exm-bmi-mortality" class="theorem example">
+<p><span class="theorem-title"><strong>Example 2 (BMI and mortality)</strong></span> BMI–mortality curves are <strong>J-</strong> or <strong>U-shaped</strong>: very low and very high BMI both carry excess risk, with the minimum somewhere in the 22–25 kg/m² range <span class="citation" data-cites="aune2016bmi">(<a href="#/references" role="doc-biblioref" onclick="">Aune et al. 2016</a>)</span>. A linear or even quadratic fit misses the asymmetry between the underweight and obese tails.</p>
 </div>
-<div id="exm-temperature-mortality" class="theorem example">
-<p><span class="theorem-title"><strong>Example 3 (Outdoor temperature and daily mortality)</strong></span> Time-series studies of mortality and daily temperature consistently show a <strong>smooth nonlinear “bathtub”</strong> relationship: both very cold and very hot days raise short-term mortality risk, with a location-specific optimum in between <span class="citation" data-cites="gasparrini2015mortality">(<a href="#/applied-exercises" role="doc-biblioref" onclick=""><span class="nocase">Gasparrini et al.</span> 2015</a>)</span>. The optimum and the steepness of the cold/heat slopes vary by city, season, and population — features that no single linear term can capture.</p>
+</section><section class="slide level2 scrollable"><div id="exm-temperature-mortality" class="theorem example">
+<p><span class="theorem-title"><strong>Example 3 (Outdoor temperature and daily mortality)</strong></span> Time-series studies of mortality and daily temperature consistently show a <strong>smooth nonlinear “bathtub”</strong> relationship: both very cold and very hot days raise short-term mortality risk, with a location-specific optimum in between <span class="citation" data-cites="gasparrini2015mortality">(<a href="#/references" role="doc-biblioref" onclick=""><span class="nocase">Gasparrini et al.</span> 2015</a>)</span>. The optimum and the steepness of the cold/heat slopes vary by city, season, and population — features that no single linear term can capture.</p>
 </div>
 <p>The pattern in <a href="#/exm-age-mortality" class="quarto-xref">Example&nbsp;1</a>, <a href="#/exm-bmi-mortality" class="quarto-xref">Example&nbsp;2</a>, and <a href="#/exm-temperature-mortality" class="quarto-xref">Example&nbsp;3</a> is general: many epidemiologic exposures have an effect on outcome that is <strong>smooth but not monotone</strong>. We need a regression framework that lets the response depend on a continuous predictor through an arbitrary smooth function, while keeping the GLM machinery (link function, likelihood, inference) we have already built up.</p>
 <p><strong>Generalized additive models</strong> (GAMs) provide exactly this. A GAM replaces the linear predictor</p>
@@ -348,11 +348,11 @@ text-align: center;
 <li>
 <strong>GAMs</strong> — additive combinations of any of the above smoothers, fit via penalized likelihood with automatic smoothness selection.</li>
 </ol>
-<p>We’ll fit GAMs in R using the <code>mgcv</code> package <span class="citation" data-cites="wood2017generalized">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2017</a>)</span>, which implements the modern penalized-regression approach with automatic smoothness selection via REML or GCV.</p>
+<p>We’ll fit GAMs in R using the <code>mgcv</code> package <span class="citation" data-cites="wood2017generalized">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2017</a>)</span>, which implements the modern penalized-regression approach with automatic smoothness selection via REML or GCV.</p>
 </section></section><section><section id="sec-polynomial-regression" class="title-slide slide level1 center" data-number="2"><h1>
 <span class="header-section-number">2</span> Polynomial regression</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.1</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.1</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -364,13 +364,13 @@ text-align: center;
           overflow: hidden!important;
           display:block!important;
       }</style></aside><p>The simplest way to allow a nonlinear effect of <span class="math inline">\(X\)</span> is to extend the linear regression model by including powers of <span class="math inline">\(X\)</span> as additional predictors:</p>
-<div id="def-polynomial-regression" class="theorem definition">
+</section><section class="slide level2"><div id="def-polynomial-regression" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 1 (Polynomial regression)</strong></span> For a continuous predictor <span class="math inline">\(X\)</span> and degree <span class="math inline">\(d \ge 1\)</span>, the <strong>polynomial regression model</strong> is</p>
 <p><span class="math display">\[y_i = \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \cdots + \beta_d x_i^d + \varepsilon_i\]</span></p>
 <p>with <span class="math inline">\(\varepsilon_i \ \sim_{\operatorname{iid}}\ \operatorname{N}\mathopen{}\left(0, \sigma^2\right)\mathclose{}\)</span>.</p>
 <p>This is still a <em>linear</em> regression model in the coefficients <span class="math inline">\(\beta_0, \ldots, \beta_d\)</span> — the nonlinearity lives in the deterministic transformations <span class="math inline">\(x_i^k\)</span> of the predictor, not in the relationship between coefficients and response. So everything we know about linear-regression estimation, inference, and prediction (least squares, standard errors, confidence intervals) applies directly.</p>
 </div>
-<div id="exm-polynomial-quadratic" class="theorem example">
+</section><section class="slide level2"><div id="exm-polynomial-quadratic" class="theorem example">
 <p><span class="theorem-title"><strong>Example 4 (Quadratic fit to a U-shaped exposure)</strong></span> For BMI–mortality, a degree-2 polynomial</p>
 <p><span class="math display">\[\operatorname{logit}\mathopen{}\left\{\Pr(Y = 1 \mid \text{BMI} = b)\right\}\mathclose{} = \beta_0 + \beta_1 b + \beta_2 b^2\]</span></p>
 <p>can capture a single-minimum U-shape, with the minimum-risk BMI at <span class="math inline">\(-\beta_1 / (2 \beta_2)\)</span> (assuming <span class="math inline">\(\beta_2 &gt; 0\)</span>, i.e., the parabola opens upward). A quadratic is the lowest-degree polynomial that admits a turning point, so it’s a natural first step beyond a linear fit.</p>
@@ -411,7 +411,7 @@ text-align: center;
 </section></section><section><section id="sec-step-functions" class="title-slide slide level1 center" data-number="3"><h1>
 <span class="header-section-number">3</span> Step functions</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.2</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.2</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -423,14 +423,14 @@ text-align: center;
           overflow: hidden!important;
           display:block!important;
       }</style></aside><p><strong>Step functions</strong> are the opposite extreme from polynomials: instead of letting the response depend smoothly on <span class="math inline">\(X\)</span>, they cut the range of <span class="math inline">\(X\)</span> into bins and fit a separate constant within each bin. The fit is piecewise-constant — a staircase rather than a curve.</p>
-<div id="def-step-function-regression" class="theorem definition">
+</section><section class="slide level2"><div id="def-step-function-regression" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 2 (Step-function regression)</strong></span> Choose <strong>cutpoints</strong> <span class="math inline">\(c_1 &lt; c_2 &lt; \cdots &lt; c_K\)</span> on the support of <span class="math inline">\(X\)</span>, producing <span class="math inline">\(K+1\)</span> bins: <span class="math inline">\((-\infty, c_1]\)</span>, <span class="math inline">\((c_1, c_2]\)</span>, …, <span class="math inline">\((c_K, \infty)\)</span>. Using the conventions <span class="math inline">\(c_0 = -\infty\)</span> and <span class="math inline">\(c_{K+1} = \infty\)</span>, define indicator variables</p>
 <p><span class="math display">\[C_k(X) = \mathbb{1}\mathopen{}\left(c_{k-1} &lt; X \le c_k\right)\mathclose{}, \quad k = 1, \ldots, K+1.\]</span></p>
 <p>Because <span class="math inline">\(\sum_{k=1}^{K+1} C_k(X) = 1\)</span> for every <span class="math inline">\(X\)</span> (exactly one indicator is “on”), the full set of <span class="math inline">\(K+1\)</span> indicators plus an intercept is linearly dependent. One bin is therefore dropped as the <strong>reference category</strong>. Taking bin <span class="math inline">\(1\)</span> as the reference and using <span class="math inline">\(C_2, \ldots, C_{K+1}\)</span>, the identified step-function regression model is</p>
 <p><span class="math display">\[y_i = \beta_0 + \beta_2 C_2(x_i) + \beta_3 C_3(x_i) + \cdots + \beta_{K+1} C_{K+1}(x_i) + \varepsilon_i,\]</span></p>
 <p>with <span class="math inline">\(K\)</span> free slope parameters (one per non-reference bin) plus the intercept. <span class="math inline">\(\beta_0\)</span> is the expected response in the reference bin and <span class="math inline">\(\beta_k\)</span> (<span class="math inline">\(k \ge 2\)</span>) is the contrast in mean response between bin <span class="math inline">\(k\)</span> and the reference bin.</p>
 </div>
-<div id="exm-step-function-regression" class="theorem example">
+</section><section class="slide level2"><div id="exm-step-function-regression" class="theorem example">
 <p><span class="theorem-title"><strong>Example 5 (BMI categories as a step function)</strong></span> Step-function regression is the regression-modeling equivalent of categorizing a continuous predictor. The familiar “age groups” or “BMI categories” used in many epidemiology tables are exactly this: cut the continuous predictor into bins, then enter the bin indicators as regressors. For example, WHO BMI categories — underweight (<span class="math inline">\(&lt; 18.5\)</span>), normal weight (<span class="math inline">\(18.5\)</span>–<span class="math inline">\(24.9\)</span>), overweight (<span class="math inline">\(25\)</span>–<span class="math inline">\(29.9\)</span>), and obese (<span class="math inline">\(\ge 30\)</span>) — use <span class="math inline">\(K = 3\)</span> cutpoints producing four bin indicators, with three slope parameters estimating the mean response contrast between each non-reference category and the reference (here, normal weight).</p>
 </div>
 </section><section id="strengths" class="slide level2" data-number="3.1"><h2>
@@ -468,7 +468,7 @@ text-align: center;
 </section></section><section><section id="sec-basis-functions" class="title-slide slide level1 center" data-number="4"><h1>
 <span class="header-section-number">4</span> Basis functions</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.3</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2017, sec. 4</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.3</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/references" role="doc-biblioref" onclick="">2017, sec. 4</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -480,16 +480,16 @@ text-align: center;
           overflow: hidden!important;
           display:block!important;
       }</style></aside><p>Polynomial regression and step-function regression look very different, but they share a common structure: both replace <span class="math inline">\(X\)</span> with a fixed set of <strong>transformations</strong> of <span class="math inline">\(X\)</span>, then fit a linear regression in those transformations. This shared structure is the <strong>basis function</strong> framework, and it’s the foundation for splines.</p>
-<div id="def-basis-expansion" class="theorem definition">
+</section><section class="slide level2"><div id="def-basis-expansion" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 3 (Basis expansion)</strong></span> A <strong>basis expansion</strong> of <span class="math inline">\(X\)</span> is a fixed (data-free) set of functions <span class="math inline">\(b_1(X), \ldots, b_K(X)\)</span>. The basis-expansion regression model replaces <span class="math inline">\(X\)</span> with these transformations:</p>
 <p><span class="math display">\[y_i = \beta_0 + \beta_1 b_1(x_i) + \beta_2 b_2(x_i) + \cdots + \beta_K b_K(x_i) + \varepsilon_i.\]</span></p>
 <p>The basis functions <span class="math inline">\(b_k(\cdot)\)</span> are chosen ahead of time; the coefficients <span class="math inline">\(\beta_k\)</span> are estimated by least squares (or, more generally, by maximum likelihood for a GLM with link <span class="math inline">\(g(\operatorname{E}\mathopen{}\left[Y \mid X\right]\mathclose{}) = \beta_0 + \sum_k \beta_k b_k(X)\)</span>).</p>
 </div>
-<div id="exm-basis-polynomial" class="theorem example">
+</section><section class="slide level2"><div id="exm-basis-polynomial" class="theorem example">
 <p><span class="theorem-title"><strong>Example 6 (Polynomial regression as a basis expansion)</strong></span> For polynomial regression of degree <span class="math inline">\(d\)</span> (<a href="#/def-polynomial-regression" class="quarto-xref">Definition&nbsp;1</a>), the basis functions are the monomials</p>
 <p><span class="math display">\[b_k(X) = X^k, \quad k = 1, \ldots, d.\]</span></p>
 </div>
-<div id="exm-basis-step" class="theorem example">
+</section><section class="slide level2"><div id="exm-basis-step" class="theorem example">
 <p><span class="theorem-title"><strong>Example 7 (Step-function regression as a basis expansion)</strong></span> For step-function regression with cutpoints <span class="math inline">\(c_1 &lt; \cdots &lt; c_K\)</span> (<a href="#/def-step-function-regression" class="quarto-xref">Definition&nbsp;2</a>), the basis functions are the bin indicators</p>
 <p><span class="math display">\[b_k(X) = \mathbb{1}\mathopen{}\left(c_{k-1} &lt; X \le c_k\right)\mathclose{}, \quad k = 1, \ldots, K+1.\]</span></p>
 </div>
@@ -523,7 +523,7 @@ text-align: center;
 </section></section><section><section id="sec-regression-splines" class="title-slide slide level1 center" data-number="5"><h1>
 <span class="header-section-number">5</span> Regression splines</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.4</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2017, sec. 5</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.4</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/references" role="doc-biblioref" onclick="">2017, sec. 5</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -537,19 +537,23 @@ text-align: center;
       }</style></aside><p>A <strong>regression spline</strong> is a piecewise polynomial that’s constrained to be smooth at the points where the pieces meet (“knots”). The result is much more flexible than a single global polynomial but much smoother than a step function.</p>
 </section><section id="piecewise-polynomials-and-knots" class="slide level2" data-number="5.1"><h2>
 <span class="header-section-number">5.1</span> Piecewise polynomials and knots</h2>
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the div below. The preceding slidebreak already opens a fresh
+slide; the heading and this div intentionally share that slide to avoid a
+title-only slide. -->
 <div id="def-piecewise-polynomial" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 4 (Piecewise polynomial)</strong></span> Choose <strong>knots</strong> <span class="math inline">\(\xi_1 &lt; \xi_2 &lt; \cdots &lt; \xi_K\)</span> on the support of <span class="math inline">\(X\)</span>. A <strong>piecewise polynomial of degree <span class="math inline">\(d\)</span></strong> with knots <span class="math inline">\(\xi_1, \ldots, \xi_K\)</span> is a function that is a polynomial of degree <span class="math inline">\(d\)</span> on each of the intervals <span class="math inline">\((-\infty, \xi_1], (\xi_1, \xi_2], \ldots, (\xi_K, \infty)\)</span> — but the polynomials in different intervals can have different coefficients.</p>
 </div>
-<div id="exm-piecewise-polynomial" class="theorem example">
+</section><section class="slide level2"><div id="exm-piecewise-polynomial" class="theorem example">
 <p><span class="theorem-title"><strong>Example 8 (Unconstrained piecewise polynomial parameter count)</strong></span> Without any continuity constraint, an unconstrained piecewise polynomial has <span class="math inline">\((K+1)(d+1)\)</span> free coefficients (<span class="math inline">\(d+1\)</span> per piece, <span class="math inline">\(K+1\)</span> pieces) and can have <strong>jumps and corners</strong> at every knot — basically <span class="math inline">\(K+1\)</span> independent polynomial fits glued side by side. That’s almost always <em>too</em> flexible.</p>
 </div>
 </section><section id="continuity-and-smoothness-constraints" class="slide level2" data-number="5.2"><h2>
 <span class="header-section-number">5.2</span> Continuity and smoothness constraints</h2>
 <p>Splines pay for their flexibility by adding <strong>smoothness constraints</strong> at the knots.</p>
-<div id="def-spline" class="theorem definition">
+</section><section class="slide level2"><div id="def-spline" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 5 (Spline)</strong></span> A <strong>spline of degree <span class="math inline">\(d\)</span></strong> with knots <span class="math inline">\(\xi_1, \ldots, \xi_K\)</span> is a piecewise polynomial of degree <span class="math inline">\(d\)</span> that is continuous, has continuous first derivative, …, has continuous <span class="math inline">\((d-1)\)</span>-th derivative at every knot.</p>
 </div>
-<div id="exm-spline" class="theorem example">
+</section><section class="slide level2"><div id="exm-spline" class="theorem example">
 <p><span class="theorem-title"><strong>Example 9 (Effective parameter count for a cubic spline)</strong></span> Each continuity constraint removes one degree of freedom. A piecewise-cubic (<span class="math inline">\(d = 3\)</span>) with <span class="math inline">\(K\)</span> knots has <span class="math inline">\((K+1) \cdot 4 = 4K + 4\)</span> unconstrained parameters. Requiring continuity of the function and its first two derivatives at each of the <span class="math inline">\(K\)</span> knots imposes <span class="math inline">\(3K\)</span> constraints, leaving <span class="math inline">\(4K + 4 - 3K = K + 4\)</span> effective parameters.</p>
 </div>
 <p>The most common choice in practice is <span class="math inline">\(d = 3\)</span> — the <strong>cubic spline</strong> — because human eyes can’t see discontinuities in third or higher derivatives, so a cubic spline already looks “smooth” to the viewer.</p>
@@ -608,7 +612,7 @@ text-align: center;
 </section></section><section><section id="sec-smoothing-splines" class="title-slide slide level1 center" data-number="6"><h1>
 <span class="header-section-number">6</span> Smoothing splines</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.5</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2017, secs. 5–6</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.5</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/references" role="doc-biblioref" onclick="">2017, secs. 5–6</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -622,6 +626,10 @@ text-align: center;
       }</style></aside><p>Regression splines force the modeler to make several choices — basis type, number of knots, knot locations — that affect the result. <strong>Smoothing splines</strong> sidestep that decision tree by taking a different route: they place a knot at every data point and then <strong>penalize wiggliness</strong> to control overfitting.</p>
 </section><section id="the-penalized-fit" class="slide level2" data-number="6.1"><h2>
 <span class="header-section-number">6.1</span> The penalized fit</h2>
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the div below. The preceding slidebreak already opens a fresh
+slide; the heading and this div intentionally share that slide to avoid a
+title-only slide. -->
 <div id="def-smoothing-spline" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 6 (Smoothing spline (penalized least squares))</strong></span> Among all twice-differentiable functions <span class="math inline">\(g\)</span>, the <strong>smoothing spline with smoothing parameter <span class="math inline">\(\lambda\ge 0\)</span></strong> is the minimizer of</p>
 <p><span class="math display">\[\underbrace{\sum_{i=1}^n (y_i - g(x_i))^2}_{\text{fit to data}}
@@ -634,9 +642,9 @@ text-align: center;
 <span class="math inline">\(\lambda\to \infty\)</span>: the integrated squared second derivative is forced to zero, so <span class="math inline">\(g\)</span> is a straight line. Maximum smoothness — reduces to ordinary linear regression.</li>
 <li>Intermediate <span class="math inline">\(\lambda\)</span>: a smooth nonparametric fit.</li>
 </ul>
-<p>A foundational result is that the minimizer is always a <strong>natural cubic spline with knots at every unique <span class="math inline">\(x_i\)</span></strong> <span class="citation" data-cites="wood2017generalized james2021islr2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2017, sec. 5.1</a>; <a href="#/applied-exercises" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.5</a>)</span>. So even though the problem is defined over all twice-differentiable functions, the answer lives in a finite-dimensional space we can compute with.</p>
+<p>A foundational result is that the minimizer is always a <strong>natural cubic spline with knots at every unique <span class="math inline">\(x_i\)</span></strong> <span class="citation" data-cites="wood2017generalized james2021islr2e">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2017, sec. 5.1</a>; <a href="#/references" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.5</a>)</span>. So even though the problem is defined over all twice-differentiable functions, the answer lives in a finite-dimensional space we can compute with.</p>
 </div>
-<div id="exm-smoothing-spline" class="theorem example">
+</section><section class="slide level2"><div id="exm-smoothing-spline" class="theorem example">
 <p><span class="theorem-title"><strong>Example 10 (Effect of the smoothing parameter on a fitted curve)</strong></span> Consider fitting a smoothing spline to a scatterplot of 200 observations from a U-shaped exposure–outcome relationship.</p>
 <ul>
 <li>With <span class="math inline">\(\lambda\)</span> very small (near zero), the fitted curve passes through every point — it wiggles through the noise and overfits.</li>
@@ -649,7 +657,7 @@ text-align: center;
 <span class="header-section-number">6.2</span> Effective degrees of freedom</h2>
 <p>The smoothing spline fit can be written as <span class="math inline">\(\hat{\mathbf{y}} = \mathbf{S}_\lambda\mathbf{y}\)</span> for a smoother matrix <span class="math inline">\(\mathbf{S}_\lambda\)</span> that depends on <span class="math inline">\(\lambda\)</span> and the <span class="math inline">\(x_i\)</span> values. Because the function is penalized rather than projected onto a low-dimensional subspace, the usual “number of parameters” count doesn’t apply.</p>
 <p>The standard replacement is the <strong>effective degrees of freedom</strong> (EDF):</p>
-<div id="def-effective-degrees-of-freedom" class="theorem definition">
+</section><section class="slide level2"><div id="def-effective-degrees-of-freedom" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 7 (Effective degrees of freedom)</strong></span> <span class="math display">\[\text{EDF}(\lambda) = \text{tr}(\mathbf{S}_\lambda)
 = \sum_{i=1}^n \frac{\partial \hat y_i}{\partial y_i}.\]</span></p>
 <p>The EDF interpolates smoothly between two endpoints. For the <strong>full smoothing-spline model</strong> (intercept + smooth term), EDF ranges from:</p>
@@ -670,7 +678,7 @@ text-align: center;
 <li>
 <strong>Generalized cross-validation</strong> (GCV), a fast computational approximation to LOO-CV.</li>
 <li>
-<strong>REML</strong> (restricted maximum likelihood), which treats the penalty as arising from a normal-prior random effect and selects <span class="math inline">\(\lambda\)</span> by likelihood. REML is not the default in <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html">mgcv::gam()</a></code> (which uses <code>method = "GCV.Cp"</code>), but it is generally preferred for its better statistical properties <span class="citation" data-cites="wood2017generalized">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2017, sec. 6.2</a>)</span>; pass <code>method = "REML"</code> explicitly.</li>
+<strong>REML</strong> (restricted maximum likelihood), which treats the penalty as arising from a normal-prior random effect and selects <span class="math inline">\(\lambda\)</span> by likelihood. REML is not the default in <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html">mgcv::gam()</a></code> (which uses <code>method = "GCV.Cp"</code>), but it is generally preferred for its better statistical properties <span class="citation" data-cites="wood2017generalized">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2017, sec. 6.2</a>)</span>; pass <code>method = "REML"</code> explicitly.</li>
 </ul>
 <p>The user typically specifies a maximum dimension for the basis (<code>k = ...</code> in <code><a href="https://rdrr.io/pkg/mgcv/man/s.html">mgcv::s()</a></code>) and lets the software select the effective smoothness automatically.</p>
 </section><section id="smoothing-splines-vs-regression-splines" class="slide level2" data-number="6.4"><h2>
@@ -754,7 +762,7 @@ text-align: center;
 </section></section><section><section id="sec-local-regression" class="title-slide slide level1 center" data-number="7"><h1>
 <span class="header-section-number">7</span> Local regression</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.6</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.6</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -768,6 +776,10 @@ text-align: center;
       }</style></aside><p><strong>Local regression</strong>, also called <strong>LOESS</strong> (LOcally Estimated Scatterplot Smoothing) or <strong>LOWESS</strong>, takes yet another approach to nonlinear regression: instead of fitting a single global model with flexible basis functions, it fits <strong>many local models</strong>, one for each point on the <span class="math inline">\(x\)</span>-axis where we want a prediction.</p>
 </section><section id="the-local-fit" class="slide level2 scrollable" data-number="7.1"><h2>
 <span class="header-section-number">7.1</span> The local fit</h2>
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the div below. The preceding slidebreak already opens a fresh
+slide; the heading and this div intentionally share that slide to avoid a
+title-only slide. -->
 <div id="def-local-regression" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 8 (Local regression at <span class="math inline">\(x_0\)</span>)</strong></span> To estimate the regression function <span class="math inline">\(f(x_0)\)</span> at a target point <span class="math inline">\(x_0\)</span>:</p>
 <ol type="1">
@@ -779,7 +791,7 @@ text-align: center;
 </ol>
 <p>To get the entire fitted curve, repeat for a dense grid of <span class="math inline">\(x_0\)</span> values and connect the resulting predictions.</p>
 </div>
-<div id="exm-local-regression" class="theorem example">
+</section><section class="slide level2"><div id="exm-local-regression" class="theorem example">
 <p><span class="theorem-title"><strong>Example 11 (LOESS fit on age–cholesterol)</strong></span> To smooth the relationship between age and total cholesterol in the WCGS data using LOESS with a span of 0.5:</p>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>m_loess <span class="ot">&lt;-</span> <span class="fu">loess</span>(chol <span class="sc">~</span> age, <span class="at">data =</span> wcgs, <span class="at">span =</span> <span class="fl">0.5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1001,7 +1013,7 @@ Figure&nbsp;1: Comparison of nonlinear regression methods on synthetic data <spa
 </ul></section></section><section><section id="sec-gams" class="title-slide slide level1 center" data-number="9"><h1>
 <span class="header-section-number">9</span> Generalized additive models</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.7</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2017, secs. 4–7</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.7</a>)</span> and <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/references" role="doc-biblioref" onclick="">2017, secs. 4–7</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1015,6 +1027,10 @@ Figure&nbsp;1: Comparison of nonlinear regression methods on synthetic data <spa
       }</style></aside><p>We’re now ready to assemble the <strong>generalized additive model</strong>. The idea is to take any of the nonlinear smoothers we’ve built up — regression splines, smoothing splines, local regression — and let <strong>each predictor have its own smoother</strong>, with the smoother contributions added together on the link scale.</p>
 </section><section id="the-gam-formulation" class="slide level2" data-number="9.1"><h2>
 <span class="header-section-number">9.1</span> The GAM formulation</h2>
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the div below. The preceding slidebreak already opens a fresh
+slide; the heading and this div intentionally share that slide to avoid a
+title-only slide. -->
 <div id="def-gam" class="theorem definition">
 <p><span class="theorem-title"><strong>Definition 9 (Generalized additive model)</strong></span> Let <span class="math inline">\(Y\)</span> be a response variable with conditional distribution from an exponential family (Gaussian, binomial, Poisson, etc.), and let <span class="math inline">\(X = (X_1, \ldots, X_p)\)</span> be predictors. A <strong>generalized additive model</strong> (GAM) specifies</p>
 <p><span class="math display">\[g(\operatorname{E}\mathopen{}\left[Y \mid X = x\right]\mathclose{}) = \beta_0 + f_1(x_1) + f_2(x_2) + \cdots + f_p(x_p),\]</span></p>
@@ -1028,7 +1044,7 @@ Figure&nbsp;1: Comparison of nonlinear regression methods on synthetic data <spa
 </ul>
 <p>A “smooth function” in practice means a regression spline, smoothing spline, or other smoother — anything that can be written as a basis expansion <span class="math inline">\(f_j(x_j) = \sum_k \beta_{jk} b_{jk}(x_j)\)</span> with the coefficients <span class="math inline">\(\beta_{jk}\)</span> estimated jointly across all predictors.</p>
 </div>
-<div id="exm-gam" class="theorem example">
+</section><section class="slide level2"><div id="exm-gam" class="theorem example">
 <p><span class="theorem-title"><strong>Example 12 (GAM for CHD risk)</strong></span> For the WCGS data with continuous predictors age, systolic blood pressure, and cholesterol, a GAM for CHD on the logit scale is</p>
 <p><span class="math display">\[\operatorname{logit}\mathopen{}\left\{\Pr(\text{chd69} = 1 \mid \text{age}, \text{sbp}, \text{chol})\right\}\mathclose{}
 = \beta_0 + f_1(\text{age}) + f_2(\text{sbp}) + f_3(\text{chol}),\]</span></p>
@@ -1065,7 +1081,7 @@ Figure&nbsp;1: Comparison of nonlinear regression methods on synthetic data <spa
 </section></section><section><section id="sec-gam-fitting" class="title-slide slide level1 center" data-number="10"><h1>
 <span class="header-section-number">10</span> Fitting GAMs in R</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2017, sec. 6</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/references" role="doc-biblioref" onclick="">2017, sec. 6</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1076,7 +1092,7 @@ Figure&nbsp;1: Comparison of nonlinear regression methods on synthetic data <spa
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside><p>The standard tool for fitting GAMs in R is the <code>mgcv</code> package <span class="citation" data-cites="wood2017generalized">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2017</a>)</span>. We’ll use <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html">mgcv::gam()</a></code>, which fits GAMs by <strong>penalized likelihood</strong> with automatic smoothness selection via REML or GCV.</p>
+      }</style></aside><p>The standard tool for fitting GAMs in R is the <code>mgcv</code> package <span class="citation" data-cites="wood2017generalized">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2017</a>)</span>. We’ll use <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html">mgcv::gam()</a></code>, which fits GAMs by <strong>penalized likelihood</strong> with automatic smoothness selection via REML or GCV.</p>
 </section><section id="the-gam-call" class="slide level2" data-number="10.1"><h2>
 <span class="header-section-number">10.1</span> The <code>gam()</code> call</h2>
 <p>The basic syntax mirrors <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code>/<code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code>, with smoothers introduced by <code>s()</code>:</p>
@@ -1158,7 +1174,7 @@ Figure&nbsp;1: Comparison of nonlinear regression methods on synthetic data <spa
 <li>
 <strong>GCV</strong> (generalized cross-validation). The default. Computes faster than REML but can occasionally select a much wigglier smooth than is justified by the data, especially when <span class="math inline">\(n\)</span> is small or signal is weak.</li>
 </ul>
-<p><strong>Recommendation: use <code>method = "REML"</code></strong> for routine work. If you’re comparing GAMs to GLMs via AIC, also set <code>select = TRUE</code> to turn on smoothness selection at the term level. <code>select = TRUE</code> adds an extra null-space penalty to each smooth (separate from the wiggliness penalty) that can shrink an <em>entire</em> smooth term to zero — effectively functioning as variable selection <span class="citation" data-cites="wood2017generalized">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2017, sec. 5.4</a>)</span>. Without it, the ordinary wiggliness penalty can only shrink a smooth down to a straight line, never to identically zero; <code>select = TRUE</code> extends that floor all the way down. This makes AIC comparisons more honest because the GAM is then allowed to “discover” that a predictor’s smooth shouldn’t be there at all.</p>
+<p><strong>Recommendation: use <code>method = "REML"</code></strong> for routine work. If you’re comparing GAMs to GLMs via AIC, also set <code>select = TRUE</code> to turn on smoothness selection at the term level. <code>select = TRUE</code> adds an extra null-space penalty to each smooth (separate from the wiggliness penalty) that can shrink an <em>entire</em> smooth term to zero — effectively functioning as variable selection <span class="citation" data-cites="wood2017generalized">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2017, sec. 5.4</a>)</span>. Without it, the ordinary wiggliness penalty can only shrink a smooth down to a straight line, never to identically zero; <code>select = TRUE</code> extends that floor all the way down. This makes AIC comparisons more honest because the GAM is then allowed to “discover” that a predictor’s smooth shouldn’t be there at all.</p>
 </section><section id="checking-the-fit" class="slide level2" data-number="10.4"><h2>
 <span class="header-section-number">10.4</span> Checking the fit</h2>
 <p>After fitting, run <code>gam.check()</code> to verify:</p>
@@ -1184,7 +1200,7 @@ Figure&nbsp;1: Comparison of nonlinear regression methods on synthetic data <spa
 </section></section><section><section id="sec-gam-inference" class="title-slide slide level1 center" data-number="11"><h1>
 <span class="header-section-number">11</span> Inference and model selection</h1>
 
-</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2017, secs. 6.10–6.12</a>)</span>.</p>
+</section><section class="slide level2"><aside class="notes"><p>Adapted from <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/references" role="doc-biblioref" onclick="">2017, secs. 6.10–6.12</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1221,19 +1237,19 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 <li>
 <strong><code>Chi.sq</code></strong> — the test statistic for “is this smooth different from zero?”.</li>
 <li>
-<strong><code>p-value</code></strong> — an <em>approximate</em> p-value for that null. The standard caveat applies: the smoothing parameter was selected from the data, so the test statistic doesn’t have an exact <span class="math inline">\(\chi^2\)</span> distribution — <code>mgcv</code> uses a careful approximation accounting for the selection, but it’s still an approximation <span class="citation" data-cites="wood2013pvalues">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2013</a>)</span>.</li>
+<strong><code>p-value</code></strong> — an <em>approximate</em> p-value for that null. The standard caveat applies: the smoothing parameter was selected from the data, so the test statistic doesn’t have an exact <span class="math inline">\(\chi^2\)</span> distribution — <code>mgcv</code> uses a careful approximation accounting for the selection, but it’s still an approximation <span class="citation" data-cites="wood2013pvalues">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2013</a>)</span>.</li>
 </ul>
 <h3 id="adjusted-r2-and-deviance-explained">Adjusted <span class="math inline">\(R^2\)</span> and deviance explained</h3>
 <p>For Gaussian GAMs, the summary reports an adjusted <span class="math inline">\(R^2\)</span>; for GLM families, <strong>deviance explained</strong> (the GLM analog of <span class="math inline">\(R^2\)</span>). Same interpretation as in the GLM chapters.</p>
 </section><section id="confidence-bands-for-smooth-terms" class="slide level2" data-number="11.2"><h2>
 <span class="header-section-number">11.2</span> Confidence bands for smooth terms</h2>
-<p>The pointwise CIs that <code>plot.gam()</code> draws come from the Bayesian posterior distribution of the spline coefficients <span class="citation" data-cites="wood2017generalized">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2017, sec. 6.10</a>)</span>. They have the property:</p>
+<p>The pointwise CIs that <code>plot.gam()</code> draws come from the Bayesian posterior distribution of the spline coefficients <span class="citation" data-cites="wood2017generalized">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2017, sec. 6.10</a>)</span>. They have the property:</p>
 <ul>
 <li>They are <strong>roughly the right Bayesian credible intervals</strong> for the smooth at each point.</li>
 <li>They are <strong>roughly the right frequentist confidence bands</strong> “across the function” — i.e.&nbsp;averaged over <span class="math inline">\(x\)</span>, the band has approximately 95% coverage of the true <span class="math inline">\(f(x)\)</span>.</li>
 <li>They <strong>are not</strong> pointwise frequentist CIs in the strict sense; at any single <span class="math inline">\(x\)</span>, coverage can be a few percentage points off.</li>
 </ul>
-<p>For routine plotting and reporting in epidemiology, these bands are the right thing to display. If you need something stricter (e.g. simultaneous bands valid across the entire <span class="math inline">\(x\)</span>-range), posterior simulation from the spline coefficients gives the right answer: <code><a href="https://gavinsimpson.github.io/gratia/reference/smooth_samples.html">gratia::smooth_samples()</a></code> (gratia &gt;= 0.9) returns draws of the smooth from the posterior on the spline coefficients (equivalently, you can roll your own via <code><a href="https://rdrr.io/pkg/mgcv/man/rmvn.html">mgcv::rmvn()</a></code> with the fitted <code>Vp</code>). See <span class="citation" data-cites="wood2017generalized">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2017, sec. 6.10</a>)</span> for the underlying theory. Note that <code>simulate(m_gam)</code> is a <em>different</em> tool — it returns response-scale draws (posterior predictive samples of new observations), not smooth-coefficient draws, so it’s appropriate for predictive checks but not for constructing simultaneous bands on the smooth.</p>
+<p>For routine plotting and reporting in epidemiology, these bands are the right thing to display. If you need something stricter (e.g. simultaneous bands valid across the entire <span class="math inline">\(x\)</span>-range), posterior simulation from the spline coefficients gives the right answer: <code><a href="https://gavinsimpson.github.io/gratia/reference/smooth_samples.html">gratia::smooth_samples()</a></code> (gratia &gt;= 0.9) returns draws of the smooth from the posterior on the spline coefficients (equivalently, you can roll your own via <code><a href="https://rdrr.io/pkg/mgcv/man/rmvn.html">mgcv::rmvn()</a></code> with the fitted <code>Vp</code>). See <span class="citation" data-cites="wood2017generalized">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2017, sec. 6.10</a>)</span> for the underlying theory. Note that <code>simulate(m_gam)</code> is a <em>different</em> tool — it returns response-scale draws (posterior predictive samples of new observations), not smooth-coefficient draws, so it’s appropriate for predictive checks but not for constructing simultaneous bands on the smooth.</p>
 </section><section id="comparing-models" class="slide level2" data-number="11.3"><h2>
 <span class="header-section-number">11.3</span> Comparing models</h2>
 <p>Two GAMs can be compared in the usual ways:</p>
@@ -1264,7 +1280,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </ol></section></section><section><section id="sec-gam-example" class="title-slide slide level1 center" data-number="12"><h1>
 <span class="header-section-number">12</span> Worked example</h1>
 
-</section><section class="slide level2"><p>We’ll fit a logistic GAM to the Western Collaborative Group Study (WCGS) data <span class="citation" data-cites="rosenman1975coronary">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Rosenman et al. 1975</a>)</span>, the coronary-heart-disease cohort introduced in the <a href="../chapters/logistic-regression.html">logistic regression chapter</a>. The outcome is incident coronary heart disease (<code>chd69</code>); the continuous risk factors we smooth are age (<code>age</code>), body mass index (<code>bmi</code>), serum cholesterol (<code>chol</code>), and systolic blood pressure (<code>sbp</code>) — predictors whose effect on CHD risk need not be linear on the log-odds scale.</p>
+</section><section class="slide level2"><p>We’ll fit a logistic GAM to the Western Collaborative Group Study (WCGS) data <span class="citation" data-cites="rosenman1975coronary">(<a href="#/references" role="doc-biblioref" onclick="">Rosenman et al. 1975</a>)</span>, the coronary-heart-disease cohort introduced in the <a href="../chapters/logistic-regression.html">logistic regression chapter</a>. The outcome is incident coronary heart disease (<code>chd69</code>); the continuous risk factors we smooth are age (<code>age</code>), body mass index (<code>bmi</code>), serum cholesterol (<code>chol</code>), and systolic blood pressure (<code>sbp</code>) — predictors whose effect on CHD risk need not be linear on the log-odds scale.</p>
 </section><section id="setup" class="slide level2 unnumbered"><h2>Setup</h2>
 <div class="cell">
 <details class="code-fold"><summary>[R code]</summary><div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a></a><span class="fu">library</span>(mgcv)        <span class="co"># gam(), s()</span></span>
@@ -1378,11 +1394,11 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </details>
 </div>
 <p>Compare the two fits on AIC. When most smooths sit at EDF near 1 — as several do here — the GLM is the parsimonious choice and the AIC gap will be small or may even favor the GLM. The GAM earns its extra complexity only when one or more smooths show clear curvature and the curve plots reveal a substantively interesting shape; if they do, the GAM is the better report.</p>
-<p>The refit with <code>method = "ML"</code> is required only for the AIC comparison; the REML fit <code>m_gam</code> above remains the preferred fit for final inference and plotting <span class="citation" data-cites="wood2017generalized">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Wood 2017, sec. 6.2</a>)</span>.</p>
+<p>The refit with <code>method = "ML"</code> is required only for the AIC comparison; the REML fit <code>m_gam</code> above remains the preferred fit for final inference and plotting <span class="citation" data-cites="wood2017generalized">(<a href="#/references" role="doc-biblioref" onclick="">Wood 2017, sec. 6.2</a>)</span>.</p>
 </section><section id="reporting-in-a-manuscript" class="slide level2 unnumbered"><h2>Reporting in a manuscript</h2>
 <p>A typical methods-section sentence is:</p>
 <blockquote>
-<p>Continuous predictors were modeled using thin-plate regression splines (the default basis for <code><a href="https://rdrr.io/pkg/mgcv/man/s.html">mgcv::s()</a></code>) via penalized restricted maximum likelihood (<code>mgcv</code> <em>version</em>, R <em>version</em>; <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2017</a>)</span>). The number of basis functions per predictor was set to 10 and reduced by penalization to the effective degrees of freedom shown in Table X.</p>
+<p>Continuous predictors were modeled using thin-plate regression splines (the default basis for <code><a href="https://rdrr.io/pkg/mgcv/man/s.html">mgcv::s()</a></code>) via penalized restricted maximum likelihood (<code>mgcv</code> <em>version</em>, R <em>version</em>; <span class="citation" data-cites="wood2017generalized">Wood (<a href="#/references" role="doc-biblioref" onclick="">2017</a>)</span>). The number of basis functions per predictor was set to 10 and reduced by penalization to the effective degrees of freedom shown in Table X.</p>
 </blockquote>
 <p>Replace <em>version</em> with the actual versions you used — these can drift between drafts.</p>
 <p>Pair this with a table giving each smooth’s EDF and approximate p-value, plus a figure of the partial-effect curves on the link scale (with the response-scale plot of the predictor of primary interest as a supplementary figure).</p>
@@ -1390,7 +1406,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 <span class="header-section-number">13</span> Lab: Non-linear modeling</h1>
 
 </section><section id="setup-1" class="slide level2 unnumbered"><h2>Setup</h2>
-<aside class="notes"><p>Lab adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.8</a>)</span> and <span class="citation" data-cites="james2023islp">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2023, sec. 7.8</a>)</span>.</p>
+<aside class="notes"><p>Lab adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.8</a>)</span> and <span class="citation" data-cites="james2023islp">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2023, sec. 7.8</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1438,7 +1454,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </div>
 </div>
 </section><section id="polynomial-regression-1" class="slide level2 unnumbered"><h2>Polynomial regression</h2>
-<p>Fit degree-1 through degree-5 polynomials, then use ANOVA to select degree <span class="citation" data-cites="james2021islr2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.1</a>)</span>.</p>
+<p>Fit degree-1 through degree-5 polynomials, then use ANOVA to select degree <span class="citation" data-cites="james2021islr2e">(<a href="#/references" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.1</a>)</span>.</p>
 <div class="panel-tabset">
 <ul id="tabset-2" class="panel-tabset-tabby">
 <li><a data-tabby-default="" href="#tabset-2-1">R</a></li>
@@ -1510,7 +1526,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </div>
 </div>
 </section><section id="step-functions" class="slide level2 unnumbered"><h2>Step functions</h2>
-<p>Cut <code>age</code> into four intervals and fit a piecewise-constant model <span class="citation" data-cites="james2021islr2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.2</a>)</span>.</p>
+<p>Cut <code>age</code> into four intervals and fit a piecewise-constant model <span class="citation" data-cites="james2021islr2e">(<a href="#/references" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.2</a>)</span>.</p>
 <div class="panel-tabset">
 <ul id="tabset-3" class="panel-tabset-tabby">
 <li><a data-tabby-default="" href="#tabset-3-1">R</a></li>
@@ -1538,7 +1554,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </div>
 </div>
 </section><section id="regression-splines" class="slide level2 unnumbered"><h2>Regression splines</h2>
-<p>Fit a cubic B-spline with knots at ages 25, 40, and 60, and a natural cubic spline with the same knots <span class="citation" data-cites="james2021islr2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.4</a>)</span>.</p>
+<p>Fit a cubic B-spline with knots at ages 25, 40, and 60, and a natural cubic spline with the same knots <span class="citation" data-cites="james2021islr2e">(<a href="#/references" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.4</a>)</span>.</p>
 <div class="panel-tabset">
 <ul id="tabset-4" class="panel-tabset-tabby">
 <li><a data-tabby-default="" href="#tabset-4-1">R</a></li>
@@ -1599,7 +1615,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </div>
 </div>
 </section><section id="smoothing-splines-and-local-regression" class="slide level2 unnumbered"><h2>Smoothing splines and local regression</h2>
-<p>A smoothing spline selects the penalty parameter <span class="math inline">\(\lambda\)</span> by generalized cross-validation (GCV); LOESS uses a local polynomial fit <span class="citation" data-cites="james2021islr2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">James et al. 2021, secs. 7.5–7.6</a>)</span>.</p>
+<p>A smoothing spline selects the penalty parameter <span class="math inline">\(\lambda\)</span> by generalized cross-validation (GCV); LOESS uses a local polynomial fit <span class="citation" data-cites="james2021islr2e">(<a href="#/references" role="doc-biblioref" onclick="">James et al. 2021, secs. 7.5–7.6</a>)</span>.</p>
 <div class="panel-tabset">
 <ul id="tabset-5" class="panel-tabset-tabby">
 <li><a data-tabby-default="" href="#tabset-5-1">R</a></li>
@@ -1661,7 +1677,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </div>
 </div>
 </section><section id="gams-continuous-outcome" class="slide level2 unnumbered"><h2>GAMs: continuous outcome</h2>
-<p>Fit three nested GAMs for <code>wage</code> on the <code>Wage</code> data and compare with AIC <span class="citation" data-cites="james2021islr2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.7</a>)</span>. This lab follows the ISLRv2 code, which uses the <code>mgcv</code> default <code>method = "GCV.Cp"</code> for smoothness selection; for new analyses prefer <code>method = "REML"</code> (see <a href="#/sec-smoothing-splines" class="quarto-xref">Section&nbsp;6</a> and <a href="#/sec-gam-fitting" class="quarto-xref">Section&nbsp;10</a>).</p>
+<p>Fit three nested GAMs for <code>wage</code> on the <code>Wage</code> data and compare with AIC <span class="citation" data-cites="james2021islr2e">(<a href="#/references" role="doc-biblioref" onclick="">James et al. 2021, sec. 7.7</a>)</span>. This lab follows the ISLRv2 code, which uses the <code>mgcv</code> default <code>method = "GCV.Cp"</code> for smoothness selection; for new analyses prefer <code>method = "REML"</code> (see <a href="#/sec-smoothing-splines" class="quarto-xref">Section&nbsp;6</a> and <a href="#/sec-gam-fitting" class="quarto-xref">Section&nbsp;10</a>).</p>
 <div class="panel-tabset">
 <ul id="tabset-6" class="panel-tabset-tabby">
 <li><a data-tabby-default="" href="#tabset-6-1">R</a></li>
@@ -1716,7 +1732,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </div>
 </div>
 </section><section id="gams-binary-outcome" class="slide level2 unnumbered"><h2>GAMs: binary outcome</h2>
-<p>Predict whether a worker earns more than $250k using a logistic GAM. We subset to workers with at least some college education, following <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.7</a>)</span>.</p>
+<p>Predict whether a worker earns more than $250k using a logistic GAM. We subset to workers with at least some college education, following <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.7</a>)</span>.</p>
 <div class="panel-tabset">
 <ul id="tabset-7" class="panel-tabset-tabby">
 <li><a data-tabby-default="" href="#tabset-7-1">R</a></li>
@@ -1782,7 +1798,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 
 </section><section id="conceptual-exercises" class="slide level2" data-number="14.1"><h2>
 <span class="header-section-number">14.1</span> Conceptual exercises</h2>
-<aside class="notes"><p>Exercises adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.9</a>)</span> and <span class="citation" data-cites="hastie2009esl2e">Hastie et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2009, sec. 9.1</a>)</span>.</p>
+<aside class="notes"><p>Exercises adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.9</a>)</span> and <span class="citation" data-cites="hastie2009esl2e">Hastie et al. (<a href="#/references" role="doc-biblioref" onclick="">2009, sec. 9.1</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1793,7 +1809,11 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside><h3 id="sec-exr-continuity">Piecewise polynomial continuity (ISLRv2 Conceptual 1)</h3>
+      }</style></aside></section><section class="slide level2"><h3 id="sec-exr-continuity">Piecewise polynomial continuity (ISLRv2 Conceptual 1)</h3>
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the div below. The preceding slidebreak already opens a fresh
+slide; the heading and this div intentionally share that slide to avoid a
+title-only slide. -->
 <div id="exr-spline-continuity" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise 1</strong></span> A cubic polynomial with one interior knot at <span class="math inline">\(\xi\)</span> uses the truncated power basis:</p>
 <p><span class="math display">\[f(X) = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3 + \beta_4 (X-\xi)_+^3\]</span></p>
@@ -1804,14 +1824,18 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 <p><strong>(d)</strong> Show the second derivatives match at <span class="math inline">\(\xi\)</span>.</p>
 <p><strong>(e)</strong> Do the third derivatives match? What order of smoothness does this cubic spline achieve?</p>
 </div>
-<div id="sol-spline-continuity" class="proof solution">
+</section><section class="slide level2"><div id="sol-spline-continuity" class="proof solution">
 <p><span class="proof-title"><em>Solution 1</em>. </span><strong>(a)</strong> For <span class="math inline">\(X &lt; \xi\)</span>: <span class="math inline">\((X-\xi)_+ = 0\)</span>, giving <span class="math inline">\(f_1(X) = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3\)</span>. For <span class="math inline">\(X \ge \xi\)</span>: <span class="math inline">\(f_2(X) = f_1(X) + \beta_4(X-\xi)^3\)</span>.</p>
 <p><strong>(b)</strong> At <span class="math inline">\(X=\xi\)</span>: <span class="math inline">\((X-\xi)_+^3 = 0\)</span>, so <span class="math inline">\(f_2(\xi) = f_1(\xi)\)</span>. <span class="math inline">\(\checkmark\)</span></p>
 <p><strong>(c)</strong> <span class="math inline">\(f_2^{\prime}(X) = f_1^{\prime}(X) + 3\beta_4(X-\xi)_+^2\)</span>. At <span class="math inline">\(X=\xi\)</span>: <span class="math inline">\((X-\xi)_+^2 = 0\)</span>, so the derivatives agree. <span class="math inline">\(\checkmark\)</span></p>
 <p><strong>(d)</strong> <span class="math inline">\(f_2^{\prime\prime}(X) = f_1^{\prime\prime}(X) + 6\beta_4(X-\xi)_+\)</span>. At <span class="math inline">\(X=\xi\)</span>: <span class="math inline">\((X-\xi)_+ = 0\)</span>. <span class="math inline">\(\checkmark\)</span></p>
 <p><strong>(e)</strong> <span class="math inline">\(f_1^{\prime\prime\prime} = 6\beta_3\)</span> and <span class="math inline">\(f_2^{\prime\prime\prime} = 6\beta_3 + 6\beta_4\)</span> for <span class="math inline">\(X &gt; \xi\)</span>. These differ (unless <span class="math inline">\(\beta_4=0\)</span>). The truncated power basis gives a <strong>cubic spline</strong>: continuous with continuous 1st and 2nd derivatives, but a jump in the 3rd derivative at each knot.</p>
 </div>
-<h3 id="sec-exr-smoothing-penalty">Smoothing spline penalty behavior (ISLRv2 Conceptual 2)</h3>
+</section><section class="slide level2"><h3 id="sec-exr-smoothing-penalty">Smoothing spline penalty behavior (ISLRv2 Conceptual 2)</h3>
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the div below. The preceding slidebreak already opens a fresh
+slide; the heading and this div intentionally share that slide to avoid a
+title-only slide. -->
 <div id="exr-smoothing-penalty" class="theorem exercise">
 <p><span class="theorem-title"><strong>Exercise 2</strong></span> The smoothing spline minimizes</p>
 <p><span class="math display">\[\hat{g} = \arg\min_g \left\{ \sum_{i=1}^n (y_i - g(x_i))^2 + \lambda\int g^{\prime\prime}(t)^2 \, dt \right\}.\]</span></p>
@@ -1819,14 +1843,14 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 <p><strong>(b)</strong> What is the limiting form as <span class="math inline">\(\lambda\to 0\)</span>?</p>
 <p><strong>(c)</strong> For <span class="math inline">\(\lambda\to 0\)</span>, is the training RSS equal to zero?</p>
 </div>
-<div id="sol-smoothing-penalty" class="proof solution">
+</section><section class="slide level2"><div id="sol-smoothing-penalty" class="proof solution">
 <p><span class="proof-title"><em>Solution 2</em>. </span><strong>(a)</strong> As <span class="math inline">\(\lambda\to \infty\)</span> the roughness penalty dominates. The only <span class="math inline">\(g\)</span> with <span class="math inline">\(\int g^{\prime\prime}(t)^2\,dt = 0\)</span> is a linear function <span class="math inline">\(g(x) = a + bx\)</span>. So <span class="math inline">\(\hat{g}\)</span> converges to the ordinary least-squares line.</p>
 <p><strong>(b)</strong> As <span class="math inline">\(\lambda\to 0\)</span> there is no penalty; the minimizer interpolates every training point: <span class="math inline">\(g(x_i) = y_i\)</span> for all <span class="math inline">\(i\)</span>.</p>
 <p><strong>(c)</strong> Yes. Interpolation means training RSS <span class="math inline">\(= 0\)</span> – the overfit extreme.</p>
 </div>
-</section><section id="applied-exercises" class="slide level2 smaller scrollable" data-number="14.2"><h2>
+</section><section id="applied-exercises" class="slide level2" data-number="14.2"><h2>
 <span class="header-section-number">14.2</span> Applied exercises</h2>
-<aside class="notes"><p>Applied exercises adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2021, sec. 7.9</a>)</span> and <span class="citation" data-cites="hastie2009esl2e">Hastie et al. (<a href="#/applied-exercises" role="doc-biblioref" onclick="">2009, sec. 9.1</a>)</span>.</p>
+<aside class="notes"><p>Applied exercises adapted from <span class="citation" data-cites="james2021islr2e">James et al. (<a href="#/references" role="doc-biblioref" onclick="">2021, sec. 7.9</a>)</span> and <span class="citation" data-cites="hastie2009esl2e">Hastie et al. (<a href="#/references" role="doc-biblioref" onclick="">2009, sec. 9.1</a>)</span>.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -1837,14 +1861,18 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
           width: 1px!important;
           overflow: hidden!important;
           display:block!important;
-      }</style></aside><h3 id="sec-exr-wage-poly">Polynomial regression and step functions (ISLRv2 Applied 7)</h3>
+      }</style></aside></section><section class="slide level2"><h3 id="sec-exr-wage-poly">Polynomial regression and step functions (ISLRv2 Applied 7)</h3>
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the div below. The preceding slidebreak already opens a fresh
+slide; the heading and this div intentionally share that slide to avoid a
+title-only slide. -->
 <div id="exr-wage-polynomial-cv" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise 3</strong></span> Using the <code>Wage</code> dataset from the <code>ISLR2</code> package <span class="citation" data-cites="james2021islr2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">James et al. 2021</a>)</span>:</p>
+<p><span class="theorem-title"><strong>Exercise 3</strong></span> Using the <code>Wage</code> dataset from the <code>ISLR2</code> package <span class="citation" data-cites="james2021islr2e">(<a href="#/references" role="doc-biblioref" onclick="">James et al. 2021</a>)</span>:</p>
 <p><strong>(a)</strong> Use 10-fold cross-validation to choose the polynomial degree <span class="math inline">\(d^*\)</span> for predicting <code>wage</code> from <code>age</code>. Plot the CV errors for degrees 1 through 10.</p>
 <p><strong>(b)</strong> Fit the degree-<span class="math inline">\(d^*\)</span> polynomial and plot it with a 95% confidence band.</p>
 <p><strong>(c)</strong> Separately, choose the number of cut-points <span class="math inline">\(K^*\)</span> for a step-function model using cross-validation. Plot the chosen step-function fit.</p>
 </div>
-<div id="sol-wage-polynomial-cv" class="proof solution">
+</section><section class="slide level2"><div id="sol-wage-polynomial-cv" class="proof solution">
 <p><span class="proof-title"><em>Solution 3</em>. </span></p>
 <div class="panel-tabset">
 <ul id="tabset-8" class="panel-tabset-tabby">
@@ -1892,9 +1920,13 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </div>
 </div>
 </div>
-<h3 id="sec-exr-backfitting">Backfitting algorithm (ESL §9.1.1 / ISLRv2 Applied 11)</h3>
+</section><section class="slide level2 scrollable"><h3 id="sec-exr-backfitting">Backfitting algorithm (ESL §9.1.1 / ISLRv2 Applied 11)</h3>
+<!-- Reviewer note (intentional, do not re-flag): no slidebreak between this
+heading and the div below. The preceding slidebreak already opens a fresh
+slide; the heading and this div intentionally share that slide to avoid a
+title-only slide. -->
 <div id="exr-backfitting" class="theorem exercise">
-<p><span class="theorem-title"><strong>Exercise 4</strong></span> The <strong>backfitting algorithm</strong> <span class="citation" data-cites="hastie2009esl2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Hastie et al. 2009, sec. 9.1.1</a>)</span> fits an additive model <span class="math inline">\(Y = \alpha+ \sum_j f_j(X_j) + \varepsilon\)</span> by iteratively smoothing partial residuals.</p>
+<p><span class="theorem-title"><strong>Exercise 4</strong></span> The <strong>backfitting algorithm</strong> <span class="citation" data-cites="hastie2009esl2e">(<a href="#/references" role="doc-biblioref" onclick="">Hastie et al. 2009, sec. 9.1.1</a>)</span> fits an additive model <span class="math inline">\(Y = \alpha+ \sum_j f_j(X_j) + \varepsilon\)</span> by iteratively smoothing partial residuals.</p>
 <p>For <span class="math inline">\(p=2\)</span> predictors with linear component smoothers <span class="math inline">\(\hat f_j(X_j) = \hat\beta_j X_j\)</span>:</p>
 <ol type="1">
 <li>Initialise: <span class="math inline">\(\hat\alpha= \bar{y}\)</span>, <span class="math inline">\(\hat f_1 = \hat f_2 = 0\)</span>.</li>
@@ -1912,7 +1944,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 <p><strong>(a)</strong> Implement this on simulated data with known true coefficients.</p>
 <p><strong>(b)</strong> Verify the coefficients match <code>lm(y ~ x1 + x2)</code>.</p>
 </div>
-<div id="sol-backfitting" class="proof solution">
+</section><section class="slide level2 smaller scrollable" id="references"><div id="sol-backfitting" class="proof solution">
 <p><span class="proof-title"><em>Solution 4</em>. </span></p>
 <div class="panel-tabset">
 <ul id="tabset-9" class="panel-tabset-tabby">
@@ -1969,7 +2001,7 @@ s(bmi)  2.13   2.78   18.4   2.4e-04 ***</code></pre>
 </div>
 </div>
 </div>
-<p>The coefficients agree, confirming backfitting converges to OLS when all component smoothers are linear <span class="citation" data-cites="hastie2009esl2e">(<a href="#/applied-exercises" role="doc-biblioref" onclick="">Hastie et al. 2009, sec. 9.1.1</a>)</span>.</p>
+<p>The coefficients agree, confirming backfitting converges to OLS when all component smoothers are linear <span class="citation" data-cites="hastie2009esl2e">(<a href="#/references" role="doc-biblioref" onclick="">Hastie et al. 2009, sec. 9.1.1</a>)</span>.</p>
 </div>
 
 
