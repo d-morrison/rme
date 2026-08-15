@@ -1,0 +1,29 @@
+::: notes
+We compare the parallel-planes model (`hers_lm1`: `LDL ~ age + BMI`)
+and the interaction model (`hers_lm2`: `LDL ~ age + BMI + age:BMI`)
+using a likelihood ratio test (LRT).
+A small p-value indicates that the interaction term significantly improves model fit.
+:::
+
+### Comparing HERS models using LRT
+
+::: {#tbl-hers-lrt}
+
+```{r}
+#| code-fold: true
+hers_lrt <- lmtest::lrtest(hers_lm1, hers_lm2)
+hers_lrt
+```
+
+Likelihood ratio test comparing the `hers` parallel-planes (`hers_lm1`) and interaction (`hers_lm2`) models
+
+:::
+
+
+Here, the likelihood ratio test is not statistically significant
+(@tbl-hers-lrt: $\chi^2_1 \approx `r round(hers_lrt[["Chisq"]][2], 1)`$, $p \approx `r round(hers_lrt[["Pr(>Chisq)"]][2], 2)`$):
+the age-BMI interaction does not fit the data meaningfully better
+than we would expect from adding one parameter by chance.
+So we prefer the simpler parallel-planes model
+(`hers_lm1`, @eq-hers-parallel) on parsimony grounds,
+consistent with the AIC and BIC comparison in @tbl-hers-aic-bic.

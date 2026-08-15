@@ -1,0 +1,26 @@
+# Auto-detect text files and normalize them to LF in the working tree on
+# checkout, regardless of each contributor's global git config.
+* text=auto eol=lf
+
+# Shell scripts must use LF line endings — a CRLF on the shebang line makes
+# the kernel look for "/bin/bash\r" and fail with "bad interpreter".
+*.sh text eol=lf
+
+# references.bib entries are independent, uniquely-keyed blocks, so two
+# branches adding distinct entries can usually be combined automatically
+# instead of forcing a manual conflict resolution. This only helps when git
+# itself performs the merge (a local merge/rebase, or CI) — GitHub's own
+# web-merge button and mergeability check don't apply custom merge drivers.
+# Known risk (confirmed by local merge simulation): when both branches'
+# insertions land at the same point in the file, git's union driver can
+# silently drop a line where the two inserted blocks share identical
+# boilerplate (e.g. the closing "}" every BibTeX entry ends with),
+# producing a malformed .bib with mismatched braces and no conflict
+# raised. A Quarto render / bibliography-check CI job is the backstop that
+# catches this before it reaches main — skim the merged file regardless.
+# CLAUDE.md is deliberately NOT included here: unlike bib entries, its prose
+# is actively reworded in place, and a union merge of two differing edits to
+# the same rule silently keeps both versions with no conflict raised, with
+# no automated check to catch it — unacceptable for a file whose
+# instructions are meant to be followed exactly.
+references.bib merge=union

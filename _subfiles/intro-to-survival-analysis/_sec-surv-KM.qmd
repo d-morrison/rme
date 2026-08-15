@@ -2,20 +2,124 @@
 ## Estimating survival in datasets without censoring
 
 ::: notes
-In the `drug6mp` dataset, the estimated survival function for the placebo patients is easy to compute.
-For any time $t$ in months, $\surv(t)$ is the fraction of patients with times greater than $t$:
+When the data contain no censored observations (@def-right-censor),
+we can easily estimate the survival function (@def-surv-fn).
+We observe every patient's event time,
+so for any time $t$ we simply count the fraction of patients whose event time is greater than $t$.
 :::
 
-```{r}
-#| include: false
-#| code-summary: example-km-curve
+:::{#def-emp-surv-no-cens}
 
-y <- c(1, 2, 3, 3, 3, 5, 9, 13, 23, 100)
-d <- c(1, 1, 1, 0, 1, 0, 1, 1, 1, 1)
-library(survival)
-temp1 <- survfit(Surv(y, d) ~ 1)
+#### Empirical survival function without censoring
+
+:::: notes
+Given event times $Y_1, \dots, Y_n$ with no censoring,
+the **empirical survival function** $\hsurv(t)$
+is the fraction of observed event times greater than $t$:
+::::
+
+$$\hsurv(t) \eqdef \frac{1}{n}\sumin \indicp{Y_i > t}$$
+
+:::
+
+---
+
+:::{#thm-emp-surv-cdf}
+
+#### Empirical survival function and empirical CDF
+
+Without censoring,
+the empirical survival function equals one minus the [empirical CDF](nonparametric-models.qmd#def-empirical-cdf) $\hcdf(t)$ of the event times:
+
+$$\hsurv(t) = 1 - \hcdf(t)$$ {#eq-emp-surv-no-cens}
+
+:::
+
+::: proof
+$$
+\begin{aligned}
+\hsurv(t)
+&\eqdef \frac{1}{n}\sumin \indicp{Y_i > t}
+\\ &= \frac{1}{n}\sumin \sb{1 - \indicp{Y_i \le t}}
+\\ &= \frac{1}{n}\sumin 1 - \frac{1}{n}\sumin \indicp{Y_i \le t}
+\\ &= 1 - \frac{1}{n}\sumin \indicp{Y_i \le t}
+\\ &= 1 - \hcdf(t)
+\end{aligned}
+$$
+:::
+
+::: notes
+$\hsurv(t)$ is a right-continuous step function
+that starts at $\hsurv(0) = 1$
+and drops by $d_j/n$ at each distinct event time $t_j$,
+where $d_j$ is the number of events at $t_j$.
+Without censoring,
+@eq-emp-surv-no-cens matches the Kaplan-Meier estimator,
+as we prove later in @thm-KM-est-no-cens.
+:::
+
+---
+
+:::{#exm-surv-6mp-placebo}
+
+#### Estimated survival function for placebo arm of 6-MP study
+
+::: notes
+In the `drug6mp` dataset (@exm-6mp-leukemia),
+all of the placebo patients ($n = 21$) relapsed (exit times `t1`, no censoring),
+so we can estimate their survival function using @def-emp-surv-no-cens:
+:::
+
+::: {#tbl-surv-placebo-no-cens}
+
+```{r}
+#| code-fold: true
+
+library(KMsurv)
+library(dplyr)
+data(drug6mp)
+
+placebo_times <- drug6mp$t1
+emp_cdf <- ecdf(placebo_times)
+
+placebo_surv <-
+  tibble(t = sort(unique(placebo_times))) |>
+  mutate(
+    `n with time > t` = purrr::map_int(t, \(time) sum(placebo_times > time)),
+    `S-hat(t)` = 1 - emp_cdf(t)
+  )
+
+placebo_surv
 ```
 
+Empirical survival function $\hsurv(t)$ for the placebo arm of `drug6mp`
+:::
+
+::: {#fig-surv-placebo-no-cens}
+
+```{r}
+#| code-fold: true
+
+library(ggplot2)
+
+placebo_surv_plot <-
+  placebo_surv |>
+  select(t, `S-hat(t)`) |>
+  add_row(t = 0, `S-hat(t)` = 1, .before = 1)
+
+ggplot(placebo_surv_plot) +
+  aes(x = t, y = `S-hat(t)`) +
+  geom_step(direction = "hv") +
+  expand_limits(y = c(0, 1)) +
+  xlab("Time since diagnosis (months)") +
+  ylab(expression(hat(S)(t))) +
+  theme_bw()
+```
+
+Empirical survival curve $\hsurv(t)$ for the placebo arm of `drug6mp`
+:::
+
+:::
 
 ## Estimating survival in datasets with censoring
 
@@ -50,11 +154,11 @@ $$
 \\ &= \sb{\frac{n-d_1}{n}} \sb{\frac{n-d_1-d_2}{n-d_1}} \sb{\frac{n-d_1-d_2-d_3}{n-d_1-d_2}}
 \\ &= \frac{n-d_1-d_2-d_3}{n}
 \\ &=1-\frac{d_1+d_2+d_3}{n}
-\\ &=1-\hat F(t)
+\\ &=1-\hcdf(t)
 \end{aligned}
 $$
 
-where $\hat F(t)$ is the usual empirical CDF estimate.
+where $\hcdf(t)$ is the usual empirical CDF estimate.
 
 :::
 

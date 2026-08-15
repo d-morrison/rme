@@ -1,0 +1,61 @@
+::: notes
+We check whether the assumptions of the parallel-planes model
+(`hers_lm1`, @eq-hers-parallel, fitted in @tbl-hers-lm1) hold
+by examining residuals vs. fitted values (to assess linearity and constant variance)
+and a QQ plot (to assess normality of residuals).
+Plots are faceted by statin use to check for group-level residual patterns.
+:::
+
+#### Residuals vs fitted for `hers_lm1`
+
+:::{#fig-hers-resid-fitted}
+
+```{r}
+#| code-fold: true
+hers_diag <- hers_lm_data |>
+  dplyr::mutate(
+    .fitted = fitted(hers_lm1),
+    .resid = residuals(hers_lm1)
+  )
+
+ggplot(hers_diag, aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~statins, labeller = label_both) +
+  xlab("Fitted values") +
+  ylab("Residuals") +
+  theme_bw()
+```
+
+Residuals vs fitted values for `hers_lm1` (parallel planes model)
+
+:::
+
+#### QQ plot for `hers_lm1`
+
+:::{#fig-hers-qq}
+
+```{r}
+#| code-fold: true
+ggplot(hers_diag, aes(sample = .resid)) +
+  stat_qq() +
+  stat_qq_line() +
+  facet_wrap(~statins, labeller = label_both) +
+  theme_bw()
+```
+
+QQ plot of residuals for `hers_lm1` (parallel planes model)
+
+:::
+
+::: notes
+The residuals scatter around zero with no clear curve (@fig-hers-resid-fitted),
+so the linearity assumption looks reasonable;
+their spread grows only slightly at higher fitted values,
+indicating at most mild non-constant variance.
+The QQ plot (@fig-hers-qq) bends above the reference line in the upper tail,
+reflecting the right skew of LDL --- a mild departure from normality.
+With several thousand observations,
+the central limit theorem makes inference about the model coefficients robust to this mild non-normality.
+Both statin groups show the same pattern.
+:::

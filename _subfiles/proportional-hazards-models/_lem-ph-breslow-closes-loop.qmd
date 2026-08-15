@@ -1,0 +1,73 @@
+:::{#lem-ph-breslow-closes-loop}
+#### The profile likelihood at the MLE recovers the partial likelihood
+
+Substituting the maximum likelihood point masses $\blue{\hat h_{0i}} = 1/\red{S_i}$ (@lem-ph-breslow-mle)
+back into the profile likelihood @eq-ph-breslow-profile-lik (@lem-ph-breslow-profile-lik) gives,
+up to a $\vb$-free constant, the partial likelihood of @def-ph-partial-lik:
+
+$$
+\Lik\sb{\vb,\,\hat h_{01},\dots,\hat h_{0K}} = e^{-K}\,\Lik^*(\vb) .
+$$ {#eq-ph-breslow-closes-loop}
+:::
+
+{{< slidebreak >}}
+
+::: {.proof}
+Substitute $\blue{\hat h_{0i}} = 1/\red{S_i}$ into @eq-ph-breslow-profile-lik term by term:
+
+$$
+\ba
+\Lik\sb{\vb,\,\hat h_{01},\dots,\hat h_{0K}}
+&= \prod_{i = 1}^{K}
+    \blue{\hat h_{0i}}\;\red{\hazfactor(\vx_{(i)})}\;
+    \expf{-\blue{\hat h_{0i}}\,\red{S_i}}
+&& \text{(the profile likelihood)}
+\\
+&= \prod_{i = 1}^{K}
+    \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}\;
+    \expf{-\red{S_i} / \red{S_i}}
+    && \text{(substitute } \blue{\hat h_{0i}} = 1/\red{S_i}\text{)}
+\\
+&= \prod_{i = 1}^{K}
+    \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}\;
+    e^{-1}
+    && \text{(since } \red{S_i}/\red{S_i} = 1\text{)}
+\\
+&= e^{-K}
+   \cdot \prod_{i = 1}^{K} \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}} .
+   && \text{(collect the } K \text{ factors of } e^{-1}\text{)}
+\ea
+$$
+
+Under the no-ties assumption each event time $t_i$ has $d_i = 1$, so
+$\prod_{i=1}^K \frac{\red{\hazfactor(\vx_{(i)})}}{\red{S_i}}$
+equals the partial likelihood $\Lik^*(\vb)$ of @def-ph-partial-lik, giving @eq-ph-breslow-closes-loop.
+:::
+
+:::{#exm-ph-breslow-closes-loop}
+#### Verifying the profile likelihood at the MLE
+
+Continue the two-event scenario of @exm-ph-breslow-mle,
+with $\blue{\hat h_{01}} = 0.1$, $\red{S_1} = 10$, $\hazfactor(\vx_4) = 4$
+at $t_1 = 2$, and $\blue{\hat h_{02}} = 1/6$, $\red{S_2} = 6$, $\hazfactor(\vx_2) = 2$ at $t_2 = 4$.
+Substituting into @eq-ph-breslow-profile-lik,
+
+$$
+\ba
+\Lik\sb{\vb,\,\hat h_{01},\,\hat h_{02}}
+&= \sb{\blue{0.1} \times \red{4} \times \expf{-\blue{0.1}\times \red{10}}}
+   \times
+   \sb{\blue{\tfrac{1}{6}} \times \red{2} \times \expf{-\blue{\tfrac{1}{6}}\times \red{6}}}
+&& \text{(substitute into the profile likelihood)}
+\\
+&= \sb{\frac{\red{4}}{\red{10}}\,e^{-1}} \times \sb{\frac{\red{2}}{\red{6}}\,e^{-1}}
+&& \text{(}\blue{\hat h_{0i}}\,\red{S_i} = 1\text{)}
+\\
+&= e^{-2}\times\frac{\red{4}}{\red{10}}\times\frac{\red{2}}{\red{6}} ,
+&& \text{(collect the two factors of } e^{-1}\text{)}
+\ea
+$$
+
+matching @eq-ph-breslow-closes-loop with $K = 2$ and
+$\Lik^*(\vb) = \frac{\hazfactor(\vx_4)}{S_1}\times\frac{\hazfactor(\vx_2)}{S_2} = \frac{4}{10}\times\frac{2}{6}$.
+:::

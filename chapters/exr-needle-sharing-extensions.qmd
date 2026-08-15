@@ -1,18 +1,18 @@
-
 ```{r}
-library(MASS) #need this for glm.nb()
-glm1.nb = glm.nb(
-  data = needles,
-  shared_syr ~ age + sex + homeless*polydrug
+library(MASS) # for glm.nb()
+glm1_nb <- glm.nb(
+  formula = shared_syr ~ homeless +
+    age + sex + ethn + polydrug + hivstat + sexabuse + hplsns,
+  data = needles
 )
 
-equatiomatic::extract_eq(glm1.nb)
+equatiomatic::extract_eq(glm1_nb)
 ```
 
 ```{r}
 #| tbl-cap: "Negative binomial model for needle-sharing data"
 #| label: tbl-needles-nb
-summary(glm1.nb)
+summary(glm1_nb)
 ```
 
 ---
@@ -20,26 +20,28 @@ summary(glm1.nb)
 ```{r}
 #| tbl-cap: "Poisson versus Negative Binomial Regression coefficient estimates"
 #| label: tbl-compare-poisson-nb
-tibble(name = names(coef(glm1)), poisson = coef(glm1), nb = coef(glm1.nb))
+tibble(name = names(coef(glm1)), poisson = coef(glm1), nb = coef(glm1_nb))
 ```
 
 #### zero-inflation
 
 ```{r}
-#| tbl-cap: "Zero-inflated poisson model"
+#| tbl-cap: "Zero-inflated Poisson model"
 #| label: tbl-zeroinf-poisson
 library(glmmTMB)
-zinf_fit1 = glmmTMB(
+zinf_pois <- glmmTMB(
   family = "poisson",
-  data  = needles,
-  formula = shared_syr ~ age + sex + homeless*polydrug,
-  ziformula = ~ age + sex + homeless + polydrug # fit won't converge with interaction
+  data = needles,
+  formula = shared_syr ~ homeless +
+    age + sex + ethn + polydrug + hivstat + sexabuse + hplsns,
+  # the zero-inflation submodel uses the exposure, matching Vittinghoff's
+  # `inflate(i.homeless)` (@vittinghoff2e, §8.3.1)
+  ziformula = ~ homeless
 )
 
-zinf_fit1 |>
+zinf_pois |>
   parameters(exponentiate = TRUE) |>
   print_md()
-
 ```
 
 ::: notes
@@ -53,18 +55,30 @@ Another R package for zero-inflated models is [`pscl`](https://cran.r-project.or
 ```{r}
 #| tbl-cap: "Zero-inflated negative binomial model"
 #| label: tbl-zeroinf-nb
-library(glmmTMB)
-zinf_fit1 = glmmTMB(
+zinf_nb <- glmmTMB(
   family = nbinom2,
-  data  = needles,
-  formula = shared_syr ~ age + sex + homeless*polydrug,
-  ziformula = ~ age + sex + homeless + polydrug 
-  # fit won't converge with interaction
+  data = needles,
+  formula = shared_syr ~ homeless +
+    age + sex + ethn + polydrug + hivstat + sexabuse + hplsns,
+  ziformula = ~ homeless
 )
 
-zinf_fit1 |>
+zinf_nb |>
   parameters(exponentiate = TRUE) |>
   print_md()
-
 ```
 
+::: notes
+Both zero-inflated models keep the zero-inflation (structural-zero) submodel
+parsimonious — just the exposure, `ziformula = ~ homeless` —
+matching @vittinghoff2e's `inflate(i.homeless)` [§8.3.1].
+
+A richer zero-inflation submodel is poorly identified here.
+With the negative binomial in particular,
+the overdispersion parameter and the zero-inflation component
+both compete to explain the excess zeros,
+so adding several covariates to the submodel makes the logistic fit
+*separate*: its coefficients diverge and the exponentiated estimates
+(odds ratios) run off to $\pm\infty$.
+Keeping the submodel small avoids that.
+:::

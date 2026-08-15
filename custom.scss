@@ -32,3 +32,96 @@ body.quarto-dark code:not(pre > code) {
     border: 1px solid $dark;
 }
 */
+
+/* Mobile within-chapter table of contents.
+Quarto hides the right "On this page" TOC below its `md` breakpoint
+(max-width: 767.98px in _bootstrap-rules.scss) and ships no built-in mobile
+replacement, so phone readers lose within-chapter navigation. The
+`_mobile-toc.html` partial injects a "Contents" button into the navbar plus a
+dropdown panel cloned from the TOC. These rules reveal them only below that
+same breakpoint (where the right TOC is gone) and style the panel like page
+content rather than the dark navbar. Both live inside #quarto-header, so they
+ride Quarto's headroom and reappear on scroll-up with the navbar. */
+.mobile-toc-toggle,
+.mobile-toc-panel {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .mobile-toc-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 0;
+    background: transparent;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    color: var(--bs-navbar-color, rgba(255, 255, 255, 0.85));
+  }
+
+  .mobile-toc-toggle:hover,
+  .mobile-toc-toggle[aria-expanded="true"] {
+    color: var(--bs-navbar-hover-color, #fff);
+  }
+
+  // Visible focus ring for keyboard users, matching the panel links. Bootstrap
+  // can otherwise suppress the default outline on .btn.
+  .mobile-toc-toggle:focus-visible {
+    outline: 2px solid var(--bs-navbar-hover-color, #fff);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  // The panel drops below the navbar as an overlay (absolute, so it never
+  // shifts the page). max-height animates the open/close like a collapse.
+  .mobile-toc-panel {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    max-height: 0;
+    overflow: hidden;
+    background: var(--bs-body-bg, #fff);
+    color: var(--bs-body-color, #1a1a1a);
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: max-height 0.2s ease;
+  }
+
+  .mobile-toc-panel.show {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .mobile-toc-panel nav {
+    padding: 0.5rem 1rem;
+  }
+
+  .mobile-toc-panel ul {
+    list-style: none;
+    padding-left: 0.75rem;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .mobile-toc-panel > nav > ul {
+    padding-left: 0;
+  }
+
+  .mobile-toc-panel a {
+    display: block;
+    padding: 0.3rem 0;
+    text-decoration: none;
+    color: var(--bs-body-color, #1a1a1a);
+  }
+
+  // Keep a visible focus ring for keyboard / switch-access users, which
+  // Bootstrap's reset can otherwise suppress on links.
+  .mobile-toc-panel a:focus-visible {
+    outline: 2px solid var(--bs-primary, #0d6efd);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}

@@ -1,0 +1,52 @@
+:::{#exm-wcgs-observed-marginal-risks}
+
+#### Estimated observed marginal risks (WCGS)
+
+Continuing the WCGS example (@exm-wcgs-causal-marginal-risks),
+the **observed marginal risks**
+$\pi(a) = \Pr(Y=1 \mid A=a)$
+can be estimated in two equivalent ways.
+
+Directly, as the sample proportion of events within each exposure group:
+
+```{r}
+#| label: wcgs-obs-marginal-risks-direct
+pi1_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type A"])
+pi0_obs <- mean(wcgs_clean$chd69_binary[wcgs_clean$dibpat == "Type B"])
+```
+
+$$
+\hat\pi(1) = `r round(pi1_obs, 3)`, \quad
+\hat\pi(0) = `r round(pi0_obs, 3)`
+$$
+
+Or via **predictive margins** (@def-predictive-margins):
+average the model's fitted risks over the **subgroup** actually exposed to $A = a$,
+keeping each man's own covariates and observed exposure:
+
+```{r}
+#| label: wcgs-obs-marginal-risks-pm
+fitted_risk <- predict(fit, type = "response")
+pi1_obs_pm <- mean(fitted_risk[wcgs_clean$dibpat == "Type A"])
+pi0_obs_pm <- mean(fitted_risk[wcgs_clean$dibpat == "Type B"])
+```
+
+$$
+\hat\pi_1(1) = `r round(pi1_obs_pm, 3)`, \quad
+\hat\pi_0(0) = `r round(pi0_obs_pm, 3)`
+$$
+
+The two estimates agree exactly (to displayed precision),
+as @lem-subgroup-pm-proportion guarantees:
+because the model includes `dibpat` as a covariate,
+the exposed-subgroup predictive margin reproduces
+the raw event proportion in each `dibpat` group.
+
+Note that $\hat\pi(1) \neq \hat\pi_1$ and $\hat\pi(0) \neq \hat\pi_0$
+(@exm-wcgs-causal-marginal-risks):
+because age is associated with behavioral pattern (Type A and Type B men
+have different age distributions), the observed marginal and causal marginal
+risks differ.
+Standardization via g-computation adjusts for this difference.
+
+:::

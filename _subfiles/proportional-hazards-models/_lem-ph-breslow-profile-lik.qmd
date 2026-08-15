@@ -1,0 +1,82 @@
+:::{#lem-ph-breslow-profile-lik}
+#### Profile likelihood in terms of point masses
+
+Substituting the point-mass form of $\haz_0(\cdot)$ (@lem-ph-breslow-point-mass)
+into the censored-data likelihood @eq-ph-breslow-full-lik gives the profile likelihood
+as a function of $\vb$ and the point masses $h_{01},\ldots,h_{0K}$:
+
+$$
+\Lik\sb{\vb,\,h_{01},\dots,h_{0K}}
+= \prod_{i = 1}^{K}
+    \blue{h_{0i}}\;\red{\hazfactor(\vx_{(i)})}\;
+    \expf{-\blue{h_{0i}}\,\red{S_i}},
+$$ {#eq-ph-breslow-profile-lik}
+
+where $\red{S_i} = \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)}$ is the risk-set score total (@def-ph-risk-set-score).
+:::
+
+{{< slidebreak >}}
+
+::: {.proof}
+By @eq-ph-breslow-point-mass, $\blue{\cuhaz_0(\tilde{T}_j)} = \sum_{i\,:\,t_i \le \tilde{T}_j} \blue{h_{0i}}$.
+Expanding the survival exponent in @eq-ph-breslow-full-lik and swapping the order of summation:
+
+$$
+\ba
+\sum_j \blue{\cuhaz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}
+&= \sum_j \red{\hazfactor(\vx_j)} \sum_{i:\ t_i \le \tilde{T}_j} \blue{h_{0i}}
+&& \text{(expand } \blue{\cuhaz_0(\tilde{T}_j)} \text{ as point masses)}
+\\
+&= \sum_i \blue{h_{0i}} \sum_{j:\ \tilde{T}_j \ge t_i} \red{\hazfactor(\vx_j)}
+&& \text{(swap the order of summation)}
+\\
+&= \sum_i \blue{h_{0i}} \sum_{j \in R(t_i)} \red{\hazfactor(\vx_j)}
+&& \text{(}R(t_i) = \{j : \tilde{T}_j \ge t_i\}\text{)}
+\\
+&= \sum_i \blue{h_{0i}}\,\red{S_i} .
+&& \text{(definition of } S_i \text{)}
+\ea
+$$
+
+Here $R(t_i)$ uses the "at risk *at* $t_i$" convention
+(the [risk set definition](intro-to-survival-analysis.qmd#def-risk-set))
+with the $\ge$ boundary — a subject censored exactly at $t_i$ is in
+$R(t_i)$ and contributes $\blue{h_{0i}}$ to $\blue{\cuhaz_0(\tilde{T}_j)}$.
+Reindexing the hazard-density product in @eq-ph-breslow-full-lik: subjects with $\delta_j = 0$
+contribute a factor of $\blue{\haz_0(\tilde{T}_j)}^0 = 1$ (no contribution),
+and for each subject with $\delta_j = 1$ their event occurred at some
+$t_i$, so $\blue{\haz_0(\tilde{T}_j)} = \blue{h_{0i}}$:
+
+$$
+\ba
+\prod_{j=1}^n \sb{\blue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}}^{\delta_j}
+&= \prod_{j:\,\delta_j=1} \blue{\haz_0(\tilde{T}_j)}\,\red{\hazfactor(\vx_j)}
+   && \text{(terms with } \delta_j = 0 \text{ equal } 1\text{, dropped)}
+\\
+&= \prod_{i=1}^K \blue{h_{0i}}\,\red{\hazfactor(\vx_{(i)})} .
+   && \text{(}\blue{\haz_0(\tilde{T}_j)} = \blue{h_{0i}} \text{ for event } j \text{ at event time } t_i\text{)}
+\ea
+$$
+
+Factoring $\expf{-\sum_i \blue{h_{0i}}\,\red{S_i}} = \prod_i \expf{-\blue{h_{0i}}\,\red{S_i}}$
+and combining factor-by-factor with the hazard-density product gives @eq-ph-breslow-profile-lik.
+:::
+
+:::{#exm-ph-breslow-profile-lik}
+#### Profile likelihood for two event times
+
+Extend the running scenario of @exm-ph-single-subj-fail with an earlier event time $t_1 = 2$
+at which subject $4$ fails, with risk set $R(2) = \set{1,2,3,4}$
+and hazard ratios $\red{\hazfactor(\vx_1)} = 1$, $\red{\hazfactor(\vx_2)} = 2$,
+$\red{\hazfactor(\vx_3)} = 3$, $\red{\hazfactor(\vx_4)} = 4$, so $\red{S_1} = 10$ (@def-ph-risk-set-score).
+Subject $4$ then leaves the risk set, so at $t_2 = 4$ the risk set is
+$R(4) = \set{1,2,3}$ as before, with $\red{S_2} = 6$ (@exm-ph-risk-set-score).
+By @eq-ph-breslow-profile-lik, with $K = 2$,
+
+$$
+\Lik\sb{\vb,\,h_{01},\,h_{02}}
+= \sb{\blue{h_{01}} \times \red{4} \times \expf{-\blue{h_{01}} \times \red{10}}}
+  \times
+  \sb{\blue{h_{02}} \times \red{2} \times \expf{-\blue{h_{02}} \times \red{6}}} .
+$$
+:::

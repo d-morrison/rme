@@ -9,26 +9,58 @@ We can create ordinal variables in R using the `ordered()` function^[or equivale
 
 :::{#exm-ordinal-variable}
 
-```{r}
-#| eval: false
-url <- paste0(
-  "https://regression.ucsf.edu/sites/g/files/tkssra6706/",
-  "f/wysiwyg/home/data/hersdata.dta"
-)
-library(haven)
-hers <- read_dta(url)
-```
+The `hers` data [@vittinghoff2e] is available in the `rmb` package:
 
 ```{r}
-#| include: false
 hers <- rmb::hers |> haven::zap_labels()
 ```
 
+::: {#tbl-hers-ordinal}
+
 ```{r}
-#| tbl-cap: "HERS dataset"
-#| label: tbl-HERS
+#| code-fold: true
 hers |> head()
 ```
+
+HERS data
+:::
+
+The `physact` variable records each participant's self-reported physical activity,
+relative to other women her age,
+on an ordered five-level scale
+(1 = much less active, …, 5 = much more active).
+We make it an ordered factor so that `lm()` uses polynomial contrasts,
+which respect the ordering,
+instead of the default treatment contrasts:
+
+```{r}
+hers <- hers |>
+  dplyr::mutate(physact_ord = ordered(physact))
+
+lm_physact <- lm(LDL ~ physact_ord, data = hers)
+```
+
+::: {#tbl-hers-ordinal-fit}
+
+```{r}
+#| code-fold: true
+lm_physact |>
+  parameters::model_parameters() |>
+  parameters::print_md()
+```
+
+Mean LDL by physical-activity level, using polynomial contrasts
+:::
+
+With polynomial contrasts,
+each coefficient summarizes a trend component across the ordered levels:
+the linear term measures the strength and direction of a straight-line (monotone) trend in mean LDL across the levels,
+and the quadratic and higher terms capture curvature.
+The contrasts are orthonormal, so the linear coefficient is scaled by the contrast normalization;
+it is not the raw change in mean LDL per level.
+Here the linear-trend coefficient is small and not statistically significant,
+so these data show little evidence of a monotone association
+between physical-activity level and mean LDL cholesterol.
 
 :::
 

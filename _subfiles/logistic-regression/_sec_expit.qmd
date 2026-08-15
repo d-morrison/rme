@@ -1,6 +1,6 @@
 {{< include _subfiles/logistic-regression/_thm_odds-from-logodds.qmd >}}
 
----
+{{< slidebreak >}}
 
 :::{#thm-prob-from-logodds}
 
@@ -17,13 +17,22 @@ $$\prob = \frac{\expf{\eta}}{1+\expf{\eta}}$$
 
 :::
 
----
+{{< slidebreak >}}
 
 ::: proof
-Apply @thm-odds-to-prob and then @lem-odds-from-logodds.
+Using @thm-odds-to-prob and @lem-odds-from-logodds:
+
+$$
+\ba
+\prob &= \frac{\odds}{1+\odds}
+&& \text{(probability as a function of odds)}
+\\ &= \frac{\expf{\logodds}}{1+\expf{\logodds}}
+&& \text{(substitute } \odds = \expf{\logodds} \text{ in both places)}
+\ea
+$$
 :::
 
----
+{{< slidebreak >}}
 
 :::{#def-expit}
 
@@ -37,7 +46,7 @@ $$\expit(\logodds) \eqdef \invoddsf{\expf{\logodds}}$$
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#thm-expit-expressions}
 
@@ -47,20 +56,47 @@ $$
 \ba
 \expit(\logodds)
    &= \frac{\exp{\logodds}}{1+\exp{\logodds}}
-\\ &= \frac{1}{1 + \exp{-\logodds})}
+\\ &= \frac{1}{1 + \exp{-\logodds}}
 \\ &= (1 + \exp{-\logodds})^{-1}
 \ea
 $$
 :::
 
----
+{{< slidebreak >}}
 
 ::: proof
-Apply definitions and @lem-invodds-simplified.
-Details left to the reader.
+For the first expression,
+apply @def-expit and then @def-inv-odds:
+
+$$
+\ba
+\expit(\logodds)
+&\eqdef \invoddsf{\expf{\logodds}}
+&& \text{(definition of expit)}
+\\ &= \frac{\expf{\logodds}}{1+\expf{\logodds}}
+&& \text{(definition of inverse-odds, applied to } \odds = \expf{\logodds}\text{)}
+\ea
+$$
+
+For the second and third expressions,
+apply @def-expit and then @lem-invodds-simplified:
+
+$$
+\ba
+\expit(\logodds)
+&\eqdef \invoddsf{\expf{\logodds}}
+&& \text{(definition of expit)}
+\\ &= \frac{1}{1+\invf{\expf{\logodds}}}
+&& \text{(simplified inverse-odds, applied to } \odds = \expf{\logodds}\text{)}
+\\ &= \frac{1}{1 + \expf{-\logodds}}
+&& \text{(negative-exponent rule: } \invf{\expf{x}} = \expf{-x}\text{)}
+\\ &= \invf{1 + \expf{-\logodds}}
+&& \text{(rewrite the reciprocal as a } -1 \text{ power)}
+\ea
+$$
 :::
 
----
+{{< slidebreak >}}
 
 :::{#thm-expit-prob-logodds}
 #### Probability via the expit function
@@ -73,20 +109,58 @@ $$\prob = \expitf{\logodds}$$
 
 :::
 
----
+{{< slidebreak >}}
 
 ::: proof
 
-Apply @thm-prob-from-logodds and @thm-expit-expressions.
+Using @thm-prob-from-logodds and @thm-expit-expressions:
+
+$$
+\ba
+\prob &= \frac{\expf{\logodds}}{1+\expf{\logodds}}
+&& \text{(probability as a function of log-odds)}
+\\ &= \expitf{\logodds}
+&& \text{(first expression for expit, read right-to-left)}
+\ea
+$$
 :::
 
----
+{{< slidebreak >}}
+
+:::{#exm-expit-numeric}
+
+#### Probability of an event with log-odds $\logf{3}$
+
+In @exm-logit-numeric,
+a probability of $\prob = 0.75$
+corresponded to a log-odds of
+$\logodds = \logf{3} \approx 1.0986$.
+By @thm-expit-prob-logodds and @thm-expit-expressions,
+the expit function recovers the probability from that log-odds:
+
+$$
+\ba
+\prob = \expitf{\logf{3}}
+&= \frac{\expf{\logf{3}}}{1+\expf{\logf{3}}}
+&& \text{(first expression for expit)}
+\\ &= \frac{3}{1 + 3}
+&& \text{(the exponential inverts the natural logarithm: } \expf{\logf{3}} = 3\text{)}
+\\ &= \frac{3}{4}
+&& \text{(add: } 1 + 3 = 4\text{)}
+\\ &= 0.75
+&& \text{(divide: } 3/4 = 0.75\text{)}
+\ea
+$$
+
+:::
+
+{{< slidebreak >}}
 
 @fig-expit-plot graphs the expit function.
 
+:::{#fig-expit-plot}
+
 ```{r}
-#| label: fig-expit-plot
-#| fig-cap: The expit function
 #| code-fold: true
 expit <- function(eta) {
   exp(eta) / (1 + exp(eta))
@@ -106,6 +180,10 @@ expit_plot <-
 print(expit_plot)
 ```
 
----
+The expit function
+
+:::
+
+{{< slidebreak >}}
 
 {{< include _subfiles/logistic-regression/_sec_logit-expit_inverse.qmd >}}

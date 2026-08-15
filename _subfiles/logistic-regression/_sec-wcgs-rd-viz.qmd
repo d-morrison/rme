@@ -1,0 +1,51 @@
+We can visualize the bootstrap distribution
+to assess the sampling distribution of our estimate:
+
+::: {#fig-bootstrap-dist}
+
+```{r}
+#| code-fold: true
+#| fig-width: 7
+#| fig-height: 4
+
+tibble(boot_rd = boot_estimates) |>
+  ggplot() +
+  aes(x = boot_rd) +
+  geom_histogram(
+    bins = 50,
+    fill = "steelblue",
+    alpha = 0.7,
+    color = "black"
+  ) +
+  geom_vline(
+    xintercept = marginal_rd_est,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 1
+  ) +
+  geom_vline(
+    xintercept = ci_lower,
+    color = "darkgreen",
+    linetype = "dotted",
+    linewidth = 1
+  ) +
+  geom_vline(
+    xintercept = ci_upper,
+    color = "darkgreen",
+    linetype = "dotted",
+    linewidth = 1
+  ) +
+  labs(
+    x = "Bootstrap Marginal Risk Difference",
+    y = "Frequency",
+    title = "Bootstrap Distribution of Causal Marginal Risk Difference"
+  ) +
+  theme_minimal()
+```
+
+Bootstrap distribution of the marginal risk difference
+(Type A vs Type B behavioral pattern, adjusted for age).
+Red dashed line: point estimate.
+Green dotted lines: 95% CI bounds.
+
+:::

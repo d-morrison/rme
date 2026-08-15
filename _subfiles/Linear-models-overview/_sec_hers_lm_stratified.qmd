@@ -1,0 +1,87 @@
+::: notes
+Until now, statin use ($U$) has appeared only as the color grouping in our HERS plots;
+here it finally enters the model, as the stratifying variable.
+
+As an alternative to the age–BMI models above,
+we can model LDL as a function of BMI,
+stratifying by statin use
+(i.e., fitting a separate intercept and BMI slope
+for each statin group).
+We omit age from this stratified specification
+to keep it simple and focus on how the BMI–LDL relationship differs by statin use;
+age could be added back as an additional covariate if desired.
+:::
+
+$$
+\E{LDL|B=b, V=v} =
+\beta_{no} (1-v) + \beta_{no,B}\, b(1-v) +
+\beta_{yes} v + \beta_{yes,B}\, bv
+$$ {#eq-hers-strat}
+
+Equivalently, we can fit the same model using reference (indicator) coding,
+with an overall intercept, a main effect for statin use,
+a BMI slope, and a statin–BMI interaction:
+
+$$
+\E{LDL|B=b, V=v} =
+\beta_0 + \beta_V\, v + \beta_B\, b + \beta_{VB}\, (v \cdot b)
+$$ {#eq-hers-strat-interact}
+
+:::: {.columns}
+
+::: {.column width=45%}
+
+::: {#tbl-hers-lm-strat}
+
+```{r}
+#| code-fold: true
+hers_lm_strat <-
+  hers |>
+  lm(
+    formula = LDL ~ statins + statins:BMI - 1,
+    data = _,
+    na.action = na.exclude
+  )
+
+hers_lm_strat |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+Stratified regression estimates for `hers` data ([Model @eq-hers-strat])
+
+:::
+
+:::
+
+:::{.column width=10%}
+:::
+
+:::{.column width=45%}
+
+::: {#tbl-hers-lm-statin-interact}
+
+```{r}
+#| code-fold: true
+hers_lm_statins_interact <- lm(
+  LDL ~ statins + BMI + statins:BMI,
+  data = hers,
+  na.action = na.exclude
+)
+
+hers_lm_statins_interact |>
+  parameters::parameters() |>
+  parameters::print_md(
+    select = "{estimate}"
+  )
+```
+
+Regression parameter estimates for [Model @eq-hers-strat-interact]
+
+:::
+
+:::
+
+::::
