@@ -72,12 +72,12 @@ Before committing any `.qmd`, `.R`, or config file change:
   or approximation it uses (e.g. a trailing `&& \text{(...)}` column in an
   aligned block, as in `@eq-ph-surv-discretized`). Default to this level of
   explicitness for all derivations. This is a global standing rule from
-  `d-morrison/ai-config`'s `shared/writing/math-derivation-steps.md`, which
+  `Morrison-Lab/ai-config`'s `shared/writing/math-derivation-steps.md`, which
   also covers the review-side counterpart: a reviewer should name the
   exact gap and the missing operation when a step is skipped, not just
   flag "skipped steps" in general. The `@claude` bot applies this
-  automatically via `d-morrison/gha`'s review checklist
-  ([gha#228](https://github.com/d-morrison/gha/pull/228)).
+  automatically via `Morrison-Lab/gha`'s review checklist
+  ([gha#228](https://github.com/Morrison-Lab/gha/pull/228)).
 - **Matrix dimensions**: always verify dimension compatibility for every matrix expression -- dimensions of each operand must be consistent with the operation
 - **Annotate matrix dimensions with underbraces** in display math: use `\underbrace{M}_{m \times n}` for each matrix or vector
 - **Zero matrices**: never write bare `\mathbf{0}` in a matrix equation -- subscript dimensions: `\mathbf{0}_{m \times n}`
@@ -126,7 +126,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - If any `_subfiles/` were edited, add the "clear freezer" label
 - Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
 - **Fact-check prose and reasoning when reviewing content changes**, per the
-  global rule in `d-morrison/ai-config`'s `shared/writing/fact-check-prose.md`:
+  global rule in `Morrison-Lab/ai-config`'s `shared/writing/fact-check-prose.md`:
   check factual claims against domain knowledge and external sources, work
   through document-internal reasoning (formal derivations/proofs *and*
   informal arguments) step by step, and verify any computed value or figure
@@ -156,17 +156,32 @@ GitHub URL alongside the reference (e.g.,
 
 ## ai-config skills and memories
 
-The `d-morrison/ai-config` repo is checked out as the `.ai-config` submodule.
-`.claude/skills` is a committed symlink to `.ai-config/skills`,
-so its skills are discoverable and invocable like any other project skill
-(this replaces a hand-copied, drift-prone snapshot of the `reprexes` skill
-that used to live directly under `.claude/skills/`).
-`.ai-config/memories/` and `.ai-config/shared/` are also on disk —
-there's no Claude Code mechanism that auto-loads a project memories folder
+The `ai-config` skills arrive as a **Claude Code plugin**, not a submodule.
+`.claude/settings.json` declares the `Morrison-Lab` marketplace
+and enables `ai-config@Morrison-Lab`.
+Declaring is not installing:
+per Claude Code's team-marketplace docs,
+a plugin from an external source
+"doesn't load until the team member installs it",
+so a local session needs `claude plugin install ai-config@Morrison-Lab` once.
+CI installs it explicitly instead —
+`claude.yml` passes `plugin_marketplaces`/`plugins` to `claude-code-action`,
+and `claude-code-review.yml`'s reusable workflow bakes it in.
+Plugin skills are namespaced — invoke them as `/ai-config:reprexes`,
+`/ai-config:grade-work`, and so on.
+
+The plugin ships the whole `ai-config` repo, not just `skills/`,
+so `memories/` and `shared/` come along with it.
+There's no Claude Code mechanism that auto-loads a memories folder
 the way it does skills,
-so read a specific fragment on demand
-(e.g. `.ai-config/shared/writing/fact-check-prose.md`)
-rather than expecting it to already be in context.
+so read a specific fragment on demand rather than expecting it in context.
+Installed plugins live under
+`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`,
+where the version segment is an opaque hash —
+so locate the directory (`claude plugin list`, or glob that cache path)
+rather than hardcoding it,
+then read e.g. `shared/writing/fact-check-prose.md` from inside it.
+Don't assume a fragment is unavailable just because a guessed path missed.
 
 ## External Resources Available in This Session
 
