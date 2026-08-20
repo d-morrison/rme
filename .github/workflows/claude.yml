@@ -776,6 +776,19 @@ jobs:
           #
           # Only text-bearing messages are considered, so a trailing
           # tool_use-only message cannot become the fallback.
+          # The last message is still taken verbatim in every case except
+          # the stopping-point one, so an empty-text final turn still
+          # yields "" and still trips the existing "nothing to post"
+          # warning below -- the fallback must not widen that path, since
+          # posting a stale earlier message in place of a warning would be
+          # its own silent data problem.
+          #
+          # The marker match tolerates leading blockquote, heading, and
+          # list decoration, and makes the bold markers optional. The
+          # convention's own spelling is `**Stopping Point**`, but a
+          # declaration rendered as `> **Stopping Point**` or
+          # `## Stopping Point` is the same declaration, and failing to
+          # recognize it reproduces exactly the bug this fixes.
           RESPONSE=$(jq -rs '
             flatten(1)
             | [ .[]
@@ -783,13 +796,18 @@ jobs:
                 | (.message.content // [])
                 | map(select(.type == "text") | .text)
                 | join("\n\n")
-                | select(. != "")
               ]
             | if length == 0 then ""
-              elif length >= 2
-                   and (.[-1] | test("^\\s*\\*\\*Stopping Point\\*\\*"; "i"))
-              then .[-2] + "\n\n" + .[-1]
-              else .[-1]
+              else
+                .[-1] as $last
+                | if ($last | test("^[\\s>#*+-]*\\*{0,2}Stopping Point\\*{0,2}"; "i"))
+                  then ([.[:-1][] | select(. != "")]) as $prior
+                    | if ($prior | length) > 0
+                      then $prior[-1] + "\n\n" + $last
+                      else $last
+                      end
+                  else $last
+                  end
               end
           ' < "$FILE")
 
