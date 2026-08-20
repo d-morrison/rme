@@ -789,8 +789,17 @@ jobs:
           # declaration rendered as `> **Stopping Point**` or
           # `## Stopping Point` is the same declaration, and failing to
           # recognize it reproduces exactly the bug this fixes.
+          #
+          # The lookback skips declarations as well as empty turns, so a
+          # RUN of them is stepped over rather than just one. This matters
+          # because the polling loop in the prompt above can produce a
+          # second declaration right after the first (the poll finds no new
+          # @claude requests, and the agent re-declares); stopping at the
+          # first one back would post declaration-plus-declaration and drop
+          # the real answer -- the same data loss, one message further out.
           RESPONSE=$(jq -rs '
-            flatten(1)
+            "^[\\s>#*+-]*\\*{0,2}Stopping Point\\*{0,2}" as $mark
+            | flatten(1)
             | [ .[]
                 | select(type == "object" and .type == "assistant")
                 | (.message.content // [])
@@ -800,8 +809,10 @@ jobs:
             | if length == 0 then ""
               else
                 .[-1] as $last
-                | if ($last | test("^[\\s>#*+-]*\\*{0,2}Stopping Point\\*{0,2}"; "i"))
-                  then ([.[:-1][] | select(. != "")]) as $prior
+                | if ($last | test($mark; "i"))
+                  then ([ .[:-1][]
+                          | select(. != "" and (test($mark; "i") | not))
+                        ]) as $prior
                     | if ($prior | length) > 0
                       then $prior[-1] + "\n\n" + $last
                       else $last
