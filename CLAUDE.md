@@ -76,8 +76,8 @@ Before committing any `.qmd`, `.R`, or config file change:
   also covers the review-side counterpart: a reviewer should name the
   exact gap and the missing operation when a step is skipped, not just
   flag "skipped steps" in general. The `@claude` bot applies this
-  automatically via `d-morrison/gha`'s review checklist
-  ([gha#228](https://github.com/d-morrison/gha/pull/228)).
+  automatically via `Morrison-Lab/gha`'s review checklist
+  ([gha#228](https://github.com/Morrison-Lab/gha/pull/228)).
 - **Matrix dimensions**: always verify dimension compatibility for every matrix expression -- dimensions of each operand must be consistent with the operation
 - **Annotate matrix dimensions with underbraces** in display math: use `\underbrace{M}_{m \times n}` for each matrix or vector
 - **Zero matrices**: never write bare `\mathbf{0}` in a matrix equation -- subscript dimensions: `\mathbf{0}_{m \times n}`
