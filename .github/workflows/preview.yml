@@ -34,6 +34,14 @@ on:
       - '*.scss'
       - 'latex-macros'
       - 'references.bib'
+      # Dependency changes alter rendered output, and publish.yml keys the
+      # Quarto freeze cache on hashFiles('renv.lock') -- so a renv.lock change
+      # invalidates the freezer and forces a full re-render on main at merge
+      # time. Without these two entries that first uncached render happens
+      # post-merge, where a failure breaks the published site instead of a PR
+      # check (rme#1075; #1073 shipped a gtsummary bump with no render check).
+      - 'renv.lock'
+      - 'DESCRIPTION'
 
 jobs:
   build:
