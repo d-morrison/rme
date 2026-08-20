@@ -72,7 +72,7 @@ Before committing any `.qmd`, `.R`, or config file change:
   or approximation it uses (e.g. a trailing `&& \text{(...)}` column in an
   aligned block, as in `@eq-ph-surv-discretized`). Default to this level of
   explicitness for all derivations. This is a global standing rule from
-  `d-morrison/ai-config`'s `shared/writing/math-derivation-steps.md`, which
+  `Morrison-Lab/ai-config`'s `shared/writing/math-derivation-steps.md`, which
   also covers the review-side counterpart: a reviewer should name the
   exact gap and the missing operation when a step is skipped, not just
   flag "skipped steps" in general. The `@claude` bot applies this
@@ -126,7 +126,7 @@ Before committing any `.qmd`, `.R`, or config file change:
 - If any `_subfiles/` were edited, add the "clear freezer" label
 - Workflow / `.github/` / CI / infra changes go in their own dedicated PRs — never mix them with book-content PRs
 - **Fact-check prose and reasoning when reviewing content changes**, per the
-  global rule in `d-morrison/ai-config`'s `shared/writing/fact-check-prose.md`:
+  global rule in `Morrison-Lab/ai-config`'s `shared/writing/fact-check-prose.md`:
   check factual claims against domain knowledge and external sources, work
   through document-internal reasoning (formal derivations/proofs *and*
   informal arguments) step by step, and verify any computed value or figure
@@ -158,9 +158,15 @@ GitHub URL alongside the reference (e.g.,
 
 The `ai-config` skills arrive as a **Claude Code plugin**, not a submodule.
 `.claude/settings.json` declares the `Morrison-Lab` marketplace
-and enables `ai-config@Morrison-Lab`,
-so Claude Code installs the plugin at session start
-(this needs network access to GitHub).
+and enables `ai-config@Morrison-Lab`.
+Declaring is not installing:
+per Claude Code's team-marketplace docs,
+a plugin from an external source
+"doesn't load until the team member installs it",
+so a local session needs `claude plugin install ai-config@Morrison-Lab` once.
+CI installs it explicitly instead —
+`claude.yml` passes `plugin_marketplaces`/`plugins` to `claude-code-action`,
+and `claude-code-review.yml`'s reusable workflow bakes it in.
 Plugin skills are namespaced — invoke them as `/ai-config:reprexes`,
 `/ai-config:grade-work`, and so on.
 
@@ -169,11 +175,13 @@ so `memories/` and `shared/` come along with it.
 There's no Claude Code mechanism that auto-loads a memories folder
 the way it does skills,
 so read a specific fragment on demand rather than expecting it in context.
-The plugin is installed under `~/.claude/plugins/marketplaces/Morrison-Lab/`,
-so `shared/writing/fact-check-prose.md` is at
-`~/.claude/plugins/marketplaces/Morrison-Lab/shared/writing/fact-check-prose.md`.
-If that path is absent, locate the install with `claude plugin list`
-rather than assuming the fragment is unavailable.
+Installed plugins live under
+`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`,
+where the version segment is an opaque hash —
+so locate the directory (`claude plugin list`, or glob that cache path)
+rather than hardcoding it,
+then read e.g. `shared/writing/fact-check-prose.md` from inside it.
+Don't assume a fragment is unavailable just because a guessed path missed.
 
 ## External Resources Available in This Session
 
