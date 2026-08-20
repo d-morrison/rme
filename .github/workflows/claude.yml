@@ -753,13 +753,44 @@ jobs:
           # Grab the LAST assistant message's text-typed content blocks
           # (a single message may interleave text and tool_use blocks;
           # we want only the prose).
+          #
+          # ...with one carve-out. Since the ai-config plugin started
+          # being installed here (#1076), the agent follows that
+          # corpus's flag-session-boundaries.md, which requires the
+          # LAST message it writes to be a `**Stopping Point**`
+          # declaration. This step also wants the last message. Two
+          # rules, one slot, and the declaration always wins because it
+          # is by construction written last -- so every prose reply was
+          # being replaced by a one-line status marker and the actual
+          # answer was discarded, unrecoverably (the run log does not
+          # carry the conversation, and no execution-file artifact is
+          # published). See #1081; the run that first diagnosed this
+          # had its own diagnosis swallowed the same way.
+          #
+          # So: when the final message is *nothing but* such a
+          # declaration, post the preceding message with the
+          # declaration appended, keeping both. A message that merely
+          # ends with a stopping-point line does not match -- the
+          # anchor is `^`, so that case still posts unchanged as a
+          # single message.
+          #
+          # Only text-bearing messages are considered, so a trailing
+          # tool_use-only message cannot become the fallback.
           RESPONSE=$(jq -rs '
             flatten(1)
-            | [.[] | select(type == "object" and .type == "assistant")]
-            | last
-            | (.message.content // [])
-            | map(select(.type == "text") | .text)
-            | join("\n\n")
+            | [ .[]
+                | select(type == "object" and .type == "assistant")
+                | (.message.content // [])
+                | map(select(.type == "text") | .text)
+                | join("\n\n")
+                | select(. != "")
+              ]
+            | if length == 0 then ""
+              elif length >= 2
+                   and (.[-1] | test("^\\s*\\*\\*Stopping Point\\*\\*"; "i"))
+              then .[-2] + "\n\n" + .[-1]
+              else .[-1]
+              end
           ' < "$FILE")
 
           if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
