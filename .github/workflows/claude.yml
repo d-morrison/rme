@@ -753,13 +753,92 @@ jobs:
           # Grab the LAST assistant message's text-typed content blocks
           # (a single message may interleave text and tool_use blocks;
           # we want only the prose).
+          #
+          # ...with one carve-out. Since the ai-config plugin started
+          # being installed here (#1076), the agent follows that
+          # corpus's flag-session-boundaries.md, which requires the
+          # LAST message it writes to be a `**Stopping Point**`
+          # declaration. This step also wants the last message. Two
+          # rules, one slot, and the declaration always wins because it
+          # is by construction written last -- so every prose reply was
+          # being replaced by a one-line status marker and the actual
+          # answer was discarded, unrecoverably (the run log does not
+          # carry the conversation, and no execution-file artifact is
+          # published). See #1081; the run that first diagnosed this
+          # had its own diagnosis swallowed the same way.
+          #
+          # So: when the final message leads with such a declaration, post
+          # everything from the last substantive message onward, keeping
+          # both. A message that merely *ends* with a stopping-point line
+          # does not lead with one, so it still posts unchanged.
+          #
+          # The selection is a SLICE-AND-JOIN rather than a pick, and that
+          # is the point. Any rule for "is this message just a
+          # declaration?" will misjudge some message, and the two ways of
+          # being wrong are not symmetric: including a message that did not
+          # need including costs some redundant text, visibly, whereas
+          # excluding one that did costs the answer, silently and
+          # unrecoverably. Joining the whole tail can only ever add text,
+          # never drop it, so a misjudgement degrades into noise instead of
+          # data loss. Do not "optimize" this back into picking one message.
+          #
+          # This was briefly two deliberately different tests. It is now
+          # exactly ONE, `is_decl`, a prefix match, used for both jobs:
+          #
+          #   - gating whether to look back at all. A false positive here
+          #     starts a slice at this same message; a false negative posts
+          #     the declaration alone and drops the answer behind it.
+          #   - choosing where the slice STARTS. A message that looks like a
+          #     declaration is never chosen as the start, so a false
+          #     positive only moves the start EARLIER and includes more.
+          #
+          # An earlier revision refined the second job with "single
+          # paragraph, or under 400 characters", to trim redundant leading
+          # context. That was a mistake, and an instructive one: it made the
+          # test non-eager, so a long multi-paragraph declaration failed it,
+          # got treated as substantive, became the slice start, and excluded
+          # a real answer sitting behind it -- the exact loss this design is
+          # built to prevent, reintroduced by an optimization for tidiness.
+          # A single eager test is what makes "the slice only ever grows"
+          # actually true rather than merely intended. Any refinement here
+          # must preserve that property, which means it may only ever match
+          # MORE messages, never fewer.
+          #
+          # The marker tolerates leading blockquote, heading, and list
+          # decoration (including numbered lists) and makes the bold
+          # markers optional. The convention spells it `**Stopping Point**`,
+          # but `> **Stopping Point**`, `## Stopping Point`, and
+          # `1. **Stopping Point**` are the same declaration, and failing to
+          # recognize one reproduces exactly the bug this fixes.
+          #
+          # The slice steps over a RUN of declarations, not just one,
+          # because the polling loop in the prompt above can produce a
+          # second declaration right after the first (the poll finds no new
+          # @claude requests, and the agent re-declares).
+          #
+          # An empty-text final turn matches nothing, so it still yields ""
+          # and still trips the existing "nothing to post" warning below.
           RESPONSE=$(jq -rs '
-            flatten(1)
-            | [.[] | select(type == "object" and .type == "assistant")]
-            | last
-            | (.message.content // [])
-            | map(select(.type == "text") | .text)
-            | join("\n\n")
+            def is_decl($m): test($m; "i");
+            "^[\\s>#*+.)0-9-]*\\*{0,2}Stopping Point\\*{0,2}" as $mark
+            | flatten(1)
+            | [ .[]
+                | select(type == "object" and .type == "assistant")
+                | (.message.content // [])
+                | map(select(.type == "text") | .text)
+                | join("\n\n")
+              ] as $texts
+            | if ($texts | length) == 0 then ""
+              elif ($texts[-1] | is_decl($mark) | not) then $texts[-1]
+              else
+                ( [ range(0; $texts | length)
+                    | select($texts[.] != ""
+                             and (($texts[.] | is_decl($mark)) | not))
+                  ] | last ) as $start
+                | (if $start == null then $texts else $texts[$start:] end)
+                | [ .[] | select(. != "") ]
+                | join("\n\n")
+              end
           ' < "$FILE")
 
           if [ -z "$RESPONSE" ] || [ "$RESPONSE" = "null" ]; then
