@@ -353,6 +353,26 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
+          # Install the Morrison-Lab/ai-config plugin so this agent gets the
+          # shared skills, commands, and hooks.
+          #
+          # Both inputs are required: adding a marketplace alone installs
+          # nothing. Per Claude Code's team-marketplace docs, "as of v2.1.195,
+          # adding the marketplace doesn't install plugins that come from an
+          # external source, on any path that loads plugins" — so declaring
+          # the marketplace in .claude/settings.json is NOT sufficient here,
+          # and a non-interactive CI run can never hit the trust prompt that
+          # mechanism depends on.
+          #
+          # This mirrors the reviewer's copy in Morrison-Lab/gha's
+          # .github/actions/run-claude-review-attempt/action.yml, which spells
+          # the same URL and plugin ref out for the same reason. Update both
+          # sites together.
+          plugin_marketplaces: |
+            https://github.com/Morrison-Lab/ai-config.git
+          plugins: |
+            ai-config@Morrison-Lab
+
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
