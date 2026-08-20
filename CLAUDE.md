@@ -156,17 +156,24 @@ GitHub URL alongside the reference (e.g.,
 
 ## ai-config skills and memories
 
-The `d-morrison/ai-config` repo is checked out as the `.ai-config` submodule.
-`.claude/skills` is a committed symlink to `.ai-config/skills`,
-so its skills are discoverable and invocable like any other project skill
-(this replaces a hand-copied, drift-prone snapshot of the `reprexes` skill
-that used to live directly under `.claude/skills/`).
-`.ai-config/memories/` and `.ai-config/shared/` are also on disk —
-there's no Claude Code mechanism that auto-loads a project memories folder
+The `ai-config` skills arrive as a **Claude Code plugin**, not a submodule.
+`.claude/settings.json` declares the `Morrison-Lab` marketplace
+and enables `ai-config@Morrison-Lab`,
+so Claude Code installs the plugin at session start
+(this needs network access to GitHub).
+Plugin skills are namespaced — invoke them as `/ai-config:reprexes`,
+`/ai-config:grade-work`, and so on.
+
+The plugin ships the whole `ai-config` repo, not just `skills/`,
+so `memories/` and `shared/` come along with it.
+There's no Claude Code mechanism that auto-loads a memories folder
 the way it does skills,
-so read a specific fragment on demand
-(e.g. `.ai-config/shared/writing/fact-check-prose.md`)
-rather than expecting it to already be in context.
+so read a specific fragment on demand rather than expecting it in context.
+The plugin is installed under `~/.claude/plugins/marketplaces/Morrison-Lab/`,
+so `shared/writing/fact-check-prose.md` is at
+`~/.claude/plugins/marketplaces/Morrison-Lab/shared/writing/fact-check-prose.md`.
+If that path is absent, locate the install with `claude plugin list`
+rather than assuming the fragment is unavailable.
 
 ## External Resources Available in This Session
 
