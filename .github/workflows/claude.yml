@@ -783,17 +783,27 @@ jobs:
           # data loss. Do not "optimize" this back into picking one message.
           #
           # Two tests, deliberately different, each biased toward including
-          # more:
+          # more. There is exactly ONE test, `is_decl`, a prefix match, and
+          # it is used for both jobs:
           #
-          #   is_decl   - a prefix match, gating whether to look back at
-          #               all. Eager on purpose: a false positive here just
-          #               triggers a slice that starts at this same message,
-          #               while a false negative posts the declaration alone
-          #               and drops the answer behind it.
-          #   decl_only - additionally requires the message to be a single
-          #               paragraph, or short. This picks where the slice
-          #               STARTS, so being eager only moves the start
-          #               earlier and includes more.
+          #   - gating whether to look back at all. A false positive here
+          #     starts a slice at this same message; a false negative posts
+          #     the declaration alone and drops the answer behind it.
+          #   - choosing where the slice STARTS. A message that looks like a
+          #     declaration is never chosen as the start, so a false
+          #     positive only moves the start EARLIER and includes more.
+          #
+          # An earlier revision refined the second job with "single
+          # paragraph, or under 400 characters", to trim redundant leading
+          # context. That was a mistake, and an instructive one: it made the
+          # test non-eager, so a long multi-paragraph declaration failed it,
+          # got treated as substantive, became the slice start, and excluded
+          # a real answer sitting behind it -- the exact loss this design is
+          # built to prevent, reintroduced by an optimization for tidiness.
+          # A single eager test is what makes "the slice only ever grows"
+          # actually true rather than merely intended. Any refinement here
+          # must preserve that property, which means it may only ever match
+          # MORE messages, never fewer.
           #
           # The marker tolerates leading blockquote, heading, and list
           # decoration (including numbered lists) and makes the bold
@@ -811,10 +821,6 @@ jobs:
           # and still trips the existing "nothing to post" warning below.
           RESPONSE=$(jq -rs '
             def is_decl($m): test($m; "i");
-            def decl_only($m):
-              is_decl($m)
-              and ( ((split("\n\n") | map(select(test("\\S"))) | length) <= 1)
-                    or (length < 400) );
             "^[\\s>#*+.)0-9-]*\\*{0,2}Stopping Point\\*{0,2}" as $mark
             | flatten(1)
             | [ .[]
@@ -828,7 +834,7 @@ jobs:
               else
                 ( [ range(0; $texts | length)
                     | select($texts[.] != ""
-                             and (($texts[.] | decl_only($mark)) | not))
+                             and (($texts[.] | is_decl($mark)) | not))
                   ] | last ) as $start
                 | (if $start == null then $texts else $texts[$start:] end)
                 | [ .[] | select(. != "") ]
