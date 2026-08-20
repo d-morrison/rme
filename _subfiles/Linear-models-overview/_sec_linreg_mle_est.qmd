@@ -195,7 +195,7 @@ $$
 \\
 \vb &= \paren{\sumin \vx_i \tp{\vx_i}}^{-1}\sumin \vx_i y_i && \text{(multiply by inverse matrix)}
 \\
-\eb &= \paren{\underbrace{\tp{\mX}}_{p \times n} \underbrace{\mX}_{n \times p}}^{-1} \underbrace{\tp{\mX}}_{p \times n} \underbrace{\vy}_{n \times 1} && \text{(matrix formulation of ordinary least squares / MLE)}
+\evb &= \paren{\underbrace{\tp{\mX}}_{p \times n} \underbrace{\mX}_{n \times p}}^{-1} \underbrace{\tp{\mX}}_{p \times n} \underbrace{\vy}_{n \times 1} && \text{(matrix formulation of ordinary least squares / MLE vector)}
 \ea
 $$
 
@@ -293,7 +293,7 @@ $$
 We will use some results from [vector calculus](math-prereqs.qmd#sec-vector-calculus):
 :::
 
-Differentiating each term in the expanded quadratic form with respect to $\vb$:
+Differentiating each term in the expanded sum-of-squared-residuals quadratic form with respect to $\vb$:
 
 $$
 \ba
@@ -311,19 +311,29 @@ $$
 \ea
 $${#eq-scorefun-linreg}
 
----
-
-Setting the matrix score function equal to the zero vector:
+Multiplying the sum-of-squared-residuals gradient by the scalar factor $-\frac{1}{2\ss}$ yields the full log-likelihood score vector $\ell'_{\vb}$:
 
 $$
 \ba
-\mathbf{0}_{p \times 1} &= -2\tp{\mX}\vy + 2\tp{\mX}\mX\vb && \text{(set score to zero vector)}
+\ell'_{\vb} &= -\frac{1}{2\ss} \paren{-2\tp{\mX}\veps} && \text{(scale gradient by log-likelihood factor)}
 \\
-2\tp{\mX}\vy &= 2\tp{\mX}\mX\vb && \text{(rearrange terms)}
+&= \frac{1}{\ss}\tp{\mX}\veps && \text{(simplify factor } -\frac{1}{2\ss} \cdot (-2) = \frac{1}{\ss}\text{)}
+\ea
+$$
+
+---
+
+Setting the log-likelihood score vector equal to the zero vector:
+
+$$
+\ba
+\mathbf{0}_{p \times 1} &= \frac{1}{\ss}\tp{\mX}(\vy - \mX\vb) && \text{(set score vector to zero vector)}
 \\
-\tp{\mX}\vy &= \tp{\mX}\mX\vb && \text{(divide by 2)}
+\mathbf{0}_{p \times 1} &= \tp{\mX}\vy - \tp{\mX}\mX\vb && \text{(multiply by } \ss > 0 \text{ and distribute } \tp{\mX}\text{)}
 \\
-\eb &= (\tp{\mX}\mX)^{-1}\tp{\mX}\vy && \text{(multiply by inverse matrix } (\tp{\mX}\mX)^{-1}\text{)}
+\tp{\mX}\vy &= \tp{\mX}\mX\vb && \text{(rearrange terms)}
+\\
+\evb &= (\tp{\mX}\mX)^{-1}\tp{\mX}\vy && \text{(multiply by inverse matrix } (\tp{\mX}\mX)^{-1}\text{)}
 \ea
 $$
 
@@ -341,12 +351,12 @@ $$
 \ea
 $$
 
-The Hessian matrix $-\frac{1}{\ss}\tp{\mX}\mX$ is negative definite when $\mX$ has full column rank $p$, confirming that $\eb = (\tp{\mX}\mX)^{-1}\tp{\mX}\vy$ uniquely maximizes the log-likelihood and is the maximum likelihood estimator for $\vb$.
+The Hessian matrix $-\frac{1}{\ss}\tp{\mX}\mX$ is negative definite when $\mX$ has full column rank $p$, confirming that $\evb = (\tp{\mX}\mX)^{-1}\tp{\mX}\vy$ uniquely maximizes the log-likelihood and is the maximum likelihood estimator for $\vb$.
 
 ---
 
 Similarly (not shown):
 
 $$
-\est{\ss}_{\text{ML}} = \frac{1}{n} \tp{(\vy - \mX\eb)}(\vy - \mX\eb)
+\est{\ss}_{\text{ML}} = \frac{1}{n} \tp{(\vy - \mX\evb)}(\vy - \mX\evb)
 $$
