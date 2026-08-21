@@ -52,6 +52,16 @@ jobs:
           R CMD INSTALL .
         shell: bash
 
+      - name: Restore Quarto freeze
+        uses: actions/cache/restore@v4
+        with:
+          path: _freeze
+          key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-main-${{ github.sha }}
+          restore-keys: |
+            quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-main-
+            quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-
+            quarto-freezer-${{ runner.os }}-
+
       - name: Render
         env:
           # Quarto's launcher caps Deno at an 8 GB V8 heap by default and
@@ -80,7 +90,7 @@ jobs:
 
       - name: Save Quarto freeze
         if: github.ref_name == 'main'
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@v4
         with:
           path: _freeze
           key: quarto-freezer-${{ runner.os }}-${{ hashFiles('renv.lock') }}-main-${{ github.sha }}
