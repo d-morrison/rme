@@ -2,12 +2,16 @@
 # (syntax, expression semantics, shellcheck over `run:` blocks) plus zizmor
 # (security).
 #
-# Warn-only for now. actionlint is effectively clean on this repo, but zizmor
-# reports 32 high findings against `main` -- almost all `unpinned-uses`, which
-# wants commit-SHA pins where this repo deliberately pins to tags and lets
-# dependabot keep them current (see .github/dependabot.yml). Failing on that
-# today would leave a permanently red check, which teaches people to ignore
-# red checks. #1105 tracks driving zizmor to zero and flipping `fail` to true.
+# Blocking as of #1105: both tools report zero findings against this repo, so
+# a new finding means a new problem rather than a pre-existing backlog.
+#
+# Two things keep it that way. `.github/zizmor.yml` sets the `unpinned-uses`
+# policy to `ref-pin`, because this repo pins actions to tags on purpose and
+# lets dependabot keep them current -- while still flagging a branch pin such
+# as `@HEAD`, which is outside every safety net we have. And the handful of
+# genuine false positives carry an inline `# zizmor: ignore[...]` or
+# `# shellcheck disable=...` with the reason written next to it, so a reader
+# can disagree with each one individually.
 name: Lint Workflows
 
 on:
@@ -19,6 +23,8 @@ on:
 
 jobs:
   lint:
+    # The repo default is write, so declare the read-only scope this
+    # reusable workflow's own job asks for rather than inheriting it.
+    permissions:
+      contents: read
     uses: Morrison-Lab/gha/.github/workflows/lint-workflows.yml@v2
-    with:
-      fail: false

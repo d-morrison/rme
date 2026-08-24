@@ -77,6 +77,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          # Nothing here pushes or uploads an artifact, so the checkout
+          # credential has nothing to do and nothing to leak into.
+          persist-credentials: false
           submodules: false
 
       - name: Checkout submodules
@@ -160,6 +163,10 @@ jobs:
         if: steps.check_label.outputs.skip != 'true'
         run: |
           echo "=== R Development Environment Status ==="
+          # shellcheck disable=SC2016
+          # The single quotes are correct and required: the quoted body is R
+          # source passed to Rscript -e, and shell expansion inside it would
+          # corrupt the R code rather than help.
           Rscript -e '
             cat("R version:", R.version.string, "\n\n")
             

@@ -10,7 +10,14 @@
 # deploy concurrency, so none is needed here.
 name: Quarto Preview Deploy
 
-on:
+#
+# `workflow_run` is deliberate here, and the split it enables is what makes
+# fork PR previews safe rather than unsafe. Morrison-Lab/gha's preview family
+# builds in the (possibly fork) PR context with `contents: read` and no
+# secrets, then deploys from the base-repo context on `workflow_run`. Merging
+# the two halves into one `pull_request_target` job is the pattern zizmor's
+# warning is really aimed at, and is what this design exists to avoid.
+on:  # zizmor: ignore[dangerous-triggers]
   workflow_run:
     workflows: ["Quarto Preview Build"]
     types: [completed]

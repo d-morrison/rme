@@ -8,7 +8,12 @@
 # than a pinned release tag.
 version: 2
 updates:
-  - package-ecosystem: "gitsubmodule"
+  # No cooldown here, deliberately. A cooldown exists to delay adopting a
+  # third-party release before anyone has looked at it. The only submodules
+  # here are d-morrison/macros and Morrison-Lab/ai-config, both first-party and
+  # both tracked at `main` on purpose -- delaying our own macro changes by a
+  # week would slow every chapter that uses them, for no supply-chain gain.
+  - package-ecosystem: "gitsubmodule"  # zizmor: ignore[dependabot-cooldown]
     directory: "/"
     schedule:
       interval: "weekly"
@@ -28,3 +33,13 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(actions)"
+    # Wait before adopting a new release, so a compromised or broken one is
+    # not pulled in the hour it ships.
+    #
+    # `default-days` only. The semver-* variants (semver-major-days and
+    # friends) are rejected for this ecosystem -- Dependabot's own config
+    # check fails with "not supported for the package ecosystem
+    # 'github-actions'" -- because an action tag is not required to be a
+    # semver release.
+    cooldown:
+      default-days: 7
