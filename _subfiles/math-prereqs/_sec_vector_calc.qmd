@@ -100,7 +100,7 @@ $$
 = \underbrace{\mathbf{0}}_{2 \times 2}
 $$
 
-Every entry is the derivative of a constant, so $\deriv{\vb} \tp{\vx} = \mathbf{0}$
+Every entry is the derivative of a constant, so $\deriv{\vb} \tp{\vx} = \underbrace{\mathbf{0}}_{2 \times 2}$
 and $\vx$ is constant with respect to $\vb$ (@def-constant-wrt-vector).
 
 :::
@@ -174,7 +174,7 @@ $$
 5 \end{pmatrix}
 $$
 
-Both methods agree. ✓
+Both methods agree.
 
 :::
 
@@ -272,7 +272,7 @@ $$
 \ea
 $$
 
-Both methods agree. ✓
+Both methods agree.
 
 :::
 
@@ -472,32 +472,121 @@ $$
 #### Derivative of a quadratic form
 
 For a quadratic form (@def-quadratic-form),
-if $S$ is a $p\times p$ matrix that is constant with respect to $\beta$, then:
+if $S$ is a symmetric $p \times p$ matrix that is constant with respect to $\vb$, then:
 
 $$
-\deriv{\beta} \beta'S\beta = 2S\beta
+\underbrace{\deriv{\vb} (\tp{\vb} S \vb)}_{p \times 1} = \underbrace{2 S \vb}_{p \times 1}
 $$
+
+:::
+
+::: proof
+
+Expanding entry-wise, $\tp{\vb} S \vb = \sum_{j=1}^p \sum_{k=1}^p s_{jk} \beta_j \beta_k$.
+Differentiating component-wise with respect to $\beta_i$ for $i = 1, \ldots, p$:
+
+$$
+\ba
+\left[\deriv{\vb}(\tp{\vb}S\vb)\right]_i
+&= \deriv{\beta_i} \sum_{j=1}^p \sum_{k=1}^p s_{jk} \beta_j \beta_k
+&& \text{(expand quadratic form)} \\
+&= \sum_{k=1}^p s_{ik} \beta_k + \sum_{j=1}^p s_{ji} \beta_j
+&& \text{(product rule for } \beta_i \beta_k \text{)} \\
+&= [S\vb]_i + [\tp{S}\vb]_i
+&& \text{(matrix-vector multiplication definition)} \\
+&= [(S + \tp{S})\vb]_i
+&& \text{(linearity of matrix multiplication)}
+\ea
+$$
+
+When $S$ is symmetric ($S = \tp{S}$), $S + \tp{S} = 2S$, so $\deriv{\vb}(\tp{\vb}S\vb) = 2S\vb$.
 
 :::
 
 ::: notes
-This is like taking the derivative of $cx^2$ with respect to $x$ in non-vector calculus.
+This operation is like taking the derivative of $cx^2$ with respect to $x$ in non-vector calculus.
 :::
 
----
+{{< slidebreak >}}
+
+:::{#exm-deriv-quadratic-form}
+
+#### Derivative of a quadratic form
+
+Let $S = \begin{pmatrix} 3 & 1 \\ 1 & 2 \end{pmatrix}$ ($2 \times 2$, symmetric and constant)
+and $\vb = \tp{(\beta_1, \beta_2)}$.
+Then $\tp{\vb}S\vb = 3\beta_1^2 + 2\beta_1\beta_2 + 2\beta_2^2$.
+By @thm-quadratic-form:
+
+$$
+\underbrace{\deriv{\vb}(\tp{\vb}S\vb)}_{2 \times 1}
+= 2 S \vb
+= 2 \begin{pmatrix} 3 & 1 \\ 1 & 2 \end{pmatrix} \begin{pmatrix} \beta_1 \\ \beta_2 \end{pmatrix}
+= \begin{pmatrix} 6\beta_1 + 2\beta_2 \\ 2\beta_1 + 4\beta_2 \end{pmatrix}
+$$
+
+Differentiating component-wise directly:
+
+$$
+\begin{pmatrix} \deriv{\beta_1}(3\beta_1^2 + 2\beta_1\beta_2 + 2\beta_2^2) \\ \deriv{\beta_2}(3\beta_1^2 + 2\beta_1\beta_2 + 2\beta_2^2) \end{pmatrix}
+= \begin{pmatrix} 6\beta_1 + 2\beta_2 \\ 2\beta_1 + 4\beta_2 \end{pmatrix}
+$$
+
+Both methods agree.
+
+:::
+
+{{< slidebreak >}}
 
 :::{#cor-deriv-normsq}
 
 #### Derivative of a simple quadratic form
 
 $$
-\deriv{\vb} \vb'\vb = 2\vb
+\underbrace{\deriv{\vb} (\tp{\vb}\vb)}_{p \times 1} = \underbrace{2\vb}_{p \times 1}
+$$
+
+:::
+
+::: proof
+
+Applying @thm-quadratic-form with $S = \matr{I}_{p \times p}$ (which is symmetric and constant with respect to $\vb$):
+
+$$
+\ba
+\deriv{\vb}(\tp{\vb}\vb)
+&= \deriv{\vb}(\tp{\vb}\matr{I}_{p \times p}\vb)
+&& \text{(rewrite with identity matrix)} \\
+&= 2\matr{I}_{p \times p}\vb
+&& \text{(apply } \text{@thm-quadratic-form} \text{ with } S = \matr{I}_{p \times p} \text{)} \\
+&= 2\vb
+&& \text{(identity matrix property)}
+\ea
 $$
 
 :::
 
 ::: notes
-This is like taking the derivative of $x^2$.
+This vector derivative is like taking the derivative of $x^2$.
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-deriv-normsq}
+
+#### Derivative of a sum of squares
+
+Let $\vb = \tp{(\beta_1, \beta_2)}$, so $\tp{\vb}\vb = \beta_1^2 + \beta_2^2$.
+By @cor-deriv-normsq:
+
+$$
+\underbrace{\deriv{\vb}(\tp{\vb}\vb)}_{2 \times 1}
+= 2\vb
+= \begin{pmatrix} 2\beta_1 \\ 2\beta_2 \end{pmatrix}
+$$
+
+Direct partial differentiation yields the same column vector.
+
 :::
 
 ---
