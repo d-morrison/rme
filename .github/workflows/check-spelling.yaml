@@ -26,3 +26,13 @@ jobs:
     permissions:
       contents: read
     uses: Morrison-Lab/gha/.github/workflows/spellcheck.yml@v2
+    with:
+      # Required because this repo is an renv project. `setup-r-dependencies`
+      # detects `renv.lock` + `.Rprofile` and installs {spelling} into the renv
+      # project library, but the reusable workflow's default
+      # `additional-options: --vanilla` makes the scan skip `.Rprofile` -- so
+      # renv never activates, that library is never on `.libPaths()`, and the
+      # run dies with "there is no package called 'spelling'". Clearing the
+      # option lets R read `.Rprofile`, which activates renv and puts the
+      # library back on the path. Tracked upstream as Morrison-Lab/gha#620.
+      additional-options: ''
