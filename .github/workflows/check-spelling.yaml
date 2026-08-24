@@ -1,4 +1,16 @@
 ---
+# Thin caller of the canonical Morrison-Lab/gha reusable spellcheck workflow.
+#
+# The reusable workflow wraps the same upstream action this file used to call
+# (insightsengineering/r-spellcheck-action), and adds: a workaround for that
+# action's unquoted-`exclude` glob bug, an RSPM binary install of {spelling}
+# instead of compiling hunspell from source on every run, r-lib/actions in
+# place of the rocker container (sharing the toolchain cache with other jobs),
+# SHA-pinned actions, and a job timeout.
+#
+# The job id below is `Spellcheck` so the reported check context is
+# `Spellcheck / spellcheck`; the repository ruleset's required-check context
+# must be updated from the old bare `Spellcheck` when this merges.
 name: Spellcheck
 
 on:
@@ -10,19 +22,7 @@ on:
       - main
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    name: Spellcheck
-    container:
-      image: rocker/tidyverse:latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v7
-        with:
-          submodules: recursive
-
-      - name: Disable renv
-        run: echo "RENV_CONFIG_AUTOLOADER_ENABLED=FALSE" >> $GITHUB_ENV
-
-      - name: Run Spelling Check test
-        uses: insightsengineering/r-spellcheck-action@v3.0.3
+  Spellcheck:
+    permissions:
+      contents: read
+    uses: Morrison-Lab/gha/.github/workflows/spellcheck.yml@v2
