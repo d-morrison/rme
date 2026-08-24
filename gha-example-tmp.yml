@@ -1,0 +1,103 @@
+# Copy to .github/workflows/claude.yml in your repo.
+# NOTE: requires either CLAUDE_CODE_OAUTH_TOKEN (Claude Max plan) or
+# ANTHROPIC_API_KEY (direct API / GitHub App via /install-github-app). The
+# calling job grants write permissions so Claude can push branches and open PRs.
+# Pass secrets explicitly (below) rather than via `secrets: inherit`: GitHub
+# only inherits secrets into a reusable workflow owned by the same org/user, so
+# a cross-owner caller (e.g. a UCD-SERG-org repo calling this d-morrison
+# user-owned workflow) inherits an empty token.
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    # `assigned` lets an issue that already mentions @claude kick off a run when
+    # it's assigned (handy with eager-pr). The trusted-author gate keys on the
+    # issue *author*, so this only fires for issues opened by a collaborator.
+    # To make assignment a trigger on its own, with no mention anywhere in the
+    # issue, see the dispatch-on-assignee clause in the job `if:` below.
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+  # For unattended runs (a periodic skill invocation with no human comment to
+  # react to), also add:
+  # schedule:
+  #   - cron: '0 13 * * 1'   # every Monday at 13:00 UTC
+  # workflow_dispatch: {}    # lets you fire it manually too
+
+jobs:
+  claude:
+    # Cheap caller-side gate: only invoke the reusable workflow when an @claude
+    # mention is present AND the author is trusted (OWNER/MEMBER/COLLABORATOR),
+    # so an untrusted commenter's mention doesn't even spawn the
+    # reusable-workflow run. This mirrors the reusable workflow's own
+    # trusted-author gate as defense-in-depth: without it, the run still gets
+    # skipped downstream, but only after invoking a workflow that was granted
+    # elevated permissions and passed secrets.
+    #
+    # If you added schedule/workflow_dispatch above, widen this too - neither
+    # event has a comment/issue body or author_association to check. Both are
+    # trusted by construction: workflow_dispatch requires the dispatching
+    # actor to have repo write access, and schedule has no triggering actor at
+    # all - it can only exist because someone with write access committed the
+    # cron: config to the default branch.
+    #   || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    #
+    # To also admit a GitHub App bot (author_association is usually NONE), OR
+    # in a login check and pass the same JSON array as trusted-bot-logins:
+    #   || contains(fromJSON('["cursor[bot]"]'), github.event.comment.user.login)
+    #
+    # To let ASSIGNING an issue dispatch a run with no @claude mention at all,
+    # OR in an assignment clause and pass the same JSON array as
+    # dispatch-on-assignee. Both halves are required: without the caller
+    # clause the reusable workflow is never invoked, and without the input it
+    # stands down at its own gate.
+    #   || (github.event_name == 'issues' && github.event.action == 'assigned' && contains(fromJSON('["claude"]'), github.event.assignee.login))
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association)) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: write       # dispatch the review workflow via `gh workflow run`
+    uses: Morrison-Lab/gha/.github/workflows/claude.yml@v2
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}   # Max-plan OAuth; empty when using API key
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}               # direct API key; empty when using OAuth
+      SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}   # optional; empty when unset
+      WORKFLOW_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}       # optional; for editing .github/workflows
+    # with:
+    #   setup-r: true               # default; set false for non-R repos
+    #   install-quarto: true        # for Quarto books
+    #   use-renv: true              # restore deps with renv instead of DESCRIPTION
+    #   apt-packages: jags libglpk-dev poppler-utils  # system libs deps need
+    #   pip-packages: sympy         # pip3 --break-system-packages
+    #   checkout-submodules: true   # SUBMODULES_TOKEN secret only for private submodules
+    #   link-skills: true           # expose this repo's skills/ as @claude project skills
+    #   eager-pr: true              # open the draft PR up front (Copilot-style)
+    #   mark-ready-for-review: false # keep Claude's PRs as drafts
+    #   reviewer: d-morrison        # re-requested when Claude pushes to a PR
+    #   report-cost: false          # suppress the dollar-cost comment (default true)
+    #   trusted-bot-logins: '["cursor[bot]"]'  # admit App bots the caller if: also allows
+    #   dispatch-on-assignee: '["claude"]'     # assigning an issue dispatches a run, no mention needed
+    #   webfetch-allowlist-url: https://raw.githubusercontent.com/d-morrison/stats-allowlist/main/allowlist.txt
+    #   use-ai-config: false        # skip the Morrison-Lab/ai-config plugin (installed by default)
+    #   plugin-marketplaces: https://github.com/<owner>/<repo>.git   # further plugin sources
+    #   plugins: <plugin>@<marketplace-name>
+    #   prompt-addendum: |
+    #     This is the <name> R package. Before committing, run
+    #     lintr::lint_package(), spelling::spell_check_package(), and
+    #     devtools::test(); add a NEWS.md bullet for user-facing changes.
+    #
+    #     # On a workflow_dispatch/schedule run there's no triggering comment,
+    #     # so prompt-addendum is also where you state the actual task, e.g.:
+    #     # "Run the /opposition-research skill and file the results as a new
+    #     # issue via `gh issue create`." (make sure claude-args allows the
+    #     # tools that task needs — the default toolset omits `gh issue create`.)
