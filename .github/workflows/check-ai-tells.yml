@@ -1,0 +1,34 @@
+# Thin caller of Morrison-Lab/gha's reusable AI-tell scanner.
+#
+# Most prose PRs here are AI-authored, so a density check on what a PR adds is
+# a useful second pair of eyes on top of review.
+#
+# Warn-only on purpose. The tell list includes `robust`, which is a
+# domain-legitimate term in this book ("cluster-robust standard errors"), and
+# density is measured per 1,000 words -- so one such word in a short prose
+# diff clears a threshold of 10 on arithmetic alone. There is no per-tell
+# ignore input yet (Morrison-Lab/gha#619); flip `fail` to true once there is,
+# or once the observed noise profile says it is safe.
+#
+# Measured on `main` 2026-08-24: 92 tells across 215,112 prose words
+# (density 0.4), and 0 tells on each of two recent prose-PR diffs.
+name: Check AI Tells
+
+on:
+  pull_request:
+    paths:
+      - '**.md'
+      - '**.qmd'
+      - '**.Rmd'
+  workflow_dispatch:
+
+jobs:
+  check-ai-tells:
+    uses: Morrison-Lab/gha/.github/workflows/check-ai-tells.yml@v2
+    with:
+      # Scan only the lines this PR adds, rather than the whole corpus. The
+      # upstream default is a whole-repo scan; the reusable workflow does not
+      # wire this itself, unlike its check-new-line-breaks sibling.
+      base-ref: ${{ github.event.pull_request.base.sha }}
+      paths-ignore: '_extensions/*,latex-macros/*'
+      fail: false

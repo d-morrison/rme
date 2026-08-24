@@ -1,0 +1,26 @@
+# Thin caller of Morrison-Lab/gha's reusable semantic-line-break check.
+#
+# CLAUDE.md asks for "one source line per major phrase in prose"; nothing
+# enforced it. This check is diff-scoped -- it looks only at lines a PR adds --
+# so it can run against a 55k-line corpus that predates the convention without
+# a reflow pass first. On `push` there is no base to diff against, so the
+# reusable workflow skips the scan.
+name: Check new markdown lines for missing semantic breaks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    uses: Morrison-Lab/gha/.github/workflows/check-new-line-breaks.yml@v2
+    with:
+      # Space-separated git pathspecs. The upstream default is `*.md` alone;
+      # this book's prose lives in `.qmd`.
+      globs: '*.md *.qmd'
+      # `_extensions/` is vendored third-party code (CLAUDE.md: do not modify),
+      # and `latex-macros/` is a submodule owned by d-morrison/macros.
+      paths-ignore: '_extensions/*,latex-macros/*'
