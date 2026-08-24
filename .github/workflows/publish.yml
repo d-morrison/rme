@@ -94,3 +94,26 @@ jobs:
         with:
           folder: _site
           clean-exclude: pr-preview/
+
+  # `publish.yml` runs only on push to `main`, so a failed deploy shows up
+  # nowhere except the Actions tab -- no PR carries its result, and the
+  # published site quietly goes stale. This job files an issue (or comments on
+  # the one already open under the same title) when that happens.
+  report-failure:
+    needs: build-deploy
+    # `always()` is what lets this job run at all once `build-deploy` failed;
+    # the result check is what decides.
+    if: >-
+      always()
+      && needs.build-deploy.result == 'failure'
+      && github.event_name != 'pull_request'
+    permissions:
+      issues: write
+    uses: Morrison-Lab/gha/.github/workflows/report-failure.yml@v2
+    with:
+      # Stable across runs -- this is the deduplication key.
+      title: Publish workflow is failing
+      body: >-
+        The book did not deploy to `gh-pages`, so the published site may be
+        stale. The run URL, commit, and triggering ref are appended
+        below by the reusable workflow.

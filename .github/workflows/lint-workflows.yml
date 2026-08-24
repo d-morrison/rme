@@ -1,0 +1,24 @@
+# Thin caller of Morrison-Lab/gha's reusable workflow linter: actionlint
+# (syntax, expression semantics, shellcheck over `run:` blocks) plus zizmor
+# (security).
+#
+# Warn-only for now. actionlint is effectively clean on this repo, but zizmor
+# reports 32 high findings against `main` -- almost all `unpinned-uses`, which
+# wants commit-SHA pins where this repo deliberately pins to tags and lets
+# dependabot keep them current (see .github/dependabot.yml). Failing on that
+# today would leave a permanently red check, which teaches people to ignore
+# red checks. #1105 tracks driving zizmor to zero and flipping `fail` to true.
+name: Lint Workflows
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    uses: Morrison-Lab/gha/.github/workflows/lint-workflows.yml@v2
+    with:
+      fail: false
