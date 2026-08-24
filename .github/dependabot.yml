@@ -8,7 +8,12 @@
 # than a pinned release tag.
 version: 2
 updates:
-  - package-ecosystem: "gitsubmodule"
+  # No cooldown here, deliberately. A cooldown exists to delay adopting a
+  # third-party release before anyone has looked at it. The only submodules
+  # here are d-morrison/macros and Morrison-Lab/ai-config, both first-party and
+  # both tracked at `main` on purpose -- delaying our own macro changes by a
+  # week would slow every chapter that uses them, for no supply-chain gain.
+  - package-ecosystem: "gitsubmodule"  # zizmor: ignore[dependabot-cooldown]
     directory: "/"
     schedule:
       interval: "weekly"
@@ -28,3 +33,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "chore(actions)"
+    # Wait before adopting a new release, so a compromised or broken one is
+    # not pulled in the hour it ships. Longer for a major, which is the bump
+    # most likely to need real review anyway.
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
+      semver-minor-days: 7
+      semver-patch-days: 3

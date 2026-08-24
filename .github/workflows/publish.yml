@@ -35,7 +35,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Check out repository
+      # zizmor flags the persisted credential here (artipacked). Keeping it,
+      # deliberately: artipacked's concern is a credential leaking into an
+      # uploaded artifact, and this job uploads none -- the only cache it
+      # writes is `_freeze`, which does not contain `.git/config`. The deploy
+      # step below does need git write access, and a 50-minute publish run is
+      # the wrong place to discover that dropping it broke the deploy.
+      - name: Check out repository  # zizmor: ignore[artipacked]
         uses: actions/checkout@v7
         with:
           submodules: recursive
@@ -46,7 +52,11 @@ jobs:
           ls
 
       - name: Set up Quarto
-        uses: quarto-dev/quarto-actions/setup@HEAD
+        # Pinned to the release tag rather than @HEAD: a branch pin moves under
+        # us with no review and no dependabot PR, and dependabot's
+        # github-actions updater deliberately skips unversioned pins, so @HEAD
+        # was outside every safety net we have. claude.yml already used @v2.
+        uses: quarto-dev/quarto-actions/setup@v2
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
