@@ -1,0 +1,26 @@
+# zizmor configuration for rme.
+#
+# See https://docs.zizmor.sh/configuration/. `lint-workflows.yml` runs zizmor
+# in its default `regular` persona; this file adjusts one audit and nothing
+# else.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        # Accept a tag or release pin; keep flagging a branch pin such as
+        # `@main` or `@HEAD`.
+        #
+        # zizmor's blanket default demands a commit-SHA pin for every action.
+        # That is a reasonable default and it is not this repo's policy:
+        # `.github/dependabot.yml` runs the `github-actions` updater weekly
+        # precisely so tag pins stay current, and its own comment records that
+        # unversioned `@HEAD` / `@main` pins are deliberately left untouched by
+        # that updater. Requiring SHA pins here would mean 34 findings against
+        # a convention we chose on purpose, and a permanently red check teaches
+        # people to ignore red checks.
+        #
+        # `ref-pin` keeps the part of the audit that catches a real problem:
+        # a branch pin, which moves under you with no review and no dependabot
+        # PR. That is exactly how `quarto-dev/quarto-actions/setup@HEAD` sat in
+        # `publish.yml` until this change pinned it to `@v2`.
+        "*": ref-pin
