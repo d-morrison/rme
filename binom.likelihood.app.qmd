@@ -248,7 +248,8 @@ Looking at this expression element-wise:
 \item $x_i \in \{0,1\}$ for all $i$, so $0\leq\sum_{i=1}^n x_i \leq n$. Therefore both $\sum_{i=1}^nx_i$ and $n-\sum_{i=1}^nx_i$ are non-negative
 \end{itemize}
 
-Based on the above, we can conclude that the second derivative of the log-likelihood is negative. Thus the estimator $\hat{\pi}_{MLE} = \bar{x}$ is, in fact, the Maximum Likelihood Estimator of $\pi$.
+Based on this non-negativity analysis, we can conclude that the second derivative of the log-likelihood is negative.
+Thus the estimator $\hat{\pi}_{\text{MLE}} = \bar{x}$ is, in fact, the Maximum Likelihood Estimator of $\pi$.
 
 ## Compute the maximum likelihood estimate of $\pi$ from your simulated data.
 
@@ -324,7 +325,7 @@ For a population with parameter $\pi = 0.7$, the sample size needed to achieve a
 ```{r}
 se0.1 = sample_size(0.001)
 ```
-The sample size needed to achieve a standard error of 1 percentage point is $`r se0.1`$.
+The sample size needed to achieve a standard error of 0.1 percentage point is $`r se0.1`$.
 
 ### Estimate the standard error from your simulated data using the asymptotic formula.
 
@@ -358,7 +359,8 @@ p_val = 2*pnorm(abs(test_stat), lower.tail = F)
 
 ```
 
-An asymptotic 95% confidence interval for $pi$ is $\hat{\pi}_{\text{ML}} \pm 1.96 \sqrt{\frac{\hat{\pi}_{\text{ML}}(1-\hat{\pi}_{\text{ML}})}{n}}$ which results in the interval $[`r lcl`, `r ucl`]$. Examples of appropriate interpretations of the interval are:
+An asymptotic 95% confidence interval for $\pi$ is $\hat{\pi}_{\text{ML}} \pm 1.96 \sqrt{\frac{\hat{\pi}_{\text{ML}}(1-\hat{\pi}_{\text{ML}})}{n}}$, which results in the interval $[`r lcl`, `r ucl`]$.
+Examples of appropriate interpretations of the interval are:
 \begin{itemize}
 \item We are 95\% confident that the true population parameter $\pi$ lies in the interval $[`r lcl`, `r ucl`]$.
 \item In 95\% of repeated sampling, the true population parameter $\pi$ would be captured by an interval calculated like $[`r lcl`, `r ucl`]$.
@@ -397,7 +399,8 @@ P\left(Z \leq \frac{\frac{1}{n}a - \pi_0}{\sqrt{\frac{\pi_0(1-\pi_0)}{n}}}\right
 \end{aligned}
 $$
 
-The lower bound of this interval is $a = \left(\Phi^{-1}(0.025)\sqrt{\frac{0.5*0.5}{100}}+0.5\right)\times100 = `r (qnorm(0.025)*sqrt(0.5*0.5/100)+0.5)*100`$, and the upper bound is $a = \left(\Phi^{-1}(0.975)\sqrt{\frac{0.5*0.5}{100}}+0.5\right)\times100 = `r (qnorm(0.975)*sqrt(0.5*0.5/100)+0.5)*100`$. We will reject for any values of $\sum_{i=1}^n X_i$ less than or equal to 40 or greater than or equal to 60.
+The lower bound of this interval is $a = \left(\Phi^{-1}(0.025)\sqrt{\frac{0.5*0.5}{100}}+0.5\right)\times100 = `r (qnorm(0.025)*sqrt(0.5*0.5/100)+0.5)*100`$, and the upper bound is $b = \left(\Phi^{-1}(0.975)\sqrt{\frac{0.5*0.5}{100}}+0.5\right)\times100 = `r (qnorm(0.975)*sqrt(0.5*0.5/100)+0.5)*100`$.
+We will reject for any values of $\sum_{i=1}^n X_i$ less than or equal to 40 or greater than or equal to 60.
 
 We can double-check this using the `stats::prop.test()` function:
 
@@ -470,8 +473,7 @@ print(power_plot)
 ```{r}
 
 sample_sizes = 1:200
-# calculate power for a range of values, 
-# which the graph above tells us will be sufficient to search among
+# calculate power for a range of sample sizes from 1 to 200
 pwrs = power(n = sample_sizes)
 
 pwrs.want = c(0.800, 0.900, 0.950, 0.990)
@@ -494,7 +496,10 @@ tibble(
 
 ```
 
-To achieve 80% power, the sample size must be at least $`r size.needed[1]`$. To achieve 90% power, the sample size must be at least $`r size.needed[2]`$. To achieve 95% power, the sample size must be at least $`r size.needed[3]`$. To achieve 80% power, the sample size must be at least $`r size.needed[4]`$.
+To achieve 80% power, the sample size must be at least $`r size.needed[1]`$.
+To achieve 90% power, the sample size must be at least $`r size.needed[2]`$.
+To achieve 95% power, the sample size must be at least $`r size.needed[3]`$.
+To achieve 99% power, the sample size must be at least $`r size.needed[4]`$.
 
 
 ## Repeat the simulation 1000 times.
@@ -583,7 +588,10 @@ binom.MLE.sim = function(pi = 0.7, null = 0.5, n = 100, sim = 1000, alpha = 0.05
     # returning asymptotic results;
     # these could alternatively be calculated in a postprocessing function
     MLE_bias = mean(estimates) - pi,
+    MLE_var = var(estimates),
     MLE_se = sd(estimates),
+    MLE_mse = mean((estimates - pi)^2),
+    MLE_mae = mean(abs(estimates - pi)),
     SE_bias = mean(errors) - true_se,
     SE_se = sd(errors),
     p_CI = mean(CI_true_val),
@@ -620,11 +628,14 @@ Using your 1000 simulations, estimate:
 \ 
 
 - the bias of the MLE $`r sim100[["MLE_bias"]]`$
-- the standard error of the MLE $`r sim100[["MLE_se"]]`$
+- the empirical variance of the MLE $`r sim100[["MLE_var"]]`$
+- the empirical standard error of the MLE $`r sim100[["MLE_se"]]`$
+- the mean squared error of the MLE $`r sim100[["MLE_mse"]]`$
+- the mean absolute error of the MLE $`r sim100[["MLE_mae"]]`$
 - the bias of the estimated standard error $`r sim100[["SE_bias"]]`$
 - the empirical standard error of the estimated standard error $`r sim100[["SE_se"]]`$
 - the coverage probability of the confidence intervals $`r sim100[["p_CI"]]`$
-- the power of your hypothesis test $`r sim100[["p_reject"]]`$
+- the power of your hypothesis test to reject the null hypothesis $H_0: \pi = 0.5$ $`r sim100[["p_reject"]]`$
 
 
 ## Visualize simulation results
@@ -724,11 +735,11 @@ Overall, the simulated results for mean and standard error were very close to th
 
 Repeat the simulation with a simulated sample sizes of $10^3$ and $10^5$ binary outcomes, and summarize the results.
 
-Compare the empirical results with the theoretical results above.
+Compare the empirical results with the theoretical asymptotic performance characteristics.
 
 ::: {.callout-tip}
 
-Instead of copy-pasting code, write a function that takes the data-generating $\pi$, the null hypothesis $\pi_0$, the sample size, and the number of simulations to run as inputs, and returns the performance characteristics above.
+Instead of copy-pasting code, write a function that takes the data-generating $\pi$, the null hypothesis $\pi_0$, the sample size, and the number of simulations to run as inputs, and returns the performance characteristics described in the previous section.
 
 :::
 
