@@ -39,11 +39,11 @@ $$
 $$
 \ba
 \Lik
-&\eqdef \Lik(\vy \mid \mX, \vb, \ss)
+&\eqdef \Lik(\vy \mid \mx, \vb, \ss)
 && \text{(definition of joint likelihood)}
 \\
 &\eqdef \p(\vY = \vy \mid \mX = \mx)
-&& \text{(joint distribution under independence)}
+&& \text{(definition via joint density)}
 \\
 &= \prodin \Lik_i
 && \text{(product over independent observations)}
@@ -201,7 +201,7 @@ $$
 && \text{(substitute individual score expression)}
 \\
 &= \frac{1}{\ss} \sumin \vx_i \eps_i
-&& \text{(factor out constant scalar } \ss\text{)}
+&& \text{(factor out constant scalar } \frac{1}{\ss}\text{)}
 \\
 &= \frac{1}{\ss} \underbrace{\tp{\mX}}_{(p+1) \times n} \underbrace{\veps}_{n \times 1}
 && \text{(matrix-vector formulation of the weighted sum)}
@@ -281,7 +281,7 @@ $$
 && \text{(substitute individual score)}
 \\
 &= \frac{1}{\ss} \vx_i \deriv{\tp{\vb}} \eps_i
-&& \text{(factor out constant matrix term } \vx_i\text{)}
+&& \text{(factor out constant vector term } \vx_i\text{)}
 \\
 &= \frac{1}{\ss} \vx_i (-\tp{\vx_i})
 && \text{(substitute transpose derivative } \deriv{\tp{\vb}}\eps_i = -\tp{\vx_i}\text{)}
@@ -315,7 +315,7 @@ $$
 && \text{(substitute individual Hessian expression)}
 \\
 &= -\frac{1}{\ss} \sumin \vx_i \tp{\vx_i}
-&& \text{(factor out constant scalar } \ss\text{)}
+&& \text{(factor out constant scalar } -\frac{1}{\ss}\text{)}
 \\
 &= -\frac{1}{\ss} \underbrace{\tp{\mX}}_{(p+1) \times n} \underbrace{\mX}_{n \times (p+1)}
 && \text{(express summation as matrix product)}
@@ -398,8 +398,8 @@ $$
 &= -2\tp{\mX}(\vy - \mX\vb)
 && \text{(factor out } -2\tp{\mX}\text{)}
 \\
-&= -2\tp{\mX}(\vy - \Exp{\vY \mid \mX})
-&& \text{(substitute conditional mean } \Exp{\vY \mid \mX} = \mX\vb\text{)}
+&= -2\tp{\mX}(\vy - \E{\vY \mid \mX})
+&& \text{(substitute conditional mean } \E{\vY \mid \mX} = \mX\vb\text{)}
 \\
 &= -2\tp{\mX} \veps
 && \text{(substitute residual vector } \veps = \vy - \mX\vb\text{)}
@@ -455,8 +455,8 @@ The Hessian (second derivative matrix) using matrix calculus is:
 
 $$
 \ba
-\llik_{\vb, \tp{\vb}}''(\vb, \ss \mid \vy, \mX)
-&= \deriv{\tp{\vb}} \paren{\frac{1}{\ss} \tp{\mX}(\vy - \mX\vb)}
+\llik_{\vb, \tp{\vb}}''(\vy \mid \mx, \vb, \ss)
+&\eqdef \deriv{\tp{\vb}} \paren{\frac{1}{\ss} \tp{\mX}(\vy - \mX\vb)}
 && \text{(differentiate score vector w.r.t. } \tp{\vb}\text{)}
 \\
 &= -\frac{1}{\ss}\tp{\mX}\mX
@@ -471,5 +471,5 @@ The Hessian matrix $-\frac{1}{\ss}\tp{\mX}\mX$ is negative definite when $\mX$ h
 Similarly (not shown):
 
 $$
-\est{\ss}_{\text{ML}} = \frac{1}{n} \tp{(\vy - \mX\hvb)}(\vy - \mX\hvb)
+\es^2_{\text{ML}} = \frac{1}{n} \tp{(\vy - \mX\hvb)}(\vy - \mX\hvb)
 $$
