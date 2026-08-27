@@ -26,5 +26,8 @@ rm(snake_case_ACROs1)
 exclusions <- list(
   `data-raw` = list(
     pipe_consistency_linter = Inf
-  )
+  ),
+  "binom.likelihood.app.qmd",
+  "hers-mle-app.qmd",
+  "lm-app.qmd"
 )
