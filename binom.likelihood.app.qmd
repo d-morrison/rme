@@ -317,9 +317,9 @@ For a population with parameter $\pi = 0.7$, the sample size needed to achieve a
 \ 
 
 ```{r}
-se0_1 <- sample_size(0.001)
+se_point1 <- sample_size(0.001)
 ```
-The sample size needed to achieve a standard error of 0.1 percentage point is $`r se0_1`$.
+The sample size needed to achieve a standard error of 0.1 percentage point is $`r se_point1`$.
 
 ### Estimate the standard error from your simulated data using the asymptotic formula.
 
@@ -521,7 +521,7 @@ estimate[i] = est
 ```{r}
 
 
-binom.MLE.sim <- function(pi = 0.7, null = 0.5, n = 100, sim = 1000,
+binom_mle_sim <- function(pi = 0.7, null = 0.5, n = 100, sim = 1000,
                           alpha = 0.05) {
   estimates <- numeric(sim)
   errors <- numeric(sim)
@@ -581,7 +581,7 @@ binom.MLE.sim <- function(pi = 0.7, null = 0.5, n = 100, sim = 1000,
 
 ```{r}
 set.seed(1)
-sim100 <- binom.MLE.sim(pi = 0.7, null = 0.5, n = 100, sim = 1000, alpha = 0.05)
+sim100 <- binom_mle_sim(pi = 0.7, null = 0.5, n = 100, sim = 1000, alpha = 0.05)
 ```
 
 ## Analyze simulation results {#sec-analyze-sim-results}
@@ -717,18 +717,18 @@ Instead of copy-pasting code, write a function that takes the data-generating $\
 \  
 ```{r}
 
-sim10_3 <- binom.MLE.sim(
+sim1000 <- binom_mle_sim(
   pi = 0.7, null = 0.5, n = 10^3, sim = 1000, alpha = 0.05
 )
-sim10_3 |> summarize_sim() |> pander()
+sim1000 |> summarize_sim() |> pander()
 ```
 
 ```{r}
-sim10_5 <- binom.MLE.sim(
+sim100000 <- binom_mle_sim(
   pi = 0.7, null = 0.5, n = 10^5, sim = 1000, alpha = 0.05
 )
 
-sim10_5 |> summarize_sim() |> pander()
+sim100000 |> summarize_sim() |> pander()
 ```
 
 With more repeated samples (more simulations), the empirical estimates of the MLE approach the theoretical value of 0.7, and the empirical estimates of the standard error approach 0. The observed power of the test of ($\text{H}_0: \pi_0 = 0.5$) increases as sample size increases, and the frequency of capturing the true value in the confidence interval decreases as sample size increases. In this set of simulations, our data is generated under the alternative hypothesis, so our ability to correctly reject the null hypothesis (power) increases as we collect more data points.
@@ -740,24 +740,24 @@ Repeat the simulation at all three sample sizes for the scenario where the data-
 \  
 ```{r}
 
-sim100_05 <- binom.MLE.sim(
+sim100_null05 <- binom_mle_sim(
   pi = 0.5, null = 0.5, n = 100, sim = 1000, alpha = 0.05
 )
-sim100_05 |> summarize_sim() |> pander()
+sim100_null05 |> summarize_sim() |> pander()
 ```
 
 ```{r}
-sim10_3_05 <- binom.MLE.sim(
+sim1000_null05 <- binom_mle_sim(
   pi = 0.5, null = 0.5, n = 10^3, sim = 1000, alpha = 0.05
 )
-sim10_3_05 |> summarize_sim() |> pander()
+sim1000_null05 |> summarize_sim() |> pander()
 ```
 
 ```{r}
-sim10_5_05 <- binom.MLE.sim(
+sim100000_null05 <- binom_mle_sim(
   pi = 0.5, null = 0.5, n = 10^5, sim = 1000, alpha = 0.05
 )
-sim10_5_05 |> summarize_sim() |> pander()
+sim100000_null05 |> summarize_sim() |> pander()
 ```
 
 The results of the simulations where the data-generating parameter is the hypothesized parameter give similar results as seen previously. Larger sample sizes yield empirical values for the MLE that are closer to the theoretical value, and the standard errors approach zero with larger sample sizes. We also see that the true value of the parameter is captured in approximately 95% of the intervals and the null hypothesis is falsely rejected approximately 5% of the time. In this set of simulations, our data is generated under the null hypothesis, so our ability to incorrectly reject the null hypothesis ($\alpha$/Type I Error) approaches our chosen 5% error rate as we collect more data points.
