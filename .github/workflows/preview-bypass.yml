@@ -1,0 +1,31 @@
+# Companion workflow to preview.yml that runs on complementary paths.
+# This ensures the `build / build` status check is reported for all PRs,
+# even those that don't trigger the real render.
+# Note: The context needs to be two-level `build / build`, so this
+# job calls a trivial reusable workflow.
+name: Quarto Preview Build
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, closed]
+    paths-ignore:
+      - 'man/**'
+      - 'pkgdown/**'
+      - 'vignettes/**'
+      - '_extensions/**'
+      - '_quarto*.yml'
+      - '.github/workflows/preview.yml'
+      - '*.qmd'
+      - 'chapters/**/*.qmd'
+      - '_subfiles/**'
+      - '*.scss'
+      - 'latex-macros'
+      - 'references.bib'
+      - 'renv.lock'
+      - 'DESCRIPTION'
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_preview-bypass-reusable.yml
