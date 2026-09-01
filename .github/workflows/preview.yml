@@ -21,42 +21,50 @@ name: Quarto Preview Build
 on:
   pull_request:
     types: [opened, reopened, synchronize, labeled, closed]
-    paths:
-      - 'man/**'
-      - 'pkgdown/**'
-      - 'vignettes/**'
-      - '_extensions/**'
-      - '_quarto*.yml'
-      - '.github/workflows/preview.yml'
-      - '*.qmd'
-      - 'chapters/**/*.qmd'
-      - '_subfiles/**'
-      - '*.scss'
-      - 'latex-macros'
-      - 'references.bib'
-      # Dependency changes are the changes most likely to alter rendered
-      # output, yet without these two entries a version-only PR got no
-      # render at all: this is the only workflow that runs quarto render,
-      # and it has no workflow_dispatch. The first render against new
-      # package versions therefore happened post-merge on main, where a
-      # failure breaks the published site instead of a PR check (rme#1075).
-      #
-      # Caveat worth knowing when reading a green build on such a PR: the
-      # freeze cache does NOT isolate dependency changes. gha's preview
-      # composite restores _freeze through a restore-keys chain whose last
-      # entry, `quarto-freezer-<os>-`, omits the renv.lock hash entirely,
-      # so a version-only PR restores a freeze computed under the OLD
-      # versions and may serve those cached results instead of re-running
-      # anything. Add the `clear freezer` label to a dependency PR when the
-      # point is to exercise the new versions -- the composite skips the
-      # restore when it is present.
-      - 'renv.lock'
-      - 'DESCRIPTION'
+
+permissions:
+  pull-requests: read
+  contents: read
 
 jobs:
-  build:
-    permissions:
-      contents: read
+  filter:
+    runs-on: ubuntu-latest
+    outputs:
+      render: ${{ steps.filter.outputs.render }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            render:
+              - 'man/**'
+              - 'pkgdown/**'
+              - 'vignettes/**'
+              - '_extensions/**'
+              - '_quarto*.yml'
+              - '.github/workflows/preview.yml'
+              - '*.qmd'
+              - 'chapters/**/*.qmd'
+              - '_subfiles/**'
+              - '*.scss'
+              - 'latex-macros'
+              - 'references.bib'
+              - 'renv.lock'
+              - 'DESCRIPTION'
+
+  render:
+    name: build
+    needs: filter
+    if: needs.filter.outputs.render == 'true'
     uses: Morrison-Lab/gha/.github/workflows/preview.yml@v2
     with:
       r-version: '4.6.0'
+
+  bypass:
+    name: build
+    needs: filter
+    if: needs.filter.outputs.render == 'false'
+    uses: ./.github/workflows/_preview-bypass-reusable.yml # zizmor: ignore[self-repository]
