@@ -1,21 +1,35 @@
 
 ### Models for zero-inflated counts
 
-We assume a latent (unobserved) binary variable, $Z$, which we model using logistic regression:
+We assume a latent (unobserved) binary variable, $Z$,
+which we model using logistic regression:
 
-$$\P(Z=1 \mid \vX=\vx) \eqdef \pi(\vx) = \expit(\gamma_0 + \gamma_1 x_1 + \dots)$$
+$$
+\ba
+\P(Z=1 \mid \vX=\vx)
+&\eqdef \pi(\vx)\\
+&= \expit(\gamma_0 + \gamma_1 x_1 + \dots)
+\ea
+$$
 
-According to this model, if $Z=1$, then $Y$ will always be zero, regardless of $\vX$ and $T$:
+According to this model, if $Z=1$,
+then $Y$ will always be zero,
+regardless of $\vX$ and $T$:
 
 $$\P(Y=0 \mid Z=1, \vX=\vx, T=t) = 1$$
 
-Otherwise (if $Z=0$), $Y$ will have a Poisson distribution, conditional on $\vX$ and $T$, as in a standard Poisson regression model.
+Otherwise (if $Z=0$), $Y$ will have a Poisson distribution,
+conditional on $\vX$ and $T$,
+as in a standard Poisson regression model.
 
-Even though we never observe $Z$, we can estimate the parameters $\gamma_0, \dots, \gamma_p$ via maximum likelihood:
+Even though we never observe $Z$,
+we can estimate the parameters $\gamma_0, \dots, \gamma_p$
+via maximum likelihood:
 
 $$
 \begin{aligned}
-\P(Y=y \mid \vX=\vx, T=t) &= \P(Y=y, Z=1 \mid \vX=\vx, T=t) + \P(Y=y, Z=0 \mid \vX=\vx, T=t)
+\P(Y=y \mid \vX=\vx, T=t) &= \P(Y=y, Z=1 \mid \vX=\vx, T=t) \\
+&\quad + \P(Y=y, Z=0 \mid \vX=\vx, T=t)
 \end{aligned}
 $$
 (by the Law of Total Probability)
@@ -31,12 +45,16 @@ $$
 ---
 
 ::: {#exr-zinf-pmf}
-Expand $\P(Y=0 \mid \vX=\vx, T=t)$, $\P(Y=1 \mid \vX=\vx, T=t)$, and $\P(Y=y \mid \vX=\vx, T=t)$ into expressions involving $\P(Z=1 \mid \vX=\vx)$ and $\P(Y=y \mid Z=0, \vX=\vx, T=t)$.
+Expand $\P(Y=0 \mid \vX=\vx, T=t)$, $\P(Y=1 \mid \vX=\vx, T=t)$,
+and $\P(Y=y \mid \vX=\vx, T=t)$
+into expressions involving $\P(Z=1 \mid \vX=\vx)$
+and $\P(Y=y \mid Z=0, \vX=\vx, T=t)$.
 :::
 
 ::: {.solution}
 
-Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$ and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
+and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 
 **$\P(Y=0)$:** $Y=0$ occurs either because $Z=1$ (always zero)
 or because $Z=0$ and the Poisson draw equals 0:
@@ -70,12 +88,15 @@ $$
 
 ::: {#exr-zinf-moments}
 
-Derive the expected value and variance of $Y$, conditional on $\vX$ and $T$, as functions of $\pi \eqdef \P(Z=1 \mid \vX=\vx)$ and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+Derive the expected value and variance of $Y$, conditional on $\vX$ and $T$,
+as functions of $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
+and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 :::
 
 ::: {.solution}
 
-Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$ and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
+and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 
 **Expected value.** By the Law of Total Expectation
 (conditioning on $Z$, within the subpopulation $\{\vX=\vx, T=t\}$):
@@ -83,7 +104,8 @@ Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$ and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\v
 $$
 \ba
 \Expp[Y \mid \vX=\vx, T=t]
-&= \Expp[Y \mid Z=1, \vX=\vx, T=t]\,\pi + \Expp[Y \mid Z=0, \vX=\vx, T=t]\,(1-\pi)\\
+&= \Expp[Y \mid Z=1, \vX=\vx, T=t]\,\pi \\
+&\quad + \Expp[Y \mid Z=0, \vX=\vx, T=t]\,(1-\pi)\\
 &= 0 \cdot \pi + \mu_0(1-\pi)\\
 &= (1-\pi)\,\mu_0
 \ea
@@ -102,7 +124,8 @@ $$
 \Var{Y} = \Expp[\Var{Y \mid Z}] + \Var{\Expp[Y \mid Z]}
 $$
 
-For the first term, since $\Var{Y \mid Z=1}=0$ and $\Var{Y \mid Z=0}=\mu_0$ (Poisson):
+For the first term,
+since $\Var{Y \mid Z=1}=0$ and $\Var{Y \mid Z=0}=\mu_0$ (Poisson):
 
 $$
 \Expp[\Var{Y \mid Z}] = 0 \cdot \pi + \mu_0(1-\pi) = (1-\pi)\mu_0
@@ -128,8 +151,12 @@ $$
 = (1-\pi)\mu_0\bigl(1 + \pi\mu_0\bigr)
 $$
 
-Since $(1-\pi)\mu_0\bigl(1+\pi\mu_0\bigr) \geq (1-\pi)\mu_0 = \Expp[Y \mid \vX=\vx, T=t]$ for any $\pi > 0$,
-zero-inflated count models always exhibit overdispersion relative to a Poisson model
-with the same mean.
+Since
+$$
+(1-\pi)\mu_0(1+\pi\mu_0) \geq (1-\pi)\mu_0 = \Expp[Y \mid \vX=\vx, T=t]
+$$
+for any $\pi > 0$,
+zero-inflated count models always exhibit overdispersion
+relative to a Poisson model with the same mean.
 
 :::
