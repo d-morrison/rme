@@ -8,7 +8,7 @@
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#exr-def-poisson}
 
@@ -16,7 +16,7 @@ Define the Poisson distribution.
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#sol-def-poisson}
 
@@ -28,32 +28,65 @@ Define the Poisson distribution.
 (see @fig-pois-pmf)
 :::
 
----
+{{< slidebreak >}}
 
 :::{#exr-range-poisson}
 What is the range of possible values for a Poisson distribution?
 :::
 
----
+{{< slidebreak >}}
 
 :::{#sol-range-poisson}
-$$\rangef{Y} = \set{0, 1, 2, ...} = \Nat$$
+$$\rangef{Y} \eqdef \set{0, 1, 2, \dots} = \Nat$$
 :::
 
-
----
+{{< slidebreak >}}
 
 :::{#thm-cdf-pois}
 #### CDF of Poisson distribution
 $$\P(Y \le y) = e^{-\mu} \sum_{j=0}^{\floor{y}}\frac{\mu^j}{j!}$$ {#eq-pois-cdf}
 :::
 
+::: proof
+For any $y \ge 0$,
+the event $\{Y \le y\}$ is the disjoint union of events $\{Y = j\}$
+for all non-negative integers $j \le \floor{y}$.
+Applying the Poisson PMF (@eq-pois-pmf) and factoring out the common term $e^{-\mu}$:
+
+$$
+\ba
+\P(Y \le y)
+&= \sum_{j=0}^{\floor{y}} \P(Y = j) & (\text{disjoint union of events } Y = j) \\
+&= \sum_{j=0}^{\floor{y}} \frac{\mu^j e^{-\mu}}{j!} & (\text{definition of Poisson PMF}) \\
+&= e^{-\mu} \sum_{j=0}^{\floor{y}} \frac{\mu^j}{j!} & (\text{factoring out } e^{-\mu} \text{ constant wrt } j)
+\ea
+$$
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-cdf-pois}
+#### Example: Computing Poisson cumulative probabilities
+
+For a Poisson random variable $X \sim \Pois(\mu = 2)$,
+the probability of observing at most 2 events is computed as:
+
+$$
+\ba
+\P(X \le 2)
+&= e^{-2} \sum_{j=0}^{2} \frac{2^j}{j!} & (\text{apply CDF formula with } \mu = 2, y = 2) \\
+&= e^{-2} \paren{\frac{2^0}{0!} + \frac{2^1}{1!} + \frac{2^2}{2!}} & (\text{expand terms for } j = 0, 1, 2) \\
+&= e^{-2} \paren{1 + 2 + 2} & (\text{simplify factorials and powers}) \\
+&= 5 e^{-2} \approx 0.677 & (\text{evaluate numerical value})
+\ea
+$$
+:::
+
 ::: notes
 (see @fig-pois-cdfs)
 :::
 
-
----
+{{< slidebreak >}}
 
 ```{r}
 #| label: fig-pois-pmf
@@ -99,7 +132,7 @@ plot1 <- plot0 +
 print(plot1)
 ```
 
----
+{{< slidebreak >}}
 
 ```{r}
 #| label: fig-pois-cdfs
@@ -115,7 +148,7 @@ plot2 <-
 print(plot2)
 ```
 
----
+{{< slidebreak >}}
 
 :::{#exr-pois-dist-funs}
 #### Poisson distribution functions
@@ -136,7 +169,7 @@ Compute:
 
 :::
 
----
+{{< slidebreak >}}
 
 ::: solution
 
@@ -146,7 +179,7 @@ Compute:
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#thm-poisson-properties}
 #### Properties of the Poisson distribution
@@ -167,26 +200,23 @@ If $X \sim \Pois(\mu)$, then:
 Prove @thm-poisson-properties.
 :::
 
----
+{{< slidebreak >}}
 
 ::: {.solution .smaller}
 
 $$
-\begin{aligned}
-\text{E}[X] 
-&= \sum_{x=0}^\infty x \cdot P(X=x)\\
-&= 0 \cdot P(X=0) + \sum_{x=1}^\infty x \cdot P(X=x)\\
-&= 0 + \sum_{x=1}^\infty x \cdot P(X=x)\\
-&= \sum_{x=1}^\infty x \cdot P(X=x)\\
-&= \sum_{x=1}^\infty x \cdot \frac{\lambda^x e^{-\lambda}}{x!}\\
-&= \sum_{x=1}^\infty x \cdot \frac{\lambda^x e^{-\lambda}}{x \cdot (x-1)!} & [\text{definition of factorial ("!") function}]\\
-&= \sum_{x=1}^\infty \frac{\lambda^x e^{-\lambda}}{ (x-1)!}\\
-&= \sum_{x=1}^\infty \frac{(\lambda \cdot \lambda^{x-1}) e^{-\lambda}}{ (x-1)!}\\
-&= \lambda \cdot \sum_{x=1}^\infty \frac{( \lambda^{x-1}) e^{-\lambda}}{ (x-1)!}\\
-&= \lambda \cdot \sum_{y=0}^\infty \frac{( \lambda^{y}) e^{-\lambda}}{ (y)!} &[\text{substituting } y \eqdef x-1]\\
-&= \lambda \cdot 1 &[\text{because PDFs sum to 1}]\\
-&= \lambda\\
-\end{aligned}
+\ba
+\Expp[X]
+&= \sum_{x=0}^\infty x \cdot \P(X=x) & (\text{definition of expected value}) \\
+&= 0 \cdot \P(X=0) + \sum_{x=1}^\infty x \cdot \P(X=x) & (\text{separate } x=0 \text{ term}) \\
+&= \sum_{x=1}^\infty x \cdot \frac{\mu^x e^{-\mu}}{x!} & (\text{substitute Poisson PMF}) \\
+&= \sum_{x=1}^\infty x \cdot \frac{\mu^x e^{-\mu}}{x \cdot (x-1)!} & (\text{definition of factorial } x!) \\
+&= \sum_{x=1}^\infty \frac{\mu^x e^{-\mu}}{(x-1)!} & (\text{cancel factor of } x) \\
+&= \mu \cdot \sum_{x=1}^\infty \frac{\mu^{x-1} e^{-\mu}}{(x-1)!} & (\text{factor out one power of } \mu) \\
+&= \mu \cdot \sum_{y=0}^\infty \frac{\mu^y e^{-\mu}}{y!} & (\text{change index variable } y \eqdef x-1) \\
+&= \mu \cdot 1 & (\text{PMF sums to 1 over state space}) \\
+&= \mu & (\text{simplify})
+\ea
 $$
 
 See also <https://statproofbook.github.io/P/poiss-mean>.
@@ -194,8 +224,7 @@ See also <https://statproofbook.github.io/P/poiss-mean>.
 For the variance, see <https://statproofbook.github.io/P/poiss-var>.
 :::
 
-
----
+{{< slidebreak >}}
 
 #### Accounting for exposure
 
@@ -214,13 +243,13 @@ the expected (mean) count.
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#exr-exposure-magnitude}
 What are some examples of exposure magnitudes?
 :::
 
----
+{{< slidebreak >}}
 
 ::: {.solution .smaller}
 
@@ -245,7 +274,7 @@ and $n$ to represent discrete-valued exposures.
 
 ::::
 
----
+{{< slidebreak >}}
 
 ::: {#def-event-rate}
 #### Event rate
@@ -254,12 +283,12 @@ and $n$ to represent discrete-valued exposures.
 For a count outcome $Y$ with exposure magnitude $t$,
 the **event rate** (denoted $\lambda$)
 is defined as the mean of $Y$ divided by the exposure magnitude.
-That relationship is:
+This relationship between mean and exposure magnitude is:
 ::::
 
 $$\mu \eqdef \Expp[Y|T=t]$$
 
-$$\lambda \defeq \frac{\mu}{t}$$ {#eq-def-event-rate}
+$$\lambda \eqdef \frac{\mu}{t}$$ {#eq-def-event-rate}
 :::
 
 ::: notes
@@ -268,7 +297,7 @@ it typically serves as an intermediate transformation between the mean of the ou
 However, in contrast with the odds function, the transformation $\lambda = \mu/t$ is *not* considered part of the Poisson model's link function, and it treats the exposure magnitude covariate differently from the other covariates.
 :::
 
----
+{{< slidebreak >}}
 
 :::{#thm-mean-vs-event-rate}
 #### Transformation function from event rate to mean
@@ -279,17 +308,44 @@ $$\mu = \lambda \cdot t$${#eq-lambda-to-mu}
 
 :::
 
----
+::: proof
+$$
+\ba
+\lambda &\eqdef \frac{\mu}{t} & (\text{definition of event rate } @eq-def-event-rate) \\
+\mu &= \lambda \cdot t & (\text{multiply both sides by } t > 0)
+\ea
+$$
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-mean-vs-event-rate}
+#### Example: Calculating expected counts from event rates
+
+Suppose a city records a disease event rate of $\lambda = 0.05$ cases per person-year.
+For a subpopulation with an exposure magnitude of $t = 100$ person-years,
+the expected count of cases is:
+
+$$
+\ba
+\mu &= \lambda \cdot t & (\text{apply transformation formula } @eq-lambda-to-mu) \\
+&= 0.05 \times 100 & (\text{substitute } \lambda = 0.05 \text{ and } t = 100) \\
+&= 5 \text{ cases} & (\text{evaluate expected count})
+\ea
+$$
+:::
+
+{{< slidebreak >}}
 
 ::: solution
 Start from definition of event rate and use algebra to solve for $\mu$.
 :::
 
----
+{{< slidebreak >}}
 
 @eq-lambda-to-mu is analogous to the inverse-odds function for binary variables.
 
----
+{{< slidebreak >}}
 
 ::: {#thm-non-exposed}
 #### No exposure means no expected events
@@ -298,13 +354,27 @@ When the exposure magnitude is 0, there is no opportunity for events to occur:
 $$\Expp[Y|T=0] = 0$$
 :::
 
----
-
 ::: proof
-$$\Expp[Y|T=0] = \lambda \cdot 0 = 0$$
+$$
+\ba
+\Expp[Y \mid T=0]
+&= \lambda \cdot 0 & (\text{apply transformation } @eq-lambda-to-mu \text{ at } t = 0) \\
+&= 0 & (\text{multiplication by zero})
+\ea
+$$
 :::
 
----
+{{< slidebreak >}}
+
+:::{#exm-non-exposed}
+#### Example: Zero exposure time
+
+If a subject is observed for $t = 0$ person-years,
+no follow-up time has elapsed,
+so the expected number of incident events is $\Expp[Y \mid T=0] = 0$.
+:::
+
+{{< slidebreak >}}
 
 :::{.callout-important}
 
@@ -314,6 +384,8 @@ In other words, this model assumes that if there is no exposure, there can't be 
 
 :::
 
+{{< slidebreak >}}
+
 :::{#thm-exposure-log-scale}
 #### Exposure is additive on the log scale
 
@@ -322,6 +394,36 @@ If $\mu = \lambda\cdot t$, then:
 $$\log{\mu} = \log{\lambda} + \log{t}$$
 :::
 
+::: proof
+$$
+\ba
+\log{\mu}
+&= \log(\lambda \cdot t) & (\text{substitute } \mu = \lambda \cdot t \text{ from } @eq-lambda-to-mu) \\
+&= \log{\lambda} + \log{t} & (\text{logarithm product rule})
+\ea
+$$
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-exposure-log-scale}
+#### Example: Log-linear representation of expected counts
+
+If a clinic sees an event rate of $\lambda = 0.02$ events/day and $t = 30$ days of observation:
+
+$$
+\ba
+\log{\mu}
+&= \log(0.02) + \log(30) & (\text{apply log-scale formula}) \\
+&= -3.912 + 3.401 & (\text{evaluate natural logarithms}) \\
+&= -0.511 & (\text{sum terms})
+\ea
+$$
+
+Exponentiating yields $\mu = \exp{-0.511} \approx 0.60$ expected events.
+:::
+
+{{< slidebreak >}}
 
 :::{#def-offset}
 #### Offset
@@ -331,7 +433,7 @@ that term is called an **offset**.
 
 :::
 
----
+{{< slidebreak >}}
 
 :::{#thm-sum-pois}
 #### Sum of independent Poisson random variables
@@ -342,8 +444,37 @@ $\mu_Z = \mu_X + \mu_Y$.
 
 :::
 
----
-
 ::: proof
-See <https://web.stanford.edu/class/archive/cs/cs109/cs109.1206/lectureNotes/LN12_independent_rvs.pdf>, Example 3.
+Using the probability-generating function or PMF convolution for independent non-negative integer random variables:
+
+$$
+\ba
+\P(Z = z)
+&= \sum_{k=0}^z \P(X = k) \P(Y = z - k) & (\text{independence and convolution formula}) \\
+&= \sum_{k=0}^z \frac{\mu_X^k e^{-\mu_X}}{k!} \frac{\mu_Y^{z-k} e^{-\mu_Y}}{(z-k)!} & (\text{substitute Poisson PMFs}) \\
+&= \frac{e^{-(\mu_X + \mu_Y)}}{z!} \sum_{k=0}^z \frac{z!}{k!(z-k)!} \mu_X^k \mu_Y^{z-k} & (\text{factor out } e^{-(\mu_X+\mu_Y)}/z! \text{ and multiply by } z!/z!) \\
+&= \frac{e^{-(\mu_X + \mu_Y)}}{z!} (\mu_X + \mu_Y)^z & (\text{binomial theorem})
+\ea
+$$
+
+This expression matches the PMF of a $\Pois(\mu_X + \mu_Y)$ random variable
+(see also <https://web.stanford.edu/class/archive/cs/cs109/cs109.1206/lectureNotes/LN12_independent_rvs.pdf>, Example 3).
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-sum-pois}
+#### Example: Aggregating independent region counts
+
+Suppose Region A records $X \sim \Pois(\mu_X = 12)$ cases
+and Region B records $Y \sim \Pois(\mu_Y = 18)$ cases independently.
+The combined total count $Z = X + Y$ follows a Poisson distribution:
+
+$$
+\ba
+Z &\sim \Pois(\mu_X + \mu_Y) & (\text{apply sum theorem } @thm-sum-pois) \\
+&= \Pois(12 + 18) & (\text{substitute region means}) \\
+&= \Pois(30) & (\text{evaluate sum})
+\ea
+$$
 :::
