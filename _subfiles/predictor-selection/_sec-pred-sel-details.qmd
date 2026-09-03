@@ -3,7 +3,7 @@
 ## Collinearity {#sec-pred-sel-collinearity}
 
 :::{#def-collinearity}
-### Collinearity
+#### Collinearity
 
 **Collinearity** refers to high correlation between predictors,
 sufficient to substantially degrade the precision of
@@ -44,12 +44,29 @@ How we handle collinearity depends on the inferential goal:
 The **variance inflation factor (VIF)** for predictor $j$ measures
 how much its variance is inflated by correlation with other predictors:
 
-$$\text{VIF}_j = \frac{1}{1 - R_j^2}$$
+$$\text{VIF}_j \eqdef \frac{1}{1 - R_j^2}$$
 
 where $R_j^2$ is the $R^2$ from regressing $x_j$ on all other predictors.
 
 A VIF $> 10$ (or equivalently, $R_j^2 > 0.9$) indicates
 problematic collinearity.
+
+{{< slidebreak >}}
+
+:::{#exm-vif-toy}
+#### Variance inflation and standard error inflation
+
+Suppose $x_1$ and $x_2$ are candidate predictors in a linear model.
+If $x_1$ and $x_2$ have correlation $r = 0.95$,
+then regressing $x_1$ on $x_2$ gives $R_1^2 = 0.95^2 = 0.9025$.
+
+The variance inflation factor for $x_1$ is:
+$$\text{VIF}_1 = \frac{1}{1 - 0.9025} = \frac{1}{0.0975} \approx 10.26$$
+
+Because variance is inflated by a factor of 10.26,
+the standard error of $\hat\beta_1$ is increased by a factor of $\sqrt{10.26} \approx 3.20$
+compared to an orthogonal design with $R_1^2 = 0$.
+:::
 
 ```{r}
 #| label: vif-ldl-hers
@@ -80,7 +97,7 @@ observations (or events) per predictor:
 - **Linear models**: at least 10 observations per predictor.
 - **Logistic and Cox models**: at least 10 events per predictor (EPV).
 
-This guideline exists because with too many parameters
+This EPV guideline exists because with too many parameters
 relative to information in the data,
 coefficient estimates become imprecise and logistic/Cox models
 can behave poorly (e.g., converge to extreme estimates).
