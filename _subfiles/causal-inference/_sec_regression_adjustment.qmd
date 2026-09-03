@@ -3,7 +3,7 @@
 Under the causal assumptions
 (consistency, conditional exchangeability, and positivity),
 the causal effect can be estimated
-by adjusting for the confounders $\vec{L}$
+by adjusting for the confounders $\vL$
 in a regression model.
 
 ## Direct standardization (G-computation) {#sec-causal-g-computation}
@@ -13,17 +13,17 @@ The **G-computation** estimator
 estimates the ATE by:
 
 1. Fitting a regression model:
-   $\hat{\mu}(a, \vec{l}) = \widehat{\E{Y \mid A = a, \vec{L} = \vec{l}}}$
+   $\emu(a, \vl) \eqdef \Est{\E{Y \mid A = a, \vL = \vl}}$
 
 2. Predicting the potential outcome mean for each individual
    under both treatment levels $a = 1$ and $a = 0$:
-   $$\hat{Y}_i(a) = \hat{\mu}(a, \vec{L}_i)$$
+   $$\hat{Y}_i(a) \eqdef \emu(a, \vL_i)$$
 
 3. Averaging over the study population:
-   $$\widehat{\E{Y(a)}} = \frac{1}{n} \sum_{i=1}^n \hat{Y}_i(a)$$
+   $$\Est{\E{Y(a)}} \eqdef \frac{1}{n} \sum_{i=1}^n \hat{Y}_i(a)$$
 
 4. Estimating the ATE as the contrast:
-   $$\widehat{\text{ATE}} = \widehat{\E{Y(1)}} - \widehat{\E{Y(0)}}$$
+   $$\Est{\text{ATE}} \eqdef \Est{\E{Y(1)}} - \Est{\E{Y(0)}}$$
 
 ::: notes
 
@@ -47,14 +47,28 @@ and the regression model is linear,
 G-computation simplifies to the
 **adjusted treatment coefficient** from a linear regression:
 
-$$Y = \beta_0 + \beta_A A + \dprod{\vec{\beta}_L}{\vec{L}} + \varepsilon$$
+$$Y = \beta_0 + \beta_A A + \tp{\vbeta_L} \vL + \varepsilon$$
 
 Under consistency, conditional exchangeability,
 and positivity,
-the coefficient $\beta_A$ estimates
-the average causal effect of $A$ on $Y$
-(the ATE, if the model is correctly specified
-and effect modification by $\vec{L}$ is absent).
+the coefficient $\beta_A$ equals
+the average causal effect of $A$ on $Y$:
+
+$$
+\ba
+\text{ATE}
+&\eqdef \E{Y(1) - Y(0)} && \text{(definition of ATE)}
+\\&= \E{Y(1)} - \E{Y(0)} && \text{(linearity of expectation)}
+\\&= \E{\E{Y(1) \mid \vL}} - \E{\E{Y(0) \mid \vL}} && \text{(law of iterated expectations)}
+\\&= \E{\E{Y \mid A = 1, \vL}} - \E{\E{Y \mid A = 0, \vL}} && \text{(consistency and conditional exchangeability)}
+\\&= \E{\beta_0 + \beta_A (1) + \tp{\vbeta_L} \vL} - \E{\beta_0 + \beta_A (0) + \tp{\vbeta_L} \vL} && \text{(linear outcome model specification)}
+\\&= \left(\beta_0 + \beta_A + \tp{\vbeta_L} \E{\vL}\right) - \left(\beta_0 + \tp{\vbeta_L} \E{\vL}\right) && \text{(linearity of expectation)}
+\\&= \beta_A && \text{(algebraic simplification)}
+\ea
+$$
+
+Thus, when the outcome model is correctly specified and contains no treatment-covariate interactions,
+$\beta_A$ directly identifies the ATE.
 
 ::: notes
 
