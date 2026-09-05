@@ -1,67 +1,72 @@
-
 ### Models for zero-inflated counts
 
 We assume a latent (unobserved) binary variable, $Z$, which we model using logistic regression:
 
-$$P(Z=1|X=x) = \pi(x) = \expit(\gamma_0 + \gamma_1 x_1 +...)$$
+$$\P(Z=1 \mid \vX=\vx) = \pi(\vx) \eqdef \expit(\gamma_0 + \gamma_1 x_1 + \dots + \gamma_p x_p)$$
 
-According to this model, if $Z=1$, then $Y$ will always be zero, regardless of $X$ and $T$:
+According to this model, if $Z=1$, then $Y$ will always be zero, regardless of $\vX$ and $T$:
 
-$$P(Y=0|Z=1,X=x,T=t) = 1$$
+$$\P(Y=0 \mid Z=1, \vX=\vx, T=t) \eqdef 1$$
 
-Otherwise (if $Z=0$), $Y$ will have a Poisson distribution, conditional on $X$ and $T$, as in a standard Poisson regression model.
+Otherwise (if $Z=0$), $Y$ follows a Poisson distribution, conditional on $\vX$ and $T$, as in a standard Poisson regression model.
 
-Even though we never observe $Z$, we can estimate the parameters $\gamma_0$-$\gamma_p$, via maximum likelihood:
+Even though we never observe $Z$, we can estimate the parameters $\gamma_0, \dots, \gamma_p$ via maximum likelihood:
 
 $$
-\begin{aligned}
-\P(Y=y|X=x,T=t) &= \P(Y=y,Z=1|...) + \P(Y=y,Z=0|...)
-\end{aligned}
+\ba
+\P(Y=y \mid \vX=\vx, T=t) &= \P(Y=y, Z=1 \mid \vX=\vx, T=t) + \P(Y=y, Z=0 \mid \vX=\vx, T=t) && \text{(by Law of Total Probability)}
+\ea
 $$
-(by the Law of Total Probability)
 
 where
 $$
-\begin{aligned}
-P(Y=y,Z=z|...)
-&= P(Y=y|Z=z,...)P(Z=z|...)
-\end{aligned}
+\ba
+\P(Y=y, Z=z \mid \vX=\vx, T=t)
+&= \P(Y=y \mid Z=z, \vX=\vx, T=t) \P(Z=z \mid \vX=\vx) && \text{(by definition of conditional probability)}
+\ea
 $$
 
 ---
 
 ::: {#exr-zinf-pmf}
-Expand $P(Y=0|X=x,T=t)$, $P(Y=1|X=x,T=t)$ and $P(Y=y|X=x,T=t)$ into expressions involving $P(Z=1|X=x)$ and $P(Y=y|Z=0,X=x,T=t)$.
+Expand $\P(Y=0 \mid \vX=\vx, T=t)$, $\P(Y=1 \mid \vX=\vx, T=t)$ and $\P(Y=y \mid \vX=\vx, T=t)$ into expressions involving $\pi = \P(Z=1 \mid \vX=\vx)$ and $\mu_0 = \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 :::
 
 ::: {.solution}
 
-Let $\pi = \P(Z=1|X=x)$ and $\mu_0 = \Expp[Y|Z=0,X=x,T=t]$.
+Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$ and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 
-**$P(Y=0)$:** $Y=0$ occurs either because $Z=1$ (always zero)
+**$\P(Y=0)$:** $Y=0$ occurs either because $Z=1$ (always zero)
 or because $Z=0$ and the Poisson draw equals 0:
 
 $$
 \ba
-\P(Y=0|X=x,T=t)
-&= \P(Z=1|X=x) + \P(Z=0|X=x)\,\P(Y=0|Z=0,X=x,T=t)\\
-&= \pi + (1-\pi)\,e^{-\mu_0}
+\P(Y=0 \mid \vX=\vx, T=t)
+&= \P(Z=1 \mid \vX=\vx) \P(Y=0 \mid Z=1, \vX=\vx, T=t) \\
+&\phantom{={}} + \P(Z=0 \mid \vX=\vx) \P(Y=0 \mid Z=0, \vX=\vx, T=t) && \text{(by Law of Total Probability)} \\
+&= \pi \cdot 1 + (1-\pi) e^{-\mu_0} && \text{(substituting } \P(Y=0 \mid Z=1)=1 \text{ and Poisson } e^{-\mu_0}\text{)} \\
+&= \pi + (1-\pi) e^{-\mu_0} && \text{(simplifying arithmetic)}
 \ea
 $$
 
-**$P(Y=1)$:** $Z=1$ can never produce $Y=1$, so:
+**$\P(Y=1)$:** $Z=1$ can never produce $Y=1$, so:
 
 $$
-\P(Y=1|X=x,T=t)
-= (1-\pi)\,\P(Y=1|Z=0,X=x,T=t)
-= (1-\pi)\,\mu_0 e^{-\mu_0}
+\ba
+\P(Y=1 \mid \vX=\vx, T=t)
+&= \P(Z=0 \mid \vX=\vx) \P(Y=1 \mid Z=0, \vX=\vx, T=t) && \text{(since } \P(Y=1 \mid Z=1)=0\text{)} \\
+&= (1-\pi) \mu_0 e^{-\mu_0} && \text{(substituting Poisson probability for } y=1\text{)}
+\ea
 $$
 
-**$P(Y=y)$ for $y \geq 1$:** Identical reasoning gives
+**$\P(Y=y)$ for $y \geq 1$:** Identical reasoning gives:
 
 $$
-\P(Y=y|X=x,T=t)
-= (1-\pi)\,\frac{\mu_0^y e^{-\mu_0}}{y!}
+\ba
+\P(Y=y \mid \vX=\vx, T=t)
+&= \P(Z=0 \mid \vX=\vx) \P(Y=y \mid Z=0, \vX=\vx, T=t) && \text{(since } \P(Y=y \mid Z=1)=0 \text{ for } y \geq 1\text{)} \\
+&= (1-\pi) \frac{\mu_0^y e^{-\mu_0}}{y!} && \text{(substituting Poisson PMF for } Z=0\text{)}
+\ea
 $$
 
 :::
@@ -70,65 +75,76 @@ $$
 
 ::: {#exr-zinf-moments}
 
-Derive the expected value and variance of $Y$, conditional on $X$ and $T$, as functions of $\pi = P(Z=1|X=x)$ and $\mu_0 = \Expp[Y|Z=0,X=x,T=t]$.
+Derive the expected value and variance of $Y$, conditional on $\vX=\vx$ and $T=t$, as functions of $\pi = \P(Z=1 \mid \vX=\vx)$ and $\mu_0 = \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 :::
 
 ::: {.solution}
 
-Let $\pi = \P(Z=1|X=x)$ and $\mu_0 = \Expp[Y|Z=0,X=x,T=t]$.
+Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$ and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 
 **Expected value.** By the Law of Total Expectation
-(conditioning on $Z$, within the subpopulation $\{X=x, T=t\}$):
+(conditioning on $Z$, within the subpopulation $\{\vX=\vx, T=t\}$):
 
 $$
 \ba
-\Expp[Y|X=x,T=t]
-&= \Expp[Y|Z=1,X=x,T=t]\,\pi + \Expp[Y|Z=0,X=x,T=t]\,(1-\pi)\\
-&= 0 \cdot \pi + \mu_0(1-\pi)\\
-&= (1-\pi)\,\mu_0
+\Expp[Y \mid \vX=\vx, T=t]
+&= \Expp[Y \mid Z=1, \vX=\vx, T=t] \P(Z=1 \mid \vX=\vx) \\
+&\phantom{={}} + \Expp[Y \mid Z=0, \vX=\vx, T=t] \P(Z=0 \mid \vX=\vx) && \text{(by Law of Total Expectation)} \\
+&= 0 \cdot \pi + \mu_0 (1-\pi) && \text{(substituting conditional expectations } 0 \text{ and } \mu_0\text{)} \\
+&= (1-\pi) \mu_0 && \text{(simplifying arithmetic)}
 \ea
 $$
 
-The substitution $\Expp[Y|Z=0,X=x,T=t] = \mu_0$ follows immediately
+The substitution $\Expp[Y \mid Z=0, \vX=\vx, T=t] = \mu_0$ follows immediately
 from the definition of $\mu_0$.
 
 **Variance.** By the Law of Total Variance.
-To reduce clutter, we suppress the $(X=x, T=t)$ conditioning in the
+To reduce clutter, we suppress the $(\vX=\vx, T=t)$ conditioning in the
 intermediate steps: every expectation and variance is taken within
-the subpopulation $\{X=x, T=t\}$, and we restore the explicit conditioning
-in the final line.
-
-$$
-\Var{Y} = \Expp[\Var{Y|Z}] + \Var{\Expp[Y|Z]}
-$$
-
-For the first term, since $\Var{Y|Z=1}=0$ and $\Var{Y|Z=0}=\mu_0$ (Poisson):
-
-$$
-\Expp[\Var{Y|Z}] = 0 \cdot \pi + \mu_0(1-\pi) = (1-\pi)\mu_0
-$$
-
-For the second term, $\Expp[Y|Z]$ takes the value 0 (with prob $\pi$)
-or $\mu_0$ (with prob $1-\pi$), so:
+the subpopulation $\{\vX=\vx, T=t\}$, restoring explicit conditioning in the final line.
 
 $$
 \ba
-\Var{\Expp[Y|Z]}
-&= \pi(0 - (1-\pi)\mu_0)^2 + (1-\pi)(\mu_0 - (1-\pi)\mu_0)^2\\
-&= \pi(1-\pi)^2\mu_0^2 + (1-\pi)\pi^2\mu_0^2\\
-&= \pi(1-\pi)\mu_0^2[\,(1-\pi)+\pi\,]\\
-&= \pi(1-\pi)\mu_0^2
+\Var{Y \mid \vX=\vx, T=t}
+&= \Expp\sb{\Var{Y \mid Z} \mid \vX=\vx, T=t} + \Var{\Expp[Y \mid Z] \mid \vX=\vx, T=t} && \text{(by Law of Total Variance)}
 \ea
 $$
 
-Combining:
+For the expected conditional variance term, since $\Var{Y \mid Z=1}=0$ and $\Var{Y \mid Z=0}=\mu_0$ (Poisson):
 
 $$
-\Var{Y|X=x,T=t} = (1-\pi)\mu_0 + \pi(1-\pi)\mu_0^2
-= (1-\pi)\mu_0\bigl(1 + \pi\mu_0\bigr)
+\ba
+\Expp\sb{\Var{Y \mid Z} \mid \vX=\vx, T=t}
+&= \Var{Y \mid Z=1} \pi + \Var{Y \mid Z=0} (1-\pi) && \text{(by expectation definition)} \\
+&= 0 \cdot \pi + \mu_0 (1-\pi) && \text{(substituting conditional variances)} \\
+&= (1-\pi)\mu_0 && \text{(simplifying arithmetic)}
+\ea
 $$
 
-Since $(1-\pi)\mu_0\bigl(1+\pi\mu_0\bigr) \geq (1-\pi)\mu_0 = \Expp[Y|X=x,T=t]$ for any $\pi > 0$,
+For the variance of conditional expectation term, $\Expp[Y \mid Z]$ takes value 0 (with probability $\pi$)
+or $\mu_0$ (with probability $1-\pi$), so:
+
+$$
+\ba
+\Var{\Expp[Y \mid Z] \mid \vX=\vx, T=t}
+&= \pi \paren{0 - (1-\pi)\mu_0}^2 + (1-\pi) \paren{\mu_0 - (1-\pi)\mu_0}^2 && \text{(by definition of variance for binary } Z\text{)} \\
+&= \pi(1-\pi)^2 \mu_0^2 + (1-\pi)\pi^2 \mu_0^2 && \text{(expanding squared terms)} \\
+&= \pi(1-\pi)\mu_0^2 \sb{(1-\pi) + \pi} && \text{(factoring common term } \pi(1-\pi)\mu_0^2\text{)} \\
+&= \pi(1-\pi)\mu_0^2 && \text{(since } (1-\pi) + \pi = 1\text{)}
+\ea
+$$
+
+Combining both terms gives:
+
+$$
+\ba
+\Var{Y \mid \vX=\vx, T=t}
+&= (1-\pi)\mu_0 + \pi(1-\pi)\mu_0^2 && \text{(summing expected variance and variance of expectation)} \\
+&= (1-\pi)\mu_0 \paren{1 + \pi\mu_0} && \text{(factoring out } (1-\pi)\mu_0\text{)}
+\ea
+$$
+
+Since $(1-\pi)\mu_0 (1+\pi\mu_0) \geq (1-\pi)\mu_0 = \Expp[Y \mid \vX=\vx, T=t]$ for any $\pi > 0$,
 zero-inflated count models always exhibit overdispersion relative to a Poisson model
 with the same mean.
 

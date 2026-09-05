@@ -2,7 +2,7 @@ Applying the [general procedure for interpreting a regression coefficient](Linea
 
 ::: notes
 Differences on the log-rate scale become ratios on the rate scale,
-because
+because exponentiating a difference yields a quotient:
 :::
 
 $$\exp{a-b} = \frac{\exp{a}}{\exp{b}}$$
@@ -10,31 +10,26 @@ $$\exp{a-b} = \frac{\exp{a}}{\exp{b}}$$
 (recall from [Algebra 2](math-prereqs.qmd#cor-exp-sum))
 
 Therefore, according to this model,
-**differences of $\delta$ in covariate $x_j$ correspond to rate ratios of $\exp{\b_j \cdot \delta}$**.
+**differences of $\delta \eqdef a - b$ in covariate $x_j$ correspond to rate ratios of $\exp{\b_j \cdot \delta}$**.
 
-Specifically, letting $\vX_{-j}$ denote vector $\vX$ with element $j$ removed:
+Specifically, letting $\vX_{-j}$ denote the vector of all covariates except $X_j$:
 
 $$
 \ba
-&\phantom{={}} \logf{\E{Y |\red{X_j = a}, \vX_{-j}=\vx_{-j},T=t}} \\
-&\phantom{={}} -\logf{\E{Y |\red{X_j = b}, \vX_{-j}=\vx_{-j},T=t}} \\
-&= \logf{t} + \b_0 + \b_1 x_1 + \lds + \red{\b_j (a)} + \lds + \b_p x_p \\
-&\phantom{={}} -\logf{t} - \b_0 - \b_1 x_1 - \lds - \red{\b_j (b)} - \lds - \b_p x_p \\
-&= \red{\b_j(a-b)}
+&\phantom{={}} \logf{\E{Y \mid \red{X_j = a}, \vX_{-j} = \vx_{-j}, T = t}} - \logf{\E{Y \mid \red{X_j = b}, \vX_{-j} = \vx_{-j}, T = t}} \\
+&= \paren{\logf{t} + \b_0 + \b_1 x_1 + \lds + \red{\b_j a} + \lds + \b_p x_p} \\
+&\phantom{={}} - \paren{\logf{t} + \b_0 + \b_1 x_1 + \lds + \red{\b_j b} + \lds + \b_p x_p} && \text{(substituting log linear predictor for each group)} \\
+&= \red{\b_j a} - \red{\b_j b} && \text{(canceling shared terms } \logf{t}, \b_0, \text{and } \b_k x_k \text{ for } k \neq j\text{)} \\
+&= \red{\b_j(a-b)} && \text{(factoring out coefficient } \b_j\text{)}
 \ea
 $$
 
-And accordingly,
+Exponentiating both sides converts the difference on the log scale to a ratio on the rate scale:
 
 $$
 \ba
-\frac
-{\E{Y |\red{X_j = a}, \vX_{-j} = \vx_{-j}, T = t}
-}
-{
-\E{Y |\red{X_j = b}, \vX_{-j}=\vx_{-j},T=t}
-}
-=
-\exp{\red{\b_j(a-b)}}
+&\phantom{={}} \frac{\E{Y \mid \red{X_j = a}, \vX_{-j} = \vx_{-j}, T = t}}{\E{Y \mid \red{X_j = b}, \vX_{-j} = \vx_{-j}, T = t}} \\
+&= \exp{\logf{\E{Y \mid \red{X_j = a}, \vX_{-j} = \vx_{-j}, T = t}} - \logf{\E{Y \mid \red{X_j = b}, \vX_{-j} = \vx_{-j}, T = t}}} && \text{(by identity } \frac{u}{v} = \exp{\logf{u} - \logf{v}}\text{)} \\
+&= \exp{\red{\b_j(a-b)}} && \text{(substituting difference in log expectations derived above)}
 \ea
 $$

@@ -5,26 +5,27 @@ This chapter presents models for
 [count data](data.qmd#sec-count-vars) outcomes.
 With covariates,
 the event rate $\lambda$
-becomes a function of the covariates
-$\vX = (X_1, \dots,X_n)$.
+becomes a function of the covariate vector
+$\vX = (X_1, \dots, X_p)\' \in \reals^p$.
 Typically, count data models use
 a $\logf{}$ link function,
 and thus an $\exp{}$ inverse-link function.
-That is:
+Specifically, the model relates the expected outcome count to the event rate and linear predictor as:
 :::
 
 $$
 \begin{aligned}
-\Expp[Y | \vX = \vx, T = t] &= \mu(\vx,t)
-\\ \mu(\vx,t) &= \lambda(\vx)\cdot t
-\\ \lambda(\vx) &= \exp{\eta(\vx)}
-\\ \eta(\vx) &= \vx'\tilde \beta = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p
+\Expp[Y \mid \vX = \vx, T = t] &= \mu(\vx,t) \\
+\mu(\vx,t) &= \lambda(\vx)\cdot t \\
+\lambda(\vx) &= \exp{\eta(\vx)} \\
+\eta(\vx) &= \tp{\vx}\vb = \beta_0 + \beta_1 x_1 + \dots + \beta_p x_p
 \end{aligned}
 $${#eq-mean-poisson}
 
 ::: notes
-$T=t$ is called the [exposure magnitude](probability.qmd#def-exposure)
-and has a special role in this model.
+The term $T=t$ represents the [exposure magnitude](probability.qmd#def-exposure)
+(such as person-years or observation time)
+and plays a structural role in scaling rates to expected counts.
 :::
 
 ---
@@ -49,26 +50,26 @@ in Binomial models.
 ---
 
 ::: notes
-We can also think of $t$ as a special part of the linear component:
+We can also express the exposure magnitude $t$ directly as a component of the linear predictor:
 :::
 
 $$
-\begin{aligned}
-\logf{\Expp[Y | \vX = \vx,T=t]}
-&= \logf{\mu(\vx)}\\
-&=\logf{\lambda(\vx) \cdot t}\\
-&=\logf{\lambda(\vx)} + \log{t}\\
-&=\logf{\exp{\eta(\vx)}} + \log{t}\\
-&=\eta(\vx) + \log{t}\\
-&=\vx'\tilde\beta + \log{t}\\
-&=(\beta_0 +\beta_1 x_1+\dots + \beta_p x_p) + \log{t}\\
-\end{aligned}
+\ba
+\logf{\Expp[Y \mid \vX = \vx, T = t]}
+&= \logf{\mu(\vx, t)} && \text{(by definition of conditional mean } \mu(\vx, t)\text{)} \\
+&= \logf{\lambda(\vx) \cdot t} && \text{(substituting rate relationship } \mu(\vx, t) = \lambda(\vx) \cdot t\text{)} \\
+&= \logf{\lambda(\vx)} + \log{t} && \text{(by logarithmic product rule } \logf{a \cdot b} = \logf{a} + \log{b}\text{)} \\
+&= \logf{\exp{\eta(\vx)}} + \log{t} && \text{(substituting rate function } \lambda(\vx) = \exp{\eta(\vx)}\text{)} \\
+&= \eta(\vx) + \log{t} && \text{(by inverse relationship of log and exp)} \\
+&= \tp{\vx}\vb + \log{t} && \text{(substituting linear predictor } \eta(\vx) = \tp{\vx}\vb\text{)} \\
+&= (\beta_0 + \beta_1 x_1 + \dots + \beta_p x_p) + \log{t} && \text{(expanding vector dot product)}
+\ea
 $$
 
 ::: notes
 In contrast with the other covariates (represented by $\vX$),
 $t$ enters this expression with a $\log{}$ transformation
-and without a corresponding $\beta$ coefficient;
+and without an estimated $\beta$ coefficient;
 in other words, $\logf{t}$ is an [offset term](probability.qmd#def-offset).
 :::
 
@@ -82,14 +83,14 @@ What are the units of $\mu$ in @eq-mean-poisson?
 
 :::{#sol-eq-mean-poisson}
 
-$\mu$ is the mean of $Y$,
-and $Y$ is a count,
-so $\mu$ is also a count;
+$\mu$ is the expected value of $Y$.
+Because $Y$ represents a count of events,
+$\mu$ is expressed in units of event counts;
 for example:
 
 - 3.1 cyclones,
-- 10.23 ER visits
-- 15.01 infections
+- 10.23 ER visits,
+- 15.01 infections.
 
 :::
 
@@ -103,11 +104,11 @@ What are the units of $\lambda$ in @eq-mean-poisson?
 
 :::{#sol-eq-rate-poisson}
 $\lambda = \mu/t$,
-so $\lambda$ is a rate of counts per unit of $t$.
+so $\lambda$ is an event rate per unit of exposure $t$.
 For example:
 
-- 3.1 cyclones *per year*
-- 2.023 ER visits per 10 person-years
-- 15.01 infections per 1000 person-years at risk
+- 3.1 cyclones *per year*,
+- 2.023 ER visits per 10 person-years,
+- 15.01 infections per 1000 person-years at risk.
 
 :::
