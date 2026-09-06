@@ -18,36 +18,65 @@ format:
 
 ## Exponential Distribution
 
--   The exponential distribution is the basic distribution for survival
-    analysis.
+The exponential distribution is the baseline parametric model in survival analysis.
+It assumes a constant hazard rate $\lambda > 0$ over time.
+This constant hazard implies that the event probability in any short interval depends only on the interval duration and not on elapsed time (the memoryless property).
 
 $$
 \ba
-\pdf(t) &= \lambda \ef{-\lambda t}\\
-\logf{\pdf(t)} &= \logf{\lambda}-\lambda t\\
-\cdf(t) &= 1-\ef{-\lambda t}\\
-\surv(t)&= \ef{-\lambda t}\\
-\cuhaz(t) &= -\logf{\surv(t)}
-\\   &= \lambda t\\
-\haz(t) &= \lambda\\
-\E{T} &= \lambda^{-1}
+\pdf(t) &\eqdef \lambda \ef{-\lambda t} && \text{(probability density function definition for $t \ge 0$)} \\
+\logf{\pdf(t)} &= \logf{\lambda} - \lambda t && \text{(taking natural logarithm of density)} \\
+\cdf(t) &\eqdef \int_{0}^{t} \pdf(u) du && \text{(cumulative distribution function definition)} \\
+&= \int_{0}^{t} \lambda \ef{-\lambda u} du && \text{(substituting probability density function)} \\
+&= \left[ -\ef{-\lambda u} \right]_{0}^{t} && \text{(evaluating antiderivative)} \\
+&= 1 - \ef{-\lambda t} && \text{(evaluating limits of integration)} \\
+\surv(t) &\eqdef 1 - \cdf(t) && \text{(survival function definition)} \\
+&= 1 - \left(1 - \ef{-\lambda t}\right) && \text{(substituting cumulative distribution function)} \\
+&= \ef{-\lambda t} && \text{(simplifying terms)} \\
+\cuhaz(t) &\eqdef -\logf{\surv(t)} && \text{(cumulative hazard function definition)} \\
+&= -\logf{\ef{-\lambda t}} && \text{(substituting survival function)} \\
+&= \lambda t && \text{(simplifying logarithm of exponential)} \\
+\haz(t) &\eqdef \deriv{t} \cuhaz(t) && \text{(hazard function definition as derivative of cumulative hazard)} \\
+&= \deriv{t} (\lambda t) && \text{(substituting cumulative hazard)} \\
+&= \lambda && \text{(differentiating linear term)} \\
+\E{T} &\eqdef \int_{0}^{\infty} \surv(t) dt && \text{(expectation formula for non-negative continuous random variable)} \\
+&= \int_{0}^{\infty} \ef{-\lambda t} dt && \text{(substituting survival function)} \\
+&= \left[ -\frac{1}{\lambda} \ef{-\lambda t} \right]_{0}^{\infty} && \text{(evaluating antiderivative)} \\
+&= \lambda^{-1} && \text{(evaluating limits of integration)}
 \ea
 $$
 
 ## Weibull Distribution
 
-Using the Kalbfleisch and Prentice (2002) notation:
+The Weibull distribution generalizes the exponential distribution by introducing a shape parameter $p > 0$ alongside the scale parameter $\lambda > 0$ [@kalbfleisch2002].
+This flexibility allows the hazard rate to change monotonically over time, accommodating situations where risk increases or decreases as time elapses.
+
+Using the Kalbfleisch and Prentice (2002) parameterization:
 
 $$
 \ba
-\pdf(t)&= \lambda p (\lambda t)^{p-1}\ef{-(\lambda t)^p}\\
-\cdf(t)&=1 - \ef{-(\lambda t)^p}\\
-\surv(t)&=\ef{-(\lambda t)^p}\\
-\haz(t)&=\lambda p (\lambda t)^{p-1}\\
-\cuhaz(t)&=(\lambda t)^p\\
-\logf{\cuhaz(t)} &= p \logf{\lambda t} 
-\\ &= p \logf{\lambda} + p \logf{t}
-\\ \E{T} &= \lambda^{-1} \cdot \Gamma\left(1 + \frac{1}{p}\right)
+\pdf(t) &\eqdef \lambda p (\lambda t)^{p-1} \ef{-(\lambda t)^p} && \text{(probability density function for $t \ge 0$)} \\
+\cdf(t) &\eqdef \int_{0}^{t} \pdf(u) du && \text{(cumulative distribution function definition)} \\
+&= \int_{0}^{t} \lambda p (\lambda u)^{p-1} \ef{-(\lambda u)^p} du && \text{(substituting density function)} \\
+&= \left[ -\ef{-(\lambda u)^p} \right]_{0}^{t} && \text{(evaluating antiderivative via substitution $w = (\lambda u)^p$)} \\
+&= 1 - \ef{-(\lambda t)^p} && \text{(evaluating limits of integration)} \\
+\surv(t) &\eqdef 1 - \cdf(t) && \text{(survival function definition)} \\
+&= 1 - \left(1 - \ef{-(\lambda t)^p}\right) && \text{(substituting cumulative distribution function)} \\
+&= \ef{-(\lambda t)^p} && \text{(simplifying terms)} \\
+\cuhaz(t) &\eqdef -\logf{\surv(t)} && \text{(cumulative hazard function definition)} \\
+&= -\logf{\ef{-(\lambda t)^p}} && \text{(substituting survival function)} \\
+&= (\lambda t)^p && \text{(simplifying logarithm of exponential)} \\
+\logf{\cuhaz(t)} &= \logf{(\lambda t)^p} && \text{(taking natural logarithm of cumulative hazard)} \\
+&= p \logf{\lambda t} && \text{(applying exponent rule for logarithms)} \\
+&= p \logf{\lambda} + p \logf{t} && \text{(applying product rule for logarithms)} \\
+\haz(t) &\eqdef \deriv{t} \cuhaz(t) && \text{(hazard function definition)} \\
+&= \deriv{t} \left( (\lambda t)^p \right) && \text{(substituting cumulative hazard)} \\
+&= p (\lambda t)^{p-1} \cdot \lambda && \text{(applying power and chain rules of differentiation)} \\
+&= \lambda p (\lambda t)^{p-1} && \text{(rearranging factors)} \\
+\E{T} &\eqdef \int_{0}^{\infty} \surv(t) dt && \text{(expectation formula for non-negative random variable)} \\
+&= \int_{0}^{\infty} \ef{-(\lambda t)^p} dt && \text{(substituting survival function)} \\
+&= \frac{1}{\lambda p} \int_{0}^{\infty} u^{\frac{1}{p}-1} \ef{-u} du && \text{(substituting $u = (\lambda t)^p \implies t = \lambda^{-1} u^{1/p}$)} \\
+&= \lambda^{-1} \cdot \Gamma\left(1 + \frac{1}{p}\right) && \text{(applying definition of Gamma function $\Gamma(z)$)}
 \ea
 $$
 
@@ -123,29 +152,104 @@ ggplot() +
 
 ### Properties of Weibull hazard functions
 
+{{< slidebreak >}}
+
 :::{#thm-weibull-props}
 #### Properties of Weibull hazard functions
 
 If $T$ has a Weibull distribution, then:
 
--   When $p=1$, the Weibull distribution simplifies to the exponential
-    distribution
--   When $p > 1$, the hazard is increasing: $h'(t) > 0$
--   When $p < 1$, the hazard is decreasing: $h'(t) < 0$
+-   When $p=1$, the Weibull distribution simplifies to the exponential distribution.
+-   When $p > 1$, the hazard is strictly increasing: $\haz'(t) > 0$.
+-   When $p < 1$, the hazard is strictly decreasing: $\haz'(t) < 0$.
 -   $\log{\cuhaz(t)}$ is a straight line relative to $\log{t}$: 
-$\log{\cuhaz(t)} = p \log{\lambda} + p \log{t}$
+$\log{\cuhaz(t)} = p \log{\lambda} + p \log{t}$.
 
 :::
 
----
+::: proof
+We prove each property of the Weibull hazard function $\haz(t) = \lambda p (\lambda t)^{p-1}$:
+
+1. **Simplification to Exponential distribution when $p=1$**:
+   Setting $p=1$ in the Weibull hazard function yields:
+   $$
+   \ba
+   \haz(t) &= \lambda (1) (\lambda t)^{1-1} && \text{(substituting $p=1$ into Weibull hazard formula)} \\
+   &= \lambda \cdot 1 \cdot (\lambda t)^0 && \text{(simplifying exponent $1-1 = 0$)} \\
+   &= \lambda && \text{(since $(\lambda t)^0 = 1$ for $t > 0$)}
+   \ea
+   $$
+   This constant value is the hazard function of the exponential distribution with parameter $\lambda$.
+
+2. **Increasing hazard when $p > 1$**:
+   Differentiating $\haz(t) = \lambda^p p t^{p-1}$ with respect to $t$ gives:
+   $$
+   \ba
+   \haz'(t) &\eqdef \deriv{t} \left( \lambda^p p t^{p-1} \right) && \text{(definition of hazard derivative)} \\
+   &= \lambda^p p (p-1) t^{p-2} && \text{(applying power rule of differentiation)}
+   \ea
+   $$
+   Since $\lambda > 0$, $p > 0$, and $t > 0$, the sign of $\haz'(t)$ depends entirely on the factor $(p-1)$.
+   When $p > 1$, $(p-1) > 0$, so $\haz'(t) > 0$ for all $t > 0$, meaning the hazard function is strictly increasing over time.
+
+3. **Decreasing hazard when $p < 1$**:
+   Using the derivative $\haz'(t) = \lambda^p p (p-1) t^{p-2}$:
+   When $p < 1$, $(p-1) < 0$, so $\haz'(t) < 0$ for all $t > 0$, meaning the hazard function is strictly decreasing over time.
+
+4. **Linear relationship between $\log \cuhaz(t)$ and $\log t$**:
+   Taking the natural logarithm of the cumulative hazard function $\cuhaz(t) = (\lambda t)^p$:
+   $$
+   \ba
+   \logf{\cuhaz(t)} &\eqdef \logf{(\lambda t)^p} && \text{(substituting Weibull cumulative hazard)} \\
+   &= p \logf{\lambda t} && \text{(applying logarithm exponent rule $\log(a^b) = b \log a$)} \\
+   &= p \logf{\lambda} + p \logf{t} && \text{(applying logarithm product rule $\log(ab) = \log a + \log b$)}
+   \ea
+   $$
+   Defining $y \eqdef \logf{\cuhaz(t)}$ and $x \eqdef \logf{t}$, this equation takes the linear form $y = a + b x$ with intercept $a = p \logf{\lambda}$ and slope $b = p$.
+:::
+
+{{< slidebreak >}}
+
+:::{#exm-weibull-props}
+#### Evaluating Weibull hazard shapes under different shape parameters
+
+Consider a clinical trial evaluating time to relapse in months following cancer treatment, modeled using a Weibull distribution with scale parameter $\lambda = 0.1$.
+We evaluate the hazard rate $\haz(t)$ at months $t = 1, 6, 12$ under three distinct shape parameters:
+
+1. **Decreasing hazard ($p = 0.5$)**:
+   The hazard rate formula gives:
+   $$
+   \haz(t) = (0.1)(0.5)(0.1 t)^{-0.5} = \frac{0.05}{\sqrt{0.1 t}}
+   $$
+   - At $t = 1$ month: $\haz(1) = \frac{0.05}{\sqrt{0.1}} \approx 0.1581$ events per month.
+   - At $t = 6$ months: $\haz(6) = \frac{0.05}{\sqrt{0.6}} \approx 0.0645$ events per month.
+   - At $t = 12$ months: $\haz(12) = \frac{0.05}{\sqrt{1.2}} \approx 0.0456$ events per month.
+   The risk of relapse is highest immediately following treatment and declines over time.
+
+2. **Constant hazard ($p = 1.0$)**:
+   The hazard rate formula reduces to $\haz(t) = \lambda = 0.1000$ events per month for all $t$.
+   The risk of relapse remains constant regardless of time elapsed.
+
+3. **Increasing hazard ($p = 2.0$)**:
+   The hazard rate formula gives:
+   $$
+   \haz(t) = (0.1)(2.0)(0.1 t)^{1.0} = 0.02 t
+   $$
+   - At $t = 1$ month: $\haz(1) = 0.02(1) = 0.0200$ events per month.
+   - At $t = 6$ months: $\haz(6) = 0.02(6) = 0.1200$ events per month.
+   - At $t = 12$ months: $\haz(12) = 0.02(12) = 0.2400$ events per month.
+   The risk of relapse increases linearly over time.
+:::
+
+{{< slidebreak >}}
 
 :::{#exr-weibull}
 
-Prove @thm-weibull-props.
+Verify the calculations in @exm-weibull-props and explain how the shape parameter $p$ affects cumulative hazard curves.
  
 :::
 
----
+{{< slidebreak >}}
 
 ::: notes
 The Weibull distribution provides more flexibility than the exponential.
@@ -245,179 +349,148 @@ ggplot() +
 
 ## Exponential Regression
 
-For each subject $i$, define a linear predictor:
+For each subject $i$, define a linear predictor $\eta(\vx) \eqdef \beta_0 + (\beta_1 x_1 + \dots + \beta_p x_p) = \vx \cdot \vb$.
+Exponential regression models the hazard rate using a log link function:
 
 $$
-\begin{aligned}
-\eta(\vec x) &= \beta_0 + (\beta_1x_1 + \dots + \beta_p x_p)\\
-\haz(t|\vec x) &= \exp{\eta(\vec x)}\\
-\haz_0 &\stackrel{\text{def}}{=} \haz(t|\vec 0)\\
-&= \exp{\eta(\vec 0)}\\
-&= \exp{\beta_0 + (\beta_1 \cdot 0 + \dots + \beta_p \cdot 0)}\\
-&= \exp{\beta_0 + 0}\\
-&= \exp{\beta_0}\\
-\end{aligned}
+\ba
+\haz(t \mid \vx) &\eqdef \expf{\eta(\vx)} && \text{(exponential regression hazard specification)} \\
+\haz_0(t) &\eqdef \haz(t \mid \v0) && \text{(baseline hazard rate definition at $\vx = \v0$)} \\
+&= \expf{\eta(\v0)} && \text{(substituting $\vx = \v0$ into hazard function)} \\
+&= \expf{\beta_0 + (\beta_1 \cdot 0 + \dots + \beta_p \cdot 0)} && \text{(evaluating linear predictor at zero vector)} \\
+&= \expf{\beta_0} && \text{(simplifying exponent)}
+\ea
 $$
 
-We let the linear predictor have a constant term, and when there are no
-additional predictors the hazard is $\lambda = \exp{\beta_0}$. This model has
-a log link as in a generalized linear model. Since the hazard does not
-depend on $t$, the hazards are (trivially) proportional.
+When there are no additional predictors ($\vx = \v0$), the baseline hazard is constant: $\lambda = \expf{\beta_0}$.
+This model uses a log link as in a generalized linear model for Poisson or rate outcomes.
+Because the hazard rate does not depend on time $t$, the hazard ratio comparing two covariate vectors $\vx$ and $\vxs$ is constant over time:
+
+$$
+\ba
+\hr(t \mid \vx : \vxs) &\eqdef \frac{\haz(t \mid \vx)}{\haz(t \mid \vxs)} && \text{(hazard ratio definition)} \\
+&= \frac{\expf{\eta(\vx)}}{\expf{\eta(\vxs)}} && \text{(substituting exponential regression hazard rates)} \\
+&= \expf{\eta(\vx) - \eta(\vxs)} && \text{(applying quotient rule for exponentials)} \\
+&= \expf{(\vx - \vxs) \cdot \vb} && \text{(expressing difference in linear predictors)}
+\ea
+$$
+
+Thus, exponential regression models possess proportional hazards trivially.
 
 ## Accelerated Failure Time
 
-Previously, we assumed the hazards were proportional; that is, the
-covariates multiplied the baseline hazard function:
+In a proportional hazards (PH) model, covariates act multiplicatively on the baseline hazard function:
 
 $$
-\begin{aligned}
-h(T=t|X=x) 
-&\stackrel{\text{def}}{=} p(T=t|X=x,T \ge t)\\
-&= \haz(t|X=0)\cdot \exp{\eta(x)}\\
-&= \haz(t|X=0)\cdot \hazfactor(x)\\
-&= \haz_0(t)\cdot \hazfactor(x)
-\end{aligned}
+\ba
+\haz(t \mid \vx) &\eqdef \haz_0(t) \cdot \hazfactor(\vx) && \text{(proportional hazards hazard rate definition)} \\
+\cuhaz(t \mid \vx) &\eqdef \int_{0}^{t} \haz(u \mid \vx) du && \text{(cumulative hazard function definition)} \\
+&= \int_{0}^{t} \haz_0(u) \cdot \hazfactor(\vx) du && \text{(substituting proportional hazard rate)} \\
+&= \hazfactor(\vx) \cdot \cuhaz_0(t) && \text{(factoring constant hazard multiplier out of integral)} \\
+\surv(t \mid \vx) &\eqdef \expf{-\cuhaz(t \mid \vx)} && \text{(survival function in terms of cumulative hazard)} \\
+&= \expf{-\hazfactor(\vx) \cdot \cuhaz_0(t)} && \text{(substituting cumulative hazard)} \\
+&= \left[ \expf{-\cuhaz_0(t)} \right]^{\hazfactor(\vx)} && \text{(applying exponent laws)} \\
+&= \left[ \surv_0(t) \right]^{\hazfactor(\vx)} && \text{(substituting baseline survival function $\surv_0(t)$)}
+\ea
 $$
 
-and correspondingly,
+An alternative modeling framework is the **Accelerated Failure Time (AFT)** model.
+Rather than multiplying the hazard rate, covariates accelerate or decelerate the progression of time itself:
 
 $$
-\begin{aligned}
-\cuhaz(t|x)
-&= \hazfactor(x)\cuhaz_0(t)\\
-\surv(t|x)
-&= \expf{-\cuhaz(t|x)}\\
-&= \expf{-\hazfactor(x)\cdot \cuhaz_0(t)}\\
-&= \paren{\expf{- \cuhaz_0(t)}}^{\hazfactor(x)}\\
-&= \paren{\surv_0(t)}^{\hazfactor(x)}\\
-\end{aligned}
+\surv(t \mid \vx) \eqdef \surv_0\left( t \cdot \hazfactor(\vx) \right)
 $$
 
-An alternative modeling assumption would be
-$$\surv(t|X=x)=\surv_0(t\cdot \hazfactor(x))$$ where $\hazfactor(x)=\expf{\eta(x)}$,
-$\eta(x) =\beta_1x_1+\cdots+\beta_px_p$, and $\surv_0(t)=\P(T\ge t|X=0)$ is
-the base survival function.
+where $\hazfactor(\vx) \eqdef \expf{\eta(\vx)}$, $\eta(\vx) \eqdef \beta_1 x_1 + \dots + \beta_p x_p$, and $\surv_0(t) \eqdef \P(T \ge t \mid \vx = \v0)$ is the baseline survival function.
 
-Then
+We derive the expected survival time under the AFT model using change-of-variables integration:
 
 $$
-\begin{aligned}
-\Expp[T|X=x]
-&= \int_{t=0}^{\infty} \surv(t|x)dt\\
-&= \int_{t=0}^{\infty} \surv_0(t\cdot \hazfactor(x))dt\\
-&= \int_{u=0}^{\infty} \surv_0(u)du \cdot \hazfactor(x)^{-1}\\
-&= \hazfactor(x)^{-1} \cdot \int_{u=0}^{\infty} \surv_0(u)du\\
-&= \hazfactor(x)^{-1} \cdot \Expp[T|X=0]\\
-\end{aligned}
-$$ So the mean of $T$ given $X=x$ is the baseline mean divided by
-$\hazfactor(x) = \exp{\eta(x)}$.
-
-This modeling strategy is called an accelerated failure time model,
-because covariates cause uniform acceleration (or slowing) of failure
-times.
-
-Additionally:
-
-$$
-\begin{aligned}
-\cuhaz(t|x) &= \cuhaz_0(\hazfactor(x)\cdot t)\\
-\haz(t|x) &= \hazfactor(x) \cdot \haz_0(\hazfactor(x)\cdot t)
-\end{aligned}
+\ba
+\E{T \mid \vx} &\eqdef \int_{0}^{\infty} \surv(t \mid \vx) dt && \text{(expectation formula for non-negative random variable)} \\
+&= \int_{0}^{\infty} \surv_0\left( t \cdot \hazfactor(\vx) \right) dt && \text{(substituting AFT survival function)} \\
+&= \int_{0}^{\infty} \surv_0(u) \cdot \frac{du}{\hazfactor(\vx)} && \text{(substituting $u = t \cdot \hazfactor(\vx) \implies dt = \frac{du}{\hazfactor(\vx)}$)} \\
+&= \hazfactor(\vx)^{-1} \cdot \int_{0}^{\infty} \surv_0(u) du && \text{(factoring constant $\hazfactor(\vx)^{-1}$ out of integral)} \\
+&= \hazfactor(\vx)^{-1} \cdot \E{T \mid \vx = \v0} && \text{(substituting baseline expectation formula)}
+\ea
 $$
 
-If the base distribution is exponential with parameter $\lambda$ then
+Thus, the mean survival time for a subject with covariates $\vx$ equals the baseline mean survival time divided by the acceleration factor $\hazfactor(\vx) = \expf{\eta(\vx)}$.
+
+We also derive the cumulative hazard and hazard rate functions under the AFT formulation:
 
 $$
-\begin{aligned}
-\surv(t|x)
-&= \exp{-\lambda \cdot t \hazfactor(x)}\\
-&= [\exp{-\lambda t}]^{\hazfactor(x)}\\
-\end{aligned}
+\ba
+\cuhaz(t \mid \vx) &\eqdef -\logf{\surv(t \mid \vx)} && \text{(cumulative hazard function definition)} \\
+&= -\logf{\surv_0\left( t \cdot \hazfactor(\vx) \right)} && \text{(substituting AFT survival function)} \\
+&= \cuhaz_0\left( t \cdot \hazfactor(\vx) \right) && \text{(substituting baseline cumulative hazard)} \\
+\haz(t \mid \vx) &\eqdef \deriv{t} \cuhaz(t \mid \vx) && \text{(hazard function definition)} \\
+&= \deriv{t} \left( \cuhaz_0\left( t \cdot \hazfactor(\vx) \right) \right) && \text{(substituting AFT cumulative hazard)} \\
+&= \cuhaz_0'\left( t \cdot \hazfactor(\vx) \right) \cdot \deriv{t} \left( t \cdot \hazfactor(\vx) \right) && \text{(applying chain rule of differentiation)} \\
+&= \haz_0\left( t \cdot \hazfactor(\vx) \right) \cdot \hazfactor(\vx) && \text{(since $\cuhaz_0'(u) = \haz_0(u)$)} \\
+&= \hazfactor(\vx) \cdot \haz_0\left( t \cdot \hazfactor(\vx) \right) && \text{(rearranging factors)}
+\ea
 $$
 
-which is an exponential model with base hazard multiplied by
-$\hazfactor(x)$, which is also the proportional hazards model.
+### Relationship between PH and AFT models
 
-::: hidden
-In terms of the log survival time $Y=\log{T}$ the model can be written
-as
+If the baseline distribution is exponential with parameter $\lambda$, substituting $\surv_0(t) = \expf{-\lambda t}$ into the AFT model yields:
 
 $$
-\begin{aligned}
-Y&=\alpha-\eta+W\\
-\alpha&= -\log{\lambda}
-\end{aligned}
+\ba
+\surv(t \mid \vx) &= \expf{-\lambda \cdot t \cdot \hazfactor(\vx)} && \text{(substituting exponential baseline into AFT formula)} \\
+&= \left[ \expf{-\lambda t} \right]^{\hazfactor(\vx)} && \text{(applying exponent laws)} \\
+&= \left[ \surv_0(t) \right]^{\hazfactor(\vx)} && \text{(substituting exponential baseline survival function)}
+\ea
 $$
 
-where $W$ has the extreme value distribution. The estimated parameter
-$\lambda$ is the intercept and the other coefficients are those of
-$\eta$, which will be the opposite sign of those for coxph.
-:::
+This derivation demonstrates that the exponential AFT model is mathematically identical to the exponential PH model.
 
-For a Weibull distribution, the hazard function and the survival
-function are
+For a Weibull baseline distribution with scale $\lambda$ and shape $p$, the hazard and survival functions are $\haz(t) = \lambda p (\lambda t)^{p-1}$ and $\surv(t) = \expf{-(\lambda t)^p}$.
+Specifying a proportional hazards model with subject-specific multiplier $\theta_i \eqdef \expf{\eta_i}$ gives hazard rate $\haz(t) = \lambda p (\lambda t)^{p-1} \theta_i$.
+Defining an adjusted scale parameter $\lambda^* \eqdef \lambda \theta_i^{1/p}$, the resulting survival function is:
 
 $$
-\begin{aligned}
-\haz(t)&=\lambda p (\lambda t)^{p-1}\\
-\surv(t)&=e^{-(\lambda t)^p}
-\end{aligned}
+\ba
+\surv^*(t) &\eqdef \expf{-(\lambda^* t)^p} && \text{(Weibull survival formula with scale parameter $\lambda^*$)} \\
+&= \expf{-\left(\lambda \theta_i^{1/p} t\right)^p} && \text{(substituting $\lambda^* = \lambda \theta_i^{1/p}$)} \\
+&= \expf{-(\lambda t)^p \cdot \theta_i} && \text{(simplifying exponent $\left(\theta_i^{1/p}\right)^p = \theta_i$)} \\
+&= \left[ \expf{-(\lambda t)^p} \right]^{\theta_i} && \text{(applying exponent laws)} \\
+&= \left[ \surv_0(t) \right]^{\theta_i} && \text{(substituting baseline Weibull survival function)} \\
+&= \surv_0\left( t \cdot \theta_i^{1/p} \right) && \text{(expressing as AFT model with acceleration factor $\theta_i^{1/p}$)}
+\ea
 $$
 
-We can construct a proportional hazards model by using a linear
-predictor $\eta_i$ without constant term and letting
-$\theta_i=e^{\eta_i}$ we have
+This derivation proves that the Weibull model is simultaneously a proportional hazards model and an accelerated failure time model.
+
+In terms of log survival time $Y \eqdef \log T$, the Weibull AFT model takes a log-linear regression form:
 
 $$
-\begin{aligned}
-\haz(t)&=\lambda p (\lambda t)^{p-1}\theta_i
-\end{aligned}
+\ba
+Y &= \alpha - \sigma \eta + \sigma W && \text{(log-linear AFT regression formulation)} \\
+\alpha &\eqdef -\logf{\lambda} && \text{(intercept parameter definition)} \\
+\sigma &\eqdef \frac{1}{p} && \text{(scale parameter definition as inverse shape $p$)}
+\ea
 $$
 
-A distribution with $\haz(t)=\lambda p (\lambda t)^{p-1}\theta_i$ is a
-Weibull distribution with parameters $\lambda^*=\lambda \theta_i^{1/p}$
-and $p$ so the survival function is
+where $W$ follows the standard Gumbel (extreme value) distribution.
+The estimated AFT regression coefficients $\eb_{\text{AFT}}$ produced by R's `survreg()` function relate directly to the PH regression coefficients $\eb_{\text{PH}}$ produced by `coxph()` via the identity $\eb_{\text{AFT}} = -\sigma \eb_{\text{PH}}$.
 
-$$
-\begin{aligned}
-S^*(t)&=e^{-(\lambda^* t)^p}\\
-&=e^{-(\lambda \theta^{1/p} t)^p}\\
-&= \surv(t\theta^{1/p})
-\end{aligned}
-$$
-
-so this is also an accelerated failure time model.
-
-::: hidden
-In terms of the log survival time $Y=\log{T}$ the model can be written
-as
-
-$$
-\begin{aligned}
-Y&=\alpha-\sigma\eta+\sigma W\\
-\alpha&= -\log{\lambda}\\
-\sigma &= 1/p
-\end{aligned}
-$$
-
-where $W$ has the extreme value distribution. The estimated parameter
-$\lambda$ is the intercept and the other coefficients are those of
-$\eta$, which will be the opposite sign of those for `coxph`.
-:::
-
-These AFT models are log-linear, meaning that the linear predictor has a
-log link. The exponential and the Weibull are the only log-linear models
-that are simultaneously proportional hazards models. Other parametric
-distributions can be used for survival regression either as a
-proportional hazards model or as an accelerated failure time model.
+The exponential and Weibull distributions are the only continuous distributions that are simultaneously proportional hazards models and accelerated failure time models.
+Other parametric families (such as log-logistic, log-normal, and generalized gamma) can be specified within the AFT or PH frameworks.
 
 ## Dataset: Leukemia treatments
 
-Remission survival times on 42 leukemia patients, half on new treatment,
-half on standard treatment.
+To illustrate semi-parametric and parametric survival models, we analyze remission survival times from a clinical trial of 42 pediatric leukemia patients [@kalbfleisch2002].
+Half of the patients received a new therapy (6-mercaptopurine, 6-MP) and half received a standard control treatment.
 
-This dataset is the same data as the `drug6mp` data from KMsurv, but with two
-other variables and without the pairing.
+The variables in this dataset include:
+
+- `survt`: Remission duration in weeks ($T$).
+- `status`: Relapse status (`relapse` = 1 or `censored` = 0).
+- `rx`: Treatment assignment (`new` vs `standard`).
+- `sex`: Patient sex (`female` vs `male`).
+- `surv`: Survival outcome object created with `Surv(time = survt, event = (status == "relapse"))`.
 
 ```{r}
 #| eval: false
@@ -489,8 +562,9 @@ print(anderson)
 
 ### Cox semi-parametric model
 
-```{r}
+We fit a Cox proportional hazards model comparing standard therapy to new therapy:
 
+```{r}
 anderson_cox0 <- coxph(
   formula = surv ~ rx,
   data = anderson
@@ -498,7 +572,11 @@ anderson_cox0 <- coxph(
 summary(anderson_cox0)
 ```
 
+The estimated log hazard ratio $\eb_{\text{PH}}$ for standard treatment relative to new treatment is positive, indicating that standard therapy is associated with a higher hazard of relapse (shorter remission duration).
+
 ### Weibull parametric model
+
+We next fit a parametric Weibull accelerated failure time model using `survreg()`:
 
 ```{r}
 anderson_weib <- survreg(
@@ -509,7 +587,13 @@ anderson_weib <- survreg(
 summary(anderson_weib)
 ```
 
+In `survreg()`, regression parameters are reported on the log-time scale ($Y = \log T = \alpha + \vb_{\text{AFT}} \vx + \sigma W$).
+The estimated coefficient $\eb_{\text{AFT}}$ for standard treatment is negative, indicating a reduction in log survival time (faster progression to relapse).
+The scale estimate $\es$ corresponds to $1 / p$, and satisfies $\eb_{\text{AFT}} = -\es \eb_{\text{PH}}$.
+
 ### Exponential parametric model
+
+Setting the scale parameter to $\sigma = 1$ ($p = 1$) yields the exponential parametric model:
 
 ```{r}
 anderson_exp <- survreg(
@@ -520,9 +604,14 @@ anderson_exp <- survreg(
 summary(anderson_exp)
 ```
 
-### Diagnostic - complementary log-log survival plot
+In the exponential model, $\eb_{\text{AFT}} = -\eb_{\text{PH}}$, so the AFT coefficient is equal in magnitude and opposite in sign to the Cox proportional hazards coefficient.
+
+### Diagnostic: complementary log-log survival plot
+
+To check whether a Weibull proportional hazards assumption is reasonable, we inspect the complementary log-log transformation of the Kaplan-Meier survival curves, $\log(-\log \esurv(t)) = p \log \lambda + p \log t$:
 
 ```{r}
+#| fig-cap: "Complementary log-log survival curves by treatment group"
 library(survminer)
 survfit(
   formula = surv ~ rx,
@@ -531,14 +620,30 @@ survfit(
   ggsurvplot(fun = "cloglog")
 ```
 
-If the cloglog plot is linear, then a Weibull model may be ok.
+If the complementary log-log curves are approximately linear and parallel across treatment groups, then a Weibull proportional hazards model is appropriate.
 
 # Combining left-truncation and interval-censoring
 
-From [https://stat.ethz.ch/pipermail/r-help/2015-August/431733.html]:
+In observational studies and clinical trials, complex observation schemes can introduce both **left-truncation** (delayed entry) and **interval-censoring**.
+Left-truncation occurs when subjects enter the risk set only after surviving past an entry time $L_{\text{entry}} > 0$.
+Interval-censoring occurs when the exact event time $T_i$ is unknown, but is known to fall within an interval $(L_i, R_i]$.
 
-> coxph does left truncation but not left (or interval) censoring
-> survreg does interval censoring but not left truncation (or time dependent covariates).
+Standard software tools in R make distinct trade-offs between these two observation mechanisms:
 
- - Terry Therneau, August 31, 2015
+> `coxph` does left truncation but not left (or interval) censoring;
+> `survreg` does interval censoring but not left truncation (or time dependent covariates).
+>
+> --- Terry Therneau (August 31, 2015)
+
+In particular, `coxph()` constructs risk sets dynamically at each observed failure time $t_j$ using counting process format (`time1 = entry`, `time2 = exit`), enabling seamless handling of left-truncation.
+However, because partial likelihood relies on ordered exact failure times, standard Cox models cannot easily accommodate interval-censored data.
+
+Conversely, `survreg()` accommodates interval-censored outcomes via `Surv(time1 = L, time2 = R, type = "interval")` by maximizing the interval parametric likelihood $\P(L_i < T_i \le R_i) = \cdf_0(R_i) - \cdf_0(L_i)$.
+However, standard `survreg()` assumes all subjects enter observation at time 0, and does not condition likelihood terms on surviving past a delayed entry time $L_{\text{entry}}$.
+
+When a study contains both delayed entry and interval-censored event times, specialized R packages must be used:
+
+- `flexsurv`: Fits flexible parametric survival models and allows custom likelihood specifications that incorporate both left-truncation conditioning and interval-censored bounds.
+- `icenReg`: Implements semi-parametric and parametric regression models specifically designed for interval-censored data with truncation.
+- `interval`: Provides nonparametric and semi-parametric interval-censored analysis tools with support for complex sampling designs.
 
