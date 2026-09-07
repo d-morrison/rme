@@ -71,7 +71,14 @@ jobs:
   render:
     name: build
     needs: filter
-    if: needs.filter.outputs.render == 'true'
+    # Fail toward doing the real render. If the `filter` job itself fails or
+    # errors (a dorny/paths-filter bug, a transient API error), its `render`
+    # output is empty rather than 'false', so this job still runs: `build /
+    # build` is reported on every PR regardless of paths touched (rme#1108),
+    # and it is reported by the job that actually verifies the render rather
+    # than by the no-op. `!cancelled()` rather than `always()` so a cancelled
+    # run does not start a full render.
+    if: ${{ !cancelled() && needs.filter.outputs.render != 'false' }}
     uses: Morrison-Lab/gha/.github/workflows/preview.yml@v2
     with:
       r-version: '4.6.0'
