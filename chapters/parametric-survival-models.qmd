@@ -48,10 +48,10 @@ $$
 
 ## Weibull Distribution
 
-The Weibull distribution generalizes the exponential distribution by introducing a shape parameter $p > 0$ alongside the scale parameter $\lambda > 0$ [@kalbfleisch2002].
+The Weibull distribution generalizes the exponential distribution by introducing a shape parameter $p > 0$ alongside the scale parameter $\lambda > 0$ [@kalbfleisch2011statistical].
 This flexibility allows the hazard rate to change monotonically over time, accommodating situations where risk increases or decreases as time elapses.
 
-Using the Kalbfleisch and Prentice (2002) parameterization:
+Using the parameterization of @kalbfleisch2011statistical:
 
 $$
 \ba
@@ -477,11 +477,14 @@ where $W$ follows the standard Gumbel (extreme value) distribution.
 The estimated AFT regression coefficients $\eb_{\text{AFT}}$ produced by R's `survreg()` function relate directly to the PH regression coefficients $\eb_{\text{PH}}$ produced by `coxph()` via the identity $\eb_{\text{AFT}} = -\sigma \eb_{\text{PH}}$.
 
 The exponential and Weibull distributions are the only continuous distributions that are simultaneously proportional hazards models and accelerated failure time models.
-Other parametric families (such as log-logistic, log-normal, and generalized gamma) can be specified within the AFT or PH frameworks.
+Other parametric families commonly used for survival data
+(log-logistic, log-normal, and generalized gamma)
+are AFT families rather than PH families;
+the log-logistic distribution is additionally a proportional-odds model.
 
 ## Dataset: Leukemia treatments
 
-To illustrate semi-parametric and parametric survival models, we analyze remission survival times from a clinical trial of 42 pediatric leukemia patients [@kalbfleisch2002].
+To illustrate semi-parametric and parametric survival models, we analyze remission survival times from a clinical trial of 42 pediatric leukemia patients [@kalbfleisch2011statistical].
 Half of the patients received a new therapy (6-mercaptopurine, 6-MP) and half received a standard control treatment.
 
 The variables in this dataset include:
@@ -633,7 +636,8 @@ Standard software tools in R make distinct trade-offs between these two observat
 > `coxph` does left truncation but not left (or interval) censoring;
 > `survreg` does interval censoring but not left truncation (or time dependent covariates).
 >
-> --- Terry Therneau (August 31, 2015)
+> --- Terry Therneau,
+> [R-help, August 31, 2015](https://stat.ethz.ch/pipermail/r-help/2015-August/431733.html)
 
 In particular, `coxph()` constructs risk sets dynamically at each observed failure time $t_j$ using counting process format (`time1 = entry`, `time2 = exit`), enabling seamless handling of left-truncation.
 However, because partial likelihood relies on ordered exact failure times, standard Cox models cannot easily accommodate interval-censored data.
@@ -641,9 +645,20 @@ However, because partial likelihood relies on ordered exact failure times, stand
 Conversely, `survreg()` accommodates interval-censored outcomes via `Surv(time1 = L, time2 = R, type = "interval")` by maximizing the interval parametric likelihood $\P(L_i < T_i \le R_i) = \cdf_0(R_i) - \cdf_0(L_i)$.
 However, standard `survreg()` assumes all subjects enter observation at time 0, and does not condition likelihood terms on surviving past a delayed entry time $L_{\text{entry}}$.
 
-When a study contains both delayed entry and interval-censored event times, specialized R packages must be used:
+When a study contains both delayed entry and interval-censored event times,
+specialized tooling is needed.
+Of the packages below, only `flexsurv` handles both features together;
+the other two are listed because they cover interval censoring well
+and are the usual starting points, not because they solve the truncation half:
 
 - `flexsurv`: Fits flexible parametric survival models and allows custom likelihood specifications that incorporate both left-truncation conditioning and interval-censored bounds.
-- `icenReg`: Implements semi-parametric and parametric regression models specifically designed for interval-censored data with truncation.
-- `interval`: Provides nonparametric and semi-parametric interval-censored analysis tools with support for complex sampling designs.
+- `icenReg`: Fits regression models for interval-censored data:
+  Cox proportional-hazards, proportional-odds, and accelerated failure time.
+  Semi-parametric and fully parametric forms are both available,
+  but the fully parametric option covers the AFT models only.
+  It does not itself provide left-truncation conditioning.
+- `interval`: Fits nonparametric survival curves (NPMLE) for interval-censored data
+  and provides weighted logrank and Wilcoxon-type tests [@fay2010exact].
+  It is nonparametric throughout,
+  so it supports neither regression nor truncation.
 
