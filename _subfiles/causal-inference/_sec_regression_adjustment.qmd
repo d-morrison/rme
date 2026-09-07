@@ -3,7 +3,7 @@
 Under the causal assumptions
 (consistency, conditional exchangeability, and positivity),
 the causal effect can be estimated
-by adjusting for the confounders $\vL$
+by adjusting for the confounders $\vec{L}$
 in a regression model.
 
 ## Direct standardization (G-computation) {#sec-causal-g-computation}
@@ -13,11 +13,11 @@ The **G-computation** estimator
 estimates the ATE by:
 
 1. Fitting a regression model:
-   $\emu(a, \vl) \eqdef \Est{\E{Y \mid A = a, \vL = \vl}}$
+   $\emu(a, \vec{l}) \eqdef \Est{\E{Y \mid A = a, \vec{L} = \vec{l}}}$
 
 2. Predicting the potential outcome mean for each individual
    under both treatment levels $a = 1$ and $a = 0$:
-   $$\hat{Y}_i(a) \eqdef \emu(a, \vL_i)$$
+   $$\hat{Y}_i(a) \eqdef \emu(a, \vec{L}_i)$$
 
 3. Averaging over the study population:
    $$\Est{\E{Y(a)}} \eqdef \frac{1}{n} \sum_{i=1}^n \hat{Y}_i(a)$$
@@ -47,7 +47,7 @@ and the regression model is linear,
 G-computation simplifies to the
 **adjusted treatment coefficient** from a linear regression:
 
-$$Y = \beta_0 + \beta_A A + \tp{\vbeta_L} \vL + \varepsilon$$
+$$Y = \beta_0 + \beta_A A + \tp{\vbeta_L} \vec{L} + \varepsilon$$
 
 Under consistency, conditional exchangeability,
 and positivity,
@@ -59,10 +59,10 @@ $$
 \text{ATE}
 &\eqdef \E{Y(1) - Y(0)} && \text{(definition of ATE)}
 \\&= \E{Y(1)} - \E{Y(0)} && \text{(linearity of expectation)}
-\\&= \E{\E{Y(1) \mid \vL}} - \E{\E{Y(0) \mid \vL}} && \text{(law of iterated expectations)}
-\\&= \E{\E{Y \mid A = 1, \vL}} - \E{\E{Y \mid A = 0, \vL}} && \text{(consistency and conditional exchangeability)}
-\\&= \E{\beta_0 + \beta_A (1) + \tp{\vbeta_L} \vL} - \E{\beta_0 + \beta_A (0) + \tp{\vbeta_L} \vL} && \text{(linear outcome model specification)}
-\\&= \left(\beta_0 + \beta_A + \tp{\vbeta_L} \E{\vL}\right) - \left(\beta_0 + \tp{\vbeta_L} \E{\vL}\right) && \text{(linearity of expectation)}
+\\&= \E{\E{Y(1) \mid \vec{L}}} - \E{\E{Y(0) \mid \vec{L}}} && \text{(law of iterated expectations)}
+\\&= \E{\E{Y \mid A = 1, \vec{L}}} - \E{\E{Y \mid A = 0, \vec{L}}} && \text{(consistency and conditional exchangeability)}
+\\&= \E{\beta_0 + \beta_A (1) + \tp{\vbeta_L} \vec{L}} - \E{\beta_0 + \beta_A (0) + \tp{\vbeta_L} \vec{L}} && \text{(linear outcome model specification)}
+\\&= \left(\beta_0 + \beta_A + \tp{\vbeta_L} \E{\vec{L}}\right) - \left(\beta_0 + \tp{\vbeta_L} \E{\vec{L}}\right) && \text{(linearity of expectation)}
 \\&= \beta_A && \text{(algebraic simplification)}
 \ea
 $$
