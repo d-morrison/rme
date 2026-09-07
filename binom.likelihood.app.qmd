@@ -19,8 +19,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-#tried to wrap code chunks with the option below, but didn't work
-#knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE)
 
 options(scipen = 1, digits = 5)
 library(tidyverse)
@@ -40,11 +38,11 @@ Simulate one hundred mutually independent binary outcomes with probability $\pi 
 ```{r}
 rm(list = ls())
 
-n = 100
-pi = 0.7
+n <- 100
+pi <- 0.7
 
 set.seed(1)
-x = rbinom(n = n, size = 1, prob = pi)
+x <- rbinom(n = n, size = 1, prob = pi)
 
 ```
 
@@ -66,18 +64,18 @@ $$
 ```{r}
 #| label: fig-graph-lik
 #| fig-cap: "likelihood"
-likelihood = function(pi, x)
-{
-  n = length(x)
-  pi^sum(x) * (1-pi)^(n-sum(x))
+likelihood <- function(pi, x) {
+  n <- length(x)
+  pi^sum(x) * (1 - pi)^(n - sum(x))
 }
 
 ggplot() + 
   geom_function(
     fun = likelihood,
     args = list(x = x),
-    n = 100000) + 
-  xlim(0,1) +
+    n = 100000
+  ) +
+  xlim(0, 1) +
   ylab("L(pi)") +
   xlab("pi") +
   theme_bw()
@@ -86,17 +84,17 @@ ggplot() +
 ```{r}
 #| label: fig-graph-llik
 #| fig-cap: "log(likelihood)"
-ll = function(pi, x)
-{
-  n = length(x)
-  log(pi)*sum(x) + log(1-pi)*(n-sum(x))
+ll <- function(pi, x) {
+  n <- length(x)
+  log(pi) * sum(x) + log(1 - pi) * (n - sum(x))
 }
 ggplot() + 
   geom_function(
     fun = ll,
     args = list(x = x),
-    n = 100000) + 
-  xlim(0,1) +
+    n = 100000
+  ) +
+  xlim(0, 1) +
   ylab("log(L(pi))") +
   xlab("pi") +
   theme_bw()
@@ -104,15 +102,13 @@ ggplot() +
 
 ```{r}
 #| context: server
-lik = function(pi, x)
-{
-  n = length(x)
-  pi^sum(x) * (1-pi)^(n-sum(x))
+lik <- function(pi, x) {
+  n <- length(x)
+  pi^sum(x) * (1 - pi)^(n - sum(x))
 }
-llik = function(pi, x)
-{
-  n = length(x)
-  log(pi)*sum(x) + log(1-pi)*(n-sum(x))
+llik <- function(pi, x) {
+  n <- length(x)
+  log(pi) * sum(x) + log(1 - pi) * (n - sum(x))
 }
 
 
@@ -125,7 +121,8 @@ sliderInput(
   value = 3, 
   min = 0,
   step = .1,
-  max = 6)
+  max = 6
+)
 textOutput("n")
 checkboxInput(
   "logl",
@@ -139,48 +136,45 @@ plotOutput("plot1")
 #| context: server
 
 library(ggplot2)
-n = reactive(round(10^(input$logn)))
-pi = 0.7
-x2 = reactive(
-  {
-    set.seed(1)
-    rbinom(
-      n = n(), 
-      size = 1, 
-      prob = pi)
-  })
+n <- reactive(round(10^(input$logn)))
+pi <- 0.7
+x2 <- reactive({
+  set.seed(1)
+  rbinom(
+    n = n(),
+    size = 1,
+    prob = pi
+  )
+})
 
-output$n = shiny::renderText(n())
+output$n <- shiny::renderText(n())
 
-likelihood_plot = reactive(
-  {
-    temp = 
-      ggplot() + 
-      xlim(0,1) +
-      ylab("L(pi)") +
-      xlab("pi") +
-      theme_bw()
-    if(input$logl)
-    {
-      temp = temp + 
-        geom_function(
+likelihood_plot <- reactive({
+  temp <-
+    ggplot() +
+    xlim(0, 1) +
+    ylab("L(pi)") +
+    xlab("pi") +
+    theme_bw()
+  if (input$logl) {
+    temp <- temp +
+      geom_function(
         fun = llik,
         args = list(x = x2()),
-        n = 100000) +
-        scale_y_continuous(label = scales::comma)
-      
-    } else
-    {
-      temp = temp + 
-        geom_function(
+        n = 100000
+      ) +
+      scale_y_continuous(label = scales::comma)
+  } else {
+    temp <- temp +
+      geom_function(
         fun = lik,
         args = list(x = x2()),
-        n = 100000)
-    }
-    temp
+        n = 100000
+      )
   }
-)
-output$plot1 =  shiny::renderPlot(likelihood_plot())
+  temp
+})
+output$plot1 <- shiny::renderPlot(likelihood_plot())
 
 ```
 
@@ -248,7 +242,8 @@ Looking at this expression element-wise:
 \item $x_i \in \{0,1\}$ for all $i$, so $0\leq\sum_{i=1}^n x_i \leq n$. Therefore both $\sum_{i=1}^nx_i$ and $n-\sum_{i=1}^nx_i$ are non-negative
 \end{itemize}
 
-Based on the above, we can conclude that the second derivative of the log-likelihood is negative. Thus the estimator $\hat{\pi}_{MLE} = \bar{x}$ is, in fact, the Maximum Likelihood Estimator of $\pi$.
+Based on this non-negativity analysis, we can conclude that the second derivative of the log-likelihood is negative.
+Thus the estimator $\hat{\pi}_{\text{MLE}} = \bar{x}$ is, in fact, the Maximum Likelihood Estimator of $\pi$.
 
 ## Compute the maximum likelihood estimate of $\pi$ from your simulated data.
 
@@ -256,7 +251,7 @@ Based on the above, we can conclude that the second derivative of the log-likeli
 \  
 
 ```{r}
-pi_MLE = x_mean = mean(x)
+pi_MLE <- x_mean <- mean(x)
 ```
 
 We can calculate the MLE of $\pi$ either by calculating the mean of the data $\bar{x} = `r x_mean`$ or by optimizing the likelihood function over $\pi\in(0,1)$ to get $\text{argmax}\mathcal{L}(\pi) = `r pi_MLE`$. These answers are equivalent because the likelihood was calculated using our generated data.
@@ -291,9 +286,9 @@ Now, with the Fisher Information, we know the variance of the MLE is $\frac{1}{\
 \ 
 
 ```{r, fig.height = 2}
-std_err = function(n, pi = 0.7) sqrt(pi * (1-pi) / n)
+std_err <- function(n, pi = 0.7) sqrt(pi * (1 - pi) / n)
 
-std_err_plot = ggplot() + 
+std_err_plot <- ggplot() +
   geom_function(fun = std_err) + 
   scale_x_continuous(trans = "log10", limits = c(10, 10^4)) +
   ylab("Standard Error of MLE") +
@@ -310,9 +305,9 @@ Here we continue to assume a parameter $\pi = 0.7$ like our simulated data. We c
 \ 
 
 ```{r}
-sample_size = function(se, pi = 0.7) (pi * (1-pi)) / se^2
+sample_size <- function(se, pi = 0.7) (pi * (1 - pi)) / se^2
 
-se1 = sample_size(0.01)
+se1 <- sample_size(0.01)
 ```
 
 For a population with parameter $\pi = 0.7$, the sample size needed to achieve a standard error of 1 percentage point is $`r se1`$.
@@ -322,21 +317,21 @@ For a population with parameter $\pi = 0.7$, the sample size needed to achieve a
 \ 
 
 ```{r}
-se0.1 = sample_size(0.001)
+se_point1 <- sample_size(0.001)
 ```
-The sample size needed to achieve a standard error of 1 percentage point is $`r se0.1`$.
+The sample size needed to achieve a standard error of 0.1 percentage point is $`r se_point1`$.
 
 ### Estimate the standard error from your simulated data using the asymptotic formula.
 
 ```{r}
-sample_se = std_err(n=n,pi=x_mean) |> print()
+sample_se <- std_err(n = n, pi = x_mean) |> print()
 ```
 
 ### Compare the estimated standard error with the theoretical standard error.
 
 ```{r}
 
-theoretical_se = std_err(n=n,pi=0.7)
+theoretical_se <- std_err(n = n, pi = 0.7)
 ```
 
 The standard error from the simulated data is $\sqrt{\frac{\hat{\pi}(1-\hat{\pi})}{n}} = `r sample_se`$ and the theoretical standard error for a sample size of 100 is $\sqrt{\frac{\pi(1-\pi)}{n}} = `r theoretical_se`$. The two standard errors are very close. The difference between these two estimators is because of the value of $\pi$ used in the calculation, and the theoretical standard error is smaller because the population value of $\pi$ is farther from the argmax of $0.5$.
@@ -350,15 +345,16 @@ Compute an asymptotic 95% confidence interval for $\pi$, and calculate an asympt
 
 ```{r}
 
-lcl = x_mean - qnorm(.975) * sample_se
-ucl = x_mean + qnorm(.975) * sample_se
+lcl <- x_mean - qnorm(.975) * sample_se
+ucl <- x_mean + qnorm(.975) * sample_se
 
-test_stat = (x_mean - 0.5) / sqrt((0.5 * 0.5) / n)
-p_val = 2*pnorm(abs(test_stat), lower.tail = F)
+test_stat <- (x_mean - 0.5) / sqrt((0.5 * 0.5) / n)
+p_val <- 2 * pnorm(abs(test_stat), lower.tail = FALSE)
 
 ```
 
-An asymptotic 95% confidence interval for $pi$ is $\hat{\pi}_{\text{ML}} \pm 1.96 \sqrt{\frac{\hat{\pi}_{\text{ML}}(1-\hat{\pi}_{\text{ML}})}{n}}$ which results in the interval $[`r lcl`, `r ucl`]$. Examples of appropriate interpretations of the interval are:
+An asymptotic 95% confidence interval for $\pi$ is $\hat{\pi}_{\text{ML}} \pm 1.96 \sqrt{\frac{\hat{\pi}_{\text{ML}}(1-\hat{\pi}_{\text{ML}})}{n}}$, which results in the interval $[`r lcl`, `r ucl`]$.
+Examples of appropriate interpretations of the interval are:
 \begin{itemize}
 \item We are 95\% confident that the true population parameter $\pi$ lies in the interval $[`r lcl`, `r ucl`]$.
 \item In 95\% of repeated sampling, the true population parameter $\pi$ would be captured by an interval calculated like $[`r lcl`, `r ucl`]$.
@@ -372,8 +368,8 @@ A p-value for the null hypothesis $H_0: \pi = 0.5$ with a two-sided alternative 
 prop.test(sum(x), length(x), correct = FALSE)$p.value
 library(binom)
 binom.confint(sum(x), length(x), conf.level = 0.95, methods = "asymptotic")
-# note that prop.test() uses Wilson's method for confidence intervals, which is more complicated
-# details are in ?binom::binom.confint
+# note that prop.test() uses Wilson's method for confidence intervals,
+# which is more complicated; details are in ?binom::binom.confint
 ```
 
 ##
@@ -397,7 +393,8 @@ P\left(Z \leq \frac{\frac{1}{n}a - \pi_0}{\sqrt{\frac{\pi_0(1-\pi_0)}{n}}}\right
 \end{aligned}
 $$
 
-The lower bound of this interval is $a = \left(\Phi^{-1}(0.025)\sqrt{\frac{0.5*0.5}{100}}+0.5\right)\times100 = `r (qnorm(0.025)*sqrt(0.5*0.5/100)+0.5)*100`$, and the upper bound is $a = \left(\Phi^{-1}(0.975)\sqrt{\frac{0.5*0.5}{100}}+0.5\right)\times100 = `r (qnorm(0.975)*sqrt(0.5*0.5/100)+0.5)*100`$. We will reject for any values of $\sum_{i=1}^n X_i$ less than or equal to 40 or greater than or equal to 60.
+The lower bound of this interval is $a = \left(\Phi^{-1}(0.025)\sqrt{\frac{0.5*0.5}{100}}+0.5\right)\times100 = `r (qnorm(0.025)*sqrt(0.5*0.5/100)+0.5)*100`$, and the upper bound is $b = \left(\Phi^{-1}(0.975)\sqrt{\frac{0.5*0.5}{100}}+0.5\right)\times100 = `r (qnorm(0.975)*sqrt(0.5*0.5/100)+0.5)*100`$.
+We will reject for any values of $\sum_{i=1}^n X_i$ less than or equal to 40 or greater than or equal to 60.
 
 We can double-check this using the `stats::prop.test()` function:
 
@@ -430,35 +427,35 @@ $$
 Graph the power to reject the null hypothesis as a function of sample size, using your sample estimate as the data-generating value. What sample size would you need to achieve 80% power? 90%? 95%? 99%?
 
 ```{r}
-power = function(n = 100, null = 0.5, alt = 0.68)
-{
-  n = floor(n) # there's no such thing as fractional sample size
-  se_null = sqrt(null*null/n)
-  reject_upper = ceiling(n * (null + qnorm(0.975) * se_null))
-  reject_lower = floor(n * (null - qnorm(0.975) * se_null))
-  p_reject_high = 
+power <- function(n = 100, null = 0.5, alt = 0.68) {
+  n <- floor(n) # there's no such thing as fractional sample size
+  se_null <- sqrt(null * null / n)
+  reject_upper <- ceiling(n * (null + qnorm(0.975) * se_null))
+  reject_lower <- floor(n * (null - qnorm(0.975) * se_null))
+  p_reject_high <-
     pbinom(
       q = reject_lower, 
       size = n, 
-      prob = alt)
-  p_reject_low = 
+      prob = alt
+    )
+  p_reject_low <-
     pbinom(
       q = reject_upper - 1, # see documentation for pbinom(lower = FALSE,...)
       size = n, 
       prob = alt, 
-      lower = FALSE)
+      lower = FALSE
+    )
   
-  p_reject = p_reject_high + p_reject_low
+  p_reject <- p_reject_high + p_reject_low
   
   return(p_reject)
-  
 }
 
-power_plot = 
+power_plot <-
   ggplot() + 
-  geom_function(fun = power,n=200) + 
-  xlim(c(1,200)) + 
-  ylim(0,1) +
+  geom_function(fun = power, n = 200) +
+  xlim(c(1, 200)) +
+  ylim(0, 1) +
   ylab("Power") +
   xlab("n") +
   theme_bw()
@@ -469,32 +466,33 @@ print(power_plot)
 
 ```{r}
 
-sample_sizes = 1:200
-# calculate power for a range of values, 
-# which the graph above tells us will be sufficient to search among
-pwrs = power(n = sample_sizes)
+sample_sizes <- 1:200
+# calculate power for a range of sample sizes from 1 to 200
+pwrs <- power(n = sample_sizes)
 
-pwrs.want = c(0.800, 0.900, 0.950, 0.990)
+pwrs_want <- c(0.800, 0.900, 0.950, 0.990)
 
-size.needed = numeric(4)
+size_needed <- numeric(4)
 
-for(i in 1:length(pwrs.want))
-{
-  target_power_achieved = pwrs >= pwrs.want[i]
-  size.needed[i] = sample_sizes[min(which(target_power_achieved))]
+for (i in seq_along(pwrs_want)) {
+  target_power_achieved <- pwrs >= pwrs_want[i]
+  size_needed[i] <- sample_sizes[min(which(target_power_achieved))]
 }
 
 # optional:
-tibble(
-  desired_power = pwrs.want,
-  size.needed = size.needed,
-  achieved_power = power(size.needed) 
+dplyr::tibble(
+  desired_power = pwrs_want,
+  size_needed = size_needed,
+  achieved_power = power(size_needed)
 ) |> 
   pander()
 
 ```
 
-To achieve 80% power, the sample size must be at least $`r size.needed[1]`$. To achieve 90% power, the sample size must be at least $`r size.needed[2]`$. To achieve 95% power, the sample size must be at least $`r size.needed[3]`$. To achieve 80% power, the sample size must be at least $`r size.needed[4]`$.
+To achieve 80% power, the sample size must be at least $`r size_needed[1]`$.
+To achieve 90% power, the sample size must be at least $`r size_needed[2]`$.
+To achieve 95% power, the sample size must be at least $`r size_needed[3]`$.
+To achieve 99% power, the sample size must be at least $`r size_needed[4]`$.
 
 
 ## Repeat the simulation 1000 times.
@@ -523,67 +521,53 @@ estimate[i] = est
 ```{r}
 
 
-binom.MLE.sim = function(pi = 0.7, null = 0.5, n = 100, sim = 1000, alpha = 0.05)
-{
+binom_mle_sim <- function(pi = 0.7, null = 0.5, n = 100, sim = 1000,
+                          alpha = 0.05) {
+  estimates <- numeric(sim)
+  errors <- numeric(sim)
+  reject_null <- numeric(sim)
+  CI_true_val <- numeric(sim)
   
-  # create some more vectors to store results here
-  estimates = numeric(sim)
-  errors = numeric(sim)
-  reject_null = numeric(sim)
-  CI_true_val = numeric(sim)
-  
-  
-  for (i in 1:sim)
-  {
-    # [generate data here]
-    x.i = rbinom(n,1,prob = pi)
-    # [analyze data here]
-    est = mean(x.i)
-    se = sqrt(est*(1-est)/n)
-    se_null = sqrt(null*(1-null)/n)
-    ci_radius = se * qnorm(.975)
-    ci = est + c(-1,1) * ci_radius
-    z_stat = abs(est-null)/se_null
-    pval = pnorm(abs(z_stat), lower = FALSE)*2
+  for (i in seq_len(sim)) {
+    x_i <- rbinom(n, 1, prob = pi)
+    est <- mean(x_i)
+    se <- sqrt(est * (1 - est) / n)
+    se_null <- sqrt(null * (1 - null) / n)
+    ci_radius <- se * qnorm(.975)
+    ci <- est + c(-1, 1) * ci_radius
+    z_stat <- abs(est - null) / se_null
+    pval <- pnorm(abs(z_stat), lower.tail = FALSE) * 2
     
-    # save some more results here
-    estimates[i] = est
-    errors[i] = se
-    reject_null[i] = pval < alpha
-    CI_true_val[i] = between(pi, ci[1], ci[2])
-    
+    estimates[i] <- est
+    errors[i] <- se
+    reject_null[i] <- pval < alpha
+    CI_true_val[i] <- dplyr::between(pi, ci[1], ci[2])
   }
   
-  true_se = std_err(n = n, pi = pi) # using what we built previously
+  true_se <- std_err(n = n, pi = pi)
   
-  
-  simulations = tibble(
+  simulations <- dplyr::tibble(
     estimates,
     errors,
     reject_null,
-    CI_true_val)
+    CI_true_val
+  )
   
-  res = list(
-    
-    #return all parameters used  
+  res <- list(
     p = pi,
     null = null,
     n = n,
     sim = sim,
     alpha = alpha,
-    
-    #returning the data, MLE, and estimated standard errors for each simulation 
     sim_data = simulations,
     estimates = estimates, 
     errors = errors,
-    
-    #true_se is calculated with the data-generating parameter
     true_se = true_se,
-    
-    # returning asymptotic results;
-    # these could alternatively be calculated in a postprocessing function
     MLE_bias = mean(estimates) - pi,
+    MLE_var = var(estimates),
     MLE_se = sd(estimates),
+    MLE_mse = mean((estimates - pi)^2),
+    MLE_mae = mean(abs(estimates - pi)),
     SE_bias = mean(errors) - true_se,
     SE_se = sd(errors),
     p_CI = mean(CI_true_val),
@@ -597,13 +581,10 @@ binom.MLE.sim = function(pi = 0.7, null = 0.5, n = 100, sim = 1000, alpha = 0.05
 
 ```{r}
 set.seed(1)
-sim100 = binom.MLE.sim(pi = 0.7, null = 0.5, n = 100, sim = 1000, alpha = 0.05)
-
-#view results from first 10 simulations
-#tibble(sim1000$sim_data)
+sim100 <- binom_mle_sim(pi = 0.7, null = 0.5, n = 100, sim = 1000, alpha = 0.05)
 ```
 
-## Analyze simulation results
+## Analyze simulation results {#sec-analyze-sim-results}
 
 Using your 1000 simulations, estimate:
 
@@ -620,11 +601,14 @@ Using your 1000 simulations, estimate:
 \ 
 
 - the bias of the MLE $`r sim100[["MLE_bias"]]`$
-- the standard error of the MLE $`r sim100[["MLE_se"]]`$
+- the empirical variance of the MLE $`r sim100[["MLE_var"]]`$
+- the empirical standard error of the MLE $`r sim100[["MLE_se"]]`$
+- the mean squared error of the MLE $`r sim100[["MLE_mse"]]`$
+- the mean absolute error of the MLE $`r sim100[["MLE_mae"]]`$
 - the bias of the estimated standard error $`r sim100[["SE_bias"]]`$
 - the empirical standard error of the estimated standard error $`r sim100[["SE_se"]]`$
 - the coverage probability of the confidence intervals $`r sim100[["p_CI"]]`$
-- the power of your hypothesis test $`r sim100[["p_reject"]]`$
+- the power of your hypothesis test to reject the null hypothesis $H_0: \pi = 0.5$ $`r sim100[["p_reject"]]`$
 
 
 ## Visualize simulation results
@@ -634,7 +618,7 @@ Create histograms and/or boxplots of the MLEs and estimated standard errors, wit
 \  
 ```{r}
 
-ggplot(sim100$sim_data, aes(x=estimates)) + 
+ggplot(sim100$sim_data, aes(x = estimates)) +
   geom_histogram() +
   labs(
     title = "Simulated MLE",
@@ -642,20 +626,20 @@ ggplot(sim100$sim_data, aes(x=estimates)) +
       "p = ", sim100$p, 
       ", n = ", sim100$n, 
       ", simulations = ", sim100$sim, 
-      sep = "")
+      sep = ""
+    )
   ) + 
-  xlab("MLE") + #label on the x-axis
-  ylab("Count") + #label on the y-axis
-  geom_vline(xintercept = sim100$p,color = "red") + 
-  # plotting a vertical line where the correct parameter should be
+  xlab("MLE") +
+  ylab("Count") +
+  geom_vline(xintercept = sim100$p, color = "red") +
   theme_bw()
 
 ```
 
 ```{r}
-true_se = sqrt(pi*(1-pi)/n)
+true_se <- sqrt(pi * (1 - pi) / n)
 
-SE.plot = ggplot(sim100$sim_data, aes(x = errors)) + 
+SE_plot <- ggplot(sim100$sim_data, aes(x = errors)) +
   geom_histogram() +
   labs(
     title = "Simulated Standard Error",
@@ -663,15 +647,15 @@ SE.plot = ggplot(sim100$sim_data, aes(x = errors)) +
       "p = ", sim100$p, 
       ", n = ", sim100$n, 
       ", simulations = ", sim100$sim, 
-      sep = "")
+      sep = ""
+    )
   ) + 
-  xlab("Standard Errors") + #label on the x-axis
-  ylab("Count") + #label on the y-axis
-  geom_vline(xintercept = sim100$true_se,color = "red") + 
-  # plotting a vertical line where the correct parameter should be
+  xlab("Standard Errors") +
+  ylab("Count") +
+  geom_vline(xintercept = sim100$true_se, color = "red") +
   theme_bw()
 
-print(SE.plot)
+print(SE_plot)
 ```
 
 
@@ -682,39 +666,37 @@ Summarize the performance of your analyses, comparing empirical and theoretical 
 \ 
 ```{r}
 
-summarize_sim = 
-  function(sim_results)
-  {
-    tribble(
-      ~characteristic, ~empirical, ~theoretical,
-      
-      "bias of MLE", 
-      sim_results[["MLE_bias"]], 
-      0,
-      
-      "standard error of MLE", 
-      sim_results[["MLE_se"]], 
-      sim_results[["true_se"]],
-      
-      "bias of estimated standard error", 
-      sim_results[["SE_bias"]], 
-      0,
-      
-      "CI coverage", 
-      sim_results[["p_CI"]], 
-      .95,
-      
-      "power", 
-      sim_results[["p_reject"]], 
-      power(
-        n = sim_results$n, 
-        null = sim_results$null, 
-        alt = sim_results$p)
+summarize_sim <- function(sim_results) {
+  dplyr::tribble(
+    ~characteristic, ~empirical, ~theoretical,
+
+    "bias of MLE",
+    sim_results[["MLE_bias"]],
+    0,
+
+    "standard error of MLE",
+    sim_results[["MLE_se"]],
+    sim_results[["true_se"]],
+
+    "bias of estimated standard error",
+    sim_results[["SE_bias"]],
+    0,
+
+    "CI coverage",
+    sim_results[["p_CI"]],
+    .95,
+
+    "power",
+    sim_results[["p_reject"]],
+    power(
+      n = sim_results$n,
+      null = sim_results$null,
+      alt = sim_results$p
     )
-  }
+  )
+}
 
 sim100 |> summarize_sim() |> pander()
-
 
 ```
 
@@ -724,25 +706,29 @@ Overall, the simulated results for mean and standard error were very close to th
 
 Repeat the simulation with a simulated sample sizes of $10^3$ and $10^5$ binary outcomes, and summarize the results.
 
-Compare the empirical results with the theoretical results above.
+Compare the empirical results with the theoretical asymptotic performance characteristics.
 
 ::: {.callout-tip}
 
-Instead of copy-pasting code, write a function that takes the data-generating $\pi$, the null hypothesis $\pi_0$, the sample size, and the number of simulations to run as inputs, and returns the performance characteristics above.
+Instead of copy-pasting code, write a function that takes the data-generating $\pi$, the null hypothesis $\pi_0$, the sample size, and the number of simulations to run as inputs, and returns the performance characteristics described in @sec-analyze-sim-results.
 
 :::
 
 \  
 ```{r}
 
-sim10.3 = binom.MLE.sim(pi = 0.7, null = 0.5, n = 10^3, sim = 1000, alpha = 0.05)
-sim10.3 |> summarize_sim() |> pander()
+sim1000 <- binom_mle_sim(
+  pi = 0.7, null = 0.5, n = 10^3, sim = 1000, alpha = 0.05
+)
+sim1000 |> summarize_sim() |> pander()
 ```
 
 ```{r}
-sim10.5 = binom.MLE.sim(pi = 0.7, null = 0.5, n = 10^5, sim = 1000, alpha = 0.05)
+sim100000 <- binom_mle_sim(
+  pi = 0.7, null = 0.5, n = 10^5, sim = 1000, alpha = 0.05
+)
 
-sim10.5 |> summarize_sim() |> pander()
+sim100000 |> summarize_sim() |> pander()
 ```
 
 With more repeated samples (more simulations), the empirical estimates of the MLE approach the theoretical value of 0.7, and the empirical estimates of the standard error approach 0. The observed power of the test of ($\text{H}_0: \pi_0 = 0.5$) increases as sample size increases, and the frequency of capturing the true value in the confidence interval decreases as sample size increases. In this set of simulations, our data is generated under the alternative hypothesis, so our ability to correctly reject the null hypothesis (power) increases as we collect more data points.
@@ -754,18 +740,24 @@ Repeat the simulation at all three sample sizes for the scenario where the data-
 \  
 ```{r}
 
-sim100_05 = binom.MLE.sim(pi = 0.5, null = 0.5, n = 100, sim = 1000, alpha = 0.05)
-sim100_05 |> summarize_sim() |> pander()
+sim100_null05 <- binom_mle_sim(
+  pi = 0.5, null = 0.5, n = 100, sim = 1000, alpha = 0.05
+)
+sim100_null05 |> summarize_sim() |> pander()
 ```
 
 ```{r}
-sim10.3_05 = binom.MLE.sim(pi = 0.5, null = 0.5, n = 10^3, sim = 1000, alpha = 0.05)
-sim10.3_05 |> summarize_sim() |> pander()
+sim1000_null05 <- binom_mle_sim(
+  pi = 0.5, null = 0.5, n = 10^3, sim = 1000, alpha = 0.05
+)
+sim1000_null05 |> summarize_sim() |> pander()
 ```
 
 ```{r}
-sim10.5_05 = binom.MLE.sim(pi = 0.5, null = 0.5, n = 10^5, sim = 1000, alpha = 0.05)
-sim10.5_05 |> summarize_sim() |> pander()
+sim100000_null05 <- binom_mle_sim(
+  pi = 0.5, null = 0.5, n = 10^5, sim = 1000, alpha = 0.05
+)
+sim100000_null05 |> summarize_sim() |> pander()
 ```
 
 The results of the simulations where the data-generating parameter is the hypothesized parameter give similar results as seen previously. Larger sample sizes yield empirical values for the MLE that are closer to the theoretical value, and the standard errors approach zero with larger sample sizes. We also see that the true value of the parameter is captured in approximately 95% of the intervals and the null hypothesis is falsely rejected approximately 5% of the time. In this set of simulations, our data is generated under the null hypothesis, so our ability to incorrectly reject the null hypothesis ($\alpha$/Type I Error) approaches our chosen 5% error rate as we collect more data points.
