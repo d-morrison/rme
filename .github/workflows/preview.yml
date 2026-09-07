@@ -1,8 +1,10 @@
 # Build half of the PR-preview family, delegated to the reusable workflow in
 # Morrison-Lab/gha. Renders the Quarto site in the (possibly fork) PR context and
 # uploads it + PR metadata as an artifact; the deploy half (preview-deploy.yml)
-# publishes it to gh-pages. This job is read-only (contents: read) — it must
-# never write to the base repo.
+# publishes it to gh-pages. Every job here is read-only — the workflow-level
+# `permissions:` block below grants `pull-requests: read` (needed by the
+# `filter` job's paths-filter API call) and the render job re-narrows itself
+# to `contents: read`. Nothing here may write to the base repo.
 #
 # IMPORTANT: keep this workflow's `name:` in sync with the `workflows:` list in
 # preview-deploy.yml — that is how the deploy half finds this run.
@@ -67,6 +69,14 @@ jobs:
               # restore when it is present.
               - 'renv.lock'
               - 'DESCRIPTION'
+              # The reusable workflow installs this package before rendering,
+              # so a broken R source breaks the render even though no .qmd
+              # calls into R/ today. Under the old trigger-level `paths:`
+              # filter an R-only PR got no render at all and stalled, which
+              # was at least visible; routing it to `bypass` instead would
+              # report a green `build / build` over an unbuilt package.
+              - 'R/**'
+              - 'NAMESPACE'
 
   render:
     name: build
@@ -79,6 +89,10 @@ jobs:
     # than by the no-op. `!cancelled()` rather than `always()` so a cancelled
     # run does not start a full render.
     if: ${{ !cancelled() && needs.filter.outputs.render != 'false' }}
+    # Re-narrow to the scope this job had before `pull-requests: read` was
+    # added at workflow level for `filter`: the render must not inherit it.
+    permissions:
+      contents: read
     uses: Morrison-Lab/gha/.github/workflows/preview.yml@v2
     with:
       r-version: '4.6.0'
