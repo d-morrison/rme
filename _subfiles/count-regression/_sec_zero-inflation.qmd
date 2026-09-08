@@ -1,20 +1,35 @@
 ### Models for zero-inflated counts
 
-We assume a latent (unobserved) binary variable, $Z$, which we model using logistic regression:
-
-$$\P(Z=1 \mid \vX=\vx) = \pi(\vx) \eqdef \expit(\gamma_0 + \gamma_1 x_1 + \dots + \gamma_p x_p)$$
-
-According to this model, if $Z=1$, then $Y$ will always be zero, regardless of $\vX$ and $T$:
-
-$$\P(Y=0 \mid Z=1, \vX=\vx, T=t) \eqdef 1$$
-
-Otherwise (if $Z=0$), $Y$ follows a Poisson distribution, conditional on $\vX$ and $T$, as in a standard Poisson regression model.
-
-Even though we never observe $Z$, we can estimate the parameters $\gamma_0, \dots, \gamma_p$ via maximum likelihood:
+We assume a latent (unobserved) binary variable, $Z$,
+which we model using logistic regression:
 
 $$
 \ba
-\P(Y=y \mid \vX=\vx, T=t) &= \P(Y=y, Z=1 \mid \vX=\vx, T=t) + \P(Y=y, Z=0 \mid \vX=\vx, T=t) && \text{(by Law of Total Probability)}
+\P(Z=1 \mid \vX=\vx)
+&\eqdef \pi(\vx)\\
+&= \expit(\gamma_0 + \gamma_1 x_1 + \dots + \gamma_p x_p)
+\ea
+$$
+
+According to this model, if $Z=1$,
+then $Y$ will always be zero,
+regardless of $\vX$ and $T$:
+
+$$\P(Y=0 \mid Z=1, \vX=\vx, T=t) \eqdef 1$$
+
+Otherwise (if $Z=0$), $Y$ follows a Poisson distribution,
+conditional on $\vX$ and $T$,
+as in a standard Poisson regression model.
+
+Even though we never observe $Z$,
+we can estimate the parameters $\gamma_0, \dots, \gamma_p$
+via maximum likelihood:
+
+$$
+\ba
+\P(Y=y \mid \vX=\vx, T=t)
+&= \P(Y=y, Z=1 \mid \vX=\vx, T=t) \\
+&\phantom{={}} + \P(Y=y, Z=0 \mid \vX=\vx, T=t) && \text{(by Law of Total Probability)}
 \ea
 $$
 
@@ -29,12 +44,16 @@ $$
 ---
 
 ::: {#exr-zinf-pmf}
-Expand $\P(Y=0 \mid \vX=\vx, T=t)$, $\P(Y=1 \mid \vX=\vx, T=t)$ and $\P(Y=y \mid \vX=\vx, T=t)$ into expressions involving $\pi = \P(Z=1 \mid \vX=\vx)$ and $\mu_0 = \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+Expand $\P(Y=0 \mid \vX=\vx, T=t)$, $\P(Y=1 \mid \vX=\vx, T=t)$,
+and $\P(Y=y \mid \vX=\vx, T=t)$
+into expressions involving $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
+and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 :::
 
 ::: {.solution}
 
-Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$ and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
+and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 
 **$\P(Y=0)$:** $Y=0$ occurs either because $Z=1$ (always zero)
 or because $Z=0$ and the Poisson draw equals 0:
@@ -79,12 +98,16 @@ $$
 
 ::: {#exr-zinf-moments}
 
-Derive the expected value and variance of $Y$, conditional on $\vX=\vx$ and $T=t$, as functions of $\pi = \P(Z=1 \mid \vX=\vx)$ and $\mu_0 = \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+Derive the expected value and variance of $Y$,
+conditional on $\vX=\vx$ and $T=t$,
+as functions of $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
+and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 :::
 
 ::: {.solution}
 
-Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$ and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
+and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 
 **Expected value.** By the Law of Total Expectation
 (conditioning on $Z$, within the subpopulation $\{\vX=\vx, T=t\}$):
