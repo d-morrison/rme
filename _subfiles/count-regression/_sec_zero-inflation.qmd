@@ -21,6 +21,10 @@ Otherwise (if $Z=0$), $Y$ follows a Poisson distribution,
 conditional on $\vX$ and $T$,
 as in a standard Poisson regression model.
 
+Throughout what follows, abbreviate
+$\pi \eqdef \pi(\vx)$
+and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+
 Even though we never observe $Z$,
 we can estimate the parameters $\gamma_0, \dots, \gamma_p$
 via maximum likelihood:
@@ -37,7 +41,7 @@ where
 $$
 \ba
 \P(Y=y, Z=z \mid \vX=\vx, T=t)
-&= \P(Y=y \mid Z=z, \vX=\vx, T=t) \P(Z=z \mid \vX=\vx) && \text{(by definition of conditional probability)}
+&= \P(Y=y \mid Z=z, \vX=\vx, T=t) \P(Z=z \mid \vX=\vx) && \text{(by definition of conditional probability, and } Z \perp T \mid \vX \text{ in this model)}
 \ea
 $$
 
@@ -46,14 +50,10 @@ $$
 ::: {#exr-zinf-pmf}
 Expand $\P(Y=0 \mid \vX=\vx, T=t)$, $\P(Y=1 \mid \vX=\vx, T=t)$,
 and $\P(Y=y \mid \vX=\vx, T=t)$
-into expressions involving $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
-and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+into expressions involving $\pi$ and $\mu_0$.
 :::
 
 ::: {.solution}
-
-Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
-and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 
 **$\P(Y=0)$:** $Y=0$ occurs either because $Z=1$ (always zero)
 or because $Z=0$ and the Poisson draw equals 0:
@@ -100,14 +100,10 @@ $$
 
 Derive the expected value and variance of $Y$,
 conditional on $\vX=\vx$ and $T=t$,
-as functions of $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
-and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+as functions of $\pi$ and $\mu_0$.
 :::
 
 ::: {.solution}
-
-Let $\pi \eqdef \P(Z=1 \mid \vX=\vx)$
-and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
 
 **Expected value.** By the Law of Total Expectation
 (conditioning on $Z$, within the subpopulation $\{\vX=\vx, T=t\}$):
@@ -116,7 +112,7 @@ $$
 \ba
 \Expp[Y \mid \vX=\vx, T=t]
 &= \Expp[Y \mid Z=1, \vX=\vx, T=t] \P(Z=1 \mid \vX=\vx) \\
-&\phantom{={}} + \Expp[Y \mid Z=0, \vX=\vx, T=t] \P(Z=0 \mid \vX=\vx) && \text{(by Law of Total Expectation)} \\
+&\phantom{={}} + \Expp[Y \mid Z=0, \vX=\vx, T=t] \P(Z=0 \mid \vX=\vx) && \text{(by Law of Total Expectation, with } Z \perp T \mid \vX\text{)} \\
 &= 0 \cdot \pi + \mu_0 (1-\pi) && \text{(substituting conditional expectations } 0 \text{ and } \mu_0\text{)} \\
 &= (1-\pi) \mu_0 && \text{(simplifying arithmetic)}
 \ea
