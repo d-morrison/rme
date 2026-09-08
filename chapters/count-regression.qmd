@@ -83,13 +83,12 @@ Most notably,
 the [negative binomial model](probability.qmd#sec-nb-dist).
 :::
 
-When diagnostics reveal overdispersion,
-the standard Poisson assumption
+Diagnostics that reveal overdispersion are telling us
+that the standard Poisson assumption is violated:
 
 $$\Var{Y \mid \vX=\vx, T=t} = \Expp[Y \mid \vX=\vx, T=t]$$
 
-is violated,
-leading to artificially narrow standard errors
+Ignoring that violation leads to artificially narrow standard errors
 and inflated type I error rates.
 The [negative binomial distribution](probability.qmd#sec-nb-dist)
 serves as a natural generalization of the Poisson distribution
@@ -133,25 +132,26 @@ This approach provides valid standard errors and $p$-values
 when overdispersion is multiplicative.
 That validity comes from the assumed mean-variance relationship itself.
 A sandwich (robust) variance estimator also uses the residuals,
-but it assumes no functional form linking the variance to the mean at all;
+but it does not require the model's variance function to be correct;
 it accumulates the squared residuals across observations
-instead of scaling a variance formula the model supplied.
-That freedom from a variance function
+instead of scaling the variance formula the model supplied.
+That independence from the assumed variance
 is what keeps a sandwich estimator reliable
-even when the assumed variance is wrong,
+even when that variance function is wrong,
 provided the mean model is approximately correct
---- a property @vittinghoff2e states for linear regression
-in §4.7.3.6, and which carries over to generalized linear models.
-The quasipoisson scaling has no such freedom from a variance function:
+[@vittinghoff2e, §4.7.3.6 for linear regression;
+@vittinghoff2e, §8.3.1 for the generalized linear model case].
+The quasipoisson scaling has no such independence:
 its single $\eth$ is estimated under the assumption of proportionality,
 so if the variance is not proportional to the mean,
 the scaled standard errors are simply wrong.
 
 Robust standard errors are not a free improvement, though.
-@vittinghoff2e (§4.7.3.6) reports simulations
+@vittinghoff2e [§4.7.3.6] reports simulations
 in which they can be too small in samples as large as 250 observations,
-recommending a more conservative alternative there ---
-a caution worth heeding at the sizes
+and recommends the more conservative HC3 estimator
+at those sample sizes ---
+a caution worth heeding for the sample sizes
 many epidemiological studies actually have.
 The quasipoisson approach is simpler to implement
 than the negative binomial model,
