@@ -16,21 +16,26 @@ substantially larger than the mean
 :::: {#def-overdispersion}
 #### Overdispersion
 
-A random variable $Y$ is **overdispersed**
-relative to a model $\P(Y=y \mid \vX=\vx, T=t)$ if
-its conditional variance exceeds
-the variance that model specifies, $\Var{Y \mid \vX=\vx, T=t}$.
+Write $v_\P(\vx, t)$ for the conditional variance that a model
+$\P(Y=y \mid \vX=\vx, T=t)$ specifies ---
+for a Poisson model, $v_\P(\vx, t) = \mu(\vx, t)$.
+A random variable $Y$ is **overdispersed** relative to that model if
+its own conditional variance exceeds the one the model specifies:
+
+$$\Var{Y \mid \vX=\vx, T=t} > v_\P(\vx, t)$$
+
 In practice we detect overdispersion by comparing
 the conditional empirical variance in a dataset
-against the variance a fitted model predicts,
-$\eVar{Y \mid \vX=\vx, T=t}$.
+against $v_{\est{\P}}(\vx, t)$, the variance a *fitted* model predicts.
 
 ::::
 
 In Poisson regression, unmodeled heterogeneity, clustering,
 or omitted predictors cause overdispersion.
 When overdispersion is present but ignored,
-the point estimates $\evb$ remain consistent,
+the point estimates $\evb$ remain consistent
+provided the mean model is still correctly specified
+(which omitted predictors correlated with the included ones would violate),
 but the standard errors produced by standard maximum likelihood estimation
 are severely underestimated.
 This underestimation leads to overly narrow confidence intervals
