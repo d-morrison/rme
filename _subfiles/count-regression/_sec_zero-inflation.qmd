@@ -29,6 +29,9 @@ as in a standard Poisson regression model.
 Throughout what follows, abbreviate
 $\pi \eqdef \pi(\vx)$
 and $\mu_0 \eqdef \Expp[Y \mid Z=0, \vX=\vx, T=t]$.
+Since the $Z=0$ arm is an ordinary Poisson regression model,
+$\mu_0 = t \exp{\eta(\vx)}$ by @eq-mean-poisson,
+which is strictly positive whenever $t > 0$.
 
 Even though we never observe $Z$,
 we can estimate the parameters $\gamma_0, \dots, \gamma_p$
@@ -96,92 +99,5 @@ $$
 &= (1-\pi) \frac{\mu_0^y e^{-\mu_0}}{y!} && \text{(simplifying arithmetic)}
 \ea
 $$
-
-:::
-
-{{< slidebreak >}}
-
-::: {#exr-zinf-moments}
-
-Derive the expected value and variance of $Y$,
-conditional on $\vX=\vx$ and $T=t$,
-as functions of $\pi$ and $\mu_0$.
-:::
-
-::: {.solution}
-
-**Expected value.** By the Law of Total Expectation
-(conditioning on $Z$, within the subpopulation $\{\vX=\vx, T=t\}$):
-
-$$
-\ba
-\Expp[Y \mid \vX=\vx, T=t]
-&= \Expp[Y \mid Z=1, \vX=\vx, T=t] \P(Z=1 \mid \vX=\vx) \\
-&\phantom{={}} + \Expp[Y \mid Z=0, \vX=\vx, T=t] \P(Z=0 \mid \vX=\vx) && \text{(by Law of Total Expectation, and } Z \perp T \mid \vX\text{)} \\
-&= 0 \cdot \pi + \mu_0 (1-\pi) && \text{(substituting conditional expectations } 0 \text{ and } \mu_0\text{)} \\
-&= (1-\pi) \mu_0 && \text{(simplifying arithmetic)}
-\ea
-$$
-
-The substitution $\Expp[Y \mid Z=0, \vX=\vx, T=t] = \mu_0$ follows immediately
-from the definition of $\mu_0$.
-
-**Variance.** By the Law of Total Variance,
-with the inner moments over $Z$ taken within
-the subpopulation $\{\vX=\vx, T=t\}$:
-
-$$
-\ba
-\Var{Y \mid \vX=\vx, T=t}
-&= \Expp\sb{\Var{Y \mid Z} \mid \vX=\vx, T=t} + \Var{\Expp[Y \mid Z] \mid \vX=\vx, T=t} && \text{(by Law of Total Variance)}
-\ea
-$$
-
-For the expected conditional variance term,
-since $\Var{Y \mid Z=1}=0$ and $\Var{Y \mid Z=0}=\mu_0$ (Poisson):
-
-$$
-\ba
-\Expp\sb{\Var{Y \mid Z} \mid \vX=\vx, T=t}
-&= \Var{Y \mid Z=1} \pi + \Var{Y \mid Z=0} (1-\pi) && \text{(by expectation definition, and } Z \perp T \mid \vX\text{)} \\
-&= 0 \cdot \pi + \mu_0 (1-\pi) && \text{(substituting conditional variances)} \\
-&= (1-\pi)\mu_0 && \text{(simplifying arithmetic)}
-\ea
-$$
-
-For the variance of conditional expectation term,
-$\Expp[Y \mid Z]$ takes value 0 (with probability $\pi$)
-or $\mu_0$ (with probability $1-\pi$), so:
-
-$$
-\ba
-\Var{\Expp[Y \mid Z] \mid \vX=\vx, T=t}
-&= \pi \paren{0 - (1-\pi)\mu_0}^2 + (1-\pi) \paren{\mu_0 - (1-\pi)\mu_0}^2 && \text{(by definition of variance for binary } Z\text{, and } Z \perp T \mid \vX\text{)} \\
-&= \pi(1-\pi)^2 \mu_0^2 + (1-\pi)\pi^2 \mu_0^2 && \text{(expanding squared terms)} \\
-&= \pi(1-\pi)\mu_0^2 \sb{(1-\pi) + \pi} && \text{(factoring common term } \pi(1-\pi)\mu_0^2\text{)} \\
-&= \pi(1-\pi)\mu_0^2 && \text{(since } (1-\pi) + \pi = 1\text{)}
-\ea
-$$
-
-Combining both terms gives:
-
-$$
-\ba
-\Var{Y \mid \vX=\vx, T=t}
-&= (1-\pi)\mu_0 + \pi(1-\pi)\mu_0^2 && \text{(summing expected variance and variance of expectation)} \\
-&= (1-\pi)\mu_0 \paren{1 + \pi\mu_0} && \text{(factoring out } (1-\pi)\mu_0\text{)}
-\ea
-$$
-
-The logistic model puts $\pi$ strictly between 0 and 1,
-since $\expit$ never attains its limits,
-and $\mu_0 > 0$ at any positive exposure $t$.
-There, $1 + \pi\mu_0 > 1$, so
-
-$$(1-\pi)\mu_0 (1+\pi\mu_0) > (1-\pi)\mu_0 = \Expp[Y \mid \vX=\vx, T=t]$$
-
-and a zero-inflated count model is overdispersed
-relative to a Poisson model with the same mean,
-at every covariate pattern with positive exposure.
 
 :::
