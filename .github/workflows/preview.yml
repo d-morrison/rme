@@ -1,10 +1,8 @@
 # Build half of the PR-preview family, delegated to the reusable workflow in
 # Morrison-Lab/gha. Renders the Quarto site in the (possibly fork) PR context and
 # uploads it + PR metadata as an artifact; the deploy half (preview-deploy.yml)
-# publishes it to gh-pages. Every job here is read-only — the workflow-level
-# `permissions:` block below grants `pull-requests: read` (needed by the
-# `filter` job's paths-filter API call) and the render job re-narrows itself
-# to `contents: read`. Nothing here may write to the base repo.
+# publishes it to gh-pages. This job is read-only (contents: read) — it must
+# never write to the base repo.
 #
 # IMPORTANT: keep this workflow's `name:` in sync with the `workflows:` list in
 # preview-deploy.yml — that is how the deploy half finds this run.
@@ -23,83 +21,42 @@ name: Quarto Preview Build
 on:
   pull_request:
     types: [opened, reopened, synchronize, labeled, closed]
-
-permissions:
-  pull-requests: read
-  contents: read
+    paths:
+      - 'man/**'
+      - 'pkgdown/**'
+      - 'vignettes/**'
+      - '_extensions/**'
+      - '_quarto*.yml'
+      - '.github/workflows/preview.yml'
+      - '*.qmd'
+      - 'chapters/**/*.qmd'
+      - '_subfiles/**'
+      - '*.scss'
+      - 'latex-macros'
+      - 'references.bib'
+      # Dependency changes are the changes most likely to alter rendered
+      # output, yet without these two entries a version-only PR got no
+      # render at all: this is the only workflow that runs quarto render,
+      # and it has no workflow_dispatch. The first render against new
+      # package versions therefore happened post-merge on main, where a
+      # failure breaks the published site instead of a PR check (rme#1075).
+      #
+      # Caveat worth knowing when reading a green build on such a PR: the
+      # freeze cache does NOT isolate dependency changes. gha's preview
+      # composite restores _freeze through a restore-keys chain whose last
+      # entry, `quarto-freezer-<os>-`, omits the renv.lock hash entirely,
+      # so a version-only PR restores a freeze computed under the OLD
+      # versions and may serve those cached results instead of re-running
+      # anything. Add the `clear freezer` label to a dependency PR when the
+      # point is to exercise the new versions -- the composite skips the
+      # restore when it is present.
+      - 'renv.lock'
+      - 'DESCRIPTION'
 
 jobs:
-  filter:
-    runs-on: ubuntu-latest
-    outputs:
-      render: ${{ steps.filter.outputs.render }}
-    steps:
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            render:
-              - 'man/**'
-              - 'pkgdown/**'
-              - 'vignettes/**'
-              - '_extensions/**'
-              - '_quarto*.yml'
-              - '.github/workflows/preview.yml'
-              - '*.qmd'
-              - 'chapters/**/*.qmd'
-              - '_subfiles/**'
-              - '*.scss'
-              - 'latex-macros'
-              - 'references.bib'
-              # Dependency changes are the changes most likely to alter rendered
-              # output, yet without these two entries a version-only PR got no
-              # render at all: this is the only workflow that runs quarto render,
-              # and it has no workflow_dispatch. The first render against new
-              # package versions therefore happened post-merge on main, where a
-              # failure breaks the published site instead of a PR check (rme#1075).
-              #
-              # Caveat worth knowing when reading a green build on such a PR: the
-              # freeze cache does NOT isolate dependency changes. gha's preview
-              # composite restores _freeze through a restore-keys chain whose last
-              # entry, `quarto-freezer-<os>-`, omits the renv.lock hash entirely,
-              # so a version-only PR restores a freeze computed under the OLD
-              # versions and may serve those cached results instead of re-running
-              # anything. Add the `clear freezer` label to a dependency PR when the
-              # point is to exercise the new versions -- the composite skips the
-              # restore when it is present.
-              - 'renv.lock'
-              - 'DESCRIPTION'
-              # The reusable workflow installs this package before rendering,
-              # so a broken R source breaks the render even though no .qmd
-              # calls into R/ today. Under the old trigger-level `paths:`
-              # filter an R-only PR got no render at all and stalled, which
-              # was at least visible; routing it to `bypass` instead would
-              # report a green `build / build` over an unbuilt package.
-              - 'R/**'
-              - 'NAMESPACE'
-
-  render:
-    name: build
-    needs: filter
-    # Fail toward doing the real render. If the `filter` job itself fails or
-    # errors (a dorny/paths-filter bug, a transient API error), its `render`
-    # output is empty rather than 'false', so this job still runs: `build /
-    # build` is reported on every PR regardless of paths touched (rme#1108),
-    # and it is reported by the job that actually verifies the render rather
-    # than by the no-op. `!cancelled()` rather than `always()` so a cancelled
-    # run does not start a full render.
-    if: ${{ !cancelled() && needs.filter.outputs.render != 'false' }}
-    # Re-narrow to the scope this job had before `pull-requests: read` was
-    # added at workflow level for `filter`: the render must not inherit it.
+  build:
     permissions:
       contents: read
     uses: Morrison-Lab/gha/.github/workflows/preview.yml@v2
     with:
       r-version: '4.6.0'
-
-  bypass:
-    name: build
-    needs: filter
-    if: needs.filter.outputs.render == 'false'
-    # zizmor suggests $/... for self-repository calls, but we use explicit paths for consistency with other repos
-    uses: ./.github/workflows/_preview-bypass-reusable.yml # zizmor: ignore[self-repository]
