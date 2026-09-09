@@ -62,6 +62,10 @@ This content is adapted from:
 ### Models for zero-inflated counts
 {{< include _subfiles/count-regression/_sec_zero-inflation.qmd >}}
 
+{{< slidebreak >}}
+
+{{< include _subfiles/count-regression/_sec_zero-inflation-moments.qmd >}}
+
 # Over-dispersion
 
 {{< include _subfiles/count-regression/_sec-overdispersion.qmd >}}
@@ -79,22 +83,25 @@ Most notably,
 the [negative binomial model](probability.qmd#sec-nb-dist).
 :::
 
-When diagnostics reveal overdispersion,
-the standard Poisson assumption $\Var{Y \mid \vX} = \Expp[Y \mid \vX]$
-is violated,
-leading to artificially narrow standard errors
+Diagnostics that reveal overdispersion are telling us
+that the data violate the standard Poisson assumption
+
+$$\Var{Y \mid \vX=\vx, T=t} = \Expp[Y \mid \vX=\vx, T=t]$$
+
+Ignoring that violation leads to artificially narrow standard errors
 and inflated type I error rates.
 The [negative binomial distribution](probability.qmd#sec-nb-dist)
 serves as a natural generalization of the Poisson distribution
 for count outcomes.
 It introduces an overdispersion parameter $\rho$
 that allows the conditional variance to exceed the mean
-($\Var{Y \mid \vX} = \mu + \mu^2 / \rho$).
+($\Var{Y \mid \vX=\vx, T=t} = \mu(\vx, t) + \mu(\vx, t)^2 / \rho$).
 We still model $\mu(\vx, t) = t \exp{\eta(\vx)}$ as before,
 preserving the rate-ratio interpretation for regression coefficients.
 Furthermore, negative binomial models can be combined with zero-inflation
-to account for both structural zeros
-and variance expansion in count data.
+to account for both structural zeros and variance expansion in count data,
+with the negative binomial serving as the conditional distribution
+for the count component.
 
 ---
 
@@ -106,24 +113,7 @@ and variance expansion in count data.
 
 ## Quasipoisson regression
 
-Another flexible approach to address overdispersion
-— without changing the underlying Poisson point estimates —
-is quasi-likelihood estimation via the quasipoisson model family.
-Rather than specifying a complete likelihood function
-and fitting by maximum likelihood,
-quasipoisson models specify only the mean-variance relationship
-$\Var{Y \mid \vX} = \theta \mu(\vx, t)$,
-where $\theta$ is a dispersion parameter estimated from Pearson residuals.
-
-While point estimates for regression coefficients $\evb$
-remain identical to standard Poisson regression,
-their estimated standard errors are scaled by $\sqrt{\eth}$.
-This method-of-moments approach provides robust standard error estimates
-and valid $p$-values when overdispersion is multiplicative,
-though it does not specify a full parametric distribution
-for prediction intervals or model likelihood comparisons.
-
-See `?quasipoisson` in R for implementation details.
+{{< include _subfiles/count-regression/_sec-quasipoisson.qmd >}}
 
 # More on count regression
 
