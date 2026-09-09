@@ -1,0 +1,105 @@
+::: {#exr-zinf-moments}
+
+Derive the expected value and variance of $Y$,
+conditional on $\vX=\vx$ and $T=t$,
+as functions of $\pi$ and $\mu_0$.
+:::
+
+::: {.solution}
+
+**Expected value.**
+By the Law of Total Expectation
+(conditioning on $Z$, within the subpopulation $\{\vX=\vx, T=t\}$):
+
+$$
+\ba
+\Expp[Y \mid \vX=\vx, T=t]
+&= \pi \, \Expp[Y \mid Z=1, \vX=\vx, T=t] \\
+&\phantom{={}} + (1-\pi) \, \Expp[Y \mid Z=0, \vX=\vx, T=t] \\
+&\quad \text{(by Law of Total Expectation; } Z \ind T \mid \vX\text{)} \\
+&= 0 \cdot \pi + \mu_0 (1-\pi) \\
+&\quad \text{(substituting the conditional means)} \\
+&= (1-\pi) \mu_0 \\
+&\quad \text{(simplifying arithmetic)}
+\ea
+$$
+
+The substitution $\Expp[Y \mid Z=0, \vX=\vx, T=t] = \mu_0$ follows immediately
+from the definition of $\mu_0$.
+
+**Variance.**
+Within this derivation,
+write $\Expp[\,\cdot \mid Z]$ and $\Var{\cdot \mid Z}$
+for the moments conditional on $Z$ **and** on $\vX=\vx, T=t$;
+the outer operators keep their conditioning explicit.
+By the Law of Total Variance:
+
+$$
+\ba
+\Var{Y \mid \vX=\vx, T=t}
+&= \Expp\sb{\Var{Y \mid Z} \mid \vX=\vx, T=t} \\
+&\phantom{={}} + \Var{\Expp[Y \mid Z] \mid \vX=\vx, T=t} \\
+&\quad \text{(by Law of Total Variance)}
+\ea
+$$
+
+For the expected conditional variance term, note that
+
+$$\Var{Y \mid Z=1} = 0 \quad\text{and}\quad \Var{Y \mid Z=0} = \mu_0$$
+
+since the $Z=0$ arm is Poisson, so:
+
+$$
+\ba
+\Expp\sb{\Var{Y \mid Z} \mid \vX=\vx, T=t}
+&= \pi \, \Var{Y \mid Z=1} + (1-\pi) \, \Var{Y \mid Z=0} \\
+&\quad \text{(expectation over } Z\text{; } Z \ind T \mid \vX\text{)} \\
+&= 0 \cdot \pi + \mu_0 (1-\pi) \\
+&\quad \text{(substituting the conditional variances)} \\
+&= (1-\pi)\mu_0 \\
+&\quad \text{(simplifying arithmetic)}
+\ea
+$$
+
+For the variance of conditional expectation term,
+$\Expp[Y \mid Z]$ takes value 0 (with probability $\pi$)
+or $\mu_0$ (with probability $1-\pi$), so:
+
+$$
+\ba
+\Var{\Expp[Y \mid Z] \mid \vX=\vx, T=t}
+&= \pi \paren{0 - (1-\pi)\mu_0}^2 + (1-\pi) \paren{\mu_0 - (1-\pi)\mu_0}^2 \\
+&\quad \text{(variance over } Z\text{; } Z \ind T \mid \vX\text{)} \\
+&= \pi(1-\pi)^2 \mu_0^2 + (1-\pi)\pi^2 \mu_0^2 \\
+&\quad \text{(expanding squared terms)} \\
+&= \pi(1-\pi)\mu_0^2 \sb{(1-\pi) + \pi} \\
+&\quad \text{(factoring)} \\
+&= \pi(1-\pi)\mu_0^2 \\
+&\quad \text{(since } (1-\pi) + \pi = 1\text{)}
+\ea
+$$
+
+Combining both terms gives:
+
+$$
+\ba
+\Var{Y \mid \vX=\vx, T=t}
+&= (1-\pi)\mu_0 + \pi(1-\pi)\mu_0^2 \\
+&\quad \text{(summing expected variance and variance of expectation)} \\
+&= (1-\pi)\mu_0 \paren{1 + \pi\mu_0} \\
+&\quad \text{(factoring out } (1-\pi)\mu_0\text{)}
+\ea
+$$
+
+The logistic model puts $\pi$ strictly between 0 and 1,
+since $\expit$ never attains its limits,
+and $\mu_0 = t \exp{\eta(\vx)} > 0$ whenever $t > 0$.
+Then $1 + \pi\mu_0 > 1$, so
+
+$$(1-\pi)\mu_0 (1+\pi\mu_0) > (1-\pi)\mu_0 = \Expp[Y \mid \vX=\vx, T=t]$$
+
+and a zero-inflated count model is overdispersed
+relative to a Poisson model with the same mean,
+at every covariate pattern with positive exposure.
+
+:::
