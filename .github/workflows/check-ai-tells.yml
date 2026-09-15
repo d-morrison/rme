@@ -16,14 +16,31 @@ name: Check AI Tells
 
 on:
   pull_request:
-    paths:
-      - '**.md'
-      - '**.qmd'
-      - '**.Rmd'
   workflow_dispatch:
 
+permissions:
+  pull-requests: read
+  contents: read
+
 jobs:
+  filter:
+    runs-on: ubuntu-latest
+    outputs:
+      run_check: ${{ steps.filter.outputs.run_check }}
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            run_check:
+              - '**.md'
+              - '**.qmd'
+              - '**.Rmd'
+
   check-ai-tells:
+    name: check-ai-tells
+    needs: filter
+    if: ${{ !cancelled() && needs.filter.outputs.run_check != 'false' }}
     # The repo default is write, so declare the read-only scope this
     # reusable workflow's own job asks for rather than inheriting it.
     permissions:
@@ -36,3 +53,9 @@ jobs:
       base-ref: ${{ github.event.pull_request.base.sha }}
       paths-ignore: '_extensions/*,latex-macros/*'
       fail: false
+
+  bypass:
+    name: check-ai-tells
+    needs: filter
+    if: needs.filter.outputs.run_check == 'false'
+    uses: ./.github/workflows/_check-ai-tells-bypass-reusable.yml # zizmor: ignore[self-repository]
