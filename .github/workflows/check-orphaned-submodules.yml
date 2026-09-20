@@ -1,0 +1,44 @@
+name: Check orphaned submodules
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  check-orphans:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check for orphaned submodule gitlinks
+        run: |
+          set -e
+
+          echo "Checking for tree entries of mode 160000..."
+
+          git ls-files -s | grep "^160000" || true
+
+          orphans_found=0
+
+          while IFS= read -r path; do
+            if [ -z "$path" ]; then
+              continue
+            fi
+
+            # Use grep with literal string match against the values in .gitmodules
+            # "git config --get-regexp" returns lines like: submodule.foo.path src/foo
+            if ! git config --file .gitmodules --get-regexp "submodule\..*\.path" | grep -qF " ${path}"; then
+              echo "::error file=$path::Orphaned gitlink found at '$path' (no corresponding entry in .gitmodules). Fix with: git rm --cached \"$path\""
+              orphans_found=1
+            fi
+          done < <(git ls-files -s | grep "^160000" | cut -f2 || true)
+
+          if [ "$orphans_found" -eq 1 ]; then
+            bash -c "exit 1"
+          fi
+
+          echo "All gitlinks are correctly registered in .gitmodules."
