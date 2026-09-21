@@ -284,6 +284,11 @@ Table&nbsp;1: Notation used in this book
 <td>ceiling of <span class="math inline">\(x\)</span>: smallest integer larger than <span class="math inline">\(x\)</span></td>
 <td><code>\lceil x \rceil</code></td>
 </tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbb{1}_{A}(x)\)</span>, <span class="math inline">\(\mathbb{1}\mathopen{}\left(P\right)\mathclose{}\)</span></td>
+<td>indicator function (<a href="#/sec-indicator-functions" class="quarto-xref">Section&nbsp;4</a>): <span class="math inline">\(1\)</span> if condition holds, <span class="math inline">\(0\)</span> otherwise</td>
+<td><code>\indic{A}(x)</code>, <code>\indicp{P}</code></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -378,23 +383,211 @@ Table&nbsp;2: notation for information matrices
 <p>See <a href="../chapters/proof-writing.html">Proof Writing</a> for general guidance on how to present proofs and derivations.</p>
 </section></section>
 <section>
-<section id="sec-stochastic-probabilistic-random" class="title-slide slide level1 center" data-number="4">
-<h1><span class="header-section-number">4</span> Stochastic vs.&nbsp;probabilistic vs.&nbsp;random</h1>
+<section id="sec-indicator-functions" class="title-slide slide level1 center" data-number="4">
+<h1><span class="header-section-number">4</span> Indicator functions</h1>
+
+</section>
+<section class="slide level2">
+
+<p>An <strong>indicator function</strong> is a mathematical function that signals whether an element belongs to a specified set, or whether a given logical condition is satisfied. In statistics and epidemiology, indicator functions are ubiquitous: they represent binary variables, censor and event indicators in survival analysis, membership in subpopulations, and domain restrictions in integrals and sums.</p>
+<p>Despite their conceptual simplicity, notation for indicator functions varies substantially across textbooks, research papers, and subfields. This section summarizes the principal notational conventions.</p>
+</section>
+<section class="slide level2">
+
+<div id="def-indicator-function" class="theorem definition">
+<p><span class="theorem-title"><strong>Definition 1 (Indicator function)</strong></span> For any subset <span class="math inline">\(A \subseteq \Omega\)</span> of a universal set <span class="math inline">\(\Omega\)</span>, the <strong>indicator function</strong> of <span class="math inline">\(A\)</span> is the function <span class="math inline">\(\mathbb{1}_{A} : \Omega \to \{0, 1\}\)</span> defined by:</p>
+<p><span class="math display">\[
+\mathbb{1}_{A}(x) \stackrel{\text{def}}{=}\begin{cases}
+1, &amp; x \in A \\
+0, &amp; x \notin A
+\end{cases}
+\]</span></p>
+<p>More generally, for any logical proposition or predicate <span class="math inline">\(P\)</span>, the <strong>indicator</strong> of <span class="math inline">\(P\)</span> takes the value <span class="math inline">\(1\)</span> when <span class="math inline">\(P\)</span> is true and <span class="math inline">\(0\)</span> when <span class="math inline">\(P\)</span> is false:</p>
+<p><span class="math display">\[
+\mathbb{1}\mathopen{}\left(P\right)\mathclose{} \stackrel{\text{def}}{=}\begin{cases}
+1, &amp; \text{if } P \text{ is true} \\
+0, &amp; \text{if } P \text{ is false}
+\end{cases}
+\]</span></p>
+</div>
+</section>
+<section class="slide level2 scrollable">
+
+<div id="exm-indicator-numerical" class="theorem example">
+<p><span class="theorem-title"><strong>Example 1 (Evaluating set and predicate indicators)</strong></span> Consider the real line <span class="math inline">\(\Omega = \mathbb{R}\)</span>, the set of nonnegative numbers <span class="math inline">\(A = [0, \infty)\)</span>, and a continuous random variable <span class="math inline">\(Y\)</span>.</p>
+<ol type="1">
+<li><strong>Set indicator</strong> <span class="math inline">\(\mathbb{1}_{A}(x)\)</span>:
+<ul>
+<li>For <span class="math inline">\(x = 3.5\)</span>: since <span class="math inline">\(3.5 \in [0, \infty)\)</span>, <span class="math inline">\(\mathbb{1}_{A}(3.5) = 1\)</span>.</li>
+<li>For <span class="math inline">\(x = -2.1\)</span>: since <span class="math inline">\(-2.1 \notin [0, \infty)\)</span>, <span class="math inline">\(\mathbb{1}_{A}(-2.1) = 0\)</span>.</li>
+</ul></li>
+<li><strong>Predicate indicator</strong> <span class="math inline">\(\mathbb{1}\mathopen{}\left(Y &gt; 5\right)\mathclose{}\)</span>:
+<ul>
+<li>If an observation yields <span class="math inline">\(Y = 7.2\)</span>, the predicate <span class="math inline">\(7.2 &gt; 5\)</span> is true, so <span class="math inline">\(\mathbb{1}\mathopen{}\left(7.2 &gt; 5\right)\mathclose{} = 1\)</span>.</li>
+<li>If an observation yields <span class="math inline">\(Y = 4.1\)</span>, the predicate <span class="math inline">\(4.1 &gt; 5\)</span> is false, so <span class="math inline">\(\mathbb{1}\mathopen{}\left(4.1 &gt; 5\right)\mathclose{} = 0\)</span>.</li>
+</ul></li>
+</ol>
+</div>
+</section>
+<section id="two-primary-notational-paradigms-set-vs.-predicate-notation" class="slide level2" data-number="4.1">
+<h2><span class="header-section-number">4.1</span> Two primary notational paradigms: set vs.&nbsp;predicate notation</h2>
+<p>The vast majority of indicator notations belong to one of two families: <strong>set notation</strong> or <strong>predicate notation</strong>.</p>
+<h3 id="set-notation">Set notation</h3>
+<p>In <strong>set notation</strong>, the indicator is tied to a set <span class="math inline">\(A\)</span>, which appears as a subscript:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{1}_A(x)\)</span> (bold numeral one)</li>
+<li><span class="math inline">\(\mathbb{1}_A(x)\)</span> (blackboard bold numeral one)</li>
+<li><span class="math inline">\(I_A(x)\)</span> (capital letter <span class="math inline">\(I\)</span>)</li>
+<li><span class="math inline">\(\mathbb{I}_A(x)\)</span> (blackboard bold letter <span class="math inline">\(I\)</span>)</li>
+<li><span class="math inline">\(\chi_A(x)\)</span> (Greek letter chi, historically termed the <em>characteristic function</em>)</li>
+</ul>
+<p>When the function is viewed as a mathematical object in its own right (for instance, as an element of an <span class="math inline">\(L^p\)</span> function space), authors often omit the argument <span class="math inline">\(x\)</span>, writing simply <span class="math inline">\(\mathbf{1}_A\)</span>, <span class="math inline">\(\mathbb{1}_A\)</span>, or <span class="math inline">\(I_A\)</span>.</p>
+<h3 id="predicate-notation">Predicate notation</h3>
+<p>In <strong>predicate notation</strong>, the indicator takes a logical condition, relation, or proposition <span class="math inline">\(P\)</span> directly as its argument or subscript:</p>
+<ul>
+<li><span class="math inline">\(\mathbb{I}(x \in A)\)</span> or <span class="math inline">\(\mathbb{I}(P)\)</span></li>
+<li><span class="math inline">\(\mathbf{1}(x \in A)\)</span> or <span class="math inline">\(\mathbf{1}(P)\)</span></li>
+<li><span class="math inline">\(\mathbb{1}(x \in A)\)</span> or <span class="math inline">\(\mathbb{1}(P)\)</span></li>
+<li><span class="math inline">\(\mathbb{1}\{x \in A\}\)</span> or <span class="math inline">\(\mathbb{1}\{P\}\)</span></li>
+<li><span class="math inline">\(I(x \in A)\)</span> or <span class="math inline">\(I(P)\)</span></li>
+</ul>
+<p>Predicate notation is especially common in applied statistics and survival analysis, where indicators frequently depend on inequalities involving random variables, such as <span class="math inline">\(\mathbb{1}\mathopen{}\left(T_i \le t\right)\mathclose{}\)</span> (an event occurring before time <span class="math inline">\(t\)</span>) or <span class="math inline">\(\mathbb{1}\mathopen{}\left(Y_i = 1\right)\mathclose{}\)</span> (a binary outcome).</p>
+<h3 id="equivalence-between-paradigms">Equivalence between paradigms</h3>
+<p>The two paradigms are connected by evaluating the predicate indicator at the membership statement <span class="math inline">\(x \in A\)</span>:</p>
+<p><span class="math display">\[
+\mathbf{1}_A(x) = \mathbb{I}(x \in A)
+\]</span></p>
+<p>Set notation is more natural when the underlying set <span class="math inline">\(A\)</span> has a standard name (such as the support of a distribution or a geometric region). Predicate notation is more natural when the condition involves compound inequalities, such as <span class="math inline">\(\mathbb{1}\mathopen{}\left(0 \le t \le u\right)\mathclose{}\)</span>.</p>
+</section>
+<section id="iverson-bracket-notation" class="slide level2" data-number="4.2">
+<h2><span class="header-section-number">4.2</span> Iverson bracket notation</h2>
+<p>In 1962, Kenneth Iverson introduced a compact notation in the programming language APL, later popularized in mathematics and computer science by Donald Knuth: the <a href="https://en.wikipedia.org/wiki/Iverson_bracket">Iverson bracket</a>.</p>
+<p>The Iverson bracket encloses any mathematical predicate <span class="math inline">\(P\)</span> inside square brackets:</p>
+<p><span class="math display">\[
+[P] \stackrel{\text{def}}{=}\begin{cases}
+1, &amp; \text{if } P \text{ is true} \\
+0, &amp; \text{if } P \text{ is false}
+\end{cases}
+\]</span></p>
+<p>Under this notation, set membership is written <span class="math inline">\([x \in A]\)</span>, and the Kronecker delta is simply <span class="math inline">\(\delta_{ij} = [i = j]\)</span>.</p>
+<h3 id="strengths-and-limitations-of-the-iverson-bracket">Strengths and limitations of the Iverson bracket</h3>
+<p>The primary advantage of the Iverson bracket is algebraic conciseness: it converts domain restrictions in sums and integrals into unrestricted operations. For example:</p>
+<p><span class="math display">\[
+\sum_{x \in A} f(x) = \sum_{x} f(x) [x \in A]
+\]</span></p>
+<p>However, in statistics and epidemiology, square brackets are already heavily overloaded: they denote closed intervals <span class="math inline">\([a, b]\)</span>, conditional expectations <span class="math inline">\(\operatorname{E}[Y \mid X]\)</span>, and matrix delimiters. To prevent visual confusion with expectation brackets or intervals, statistical literature predominantly uses <span class="math inline">\(\mathbb{1}\)</span> or <span class="math inline">\(I\)</span> rather than the bare Iverson bracket.</p>
+</section>
+<section id="summary-of-indicator-notations" class="slide level2" data-number="4.3">
+<h2><span class="header-section-number">4.3</span> Summary of indicator notations</h2>
+<p><a href="#/tbl-indicator-notations" class="quarto-xref">Table&nbsp;3</a> compares the major notations encountered across the literature.</p>
+<div id="tbl-indicator-notations" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-tbl">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-indicator-notations-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Notations for indicator functions across mathematical and statistical literature
+</figcaption>
+<div aria-describedby="tbl-indicator-notations-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Notation style</th>
+<th style="text-align: left;">Typical syntax</th>
+<th style="text-align: left;">Primary fields</th>
+<th style="text-align: left;">Notes and potential ambiguities</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Blackboard bold 1</strong></td>
+<td style="text-align: left;"><span class="math inline">\(\mathbb{1}_A(x)\)</span>, <span class="math inline">\(\mathbb{1}(P)\)</span></td>
+<td style="text-align: left;">Modern probability, mathematical statistics</td>
+<td style="text-align: left;">Unambiguous; distinct from matrices and scalars; standard in this book.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Bold numeral 1</strong></td>
+<td style="text-align: left;"><span class="math inline">\(\mathbf{1}_A(x)\)</span>, <span class="math inline">\(\mathbf{1}(P)\)</span></td>
+<td style="text-align: left;">Probability theory, measure theory</td>
+<td style="text-align: left;">Can be confused with a vector of ones <span class="math inline">\(\mathbf{1} = (1, \dots, 1)^{\top}\)</span>.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Blackboard bold I</strong></td>
+<td style="text-align: left;"><span class="math inline">\(\mathbb{I}(x \in A)\)</span>, <span class="math inline">\(\mathbb{I}(P)\)</span></td>
+<td style="text-align: left;">Econometrics, machine learning, statistics</td>
+<td style="text-align: left;">Clear predicate notation; avoids confusion with numerals.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Letter <span class="math inline">\(I\)</span></strong></td>
+<td style="text-align: left;"><span class="math inline">\(I_A(x)\)</span>, <span class="math inline">\(I(P)\)</span></td>
+<td style="text-align: left;">Classical statistics, epidemiology</td>
+<td style="text-align: left;">Can be confused with the identity matrix <span class="math inline">\(I\)</span> or Fisher information <span class="math inline">\(\mathcal{I}\)</span>.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Iverson bracket</strong></td>
+<td style="text-align: left;"><span class="math inline">\([P]\)</span>, <span class="math inline">\([x \in A]\)</span></td>
+<td style="text-align: left;">Computer science, discrete mathematics</td>
+<td style="text-align: left;">Very compact, but square brackets collide with intervals and expectation brackets.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Greek letter <span class="math inline">\(\chi\)</span></strong></td>
+<td style="text-align: left;"><span class="math inline">\(\chi_A(x)\)</span></td>
+<td style="text-align: left;">Real analysis, measure theory</td>
+<td style="text-align: left;">Often termed “characteristic function”; collides with the Fourier transform in probability.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="conventions-in-this-book" class="slide level2" data-number="4.4">
+<h2><span class="header-section-number">4.4</span> Conventions in this book</h2>
+<p>In these notes, we standardize on blackboard bold <span class="math inline">\(\mathbb{1}\)</span> via the macros defined in <code>latex-macros/macros.qmd</code>:</p>
+<ul>
+<li><code>\indic{A}</code> produces <span class="math inline">\(\mathbb{1}_{A}\)</span> (set subscript)</li>
+<li><code>\indicp{P}</code> produces <span class="math inline">\(\mathbb{1}\mathopen{}\left(P\right)\mathclose{}\)</span> (predicate in parentheses)</li>
+<li><code>\indiccb{P}</code> produces <span class="math inline">\(\mathbb{1}\mathopen{}\left\{P\right\}\mathclose{}\)</span> (predicate in curly braces)</li>
+<li><code>\1{P}</code> produces <span class="math inline">\(\text{1}_{P}\)</span> (text numeral with subscript, used in legacy formulas)</li>
+</ul>
+<p>Blackboard bold <span class="math inline">\(\mathbb{1}\)</span> is preferred because it avoids all common collisions: it is visually distinct from the scalar <span class="math inline">\(1\)</span>, the identity matrix <span class="math inline">\(I\)</span>, and the information matrices (<span class="math inline">\(I\)</span>, <span class="math inline">\(\mathcal{I}\)</span>).</p>
+</section>
+<section id="key-algebraic-properties" class="slide level2" data-number="4.5">
+<h2><span class="header-section-number">4.5</span> Key algebraic properties</h2>
+<p>Indicator functions translate logical operations on events into ordinary arithmetic on real numbers:</p>
+<ul>
+<li><p><strong>Intersection (“and”):</strong> <span class="math inline">\(\mathbb{1}\mathopen{}\left(A \cap B\right)\mathclose{} = \mathbb{1}\mathopen{}\left(A\right)\mathclose{} \cdot \mathbb{1}\mathopen{}\left(B\right)\mathclose{}\)</span></p></li>
+<li><p><strong>Union (“or”):</strong> <span class="math inline">\(\mathbb{1}\mathopen{}\left(A \cup B\right)\mathclose{} = \mathbb{1}\mathopen{}\left(A\right)\mathclose{} + \mathbb{1}\mathopen{}\left(B\right)\mathclose{} - \mathbb{1}\mathopen{}\left(A\right)\mathclose{} \cdot \mathbb{1}\mathopen{}\left(B\right)\mathclose{}\)</span></p></li>
+<li><p><strong>Complement (“not”):</strong> <span class="math inline">\(\mathbb{1}\mathopen{}\left(\neg A\right)\mathclose{} = 1 - \mathbb{1}\mathopen{}\left(A\right)\mathclose{}\)</span></p></li>
+<li><p><strong>Idempotence:</strong> <span class="math inline">\((\mathbb{1}\mathopen{}\left(A\right)\mathclose{})^2 = \mathbb{1}\mathopen{}\left(A\right)\mathclose{}\)</span></p></li>
+<li><p><strong>Expectation gives probability:</strong> For any event <span class="math inline">\(A\)</span>, the expectation of its indicator is the probability of the event:</p>
+<p><span class="math display">\[
+\operatorname{E}[\mathbb{1}\mathopen{}\left(A\right)\mathclose{}] = 0 \cdot \Pr(\neg A) + 1 \cdot \Pr(A) = \Pr(A)
+\]</span></p></li>
+</ul>
+<p>This fundamental identity connects probability theory directly to linear expectation. It provides the mathematical foundation for empirical proportions, survival curve estimators, and regression models for binary outcomes.</p>
+</section></section>
+<section>
+<section id="sec-stochastic-probabilistic-random" class="title-slide slide level1 center" data-number="5">
+<h1><span class="header-section-number">5</span> Stochastic vs.&nbsp;probabilistic vs.&nbsp;random</h1>
 
 </section>
 <section class="slide level2">
 
 <p>The terms “stochastic”, “probabilistic”, and “random” are frequently used in statistics and probability theory, often interchangeably in everyday conversation, but they carry nuanced technical distinctions.</p>
 </section>
-<section id="key-distinction-modeling-approach-vs.-phenomena" class="slide level2" data-number="4.1">
-<h2><span class="header-section-number">4.1</span> Key distinction: modeling approach vs.&nbsp;phenomena</h2>
+<section id="key-distinction-modeling-approach-vs.-phenomena" class="slide level2" data-number="5.1">
+<h2><span class="header-section-number">5.1</span> Key distinction: modeling approach vs.&nbsp;phenomena</h2>
 <p>As noted in <a href="https://en.wikipedia.org/wiki/Stochastic">Wikipedia</a>:</p>
 <blockquote>
 <p><em>Stochasticity</em> and <em>randomness</em> are technically distinct concepts: the former refers to a modeling approach, while the latter describes phenomena; in everyday conversation these terms are often used interchangeably.</p>
 </blockquote>
 </section>
-<section id="definitions" class="slide level2" data-number="4.2">
-<h2><span class="header-section-number">4.2</span> Definitions</h2>
+<section id="definitions" class="slide level2" data-number="5.2">
+<h2><span class="header-section-number">5.2</span> Definitions</h2>
 <p><strong>Random</strong> describes something that occurs by chance, without a deterministic pattern. It is the most general term, used to describe variables or occurrences whose outcome cannot be predicted precisely, only probabilistically. For example, we speak of “random variables” and “random events”.</p>
 <div class="callout callout-note callout-titled callout-style-default">
 <div class="callout-body">
@@ -412,12 +605,12 @@ Table&nbsp;2: notation for information matrices
 <p><strong>Stochastic</strong> comes from the Greek “στόχος” (<em>stókhos</em>), meaning “aim” or “guess” (see <a href="https://www.etymonline.com/search?q=stochastic">etymology</a>). In mathematics, a <strong>stochastic process</strong> is formally defined as a collection of random variables indexed by time or space. The term is almost always used in the context of processes or systems evolving in time or space under uncertain rules. Note that in probability theory, “stochastic process” and “random process” are synonyms <span class="citation" data-cites="Adler2009random Stirzaker2005probability Kallenberg2002foundations">(<a href="#/references" role="doc-biblioref" onclick="">Adler and Taylor 2009</a>; <a href="#/references" role="doc-biblioref" onclick="">Stirzaker 2005</a>; <a href="#/references" role="doc-biblioref" onclick="">Kallenberg 2002</a>)</span>.</p>
 <p><strong>Probabilistic</strong> refers to any model, reasoning, or method that explicitly involves probability theory. Probabilistic models assign probabilities to events or outcomes; they focus on quantifying and reasoning about uncertainty based on known or estimated distributions. While all stochastic models are probabilistic (since they use probabilities), not all probabilistic models need to describe processes evolving in time.</p>
 </section>
-<section id="summary-of-usage" class="slide level2" data-number="4.3">
-<h2><span class="header-section-number">4.3</span> Summary of usage</h2>
+<section id="summary-of-usage" class="slide level2" data-number="5.3">
+<h2><span class="header-section-number">5.3</span> Summary of usage</h2>
 <div id="tbl-random-stochastic-probabilistic" class="quarto-float quarto-figure quarto-figure-center">
 <figure class="quarto-float quarto-float-tbl">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-random-stochastic-probabilistic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Comparison of “random”, “stochastic”, and “probabilistic”
+Table&nbsp;4: Comparison of “random”, “stochastic”, and “probabilistic”
 </figcaption>
 <div aria-describedby="tbl-random-stochastic-probabilistic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top">
@@ -461,8 +654,8 @@ Table&nbsp;3: Comparison of “random”, “stochastic”, and “probabilistic
 </div>
 <p>While some sources treat “stochastic” and “random” as practically synonymous, the academic preference is to use “random” for variables and events, and “stochastic” for processes, especially to highlight temporal or spatial structure in the modeling.</p>
 </section>
-<section id="additional-resources" class="slide level2" data-number="4.4">
-<h2><span class="header-section-number">4.4</span> Additional resources</h2>
+<section id="additional-resources" class="slide level2" data-number="5.4">
+<h2><span class="header-section-number">5.4</span> Additional resources</h2>
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Stochastic">Wikipedia: Stochastic</a></li>
 <li><a href="https://en.wikipedia.org/wiki/Stochastic_process">Wikipedia: Stochastic process</a></li>
@@ -471,8 +664,8 @@ Table&nbsp;3: Comparison of “random”, “stochastic”, and “probabilistic
 </ul>
 </section></section>
 <section>
-<section id="why-is-notation-in-probability-and-statistics-so-inconsistent-and-disorganized" class="title-slide slide level1 center" data-number="5">
-<h1><span class="header-section-number">5</span> Why is notation in probability and statistics so inconsistent and disorganized?</h1>
+<section id="why-is-notation-in-probability-and-statistics-so-inconsistent-and-disorganized" class="title-slide slide level1 center" data-number="6">
+<h1><span class="header-section-number">6</span> Why is notation in probability and statistics so inconsistent and disorganized?</h1>
 
 </section>
 <section class="slide level2">
