@@ -29,9 +29,10 @@ jobs:
               continue
             fi
 
-            # Use grep with literal string match against the values in .gitmodules
+            # Compare the extracted path field exactly rather than substring-matching
             # "git config --get-regexp" returns lines like: submodule.foo.path src/foo
-            if ! git config --file .gitmodules --get-regexp "submodule\..*\.path" | grep -qF " ${path}"; then
+            if ! git config --file .gitmodules --get-regexp "submodule\..*\.path" \
+                 | awk -v p="$path" '{ if ($2 == p) found=1 } END { exit !found }'; then
               echo "::error file=$path::Orphaned gitlink found at '$path' (no corresponding entry in .gitmodules). Fix with: git rm --cached \"$path\""
               orphans_found=1
             fi
