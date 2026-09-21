@@ -29,7 +29,7 @@ If $\loghaz(t|\vx) = \loghaz_0(t) + \reglincomb$, then:
 $$
 \ba
 \diffloghaz(t|\vx: \vxs)
-&= (\vx - \vxs) \cdot \beta
+&= (\vx - \vxs) \cdot \vb
 \ea
 $$
 
@@ -45,7 +45,7 @@ $$
 &\eqdef \loghaz(t|\vx) - \loghaz(t|\vxs) && \text{(definition of log-hazard difference)} \\
 &= \left[\loghaz_0(t) + \tp{\vx}\vb\right] - \left[\loghaz_0(t) + \tp{\vxs}\vb\right] && \text{(substituting model definition)} \\
 &= \tp{\vx}\vb - \tp{\vxs}\vb && \text{(canceling shared baseline log-hazard } \loghaz_0(t)\text{)} \\
-&= (\vx - \vxs) \cdot \beta && \text{(factoring out } \vb\text{)}
+&= (\vx - \vxs) \cdot \vb && \text{(factoring out } \vb\text{)}
 \ea
 $$
 
@@ -64,9 +64,9 @@ $$
 \hr(t|\vx: \vxs)
 &= \expf{\diffloghaz(t|\vx: \vxs)}
 \\
-&= \expf{(\vx - \vxs) \cdot \beta}
+&= \expf{(\vx - \vxs) \cdot \vb}
 \\
-&= \expf{\diffvx \cdot \beta}
+&= \expf{\diffvx \cdot \vb}
 \ea
 $$
 
@@ -87,9 +87,9 @@ $$
 \\
 &= \expf{\diffloghaz(t|\vx: \vxs)}
 \\
-&= \expf{(\vx - \vxs) \cdot \beta}
+&= \expf{(\vx - \vxs) \cdot \vb}
 \\
-&= \expf{\diffvx \cdot \beta}
+&= \expf{\diffvx \cdot \vb}
 \ea
 $$
 
@@ -123,7 +123,7 @@ $$
 \ba
 \diffloghaz(t|\vx)
 &\eqdef \diffloghaz(t|\vx : \vzero) && \text{(definition of difference from baseline)} \\
-&= (\vx - \vzero) \cdot \beta && \text{(applying @lem-diffloghaz-ph with } \vxs = \vzero\text{)} \\
+&= (\vx - \vzero) \cdot \vb && \text{(applying @lem-diffloghaz-ph with } \vxs = \vzero\text{)} \\
 &= \reglincomb && \text{(evaluating vector difference)}
 \ea
 $$
@@ -306,7 +306,7 @@ Setting $\vx = \vzero$ yields:
 
 $$
 \hazfactor(\vzero)
-\eqdef \expf{\vzero \cdot \beta}
+\eqdef \expf{\vzero \cdot \vb}
 = e^0
 = 1
 $$
@@ -320,11 +320,12 @@ The proportional hazards model also has additional notable properties:
 $$
 \ba
 \frac{\haz(t|\vx_1)}{\haz(t|\vx_2)}
-&=\frac{\hazfactor(\vx_1)}{\hazfactor(\vx_2)}\\
-&=\frac{\expf{\eta(\vx_1)}}{\expf{\eta(\vx_2)}}\\
-&=\expf{\eta(\vx_1)-\eta(\vx_2)}\\
-&=\expf{\vx_1'\vb-\vx_2'\vb}\\
-&=\expf{(\vx_1 - \vx_2)'\vb}\\
+&=\frac{\haz_0(t)\hazfactor(\vx_1)}{\haz_0(t)\hazfactor(\vx_2)} && \text{(applying @thm-ph-haz-decomp)} \\
+&=\frac{\hazfactor(\vx_1)}{\hazfactor(\vx_2)} && \text{(canceling baseline hazard } \haz_0(t)\text{)} \\
+&=\frac{\expf{\eta(\vx_1)}}{\expf{\eta(\vx_2)}} && \text{(substituting hazard factor definition)} \\
+&=\expf{\eta(\vx_1)-\eta(\vx_2)} && \text{(quotient rule for exponentials)} \\
+&=\expf{\tp{\vx_1}\vb-\tp{\vx_2}\vb} && \text{(substituting linear predictors)} \\
+&=\expf{\tp{(\vx_1 - \vx_2)}\vb} && \text{(factoring out } \vb\text{)}
 \ea
 $$
 
@@ -343,8 +344,8 @@ $$
 &\eqdef \loghaz(t|\vx) - \loghaz(t|\vxs) && \text{(definition of log-hazard difference)}
 \\
 &=\eta(\vx)-\eta(\vxs) && \text{(linear predictor form)} \\
-&= \vx'\vb-\paren{\vxs}'\vb && \text{(substituting linear predictors)} \\
-&= (\vx - \vxs)'\vb && \text{(factoring out } \vb\text{)}
+&= \tp{\vx}\vb-\tp{(\vxs)}\vb && \text{(substituting linear predictors)} \\
+&= \tp{(\vx - \vxs)}\vb && \text{(factoring out } \vb\text{)}
 \ea
 $$
 :::
