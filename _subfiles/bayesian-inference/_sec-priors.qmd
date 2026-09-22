@@ -12,6 +12,8 @@ Conjugate priors make the posterior available in closed form, as in
 @exm-normal-normal.
 The Beta family is conjugate to the Bernoulli/binomial likelihood:
 
+{{< slidebreak >}}
+
 :::{#exm-beta-bernoulli}
 #### Beta-Bernoulli updating
 
@@ -71,12 +73,42 @@ A useful special case is a **skeptical prior**, centered on "no effect"
 and deliberately tight, used to ask how strong the data must be to
 overturn a default of no effect [@dobson4e, Chapter 12, p. 281].
 
+{{< slidebreak >}}
+
 :::{#exm-skeptical-prior}
 #### A skeptical prior for a normal mean
 
 Reusing the normal-mean model of @exm-normal-normal but with a skeptical
 $\ndist{0, \tau^2}$ prior of standard deviation $\tau$,
-the posterior mean is the precision-weighted average
+we derive the exact posterior density by combining the normal likelihood and the $\ndist{0, \tau^2}$ prior:
+
+$$
+\ba
+p(M=\mu \mid X=x)
+&\propto p(X=x \mid M=\mu)\, p(M=\mu) \\
+&\quad \text{(by Bayes' theorem, dropping marginal likelihood factor } p(X=x)\text{)} \\
+&\propto \expf{-\frac{1}{2}\sum_{i=1}^n (x_i - \mu)^2} \cdot \expf{-\frac{1}{2\tau^2}\mu^2} \\
+&\quad \text{(substituting normal likelihood and prior kernels)} \\
+&= \expf{-\frac{1}{2}\sb{\sum_{i=1}^n (x_i^2 - 2x_i \mu + \mu^2) + \frac{\mu^2}{\tau^2}}} \\
+&\quad \text{(expanding quadratic term inside exponent)} \\
+&= \expf{-\frac{1}{2}\sb{\sum_{i=1}^n x_i^2 - 2\mu \sum_{i=1}^n x_i + n\mu^2 + \frac{\mu^2}{\tau^2}}} \\
+&\quad \text{(distributing summation across terms)} \\
+&\propto \expf{-\frac{1}{2}\sb{\paren{n + \frac{1}{\tau^2}}\mu^2 - 2n\bar{x}\mu}} \\
+&\quad \text{(substituting } \sum x_i = n\bar{x} \text{ and dropping factor independent of } \mu\text{)} \\
+&= \expf{-\frac{1}{2}\paren{n + \frac{1}{\tau^2}}\sb{\mu^2 - 2 \frac{n\bar{x}}{n + 1/\tau^2}\mu}} \\
+&\quad \text{(factoring out precision } n + 1/\tau^2\text{)} \\
+&\propto \expf{-\frac{1}{2}\paren{n + \frac{1}{\tau^2}}\paren{\mu - \frac{n\bar{x}}{n + 1/\tau^2}}^2} \\
+&\quad \text{(completing square in } \mu \text{ and dropping factor independent of } \mu\text{)}
+\ea
+$$
+
+This calculation yields the normal posterior density kernel:
+
+$$
+M \mid X = x \;\sim\; \ndist{\frac{n\bar{x}}{n + 1/\tau^2},\; \frac{1}{n + 1/\tau^2}}.
+$$
+
+The posterior mean is therefore the precision-weighted average:
 
 $$
 \E{M \mid X = x}

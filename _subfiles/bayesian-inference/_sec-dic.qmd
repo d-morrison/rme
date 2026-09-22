@@ -4,10 +4,12 @@ criterion (AIC) does for likelihood-based models.
 The standard MCMC-based criterion is the **deviance information
 criterion (DIC)** [@dobson4e, Chapter 13, p. 306].
 
-Let $D(\vth) = -2 \log p(\vy \mid \vth)$ be the **deviance**.
+Let $D(\vth) \eqdef -2 \log p(\vy \mid \vth)$ be the **deviance**.
 Write $\overline{D}$ for its posterior mean (estimated by averaging
 $D(\vth^{(t)})$ over the chain) and $D(\bar{\vth})$ for the
 deviance evaluated at the posterior mean of the parameters.
+
+{{< slidebreak >}}
 
 :::{#def-dic}
 #### Deviance information criterion
@@ -31,3 +33,23 @@ Because $p_D$ is computed directly from the posterior draws, DIC is a
 convenient by-product of an MCMC run; it should nonetheless be used with
 care, as it can behave poorly for models with weakly identified
 parameters or markedly non-normal posteriors.
+
+{{< slidebreak >}}
+
+:::{#exm-dic-calculation}
+#### Numerical example of DIC calculation
+
+Suppose an MCMC run yields a mean deviance across posterior draws of $\overline{D} = 124.8$,
+and the deviance evaluated at the posterior mean parameter vector $\bar{\vth}$ is $D(\bar{\vth}) = 121.2$.
+The effective number of parameters and DIC are:
+
+$$
+\ba
+p_D &\eqdef \overline{D} - D(\bar{\vth}) = 124.8 - 121.2 = 3.6, \\
+\operatorname{DIC} &\eqdef \overline{D} + p_D = 124.8 + 3.6 = 128.4.
+\ea
+$$
+
+If a competing model fit to the same dataset achieves $\operatorname{DIC} = 122.1$,
+the model with $\operatorname{DIC} = 122.1$ is preferred because it provides a better balance of model fit and complexity.
+:::
