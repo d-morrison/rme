@@ -4,6 +4,8 @@ Writing $p(\theta)$ for the prior and $\Lik(\theta) = p(\vy \mid \theta)$
 for the likelihood,
 the posterior is
 
+{{< slidebreak >}}
+
 :::{#def-posterior}
 #### Posterior distribution
 
@@ -30,17 +32,43 @@ $$
 \underbrace{p(\theta)}_{\text{prior}}.
 $$ {#eq-bayes-proportional}
 
-This proportionality is the workhorse of applied Bayesian analysis:
+This proportionality relation is the workhorse of applied Bayesian analysis:
 it lets us recognize the posterior from the shape of
 $\text{likelihood} \times \text{prior}$ without ever computing the
 integral $p(\vy)$, and it is what makes the simulation methods of
 @sec-foundations possible.
+
+{{< slidebreak >}}
+
+:::{#exm-posterior-calculation}
+#### Numerical example of posterior calculation
+
+Suppose a biased coin with success probability $\pi$ has a uniform prior $p(\pi) = 1$ for $\pi \in (0,1)$ (a $\operatorname{Beta}(1,1)$ distribution).
+If we observe $y = 1$ success in $n = 1$ trial,
+the likelihood is $p(y=1 \mid \pi) = \pi$.
+The marginal likelihood is:
+
+$$
+p(y=1) = \int_0^1 \pi \cdot 1 \, d\pi = \left[ \frac{\pi^2}{2} \right]_0^1 = \frac{1}{2}.
+$$
+
+By @eq-bayes-posterior,
+the posterior distribution is:
+
+$$
+p(\pi \mid y=1) = \frac{\pi \cdot 1}{1/2} = 2\pi, \qquad \pi \in (0,1),
+$$
+
+which is a $\operatorname{Beta}(2,1)$ distribution with posterior mean $\E{\pi \mid y=1} = \frac{2}{3}$.
+:::
 
 ## A Gaussian mean with a Gaussian prior {#sec-bayes-normal-normal}
 
 When prior and likelihood combine to give a posterior in the same family
 as the prior, the prior is called **conjugate**.
 The normal-mean model is the cleanest example.
+
+{{< slidebreak >}}
 
 :::{#exm-normal-normal}
 #### Posterior for a normal mean
@@ -53,11 +81,20 @@ that involve $\mu$ and completing the square:
 $$
 \ba
 p(M=\mu \mid X=x)
-&\propto p(X=x \mid M=\mu)\, p(M=\mu)\\
-&\propto \expf{-\frac{1}{2}\paren{n\mu^2 - 2\mu n\bar{x}}}
-         \cdot \expf{-\frac{1}{2}\mu^2}\\
-&= \expf{-\frac{1}{2}\paren{(n+1)\mu^2 - 2\mu n\bar{x}}}\\
-&\propto \expf{-\frac{1}{2}(n+1)\paren{\mu - \frac{n}{n+1}\bar{x}}^2}.
+&\propto p(X=x \mid M=\mu)\, p(M=\mu) \\
+&\quad \text{(by Bayes' theorem, dropping marginal likelihood factor } p(X=x)\text{)} \\
+&\propto \expf{-\frac{1}{2}\sum_{i=1}^n (x_i - \mu)^2} \cdot \expf{-\frac{1}{2}\mu^2} \\
+&\quad \text{(substituting normal likelihood and prior kernels)} \\
+&= \expf{-\frac{1}{2}\sb{\sum_{i=1}^n (x_i^2 - 2x_i \mu + \mu^2) + \mu^2}} \\
+&\quad \text{(expanding quadratic term inside exponent)} \\
+&= \expf{-\frac{1}{2}\sb{\sum_{i=1}^n x_i^2 - 2\mu \sum_{i=1}^n x_i + n\mu^2 + \mu^2}} \\
+&\quad \text{(distributing summation across terms)} \\
+&\propto \expf{-\frac{1}{2}\sb{(n+1)\mu^2 - 2n\bar{x}\mu}} \\
+&\quad \text{(substituting } \sum x_i = n\bar{x} \text{ and dropping factor independent of } \mu\text{)} \\
+&= \expf{-\frac{1}{2}(n+1)\sb{\mu^2 - 2 \frac{n}{n+1}\bar{x}\mu}} \\
+&\quad \text{(factoring out } (n+1)\text{)} \\
+&\propto \expf{-\frac{1}{2}(n+1)\paren{\mu - \frac{n}{n+1}\bar{x}}^2} \\
+&\quad \text{(completing the square in } \mu \text{ and dropping term independent of } \mu\text{)}
 \ea
 $$
 
@@ -86,6 +123,8 @@ on $\reals^p$.
 A prior that places no mass on part of $\Theta$ forces the posterior to
 do the same, no matter what the data say —
 so the support of the prior is itself a modeling assumption.
+
+{{< slidebreak >}}
 
 :::{#exm-normal-credible-vs-confidence}
 
