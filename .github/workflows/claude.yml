@@ -78,11 +78,7 @@ jobs:
       id-token: write
       actions: write
     uses: Morrison-Lab/gha/.github/workflows/claude.yml@v2
-    secrets:
-      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      SUBMODULES_TOKEN: ${{ secrets.SUBMODULES_TOKEN }}
-      EPI202_TOKEN: ${{ secrets.EPI202_TOKEN }}
-      EPI204_TOKEN: ${{ secrets.EPI204_TOKEN }}
+    secrets: inherit # zizmor: ignore[secrets-inherit]
     with:
       checkout-submodules: true
       use-renv: true
@@ -91,6 +87,7 @@ jobs:
       pip-packages: 'sympy'
       review-workflow-file: 'claude-code-review.yml'
       extra-secret-names: "EPI202_TOKEN EPI204_TOKEN"
+      webfetch-allowlist-url: 'https://raw.githubusercontent.com/d-morrison/stats-allowlist/main/allowlist.txt'
       prompt-addendum: |
         Before committing any .qmd, .R, or config file change:
         1. Run quarto render <chapter.qmd> --to html on each parent chapter whose subfiles were edited
